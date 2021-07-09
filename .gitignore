@@ -5,6 +5,8 @@
 /static/wasm.js
 /static/wasm_bg.wasm
 /static/wasm_bg.wasm.d.ts
+
 /backend/Cargo.lock
 /wasm/Cargo.lock
 /.env
+/.idea
