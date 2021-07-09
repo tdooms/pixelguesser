@@ -1,0 +1,1 @@
+psql -d pixelguesser -a -f ./create.sql

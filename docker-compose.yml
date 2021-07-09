@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  database:
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    build: database
+    ports:
+      - 6562:5432
+  backend:
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@database:5432/pixelguesser
+      - HOST_PORT=6561
+      - LOCALHOST=false
+      - RUST_LOG=info
+    build:
+      context: .
+    ports:
+      - "6561:6561"
+

@@ -1,0 +1,1 @@
+cd ../backend && cargo sqlx prepare

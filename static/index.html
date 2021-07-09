@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+
+    <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" rel="stylesheet">
+    <link href="/style.css" rel="stylesheet">
+
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+</head>
+
+<body>
+<section id="app"></section>
+<script type="module">
+    import init, {run_app} from '/wasm.js';
+
+    await init('/wasm_bg.wasm');
+    run_app()
+</script>
+
+</body>
+
+</html>
