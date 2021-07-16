@@ -21,6 +21,8 @@ pub struct State {
 
 impl State {
     pub async fn new(uri: &str) -> Result<Self, sqlx::Error> {
+        log::info!("Connecting to database with uri {}", uri);
+
         Ok(Self {
             pool: PgPool::connect(uri).await?,
             inner: Arc::default(),

@@ -23,16 +23,7 @@ pub enum Error {
 
     #[error("Encountered an error while drawing the pixelated canvas")]
     PixelationDrawError,
-
-    #[error("Encountered an error with javascript attributes of pixelation canvas")]
-    PixelationJsError,
-
-    #[error("Encountered an error when querying the window, probably due to web workers")]
-    WindowError,
 }
-
-#[derive(thiserror::Error, Debug)]
-pub enum Success {}
 
 #[derive(thiserror::Error, Debug)]
 pub enum Warning {
@@ -52,6 +43,4 @@ pub enum Notification {
     Error(Error),
     #[error("{0}")]
     Warning(Warning),
-    #[error("{0}")]
-    Success(Success),
 }

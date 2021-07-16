@@ -1,6 +1,17 @@
 /*remove scrollbar*/
 :root{ scrollbar-width: none !important }
 
+html {
+    height: 100% !important;
+}
+body {
+    min-height: 100% !important;
+}
+main {
+    min-height: 100vh !important;
+}
+
+
 /*slider css*/
 .slider {
     -webkit-appearance: none;

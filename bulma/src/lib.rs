@@ -1,11 +1,7 @@
-mod _box;
+mod r#box;
 mod button;
 mod color;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+pub use button::Button;
+pub use color::Color;
+pub use r#box::Box;

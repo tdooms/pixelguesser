@@ -8,5 +8,7 @@
 
 /backend/Cargo.lock
 /wasm/Cargo.lock
+
+/Cargo.lock
 /.env
 /.idea

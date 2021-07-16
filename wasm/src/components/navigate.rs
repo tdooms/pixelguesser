@@ -1,7 +1,7 @@
 use crate::agents::WebSocketAgent;
-use crate::fields::Button;
 use crate::route::Route;
 use api::{Post, Request, Stage, Status};
+use bulma::{Button, Color};
 use yew::agent::Dispatcher;
 use yew::prelude::*;
 
@@ -123,14 +123,14 @@ impl Component for Navigate {
 
         html! {
             <div class="buttons is-centered mt-4">
-                <Button text="start" icon="fas fa-play" hidden=!show[0] large=true color="is-success" onclick=self.link.callback(|_| Msg::Start)/>
-                <Button text="pause" icon="fas fa-pause" hidden=!show[1] large=true color="is-light" onclick=self.link.callback(|_| Msg::Pause)/>
-                <Button text="resume" icon="fas fa-play" hidden=!show[2] large=true color="is-light" onclick=self.link.callback(|_| Msg::Resume)/>
-                <Button text="next" icon="fas fa-forward" hidden=!show[3] large=true light=true color="is-success" onclick=self.link.callback(|_| Msg::Next)/>
-                <Button text="scores" icon="fas fa-list-ol" hidden=!show[4] large=true color="is-link" outlined=true onclick=self.link.callback(|_| Msg::Scores)/>
-                <Button text="reveal" icon="fas fa-eye" hidden=!show[5] large=true color="is-danger" onclick=self.link.callback(|_| Msg::Reveal)/>
-                <Button text="finish" icon="fas fa-flag-checkered" hidden=!show[6] large=true light=true color="is-success" onclick=self.link.callback(|_| Msg::Finish)/>
-                <Button text="leave" icon="fas fa-sign-out-alt" hidden=!show[7] large=true light=true color="is-danger" onclick=self.link.callback(|_| Msg::Leave)/>
+                <Button text="start" icon="fas fa-play" hidden=!show[0] large=true color=Color::Primary onclick=self.link.callback(|_| Msg::Start)/>
+                <Button text="pause" icon="fas fa-pause" hidden=!show[1] large=true color=Color::Light onclick=self.link.callback(|_| Msg::Pause)/>
+                <Button text="resume" icon="fas fa-play" hidden=!show[2] large=true color=Color::Light onclick=self.link.callback(|_| Msg::Resume)/>
+                <Button text="next" icon="fas fa-forward" hidden=!show[3] large=true light=true color=Color::Success onclick=self.link.callback(|_| Msg::Next)/>
+                <Button text="scores" icon="fas fa-list-ol" hidden=!show[4] large=true color=Color::Link outlined=true onclick=self.link.callback(|_| Msg::Scores)/>
+                <Button text="reveal" icon="fas fa-eye" hidden=!show[5] large=true color=Color::Danger onclick=self.link.callback(|_| Msg::Reveal)/>
+                <Button text="finish" icon="fas fa-flag-checkered" hidden=!show[6] large=true light=true color=Color::Success onclick=self.link.callback(|_| Msg::Finish)/>
+                <Button text="leave" icon="fas fa-sign-out-alt" hidden=!show[7] large=true light=true color=Color::Danger onclick=self.link.callback(|_| Msg::Leave)/>
             </div>
         }
     }

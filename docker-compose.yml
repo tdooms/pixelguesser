@@ -9,9 +9,9 @@ services:
       - 6562:5432
   backend:
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@database:5432/pixelguesser
-      - HOST_PORT=6561
-      - LOCALHOST=false
+      - DATABASE_URI=postgres://postgres:postgres@database:5432/pixelguesser
+      - PORT=6561
+      - IP=0.0.0.0
       - RUST_LOG=info
     build:
       context: .

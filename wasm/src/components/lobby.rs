@@ -1,5 +1,6 @@
 use crate::utils::code_to_string;
 use api::{Player, Quiz, Round};
+use bulma::Box;
 use std::collections::HashMap;
 use yew::prelude::*;
 
@@ -11,9 +12,9 @@ pub fn lobby(
     let view_player = |(_, player): (&u64, &Player)| {
         html! {
             <div class="column is-narrow">
-                <div class="box">
+                <Box>
                     {&player.name}
-                </div>
+                </Box>
             </div>
         }
     };

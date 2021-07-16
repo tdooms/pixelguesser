@@ -53,7 +53,6 @@ impl Component for Notifications {
             let color = match **notification {
                 Notification::Error(_) => "is-danger",
                 Notification::Warning(_) => "is-warning",
-                Notification::Success(_) => "is-success",
             };
 
             html! {

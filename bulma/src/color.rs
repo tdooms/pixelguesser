@@ -1,6 +1,10 @@
 #[derive(Clone, Debug)]
 pub enum Color {
     None,
+    White,
+    Light,
+    Dark,
+    Black,
     Primary,
     Link,
     Info,
@@ -17,6 +21,10 @@ impl ToString for Color {
             Color::Info => "is-info",
             Color::Success => "is-success",
             Color::Danger => "is-danger",
+            Color::White => "is-white",
+            Color::Light => "is-light",
+            Color::Dark => "is-light",
+            Color::Black => "is-black",
         }
         .to_owned()
     }

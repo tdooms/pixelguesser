@@ -30,6 +30,9 @@ pub struct Props {
     pub disabled: bool,
 
     #[prop_or_default]
+    pub fullwidth: bool,
+
+    #[prop_or_default]
     pub color: Color,
 
     #[prop_or_default]
@@ -56,22 +59,35 @@ impl Button {
         let inverted = self.props.hidden.then(|| "is-inverted");
         let rounded = self.props.hidden.then(|| "is-rounded");
         let loading = self.props.hidden.then(|| "is-loading");
+        let fullwidth = self.props.fullwidth.then(|| "is-fullwidth");
 
         let color = self.props.color.to_string();
 
-        classes!("button", hidden, large, outlined, light, inverted, rounded, loading, color, &self.props.extra)
+        classes!(
+            "button",
+            hidden,
+            large,
+            outlined,
+            light,
+            inverted,
+            rounded,
+            loading,
+            fullwidth,
+            color,
+            self.props.extra.clone()
+        )
     }
 
     fn view_icon(&self) -> Html {
         match &self.props.icon {
-            Some(icon) => html! { <span class="icon"><i class={icon}></i></span> }
-            None => html!{}
+            Some(icon) => html! { <span class="icon"><i class={icon}></i></span> },
+            None => html! {},
         }
     }
     fn view_text(&self) -> Html {
         match &self.props.text {
-            Some(text) => html! { <span>{text}</span> }
-            None => html!{}
+            Some(text) => html! { <span>{text}</span> },
+            None => html! {},
         }
     }
 }

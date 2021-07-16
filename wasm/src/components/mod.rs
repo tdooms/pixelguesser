@@ -1,6 +1,5 @@
 pub use finish::Finish;
 pub use initialise::Initialise;
-pub use loading::{loading, view_or_loading};
 pub use lobby::lobby;
 pub use master::Master;
 pub use navbar::navbar;
@@ -10,9 +9,10 @@ pub use pixelate::Pixelate;
 pub use quiz_card::quiz_card;
 pub use scores::Scores;
 
+pub use crate::pages::loading::{loading, view_or_loading};
+
 mod finish;
 mod initialise;
-mod loading;
 mod lobby;
 mod master;
 mod navbar;

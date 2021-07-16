@@ -12,7 +12,6 @@ use crate::route::Route;
 
 mod agents;
 mod components;
-mod fields;
 mod globals;
 mod notifications;
 mod pages;

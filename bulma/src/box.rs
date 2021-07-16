@@ -1,12 +1,12 @@
 use yew::prelude::*;
 
 #[derive(Properties, Clone)]
-struct Props {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 }
 
-struct Box {
+pub struct Box {
     props: Props,
 }
 
@@ -28,6 +28,6 @@ impl Component for Box {
     }
 
     fn view(&self) -> Html {
-        html! { <div class="box"> { self.props.children } </div> }
+        html! { <div class="box"> { for self.props.children.iter() } </div> }
     }
 }

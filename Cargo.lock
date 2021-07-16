@@ -1859,6 +1859,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "api",
+ "bulma",
  "chrono",
  "instant",
  "js-sys",

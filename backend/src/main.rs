@@ -8,6 +8,7 @@ use crate::handle::handle_request;
 use crate::state::State;
 
 use futures::StreamExt;
+use std::net::SocketAddrV4;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{WebSocket, Ws};
@@ -43,11 +44,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv()?;
     pretty_env_logger::try_init()?;
 
-    let uri = std::env::var("DATABASE_URL")?;
-    let port = std::env::var("HOST_PORT")?.parse()?;
-    let localhost = std::env::var("LOCALHOST")?.parse()?;
+    let uri = std::env::var("DATABASE_URI")?;
 
-    log::info!("Connecting to database with uri {}", uri);
+    let address = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:8001".to_owned());
+    let address = address.parse::<SocketAddrV4>()?;
 
     let state = State::new(&uri).await?;
     let state = warp::any().map(move || state.clone());
@@ -57,12 +57,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and(state)
         .map(|ws: Ws, state: State| ws.on_upgrade(|socket| start_socket(socket, state)));
 
-    let ip = if localhost {
-        [127, 0, 0, 1]
-    } else {
-        [0, 0, 0, 0]
-    };
-
-    warp::serve(ws).run((ip, port)).await;
+    warp::serve(ws).run(address).await;
     Ok(())
 }

@@ -6,7 +6,7 @@ use std::time::Duration;
 use wasm_bindgen::JsCast;
 use yew::agent::Dispatcher;
 use yew::prelude::*;
-use yew::web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
+use yew::web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::Properties;
 use yew_services::resize::ResizeTask;
 use yew_services::timeout::TimeoutTask;
@@ -31,6 +31,7 @@ pub struct Pixelate {
     link: ComponentLink<Self>,
     ws_agent: Dispatcher<WebSocketAgent>,
     log_agent: Dispatcher<NotifyAgent>,
+
     _resizer: ResizeTask,
     props: Props,
 
@@ -40,10 +41,11 @@ pub struct Pixelate {
     canvas: NodeRef,
     image: NodeRef,
     offscreen: NodeRef,
+    container: NodeRef,
 }
 
 impl Pixelate {
-    fn get_context(element: &HtmlCanvasElement) -> Result<CanvasRenderingContext2d, Error> {
+    fn canvas_context(element: &HtmlCanvasElement) -> Result<CanvasRenderingContext2d, Error> {
         element
             .get_context("2d")
             .map_err(|_| Error::PixelationCanvasError)?
@@ -71,7 +73,7 @@ impl Pixelate {
         offscreen.set_width(image.width());
         offscreen.set_height(image.height());
 
-        let canvas_ctx = Self::get_context(&canvas)?;
+        let canvas_ctx = Self::canvas_context(&canvas)?;
         canvas_ctx.set_image_smoothing_enabled(false);
 
         Ok(())
@@ -85,20 +87,15 @@ impl Pixelate {
 
     fn draw_pixelated(&self) -> Result<(), Error> {
         let pixels = self.pixels as u32;
-
         let (image, canvas, offscreen) = self.get_canvasses()?;
-        let window = window().ok_or(Error::WindowError)?;
 
-        let option_width = window.inner_width().map(|x| x.as_f64());
-        let option_height = window.inner_height().map(|x| x.as_f64());
+        let container = self
+            .container
+            .cast::<HtmlDivElement>()
+            .ok_or(Error::PixelationCanvasError)?;
 
-        let (window_width, window_height) = match (option_width, option_height) {
-            (Ok(Some(width)), Ok(Some(height))) => (width as u32, height as u32),
-            _ => return Err(Error::PixelationJsError),
-        };
-
-        canvas.set_width(window_width);
-        canvas.set_height(window_height);
+        canvas.set_width(container.offset_width() as u32);
+        canvas.set_height(container.offset_height() as u32);
 
         let aspect_ratio = image.width() as f64 / image.height() as f64;
 
@@ -116,8 +113,8 @@ impl Pixelate {
         let x_offset = (c_width - i_width * scale) / 2.0;
         let y_offset = (c_height - i_height * scale) / 2.0;
 
-        let canvas_ctx = Self::get_context(&canvas)?;
-        let offscreen_ctx = Self::get_context(&offscreen)?;
+        let canvas_ctx = Self::canvas_context(&canvas)?;
+        let offscreen_ctx = Self::canvas_context(&offscreen)?;
 
         offscreen_ctx
             .draw_image_with_html_image_element_and_dw_and_dh(&image, 0.0, 0.0, x_pixels, y_pixels)
@@ -146,6 +143,10 @@ impl Pixelate {
             self.log_agent.send(Notification::Error(err))
         }
     }
+
+    pub fn restart(&mut self) {
+        self.pixels = 4.0;
+    }
 }
 
 impl Component for Pixelate {
@@ -166,6 +167,7 @@ impl Component for Pixelate {
             canvas: Default::default(),
             image: Default::default(),
             offscreen: Default::default(),
+            container: Default::default(),
         }
     }
 
@@ -230,16 +232,13 @@ impl Component for Pixelate {
 
     fn change(&mut self, props: Self::Properties) -> bool {
         if self.props.round != props.round {
-            self.pixels = 4.0;
+            self.restart()
         }
-        self.props = props;
+        if let (Some(_), Status::Paused) = (self.timer.as_ref(), props.status) {
+            self.timer = None;
+        }
 
-        match (self.timer.as_ref(), self.props.status) {
-            (None, Status::Playing) => self.link.send_message(Msg::Pixelate),
-            (Some(_), Status::Paused) => self.timer = None,
-            (_, Status::Revealing | Status::Revealed) => {}
-            _ => log::error!("invalid stage transition"),
-        };
+        self.props = props;
         true
     }
 
@@ -251,7 +250,10 @@ impl Component for Pixelate {
                      onload=self.link.callback(|_| Msg::Loaded)
                      ref=self.image.clone()/>
                 <canvas style="display:none" ref=self.offscreen.clone()/>
-                <canvas style="display:block" ref=self.canvas.clone()/>
+
+                <div style="height:100vh" ref=self.container.clone()>
+                    <canvas style="display:block" ref=self.canvas.clone()/>
+                </div>
             </>
         }
     }
