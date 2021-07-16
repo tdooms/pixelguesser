@@ -54,7 +54,7 @@ pub enum Status {
     Revealed,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Stage {
     Initial,
     Round { round: usize, status: Status },

@@ -18,11 +18,14 @@ pub enum Error {
     #[error("The server received a faulty request")]
     FaultyRequest,
 
-    #[error("Could not find the canvas to pixelate")]
-    PixelationCanvasError,
+    #[error("Could not cast to the specified html element")]
+    InvalidCast,
 
-    #[error("Encountered an error while drawing the pixelated canvas")]
-    PixelationDrawError,
+    #[error("Error executing javascript code")]
+    JsError,
+
+    #[error("Encountered an error while drawing on a canvas")]
+    DrawError,
 }
 
 #[derive(thiserror::Error, Debug)]

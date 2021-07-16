@@ -11,7 +11,13 @@ pub struct Props {
     pub quiz_id: i64,
 }
 
+pub enum Msg {
+    Response(Response),
+    Revealed,
+}
+
 pub struct Host {
+    link: ComponentLink<Self>,
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     props: Props,
 
@@ -22,33 +28,9 @@ pub struct Host {
     has_manager: bool,
 }
 
-impl Component for Host {
-    type Message = Response;
-    type Properties = Props;
-
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut ws_agent = WebSocketAgent::bridge(link.callback(|x| x));
-
-        if let Some(window) = window() {
-            window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
-        }
-
-        let quiz_id = props.quiz_id;
-        ws_agent.send(Request::Post(Post::StartSession { quiz_id }));
-
-        Self {
-            ws_agent,
-            stage: Stage::Initial,
-            props,
-            data: None,
-            has_manager: false,
-            players: HashMap::new(),
-        }
-    }
-
-    // TODO: check session validity
-    fn update(&mut self, msg: Self::Message) -> bool {
-        match msg {
+impl Host {
+    fn handle_response(&mut self, response: Response) -> bool {
+        match response {
             Response::Reply(session_id, Reply::SessionCreated(quiz, rounds)) => {
                 self.data = Some((session_id, quiz, rounds));
                 true
@@ -82,6 +64,44 @@ impl Component for Host {
             _ => false,
         }
     }
+}
+
+impl Component for Host {
+    type Message = Msg;
+    type Properties = Props;
+
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let mut ws_agent = WebSocketAgent::bridge(link.callback(|x| Msg::Response(x)));
+
+        if let Some(window) = window() {
+            window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
+        }
+
+        let quiz_id = props.quiz_id;
+        ws_agent.send(Request::Post(Post::StartSession { quiz_id }));
+
+        Self {
+            link,
+            ws_agent,
+            stage: Stage::Initial,
+            props,
+            data: None,
+            has_manager: false,
+            players: HashMap::new(),
+        }
+    }
+
+    // TODO: check session validity
+    fn update(&mut self, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Response(response) => self.handle_response(response),
+            Msg::Revealed => {
+                // let stage = Stage::Round {round: }
+                // self.ws_agent.send()
+                false
+            }
+        }
+    }
 
     fn change(&mut self, props: Self::Properties) -> bool {
         self.props = props;
@@ -91,8 +111,8 @@ impl Component for Host {
     fn view(&self) -> Html {
         match (&self.stage, &self.data) {
             (Stage::Initial, _) => lobby(self.data.as_ref(), self.has_manager, &self.players),
-            (Stage::Round { round, status }, Some((session_id, _, rounds))) => html! {
-                <Pixelate round=*round session_id=*session_id status=*status url=rounds[*round].image_url.clone()/>
+            (Stage::Round { round, status }, Some((_, _, rounds))) => html! {
+                <Pixelate on_revealed=self.link.callback(|_| Msg::Revealed) status=*status url=rounds[*round].image_url.clone()/>
             },
             (Stage::Scores { round: _ }, Some((session_id, _, _))) => html! {
                 <section class="section">

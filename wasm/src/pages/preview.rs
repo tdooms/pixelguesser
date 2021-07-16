@@ -1,18 +1,22 @@
+use crate::components::Pixelate;
+use api::Status;
 use yew::prelude::*;
 
 pub enum Msg {}
 
-pub struct Preview {}
+pub struct Preview {
+    link: ComponentLink<Self>,
+}
 
 impl Component for Preview {
-    type Message = Msg;
+    type Message = ();
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {}
+        Self { link }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, _: Self::Message) -> bool {
         false
     }
 
@@ -21,6 +25,6 @@ impl Component for Preview {
     }
 
     fn view(&self) -> Html {
-        html! { "preview page" }
+        html! { <Pixelate on_revealed=self.link.callback(|_|()) url="banana.jpg" status=Status::Playing /> }
     }
 }
