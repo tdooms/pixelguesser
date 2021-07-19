@@ -1,5 +1,6 @@
 use crate::agents::WebSocketAgent;
-use crate::components::{view_or_loading, Initialise, Master, Navigate};
+use crate::components::{Initialise, Master, Navigate};
+use crate::pages::view_or_loading;
 use crate::route::Route;
 
 use api::*;

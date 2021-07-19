@@ -13,7 +13,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 api = { path = "../api" }
-bulma = { path = "../bulma" }
+pbs = { path = "../pbs" }
 
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -32,5 +32,5 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 wasm-bindgen = "^0.2"
-web-sys = { version = "0.3", features = ["HtmlCanvasElement", "HtmlImageElement", "CanvasRenderingContext2d", "HtmlDivElement"] }
+web-sys = { version = "0.3", features = ["HtmlCanvasElement", "HtmlImageElement", "CanvasRenderingContext2d", "HtmlDivElement", "Blob", "Url"] }
 js-sys = "0.3"

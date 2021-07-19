@@ -1,7 +1,7 @@
 use crate::agents::WebSocketAgent;
 use crate::route::Route;
 use api::{Post, Request, Stage, Status};
-use bulma::{Button, Color};
+use pbs::{Color, Size};
 use yew::agent::Dispatcher;
 use yew::prelude::*;
 
@@ -123,14 +123,14 @@ impl Component for Navigate {
 
         html! {
             <div class="buttons is-centered mt-4">
-                <Button text="start" icon="fas fa-play" hidden=!show[0] large=true color=Color::Primary onclick=self.link.callback(|_| Msg::Start)/>
-                <Button text="pause" icon="fas fa-pause" hidden=!show[1] large=true color=Color::Light onclick=self.link.callback(|_| Msg::Pause)/>
-                <Button text="resume" icon="fas fa-play" hidden=!show[2] large=true color=Color::Light onclick=self.link.callback(|_| Msg::Resume)/>
-                <Button text="next" icon="fas fa-forward" hidden=!show[3] large=true light=true color=Color::Success onclick=self.link.callback(|_| Msg::Next)/>
-                <Button text="scores" icon="fas fa-list-ol" hidden=!show[4] large=true color=Color::Link outlined=true onclick=self.link.callback(|_| Msg::Scores)/>
-                <Button text="reveal" icon="fas fa-eye" hidden=!show[5] large=true color=Color::Danger onclick=self.link.callback(|_| Msg::Reveal)/>
-                <Button text="finish" icon="fas fa-flag-checkered" hidden=!show[6] large=true light=true color=Color::Success onclick=self.link.callback(|_| Msg::Finish)/>
-                <Button text="leave" icon="fas fa-sign-out-alt" hidden=!show[7] large=true light=true color=Color::Danger onclick=self.link.callback(|_| Msg::Leave)/>
+                <pbs::Button text="start" icon="fas fa-play" hidden=!show[0] size=Size::Large color=Color::Primary onclick=self.link.callback(|_| Msg::Start)/>
+                <pbs::Button text="pause" icon="fas fa-pause" hidden=!show[1] size=Size::Large color=Color::Light onclick=self.link.callback(|_| Msg::Pause)/>
+                <pbs::Button text="resume" icon="fas fa-play" hidden=!show[2] size=Size::Large color=Color::Light onclick=self.link.callback(|_| Msg::Resume)/>
+                <pbs::Button text="next" icon="fas fa-forward" hidden=!show[3] size=Size::Large light=true color=Color::Success onclick=self.link.callback(|_| Msg::Next)/>
+                <pbs::Button text="scores" icon="fas fa-list-ol" hidden=!show[4] size=Size::Large color=Color::Link outlined=true onclick=self.link.callback(|_| Msg::Scores)/>
+                <pbs::Button text="reveal" icon="fas fa-eye" hidden=!show[5] size=Size::Large color=Color::Danger onclick=self.link.callback(|_| Msg::Reveal)/>
+                <pbs::Button text="finish" icon="fas fa-flag-checkered" hidden=!show[6] size=Size::Large light=true color=Color::Success onclick=self.link.callback(|_| Msg::Finish)/>
+                <pbs::Button text="leave" icon="fas fa-sign-out-alt" hidden=!show[7] size=Size::Large light=true color=Color::Danger onclick=self.link.callback(|_| Msg::Leave)/>
             </div>
         }
     }

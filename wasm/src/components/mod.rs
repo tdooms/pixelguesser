@@ -9,8 +9,6 @@ pub use pixelate::Pixelate;
 pub use quiz_card::quiz_card;
 pub use scores::Scores;
 
-pub use crate::pages::loading::{loading, view_or_loading};
-
 mod finish;
 mod initialise;
 mod lobby;

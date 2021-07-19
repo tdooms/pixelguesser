@@ -1,4 +1,4 @@
-use crate::color::Color;
+use crate::{Color, Size};
 use yew::prelude::*;
 
 #[derive(Properties, Clone)]
@@ -9,7 +9,7 @@ pub struct Props {
     pub hidden: bool,
 
     #[prop_or_default]
-    pub large: bool,
+    pub size: Size,
 
     #[prop_or_default]
     pub outlined: bool,
@@ -53,7 +53,6 @@ pub struct Button {
 impl Button {
     fn classes(&self) -> Classes {
         let hidden = self.props.hidden.then(|| "is-hidden");
-        let large = self.props.hidden.then(|| "is-large");
         let outlined = self.props.hidden.then(|| "is-outlined");
         let light = self.props.hidden.then(|| "is-light");
         let inverted = self.props.hidden.then(|| "is-inverted");
@@ -62,11 +61,11 @@ impl Button {
         let fullwidth = self.props.fullwidth.then(|| "is-fullwidth");
 
         let color = self.props.color.to_string();
+        let size = self.props.size.to_string();
 
         classes!(
             "button",
             hidden,
-            large,
             outlined,
             light,
             inverted,
@@ -74,6 +73,7 @@ impl Button {
             loading,
             fullwidth,
             color,
+            size,
             self.props.extra.clone()
         )
     }

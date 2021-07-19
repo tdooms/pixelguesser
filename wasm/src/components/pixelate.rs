@@ -1,4 +1,4 @@
-use crate::agents::{NotifyAgent, WebSocketAgent};
+use crate::agents::NotifyAgent;
 use crate::globals::IMAGE_ENDPOINT;
 use crate::notifications::{Error, Notification};
 use crate::utils::{draw_pixelated, TypeRef};
@@ -27,7 +27,6 @@ pub struct Props {
 
 pub struct Pixelate {
     link: ComponentLink<Self>,
-    ws_agent: Dispatcher<WebSocketAgent>,
     log_agent: Dispatcher<NotifyAgent>,
 
     _resizer: ResizeTask,
@@ -83,7 +82,6 @@ impl Component for Pixelate {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             props,
-            ws_agent: WebSocketAgent::dispatcher(),
             log_agent: NotifyAgent::dispatcher(),
             _resizer: ResizeService::register(link.callback(|_| Msg::Resize)),
             link,

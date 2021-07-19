@@ -8,6 +8,8 @@ pub enum Route {
     Host { quiz_id: i64 },
     #[at("/code")]
     Code,
+    #[at("/create")]
+    Create,
     #[at("/")]
     Overview,
     #[not_found]

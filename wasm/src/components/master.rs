@@ -1,6 +1,6 @@
 use crate::agents::WebSocketAgent;
 use api::*;
-use bulma::Button;
+use pbs::Size;
 use yew::agent::Dispatcher;
 use yew::prelude::*;
 
@@ -68,7 +68,7 @@ impl Component for Master {
             let onclick = self.link.callback(move |_| id);
 
             html! {
-                <Button outlined=true large=true fullwidth=true onclick=onclick text=player.name.clone() />
+                <pbs::Button outlined=true size=Size::Large fullwidth=true onclick=onclick text=player.name.clone() />
             }
         };
 

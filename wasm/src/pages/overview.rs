@@ -1,5 +1,6 @@
 use crate::agents::WebSocketAgent;
-use crate::components::{navbar, quiz_card, view_or_loading};
+use crate::components::{navbar, quiz_card};
+use crate::pages::view_or_loading;
 
 use api::{Fetch, Get, Quiz, Request, Response};
 use yew::prelude::*;
