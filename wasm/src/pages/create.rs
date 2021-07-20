@@ -1,13 +1,13 @@
 use yew::prelude::*;
-use yew::web_sys::{File, Url};
+use yew::web_sys::{File as SysFile, Url};
 
 pub enum Msg {
-    Upload(Vec<File>),
+    Upload(Vec<SysFile>),
 }
 
 pub struct Create {
     link: ComponentLink<Self>,
-    file: Option<File>,
+    file: Option<SysFile>,
 }
 
 impl Component for Create {
@@ -45,10 +45,10 @@ impl Component for Create {
             <pbs::Box>
                 <pbs::Columns>
                     <pbs::Column>
-                        <pbs::Upload on_upload=callback filename=filename/>
+                        <pbs::File on_upload=callback filename=filename/>
                     </pbs::Column>
                     <pbs::Column>
-                        <img src={source} />
+                        <pbs::Image src={source} />
                     </pbs::Column>
                 </pbs::Columns>
             </pbs::Box>

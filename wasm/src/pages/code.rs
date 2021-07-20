@@ -1,6 +1,7 @@
 use crate::agents::WebSocketAgent;
 use crate::route::Route;
 use crate::utils::string_to_code;
+use pbs::{Color, Size};
 
 use api::{Fetch, Get, Request, Response};
 use yew::prelude::*;
@@ -94,48 +95,46 @@ impl Component for Code {
         let onjoin = self.link.callback(|_| Msg::Join);
         let oncancel = self.link.callback(|_| Msg::Cancel);
 
-        // TODO: dedicated field components
-        let (control, color, icon, error) = match self.state {
-            State::Available => (
-                "has-icons-right",
-                "is-success",
-                "fas fa-check",
-                "This room is available",
-            ),
-            State::Invalid | State::Incorrect => (
-                "has-icons-right",
-                "is-danger",
-                "fas fa-exclamation-triangle",
-                "This room is code is invalid",
-            ),
-            State::None => ("", "", "", ""),
+        let field = match self.state {
+            State::Available => html! {
+                <pbs::Field>
+                    <pbs::Label>{"Session code"}</pbs::Label>
+                    <pbs::Control right=true>
+                        <pbs::Input color=Color::Success oninput=oninput/>
+                        <pbs::Icon icon="fas fa-check" size=Size::Small extra="is-right"/>
+                    </pbs::Control>
+                    <pbs::Help text="This room is available."/>
+                </pbs::Field>
+            },
+            State::Invalid | State::Incorrect => html! {
+                <pbs::Field>
+                    <pbs::Label>{"Session code"}</pbs::Label>
+                    <pbs::Control right=true>
+                        <pbs::Input color=Color::Danger oninput=oninput/>
+                        <pbs::Icon icon="fas fa-exclamation-triangle" size=Size::Small extra="is-right"/>
+                    </pbs::Control>
+                    <pbs::Help text="The room code is invalid."/>
+                </pbs::Field>
+            },
+            State::None => html! {
+                <pbs::Field>
+                    <pbs::Control>
+                        <pbs::Input oninput=oninput/>
+                    </pbs::Control>
+                </pbs::Field>
+            },
         };
 
         html! {
-            <section class="section">
-                <div class="container">
-                    <div class="field">
-                        <label class="label">{"Session code"}</label>
-                        <div class=classes!("control", control)>
-                            <input class=classes!("input", "is-large", color) type="text" oninput=oninput/>
-                            <span class="icon is-small is-right">
-                                <i class={icon}></i>
-                            </span>
-                        </div>
-                    <p class=classes!("help", color)>{error}</p>
-                    </div>
-
-                    <div class="field is-grouped">
-                        <div class="control">
-                            <button class="button is-link is-large" onclick=onjoin>{"Join"}</button>
-                        </div>
-                        <div class="control">
-                            <button class="button is-link is-light is-large" onclick=oncancel>{"Cancel"}</button>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
+            <pbs::Section>
+                <pbs::Container>
+                    { field }
+                    <pbs::Buttons>
+                        <pbs::Button text="Join" color=Color::Link size=Size::Large />
+                        <pbs::Button text="Cancel" color=Color::Link light=true size=Size::Large />
+                    </pbs::Buttons>
+                </pbs::Container>
+            </pbs::Section>
         }
     }
 }

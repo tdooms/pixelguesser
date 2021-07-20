@@ -62,7 +62,7 @@ impl Component for Table {
             ..
         } = self.props;
 
-        let mut classes = classes!(
+        let classes = classes!(
             "table",
             &self.props.extra,
             classify!(bordered, striped, narrow, hoverable, fullwidth, scrollable)

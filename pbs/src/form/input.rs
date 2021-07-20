@@ -1,10 +1,8 @@
-#![allow(clippy::redundant_closure_call)]
-
-use derive_more::Display;
 use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::classify;
 use crate::common::InputType;
 use crate::Size;
 
@@ -20,14 +18,14 @@ pub struct InputProps {
     #[prop_or_default]
     pub extra: String,
     /// The input type of this component.
-    #[prop_or_else(|| InputType::Text)]
+    #[prop_or_default]
     pub r#type: InputType,
     /// The placeholder value for this component.
     #[prop_or_default]
     pub placeholder: String,
     /// The size of this component.
     #[prop_or_default]
-    pub size: Option<Size>,
+    pub size: Size,
     /// Use rounded appearance.
     #[prop_or_default]
     pub rounded: bool,

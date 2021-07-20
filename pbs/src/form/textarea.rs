@@ -2,6 +2,7 @@ use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::classify;
 use crate::{Color, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -28,7 +29,7 @@ pub struct TextAreaProps {
 
     /// The size of this component.
     #[prop_or_default]
-    pub color: Color,
+    pub color: Option<Color>,
 
     /// Fix the size of this component.
     #[prop_or_default]
@@ -84,9 +85,10 @@ impl Component for TextArea {
         let classes = classes!(
             "textarea",
             &self.props.extra,
+            self.props.color.as_ref().map(ToString::to_string),
             self.props.size.to_string(),
             classify!(loading, r#static),
-            self.props.fixed.then("has-fixed-size")
+            self.props.fixed.then(|| "has-fixed-size")
         );
 
         html! {
@@ -95,7 +97,7 @@ impl Component for TextArea {
                 value=self.props.value.clone()
                 oninput=self.link.callback(|input: InputData| input.value)
                 class=classes
-                rows=self.props.rows
+                rows=self.props.rows.as_ref().map(ToString::to_string)
                 placeholder=self.props.placeholder.clone()
                 disabled=self.props.disabled
                 readonly=self.props.readonly

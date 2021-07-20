@@ -35,7 +35,7 @@ impl Component for Box {
     fn view(&self) -> Html {
         html! {
             <div class=classes!("box", &self.props.extra)>
-                {self.props.children.clone()}
+                { for self.props.children.iter() }
             </div>
         }
     }

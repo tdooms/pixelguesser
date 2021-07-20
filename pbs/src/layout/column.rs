@@ -38,7 +38,7 @@ impl Component for Column {
 
     fn view(&self) -> Html {
         html! {
-            <div class=classes!("column", self.props.extra)>
+            <div class=classes!("column", &self.props.extra)>
                 { for self.props.children.iter() }
             </div>
         }

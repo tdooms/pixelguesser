@@ -1,5 +1,4 @@
-#![allow(clippy::redundant_closure_call)]
-
+use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -7,6 +6,7 @@ use yewtil::NeqAssign;
 pub struct ControlProps {
     #[prop_or_default]
     pub children: Children,
+
     #[prop_or_default]
     pub extra: String,
     /// The HTML tag to use for this component.

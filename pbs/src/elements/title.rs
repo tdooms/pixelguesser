@@ -48,7 +48,7 @@ impl Component for Title {
         let TitleProps { spaced, .. } = self.props;
         let classes = classes!(
             "title",
-            &self.porps.extra,
+            &self.props.extra,
             self.props.size.as_ref().map(ToString::to_string),
             classify!(spaced)
         );

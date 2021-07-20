@@ -2,23 +2,28 @@ use yew::events::MouseEvent;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::common::TextColor;
 use crate::{Alignment, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct IconProps {
     #[prop_or_default]
-    pub children: Children,
+    pub text: Option<String>,
+
+    pub icon: String,
+
     #[prop_or_default]
     pub extra: String,
+
     /// The click handler to use for this component.
     #[prop_or_else(Callback::noop)]
     pub onclick: Callback<MouseEvent>,
     /// The size of this component; to help prevent page "jumps" during load.
     #[prop_or_default]
-    pub size: Option<Size>,
-    /// The alignment of this icon, often used within form controls.
+    pub size: Size,
+
     #[prop_or_default]
-    pub alignment: Option<Alignment>,
+    pub color: Option<TextColor>,
 }
 
 /// A container for any type of icon font.
@@ -48,14 +53,19 @@ impl Component for Icon {
         let classes = classes!(
             "icon",
             &self.props.extra,
-            self.props.size.as_ref().map(ToString::to_string),
-            self.props.alignment.as_ref().map(ToString::to_string)
+            self.props.size.to_string(),
+            self.props.color.as_ref().map(ToString::to_string)
         );
 
-        html! {
+        let icon = html! {
             <span class=classes onclick=self.props.onclick.clone()>
-                {self.props.children.clone()}
+                <i class=self.props.icon.clone()> </i>
             </span>
+        };
+
+        match &self.props.text {
+            Some(text) => html! {<span class="icon-text"> { icon } <span>{ text }</span> </span>},
+            None => icon,
         }
     }
 }

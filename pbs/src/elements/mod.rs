@@ -1,5 +1,6 @@
 pub mod r#box;
 pub mod button;
+pub mod buttons;
 pub mod content;
 pub mod delete;
 pub mod icon;

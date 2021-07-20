@@ -1,5 +1,4 @@
 use crate::common::SectionSize;
-use derive_more::Display;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -38,8 +37,14 @@ impl Component for Section {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!(
+            "section",
+            &self.props.extra,
+            self.props.size.as_ref().map(ToString::to_string)
+        );
+
         html! {
-            <section class=classes!("section", &self.props.extra, self.props.size.to_string())>
+            <section class=classes>
                 { for self.props.children.iter() }
             </section>
         }

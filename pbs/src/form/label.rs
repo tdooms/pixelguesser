@@ -1,27 +1,21 @@
 use yew::prelude::*;
+use yewtil::NeqAssign;
 
-#[derive(Properties, Clone)]
-pub struct Props {
+#[derive(Clone, Debug, Properties, PartialEq)]
+pub struct LabelProps {
     #[prop_or_default]
     pub children: Children,
-
     #[prop_or_default]
-    pub vcentered: bool,
-
-    #[prop_or_default]
-    pub multiline: bool,
-
-    #[prop_or_default]
-    pub mobile: bool,
+    pub extra: String,
 }
 
-pub struct Columns {
-    props: Props,
+pub struct Label {
+    props: LabelProps,
 }
 
-impl Component for Columns {
+impl Component for Label {
     type Message = ();
-    type Properties = Props;
+    type Properties = LabelProps;
 
     fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
         Self { props }
@@ -32,11 +26,14 @@ impl Component for Columns {
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props = props;
-        true
+        self.props.neq_assign(props)
     }
 
     fn view(&self) -> Html {
-        html! { <div class="columns"> { for self.props.children.iter() } </div> }
+        html! {
+            <div class=classes!("label", &self.props.extra)>
+                { for self.props.children.iter() }
+            </div>
+        }
     }
 }

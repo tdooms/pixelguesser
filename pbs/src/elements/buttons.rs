@@ -1,28 +1,24 @@
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ContainerProps {
+pub struct ButtonsProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
     pub extra: String,
-    /// Add a `32px` margin to the left and right sides of the container.
-    #[prop_or_default]
-    pub fluid: bool,
 }
 
-/// A simple container to center your content horizontally.
+/// A white box to contain other elements.
 ///
-/// [https://bulma.io/documentation/layout/container/](https://bulma.io/documentation/layout/container/)
-pub struct Container {
-    props: ContainerProps,
+/// [https://bulma.io/documentation/elements/button/#list-of-buttons](https://bulma.io/documentation/elements/button/#list-of-buttons)
+pub struct Buttons {
+    props: ButtonsProps,
 }
 
-impl Component for Container {
+impl Component for Buttons {
     type Message = ();
-    type Properties = ContainerProps;
+    type Properties = ButtonsProps;
 
     fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
         Self { props }
@@ -37,11 +33,8 @@ impl Component for Container {
     }
 
     fn view(&self) -> Html {
-        let ContainerProps { fluid, .. } = self.props;
-        let classes = classes!("container", &self.props.extra, classify!(fluid));
-
         html! {
-            <div class=classes>
+            <div class=classes!("buttons", &self.props.extra)>
                 { for self.props.children.iter() }
             </div>
         }

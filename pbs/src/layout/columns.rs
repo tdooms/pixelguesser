@@ -44,16 +44,15 @@ impl Component for Columns {
 
     fn view(&self) -> Html {
         let ColumnsProps {
-            children,
-            extra,
             vcentered,
             multiline,
             centered,
-        } = &self.props;
+            ..
+        } = self.props;
 
         html! {
-            <div class=classes!("columns", extra, classify!(vcentered, multiline, centered))>
-                { for children.iter() }
+            <div class=classes!("columns", &self.props.extra, classify!(vcentered, multiline, centered))>
+                { for self.props.children.iter() }
             </div>
         }
     }

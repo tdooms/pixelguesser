@@ -1,3 +1,4 @@
+use crate::classify;
 use crate::ImageSize;
 use yew::prelude::*;
 use yewtil::NeqAssign;
@@ -5,12 +6,16 @@ use yewtil::NeqAssign;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ImageProps {
     #[prop_or_default]
-    pub children: Children,
-    #[prop_or_default]
     pub extra: String,
     /// The size of this component.
     #[prop_or_default]
     pub size: Option<ImageSize>,
+
+    #[prop_or_default]
+    pub rounded: bool,
+
+    #[prop_or_default]
+    pub src: Option<String>,
 }
 
 /// A container for responsive images.
@@ -42,9 +47,12 @@ impl Component for Image {
             &self.props.extra,
             self.props.size.as_ref().map(ToString::to_string)
         );
+
+        let ImageProps { rounded, .. } = self.props;
+
         html! {
             <figure class=classes>
-                { for self.props.children.iter() }
+                <img class=classes!(classify!(rounded)) src={ self.props.src.clone() } />
             </figure>
         }
     }

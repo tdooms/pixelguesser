@@ -1,6 +1,7 @@
 #![allow(clippy::redundant_closure_call)]
 
-use derive_more::Display;
+use crate::classify;
+use crate::common::{TileCtx, TileSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -54,22 +55,19 @@ impl Component for Tile {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("tile");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(ctx) = &self.props.ctx {
-            classes.push(&ctx.to_string());
-        }
-        if self.props.vertical {
-            classes.push("is-vertical");
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
+        let TileProps { vertical, .. } = self.props;
+
+        let classes = classes!(
+            "tile",
+            &self.props.extra,
+            self.props.ctx.as_ref().map(ToString::to_string),
+            self.props.size.as_ref().map(ToString::to_string),
+            classify!(vertical)
+        );
+
         html! {
-            <@{self.props.tag.clone()} class=classes>
-                {self.props.children.clone()}
+            <@{ self.props.tag.clone() } class=classes>
+                { for self.props.children.iter() }
             </@>
         }
     }
