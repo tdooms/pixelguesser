@@ -194,7 +194,7 @@
 //     #[prop_or_default]
 //     pub children: Children,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The HTML tag to use for this component.
 //     #[prop_or_else(|| NavbarItemTag::Div)]
 //     pub tag: NavbarItemTag,
@@ -293,7 +293,7 @@
 // #[derive(Clone, Debug, Properties, PartialEq)]
 // pub struct NavbarDividerProps {
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 // }
 //
 // /// An element to display a horizontal rule in a navbar-dropdown.
@@ -339,7 +339,7 @@
 //     #[prop_or_default]
 //     pub children: Children,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The contents of the navbar-link used for triggering the dropdown menu.
 //     pub navlink: Html,
 //     /// Make this dropdown triggerable based on hover.

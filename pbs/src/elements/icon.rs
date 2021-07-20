@@ -9,7 +9,7 @@ pub struct IconProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The click handler to use for this component.
     #[prop_or_else(Callback::noop)]
     pub onclick: Callback<MouseEvent>,
@@ -45,16 +45,13 @@ impl Component for Icon {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("icon");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        if let Some(alignment) = &self.props.alignment {
-            classes.push(&alignment.to_string());
-        }
+        let classes = classes!(
+            "icon",
+            &self.props.extra,
+            self.props.size.as_ref().map(ToString::to_string),
+            self.props.alignment.as_ref().map(ToString::to_string)
+        );
+
         html! {
             <span class=classes onclick=self.props.onclick.clone()>
                 {self.props.children.clone()}

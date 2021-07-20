@@ -59,7 +59,7 @@ impl Component for File {
         };
 
         let maybe_name = self.props.filename.as_ref().map(|_| "has-name");
-        let callback = || self.link.callback(|x| x);
+        let callback = self.link.callback(|x| x);
         let accept = self.props.accept.clone();
 
         html! {

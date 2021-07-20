@@ -20,7 +20,7 @@ pub struct RadioProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// Disable this component.
     #[prop_or_default]
     pub disabled: bool,
@@ -56,12 +56,8 @@ impl Component for Radio {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("radio");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
         html! {
-            <label class=classes disabled=self.props.disabled>
+            <label class=classes!("radio", &self.props.extra) disabled=self.props.disabled>
                 <input
                     type="radio"
                     name=self.props.name.clone()
@@ -70,7 +66,7 @@ impl Component for Radio {
                     oninput=self.link.callback(|data: InputData| data.value)
                     disabled=self.props.disabled
                     />
-                {self.props.children.clone()}
+                { for self.props.children.iter() }
             </label>
         }
     }

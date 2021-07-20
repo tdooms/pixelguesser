@@ -1,3 +1,4 @@
+use crate::common::SectionSize;
 use derive_more::Display;
 use yew::prelude::*;
 use yewtil::NeqAssign;
@@ -7,7 +8,7 @@ pub struct SectionProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// A size modifier to control spacing.
     #[prop_or_default]
     pub size: Option<SectionSize>,
@@ -37,29 +38,10 @@ impl Component for Section {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("section");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
         html! {
-            <section class=classes>
-                {self.props.children.clone()}
+            <section class=classes!("section", &self.props.extra, self.props.size.to_string())>
+                { for self.props.children.iter() }
             </section>
         }
     }
-}
-
-/// The 2 sizes available for sections, which controls spacing.
-///
-/// [https://bulma.io/documentation/layout/section/](https://bulma.io/documentation/layout/section/)
-#[derive(Clone, Debug, Display, PartialEq)]
-#[display(fmt = "is-{}")]
-pub enum SectionSize {
-    #[display(fmt = "medium")]
-    Medium,
-    #[display(fmt = "large")]
-    Large,
 }

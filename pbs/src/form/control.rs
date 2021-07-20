@@ -8,7 +8,7 @@ pub struct ControlProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "div".into())]
     pub tag: String,
@@ -41,17 +41,10 @@ impl Component for Control {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("control");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if self.props.expanded {
-            classes.push("is-expanded");
-        }
-        let tag = self.props.tag.clone();
+        let ControlProps { expanded, .. } = self.props;
         html! {
-            <@{tag} class=classes>
-                {self.props.children.clone()}
+            <@{ self.props.tag.clone() } class=classes!("control", &self.props.extra, classify!(expanded))>
+                { for self.props.children.iter() }
             </@>
         }
     }

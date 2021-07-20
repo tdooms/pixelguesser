@@ -12,7 +12,7 @@ pub struct CheckboxProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// Disable this component.
     #[prop_or_default]
     pub disabled: bool,
@@ -48,21 +48,16 @@ impl Component for Checkbox {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("checkbox");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        let checked = self.props.checked;
         html! {
-            <label class=classes disabled=self.props.disabled>
+            <label class=classes!("checkbox", &self.props.extra) disabled=self.props.disabled>
                 <input
                     type="checkbox"
                     checked=self.props.checked
                     name=self.props.name.clone()
-                    onclick=self.link.callback(move |_| !checked)
+                    onclick=self.link.callback(move |_| !self.props.checked)
                     disabled=self.props.disabled
                     />
-                {self.props.children.clone()}
+                { for self.props.children.iter() }
             </label>
         }
     }

@@ -1,6 +1,6 @@
 #![allow(clippy::redundant_closure_call)]
 
-use derive_more::Display;
+use crate::{classify, HeaderSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -9,13 +9,13 @@ pub struct TitleProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "h3".into())]
     pub tag: String,
     /// Maintain the normal spacing between titles and subtitles.
     #[prop_or_default]
-    pub is_spaced: bool,
+    pub spaced: bool,
     /// The size of this component.
     #[prop_or_default]
     pub size: Option<HeaderSize>,
@@ -45,20 +45,17 @@ impl Component for Title {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("title");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        if self.props.is_spaced {
-            classes.push("is-spaced");
-        }
-        let tag = self.props.tag.clone();
+        let TitleProps { spaced, .. } = self.props;
+        let classes = classes!(
+            "title",
+            &self.porps.extra,
+            self.props.size.as_ref().map(ToString::to_string),
+            classify!(spaced)
+        );
+
         html! {
-            <@{tag} class=classes>
-                {self.props.children.clone()}
+            <@{ self.props.tag.clone() } class=classes>
+                { for self.props.children.iter() }
             </@>
         }
     }
@@ -72,7 +69,7 @@ pub struct SubtitleProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "h3".into())]
     pub tag: String,
@@ -105,38 +102,16 @@ impl Component for Subtitle {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("subtitle");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        let tag = self.props.tag.clone();
+        let classes = classes!(
+            "subtitle",
+            &self.props.extra,
+            self.props.size.as_ref().map(ToString::to_string)
+        );
+
         html! {
-            <@{tag} class=classes>
-                {self.props.children.clone()}
+            <@{ self.props.tag.clone() } class=classes>
+                { for self.props.children.iter() }
             </@>
         }
     }
-}
-
-/// The six sizes available for titles & subtitles.
-///
-/// https://bulma.io/documentation/elements/title/#sizes
-#[derive(Clone, Debug, Display, PartialEq)]
-#[display(fmt = "is-{}")]
-pub enum HeaderSize {
-    #[display(fmt = "1")]
-    Is1,
-    #[display(fmt = "2")]
-    Is2,
-    #[display(fmt = "3")]
-    Is3,
-    #[display(fmt = "4")]
-    Is4,
-    #[display(fmt = "5")]
-    Is5,
-    #[display(fmt = "6")]
-    Is6,
 }

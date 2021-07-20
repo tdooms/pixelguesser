@@ -12,7 +12,7 @@ mod util;
 // columns
 
 // common
-pub use common::{Alignment, Color, Separator, Size};
+pub use common::{Alignment, Color, HeaderSize, ImageSize, Separator, Size};
 
 // components
 pub use components::breadcrumb::{Breadcrumb, BreadcrumbProps};
@@ -50,13 +50,13 @@ pub use components::tabs::{Tabs, TabsProps};
 pub use elements::content::{Content, ContentProps};
 pub use elements::delete::{Delete, DeleteProps};
 pub use elements::icon::{Icon, IconProps};
-pub use elements::image::{Image, ImageProps, ImageSize};
+pub use elements::image::{Image, ImageProps};
 pub use elements::notification::{Notification, NotificationProps};
 pub use elements::progress::{Progress, ProgressProps};
 pub use elements::r#box::{Box, BoxProps};
 pub use elements::table::{Table, TableProps};
 pub use elements::tag::{Tag, TagProps, Tags, TagsProps};
-pub use elements::title::{HeaderSize, Subtitle, SubtitleProps, Title, TitleProps};
+pub use elements::title::{Subtitle, SubtitleProps, Title, TitleProps};
 
 // form
 pub use form::checkbox::{Checkbox, CheckboxProps};

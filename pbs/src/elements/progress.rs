@@ -1,18 +1,23 @@
-#![allow(clippy::redundant_closure_call)]
-
+use crate::{Color, Size};
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ProgressProps {
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The maximum amount of progress; the 100% value.
     #[prop_or_else(|| 1.0)]
     pub max: f32,
     /// The amount of progress which has been made.
-    #[prop_or_else(|| 0.0)]
-    pub value: f32,
+    #[prop_or_default]
+    pub value: Option<f32>,
+
+    #[prop_or_default]
+    pub color: Option<Color>,
+
+    #[prop_or_default]
+    pub size: Size,
 }
 
 /// A native HTML progress bar.
@@ -39,16 +44,19 @@ impl Component for Progress {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("progress");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
+        let classes = classes!(
+            "progress",
+            &self.props.extra,
+            self.props.size.to_string(),
+            self.props.color.as_ref().map(ToString::to_string)
+        );
+
         let max = self.props.max.to_string();
-        let value = self.props.value.to_string();
-        let value_txt = html! {{format!("{}%", value)}};
+        let value = self.props.value.as_ref().map(ToString::to_string);
+
         html! {
             <progress class=classes max=max value=value>
-                {value_txt}
+                // { format!("{}%", self.props.value) }
             </progress>
         }
     }

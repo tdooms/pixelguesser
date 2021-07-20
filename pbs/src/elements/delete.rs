@@ -7,13 +7,13 @@ use yewtil::NeqAssign;
 pub struct DeleteProps {
     #[prop_or_default]
     pub children: Children,
+
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "button".into())]
     pub tag: String,
-    /// The click handler to use for this component.
-    #[prop_or_else(Callback::noop)]
+
     pub onclick: Callback<MouseEvent>,
 }
 
@@ -41,13 +41,8 @@ impl Component for Delete {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("delete");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        let tag = self.props.tag.clone();
         html! {
-            <@{tag} class=classes onclick=self.props.onclick.clone()>
+            <@{self.props.tag.clone()} class=classes!("delete", &self.props.extra) onclick=self.props.onclick.clone()>
                 {self.props.children.clone()}
             </@>
         }

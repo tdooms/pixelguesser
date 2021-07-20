@@ -2,7 +2,7 @@ use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::Size;
+use crate::{Color, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TextAreaProps {
@@ -14,20 +14,25 @@ pub struct TextAreaProps {
     pub update: Callback<String>,
 
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The placeholder value for this component.
     #[prop_or_default]
     pub placeholder: String,
     /// The number of rows to which this component will be locked.
     #[prop_or_default]
-    pub rows: u32,
+    pub rows: Option<u32>,
 
     /// The size of this component.
     #[prop_or_default]
-    pub size: Option<Size>,
+    pub size: Size,
+
+    /// The size of this component.
+    #[prop_or_default]
+    pub color: Color,
+
     /// Fix the size of this component.
     #[prop_or_default]
-    pub fixed_size: bool,
+    pub fixed: bool,
     /// Display a loading spinner within this component.
     #[prop_or_default]
     pub loading: bool,
@@ -72,22 +77,18 @@ impl Component for TextArea {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("textarea");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        if self.props.loading {
-            classes.push("is-loading");
-        }
-        if self.props.r#static {
-            classes.push("is-static");
-        }
-        if self.props.fixed_size {
-            classes.push("has-fixed-size");
-        }
+        let TextAreaProps {
+            loading, r#static, ..
+        } = self.props;
+
+        let classes = classes!(
+            "textarea",
+            &self.props.extra,
+            self.props.size.to_string(),
+            classify!(loading, r#static),
+            self.props.fixed.then("has-fixed-size")
+        );
+
         html! {
             <textarea
                 name=self.props.name.clone()

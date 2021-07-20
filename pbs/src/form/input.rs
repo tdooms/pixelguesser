@@ -5,6 +5,7 @@ use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::common::InputType;
 use crate::Size;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -17,7 +18,7 @@ pub struct InputProps {
     pub update: Callback<String>,
 
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The input type of this component.
     #[prop_or_else(|| InputType::Text)]
     pub r#type: InputType,
@@ -74,22 +75,20 @@ impl Component for Input {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("input");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        if self.props.rounded {
-            classes.push("is-rounded");
-        }
-        if self.props.loading {
-            classes.push("is-loading");
-        }
-        if self.props.r#static {
-            classes.push("is-static");
-        }
+        let InputProps {
+            rounded,
+            loading,
+            r#static,
+            ..
+        } = self.props;
+
+        let classes = classes!(
+            "input",
+            &self.props.extra,
+            self.props.size.to_string(),
+            classify!(rounded, loading, r#static)
+        );
+
         html! {
             <input
                 name=self.props.name.clone()
@@ -103,19 +102,4 @@ impl Component for Input {
                 />
         }
     }
-}
-
-/// The 4 allowed types for an input component.
-///
-/// https://bulma.io/documentation/form/input/
-#[derive(Clone, Debug, Display, PartialEq)]
-pub enum InputType {
-    #[display(fmt = "text")]
-    Text,
-    #[display(fmt = "password")]
-    Password,
-    #[display(fmt = "email")]
-    Email,
-    #[display(fmt = "tel")]
-    Tel,
 }

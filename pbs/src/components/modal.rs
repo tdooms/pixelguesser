@@ -22,7 +22,7 @@
 //     #[prop_or_default]
 //     pub trigger: Html,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 // }
 //
 // /// A classic modal overlay, in which you can include any content you want.
@@ -124,7 +124,7 @@
 //     #[prop_or_default]
 //     pub trigger: Html,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 // }
 //
 // /// A classic modal with a header, body, and footer section.

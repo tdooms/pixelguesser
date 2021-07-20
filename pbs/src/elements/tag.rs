@@ -1,5 +1,6 @@
 #![allow(clippy::redundant_closure_call)]
 
+use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -10,7 +11,7 @@ pub struct TagProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "span".into())]
     pub tag: String,
@@ -25,7 +26,7 @@ pub struct TagProps {
     pub delete: bool,
     /// The size for this component.
     #[prop_or_default]
-    pub size: Option<Size>,
+    pub size: Size,
 }
 
 /// A small tag label to insert anywhere.
@@ -52,23 +53,20 @@ impl Component for Tag {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("tag");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if self.props.rounded {
-            classes.push("is-rounded");
-        }
-        if self.props.delete {
-            classes.push("is-delete");
-        }
-        if let Some(size) = &self.props.size {
-            classes.push(&size.to_string());
-        }
-        let tag = self.props.tag.clone();
+        let TagProps {
+            rounded, delete, ..
+        } = self.props;
+
+        let classes = classes!(
+            "tag",
+            &self.props.extra,
+            self.props.size.to_string(),
+            classify!(rounded, delete)
+        );
+
         html! {
-            <@{tag} class=classes onclick=self.props.onclick.clone()>
-                {self.props.children.clone()}
+            <@{ self.props.tag.clone() } class=classes onclick=self.props.onclick.clone()>
+                { for self.props.children.iter() }
             </@>
         }
     }
@@ -82,10 +80,10 @@ pub struct TagsProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// Attach two tags together; this requires that this component wraps two `Tag` components.
     #[prop_or_default]
-    pub has_addons: bool,
+    pub addons: bool,
 }
 
 /// A container for a list of tags.
@@ -112,16 +110,15 @@ impl Component for Tags {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("tags");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if self.props.has_addons {
-            classes.push("has-addons");
-        }
+        let classes = classes!(
+            "tags",
+            &self.props.extra,
+            &self.props.addons.then(|| "has-addons")
+        );
+
         html! {
             <div class=classes>
-                {self.props.children.clone()}
+                { for self.props.children.iter() }
             </div>
         }
     }

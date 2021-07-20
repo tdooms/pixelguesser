@@ -1,3 +1,4 @@
+use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -6,7 +7,7 @@ pub struct TableProps {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
-    pub classes: Option<String>,
+    pub extra: String,
     /// Add borders to all the cells.
     #[prop_or_default]
     pub bordered: bool,
@@ -51,39 +52,31 @@ impl Component for Table {
     }
 
     fn view(&self) -> Html {
-        let mut classes = Classes::from("table");
-        if let Some(extra) = &self.props.classes {
-            classes = classes.extend(extra);
-        }
-        if self.props.bordered {
-            classes.push("is-bordered");
-        }
-        if self.props.striped {
-            classes.push("is-striped");
-        }
-        if self.props.narrow {
-            classes.push("is-narrow");
-        }
-        if self.props.hoverable {
-            classes.push("is-hoverable");
-        }
-        if self.props.fullwidth {
-            classes.push("is-fullwidth");
-        }
-        if self.props.scrollable {
-            html! {
-                <div class="table-container">
-                    <table class=classes>
-                        {self.props.children.clone()}
-                    </table>
-                </div>
-            }
-        } else {
-            html! {
-                <table class=classes>
-                    {self.props.children.clone()}
-                </table>
-            }
+        let TableProps {
+            bordered,
+            striped,
+            narrow,
+            hoverable,
+            fullwidth,
+            scrollable,
+            ..
+        } = self.props;
+
+        let mut classes = classes!(
+            "table",
+            &self.props.extra,
+            classify!(bordered, striped, narrow, hoverable, fullwidth, scrollable)
+        );
+
+        let table = html! {
+            <table class=classes>
+                { for self.props.children.iter() }
+            </table>
+        };
+
+        match self.props.scrollable {
+            true => html! {<div class="table-container"> {table} </div> },
+            false => table,
         }
     }
 }

@@ -77,7 +77,7 @@
 //     #[prop_or_default]
 //     pub children: Children,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The click handler to use for this component.
 //     #[prop_or_else(Callback::noop)]
 //     pub onclick: Callback<MouseEvent>,
@@ -152,7 +152,7 @@
 //         pub children: Children,
 //         /// Classes to be added to component.
 //         #[prop_or_default]
-//         pub classes: Option<String>,
+//         pub extra: String,
 //         /// Render a loading spinner within this component.
 //         #[prop_or_default]
 //         pub loading: bool,
@@ -270,7 +270,7 @@
 //     #[prop_or_default]
 //     pub children: Children,
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The `href` attribute value to use for this component.
 //     #[prop_or_default]
 //     pub href: String,
@@ -349,7 +349,7 @@
 // #[derive(Clone, Debug, Properties, PartialEq)]
 // pub struct ButtonInputSubmitProps {
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The submit handler to use for this component.
 //     #[prop_or_else(Callback::noop)]
 //     pub onsubmit: Callback<FocusEvent>,
@@ -410,7 +410,7 @@
 // #[derive(Clone, Debug, Properties, PartialEq)]
 // pub struct ButtonInputResetProps {
 //     #[prop_or_default]
-//     pub classes: Option<String>,
+//     pub extra: String,
 //     /// The reset handler to use for this component.
 //     #[prop_or_else(Callback::noop)]
 //     pub onreset: Callback<Event>,
