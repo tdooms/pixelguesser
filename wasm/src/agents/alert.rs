@@ -6,13 +6,13 @@ use std::rc::Rc;
 use yew::agent::{Agent, AgentLink, Context, HandlerId};
 use yew::{Bridge, Bridged};
 
-pub struct NotifyAgent {
+pub struct AlertAgent {
     link: AgentLink<Self>,
     subscribers: HashSet<HandlerId>,
     _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
 }
 
-impl Agent for NotifyAgent {
+impl Agent for AlertAgent {
     type Reach = Context<Self>;
     type Message = Response;
     type Input = Notification;

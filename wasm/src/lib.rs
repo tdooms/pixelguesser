@@ -5,14 +5,19 @@ use yew_router::prelude::*;
 use yew_services::timeout::TimeoutTask;
 use yew_services::TimeoutService;
 
-use crate::agents::WebSocketAgent;
+use crate::agents::{AlertAgent, WebSocketAgent};
 use crate::components::Notifications;
+use crate::notifications::Notification;
 use crate::pages::*;
 use crate::route::Route;
+use api::Alert;
+use std::rc::Rc;
 
 mod agents;
 mod components;
 mod globals;
+mod host;
+mod manager;
 mod notifications;
 mod pages;
 mod route;
@@ -21,26 +26,33 @@ mod utils;
 pub struct Model {
     // Keeps WebSocket connection alive
     _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
+    alert_agent: Box<dyn Bridge<AlertAgent>>,
+
+    alerts: Vec<Rc<Notification>>,
     link: ComponentLink<Self>,
     timer: TimeoutTask,
 }
 
 impl Component for Model {
-    type Message = ();
+    type Message = Rc<Notification>;
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         let ws_agent = WebSocketAgent::bridge(link.callback(|_| {}));
-        let timer = TimeoutService::spawn(Duration::from_millis(33), link.callback(|_| ()));
+        // let timer = TimeoutService::spawn(Duration::from_millis(33), link.callback(|_| ()));
+
         Self {
             _ws_agent: ws_agent,
+            alert_agent: AlertAgent::bridge(link.callback(|x| x)),
+            alerts: Vec::new(),
             timer,
             link,
         }
     }
 
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        self.timer = TimeoutService::spawn(Duration::from_millis(33), self.link.callback(|_| ()));
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        // self.timer = TimeoutService::spawn(Duration::from_millis(33), self.link.callback(|_| ()));
+        self.alerts.push(msg);
         false
     }
 
@@ -51,7 +63,7 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <Notifications/>
+                <Alerts entries=self.alerts>
                 <Router<Route> render=Router::render(switch) />
             </main>
         }

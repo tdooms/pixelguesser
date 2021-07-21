@@ -9,13 +9,12 @@ use yew::prelude::*;
 #[derive(Clone, Properties)]
 pub struct Props {
     pub session_id: u64,
+    pub session: SessionData,
 }
 
 pub struct Manage {
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
-
-    data: Option<SessionData>,
-    session_id: u64,
+    props: Props,
     session_closed: bool,
 }
 
@@ -32,9 +31,8 @@ impl Component for Manage {
         ws_agent.send(request);
 
         Self {
-            data: None,
-            session_id: props.session_id,
             ws_agent,
+            props,
             session_closed: false,
         }
     }

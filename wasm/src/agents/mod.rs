@@ -1,5 +1,6 @@
-mod notify;
+mod alert;
+mod online;
 mod websocket;
 
-pub use notify::NotifyAgent;
+pub use alert::AlertAgent;
 pub use websocket::WebSocketAgent;

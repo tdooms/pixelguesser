@@ -9,7 +9,7 @@ use yew::web_sys::window;
 #[derive(Clone, Properties)]
 pub struct Props {
     pub session_id: u64,
-    pub session:
+    pub session: SessionData
 }
 
 pub enum Msg {
@@ -21,47 +21,7 @@ pub struct Host {
     link: ComponentLink<Self>,
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     props: Props,
-
-    session: SessionData,
     has_manager: bool,
-}
-
-impl Host {
-    fn handle_response(&mut self, response: Response) -> bool {
-        match response {
-            Response::Reply(session_id, Reply::SessionCreated(quiz, rounds)) => {
-                self.data = Some((session_id, quiz, rounds));
-                true
-            }
-            Response::Alert(_, Alert::PlayerAdded(id, name)) => {
-                self.players.insert(id, Player { score: 0, name });
-                true
-            }
-            Response::Alert(_, Alert::ScoreChanged(diff)) => {
-                for change in diff {
-                    match self.players.get_mut(&change.player_id) {
-                        Some(player) => player.score += change.change,
-                        None => log::debug!("no player with given id"),
-                    }
-                }
-                true
-            }
-            Response::Alert(_, Alert::ManagerJoined) => {
-                self.has_manager = true;
-                true
-            }
-            Response::Alert(_, Alert::ManagerLeft) => {
-                // TODO: alert
-                self.has_manager = false;
-                true
-            }
-            Response::Alert(_, Alert::StageChanged(stage)) => {
-                self.stage = stage;
-                true
-            }
-            _ => false,
-        }
-    }
 }
 
 impl Component for Host {
@@ -81,11 +41,8 @@ impl Component for Host {
         Self {
             link,
             ws_agent,
-            stage: Stage::Initial,
             props,
-            data: None,
             has_manager: false,
-            players: HashMap::new(),
         }
     }
 
@@ -134,6 +91,44 @@ impl Component for Host {
         if let Some((session_id, _, _)) = self.data {
             let post = Post::StopSession { session_id };
             self.ws_agent.send(Request::Post(post))
+        }
+    }
+}
+
+impl Host {
+    fn handle_response(&mut self, response: Response) -> bool {
+        match response {
+            Response::Reply(session_id, Reply::SessionCreated(quiz, rounds)) => {
+                self.data = Some((session_id, quiz, rounds));
+                true
+            }
+            Response::Alert(_, Alert::PlayerAdded(id, name)) => {
+                self.players.insert(id, Player { score: 0, name });
+                true
+            }
+            Response::Alert(_, Alert::ScoreChanged(diff)) => {
+                for change in diff {
+                    match self.players.get_mut(&change.player_id) {
+                        Some(player) => player.score += change.change,
+                        None => log::debug!("no player with given id"),
+                    }
+                }
+                true
+            }
+            Response::Alert(_, Alert::ManagerJoined) => {
+                self.has_manager = true;
+                true
+            }
+            Response::Alert(_, Alert::ManagerLeft) => {
+                // TODO: alert
+                self.has_manager = false;
+                true
+            }
+            Response::Alert(_, Alert::StageChanged(stage)) => {
+                self.stage = stage;
+                true
+            }
+            _ => false,
         }
     }
 }

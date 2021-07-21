@@ -15,14 +15,14 @@ pub enum Msg {
     Value(String),
 }
 
-pub struct Initialise {
+pub struct Initialize {
     link: ComponentLink<Self>,
     ws_agent: Dispatcher<WebSocketAgent>,
     props: Props,
     value: String,
 }
 
-impl Component for Initialise {
+impl Component for Initialize {
     type Message = Msg;
     type Properties = Props;
 
