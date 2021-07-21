@@ -1,3 +1,4 @@
+use crate::{ColumnOffset, ColumnSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -5,8 +6,15 @@ use yewtil::NeqAssign;
 pub struct ColumnProps {
     #[prop_or_default]
     pub children: Children,
+
     #[prop_or_default]
     pub extra: String,
+
+    #[prop_or_default]
+    pub size: Option<ColumnSize>,
+
+    #[prop_or_default]
+    pub offset: Option<ColumnOffset>,
 }
 
 /// A flexbox-based responsive column.
@@ -37,8 +45,15 @@ impl Component for Column {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!(
+            "column",
+            &self.props.extra,
+            self.props.size.as_ref().map(ToString::to_string),
+            self.props.offset.as_ref().map(ToString::to_string)
+        );
+
         html! {
-            <div class=classes!("column", &self.props.extra)>
+            <div class=classes>
                 { for self.props.children.iter() }
             </div>
         }

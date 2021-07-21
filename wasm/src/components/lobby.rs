@@ -1,5 +1,6 @@
 use crate::utils::code_to_string;
 use api::{Player, Quiz, Round};
+use pbs::{Color, ColumnSize, HeroSize};
 use std::collections::HashMap;
 use yew::prelude::*;
 
@@ -8,36 +9,44 @@ pub fn lobby(
     has_manager: bool,
     players: &HashMap<u64, Player>,
 ) -> Html {
-    let view_player = |(_, player): (&u64, &Player)| {
+    let players = players.iter().map(|(_, player)| {
         html! {
-            <div class="column is-narrow">
-                <pbs::Box>
-                    {&player.name}
-                </pbs::Box>
-            </div>
+            <pbs::Column size=ColumnSize::IsNarrow>
+                <pbs::Box> {&player.name} </pbs::Box>
+            </pbs::Column>
         }
+    });
+
+    let title = data
+        .as_ref()
+        .map(|(_, quiz, _)| quiz.name.clone())
+        .unwrap_or_default();
+
+    let subtitle = if has_manager {
+        "quiz master present"
+    } else {
+        "no quiz master"
+    };
+
+    let code = data
+        .map(|(id, _, _)| code_to_string(*id))
+        .flatten()
+        .unwrap_or_default();
+
+    let body = html! {
+        <pbs::Container extra="has-text-centered">
+            <pbs::Title> {code} </pbs::Title>
+        </pbs::Container>
     };
 
     html! {
         <>
-            <section class="hero">
-                <div class="hero-body">
-                    <p class="title"> {data.as_ref().map(|(_, quiz, _)| quiz.name.clone()).unwrap_or_default()} </p>
-                    <p class="subtitle"> {if has_manager {"quiz master present"} else {"no quiz master"}} </p>
-                </div>
-            </section>
+            <pbs::SimpleHero title=title subtitle=subtitle />
+            <pbs::Hero color=Color::Primary size=HeroSize::Medium body=body />
 
-            <section class="hero is-primary is-medium">
-                <div class="hero-body">
-                    <div class="container has-text-centered">
-                        <p class="title"> { data.map(|(id, _, _)| code_to_string(*id)).flatten().unwrap_or_default() } </p>
-                    </div>
-                </div>
-            </section>
-
-            <div class="columns is-multiline is-centered mt-5">
-                { for players.iter().map(view_player) }
-            </div>
+            <pbs::Columns multiline=true centered=true extra="mt-5">
+                { for players }
+            </pbs::Columns>
         </>
     }
 }

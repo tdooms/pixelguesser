@@ -1,11 +1,17 @@
-use crate::{classify, Help, Icon, Label};
+use crate::{classify, Control, Help, Label};
 use yew::prelude::*;
+use yew::virtual_dom::VChild;
 use yewtil::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct FieldProps {
     #[prop_or_default]
-    pub children: Children,
+    pub label: Option<VChild<Label>>,
+
+    pub children: ChildrenWithProps<Control>,
+
+    #[prop_or_default]
+    pub help: Option<VChild<Help>>,
 
     #[prop_or_default]
     pub extra: String,
@@ -18,12 +24,6 @@ pub struct FieldProps {
 
     #[prop_or_default]
     pub addons: bool,
-
-    #[prop_or_default]
-    pub right: bool,
-
-    #[prop_or_default]
-    pub left: bool,
 }
 
 pub struct Field {
@@ -48,21 +48,20 @@ impl Component for Field {
 
     fn view(&self) -> Html {
         let FieldProps { grouped, .. } = self.props;
+
         let classes = classes!(
             "field",
             &self.props.extra,
-            self.props.left.then(|| "has-icons-left"),
-            self.props.right.then(|| "has-icons-right"),
             self.props.multiline.then(|| "is-grouped-multiline"),
             self.props.addons.then(|| "has-addons"),
-            self.props.right.then(|| "has-icons-right"),
-            self.props.left.then(|| "has-icons-left"),
             classify!(grouped),
         );
 
         html! {
             <div class=classes>
+                { self.props.label.clone().map(Html::from).unwrap_or(html!{}) }
                 { for self.props.children.iter() }
+                { self.props.help.clone().map(Html::from).unwrap_or(html!{}) }
             </div>
         }
     }

@@ -1,7 +1,7 @@
 use derive_more::Display;
 
 /// Common alignment classes.
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum Alignment {
     #[display(fmt = "left")]
@@ -19,7 +19,7 @@ impl Default for Alignment {
 }
 
 /// Common size classes.
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum Size {
     #[display(fmt = "small")]
@@ -39,7 +39,7 @@ impl Default for Size {
 }
 
 /// Common color classes.
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum Color {
     #[display(fmt = "white")]
@@ -58,6 +58,8 @@ pub enum Color {
     Info,
     #[display(fmt = "success")]
     Success,
+    #[display(fmt = "warning")]
+    Warning,
     #[display(fmt = "danger")]
     Danger,
 }
@@ -65,7 +67,7 @@ pub enum Color {
 /// https://bulma.io/documentation/helpers/color-helpers/
 /// Text color classes.
 /// TODO: this is the same as background colors with 'has-background-{}'
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "has-text-{}")]
 pub enum TextColor {
     #[display(fmt = "white")]
@@ -130,7 +132,7 @@ pub enum TextColor {
     DangerDark,
 }
 
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "has-{}-separator")]
 pub enum Separator {
     #[display(fmt = "arrow")]
@@ -146,7 +148,7 @@ pub enum Separator {
 /// Available placeholder sizes for figures.
 ///
 /// https://bulma.io/documentation/elements/image/
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum ImageSize {
     #[display(fmt = "16x16")]
@@ -200,7 +202,7 @@ pub enum ImageSize {
 /// The six sizes available for titles & subtitles.
 ///
 /// https://bulma.io/documentation/elements/title/#sizes
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum HeaderSize {
     #[display(fmt = "1")]
@@ -220,7 +222,7 @@ pub enum HeaderSize {
 /// The 4 allowed types for an input component.
 ///
 /// https://bulma.io/documentation/form/input/
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 pub enum InputType {
     #[display(fmt = "text")]
     Text,
@@ -241,7 +243,7 @@ impl Default for InputType {
 /// The 2 sizes available for sections, which controls spacing.
 ///
 /// [https://bulma.io/documentation/layout/section/](https://bulma.io/documentation/layout/section/)
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum SectionSize {
     #[display(fmt = "medium")]
@@ -253,7 +255,7 @@ pub enum SectionSize {
 /// Tile context modifiers.
 ///
 /// https://bulma.io/documentation/layout/tiles/#modifiers
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum TileCtx {
     #[display(fmt = "ancestor")]
@@ -264,10 +266,110 @@ pub enum TileCtx {
     Child,
 }
 
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
+#[display(fmt = "is-{}")]
+pub enum ColumnSize {
+    #[display(fmt = "1")]
+    Is1,
+    #[display(fmt = "2")]
+    Is2,
+    #[display(fmt = "3")]
+    Is3,
+    #[display(fmt = "4")]
+    Is4,
+    #[display(fmt = "5")]
+    Is5,
+    #[display(fmt = "6")]
+    Is6,
+    #[display(fmt = "7")]
+    Is7,
+    #[display(fmt = "8")]
+    Is8,
+    #[display(fmt = "9")]
+    Is9,
+    #[display(fmt = "10")]
+    Is10,
+    #[display(fmt = "11")]
+    Is11,
+    #[display(fmt = "12")]
+    Is12,
+    #[display(fmt = "full")]
+    IsFull,
+    #[display(fmt = "four-fifths")]
+    IsFourFifths,
+    #[display(fmt = "three-quarters")]
+    IsThreeQuarters,
+    #[display(fmt = "two-thirds")]
+    IsTwoThirds,
+    #[display(fmt = "three-fifths")]
+    IsThreeFifths,
+    #[display(fmt = "half")]
+    IsHalf,
+    #[display(fmt = "two-fifths")]
+    IsTwoFifths,
+    #[display(fmt = "one-third")]
+    IsOneThird,
+    #[display(fmt = "one-quarter")]
+    IsOneQuarter,
+    #[display(fmt = "one-fifth")]
+    IsOneFifth,
+    #[display(fmt = "narrow")]
+    IsNarrow,
+}
+
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
+#[display(fmt = "is-offset-{}")]
+pub enum ColumnOffset {
+    #[display(fmt = "1")]
+    Is1,
+    #[display(fmt = "2")]
+    Is2,
+    #[display(fmt = "3")]
+    Is3,
+    #[display(fmt = "4")]
+    Is4,
+    #[display(fmt = "5")]
+    Is5,
+    #[display(fmt = "6")]
+    Is6,
+    #[display(fmt = "7")]
+    Is7,
+    #[display(fmt = "8")]
+    Is8,
+    #[display(fmt = "9")]
+    Is9,
+    #[display(fmt = "10")]
+    Is10,
+    #[display(fmt = "11")]
+    Is11,
+    #[display(fmt = "12")]
+    Is12,
+    #[display(fmt = "full")]
+    IsFull,
+    #[display(fmt = "four-fifths")]
+    IsFourFifths,
+    #[display(fmt = "three-quarters")]
+    IsThreeQuarters,
+    #[display(fmt = "two-thirds")]
+    IsTwoThirds,
+    #[display(fmt = "three-fifths")]
+    IsThreeFifths,
+    #[display(fmt = "half")]
+    IsHalf,
+    #[display(fmt = "two-fifths")]
+    IsTwoFifths,
+    #[display(fmt = "one-third")]
+    IsOneThird,
+    #[display(fmt = "one-quarter")]
+    IsOneQuarter,
+    #[display(fmt = "one-fifth")]
+    IsOneFifth,
+}
+
 /// Tile size modifiers.
 ///
 /// https://bulma.io/documentation/layout/tiles/#modifiers
-#[derive(Clone, Debug, Display, PartialEq)]
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
 #[display(fmt = "is-{}")]
 pub enum TileSize {
     #[display(fmt = "1")]
@@ -294,4 +396,25 @@ pub enum TileSize {
     Eleven,
     #[display(fmt = "12")]
     Twelve,
+}
+
+/// The 6 sizes available for heros.
+///
+/// [https://bulma.io/documentation/layout/hero/#sizes](https://bulma.io/documentation/layout/hero/#sizes)
+/// [https://bulma.io/documentation/layout/hero/#fullheight-with-navbar](https://bulma.io/documentation/layout/hero/#fullheight-with-navbar)
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
+#[display(fmt = "is-{}")]
+pub enum HeroSize {
+    #[display(fmt = "small")]
+    Small,
+    #[display(fmt = "medium")]
+    Medium,
+    #[display(fmt = "large")]
+    Large,
+    #[display(fmt = "halfheight")]
+    HalfHeight,
+    #[display(fmt = "fullheight")]
+    Fullheight,
+    #[display(fmt = "fullheight-with-navbar")]
+    FullheightWithNavbar,
 }

@@ -52,13 +52,13 @@ pub enum Status {
     Playing,
     Revealing,
     Revealed,
+    Scores,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Stage {
     Initial,
     Round { round: usize, status: Status },
-    Scores { round: usize },
     Finish,
 }
 

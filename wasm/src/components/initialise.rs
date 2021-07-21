@@ -1,24 +1,29 @@
 use crate::agents::WebSocketAgent;
 use api::{Post, Request};
+use pbs::{Color, InputType, Size};
 
 use yew::agent::Dispatcher;
 use yew::prelude::*;
-use yew::web_sys::HtmlInputElement;
 
 #[derive(Clone, Properties)]
 pub struct Props {
     pub session_id: u64,
 }
 
+pub enum Msg {
+    Submit,
+    Value(String),
+}
+
 pub struct Initialise {
     link: ComponentLink<Self>,
     ws_agent: Dispatcher<WebSocketAgent>,
     props: Props,
-    element: NodeRef,
+    value: String,
 }
 
 impl Component for Initialise {
-    type Message = ();
+    type Message = Msg;
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
@@ -26,26 +31,21 @@ impl Component for Initialise {
             ws_agent: WebSocketAgent::dispatcher(),
             link,
             props,
-            element: NodeRef::default(),
+            value: String::new(),
         }
     }
 
-    fn update(&mut self, _: Self::Message) -> bool {
-        match self.element.cast::<HtmlInputElement>() {
-            Some(input) => {
-                let (name, session_id) = (input.value(), self.props.session_id);
-                input.set_value("");
-
+    fn update(&mut self, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Submit => {
+                let session_id = self.props.session_id;
+                let name = std::mem::take(&mut self.value);
                 let request = Request::Post(Post::AddPlayer { session_id, name });
                 self.ws_agent.send(request);
-                true
             }
-            None => {
-                // TODO: send to logger
-                log::error!("reference not of type input");
-                false
-            }
+            Msg::Value(value) => self.value = value,
         }
+        true
     }
 
     fn change(&mut self, _props: Self::Properties) -> bool {
@@ -53,19 +53,22 @@ impl Component for Initialise {
     }
 
     fn view(&self) -> Html {
+        let oninput = self.link.callback(Msg::Value);
+        let onclick = self.link.callback(|_| Msg::Submit);
+
+        let input = html! {
+            <pbs::Input size=Size::Large r#type=InputType::Text placeholder={"eg. Alex"} value=self.value.clone() oninput=oninput/>
+        };
+
+        let button = html! {
+            <pbs::Button size=Size::Large color=Color::Info onclick=onclick icon="fas fa-plus"/>
+        };
+
         html! {
-            <>
-                <div class="field is-grouped">
-                    <p class="control is-expanded">
-                        <input class="input is-large" type="text" placeholder="eg. Alex" ref=self.element.clone()/>
-                    </p>
-                    <p class="control">
-                        <a class="button is-large is-info" onclick=self.link.callback(|_|())>
-                            <span class="icon"><i class="fas fa-plus"></i></span>
-                        </a>
-                    </p>
-                </div>
-            </>
+            <pbs::Field grouped=true>
+                <pbs::Control expanded=true inner=input/>
+                <pbs::Control inner=button/>
+            </pbs::Field>
         }
     }
 }

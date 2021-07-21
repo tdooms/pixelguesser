@@ -1,6 +1,6 @@
 use crate::agents::WebSocketAgent;
 use api::*;
-use pbs::Size;
+use pbs::{HeroSize, Size};
 use yew::agent::Dispatcher;
 use yew::prelude::*;
 
@@ -63,32 +63,33 @@ impl Component for Master {
     }
 
     fn view(&self) -> Html {
-        let view_player = |(id, player): (&u64, &Player)| {
-            let id = *id;
-            let onclick = self.link.callback(move |_| id);
-
+        let view_player = |id: u64, player: &Player| {
             html! {
-                <pbs::Button outlined=true size=Size::Large fullwidth=true onclick=onclick text=player.name.clone() />
+                <pbs::Button
+                    outlined=true size=Size::Large fullwidth=true
+                    onclick=self.link.callback(move |_| id) text=player.name.clone()
+                />
             }
+        };
+
+        let players = self
+            .props
+            .data
+            .players
+            .iter()
+            .map(|(id, player)| view_player(*id, player));
+
+        let body = html! {
+            <pbs::Container extra="has-text-centered">
+                <pbs::Title> {&self.props.data.rounds[self.props.round].answer} </pbs::Title>
+                <pbs::Subtitle> {self.props.data.rounds[self.props.round].points} {" points"} </pbs::Subtitle>
+            </pbs::Container>
         };
 
         html! {
             <>
-            <section class="hero is-medium">
-                <div class="hero-body">
-                    <div class="container has-text-centered">
-                        <p class="title">
-                            {&self.props.data.rounds[self.props.round].answer}
-                        </p>
-                        <p class="subtitle">
-                            {self.props.data.rounds[self.props.round].points} {" points"}
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            { for self.props.data.players.iter().map(view_player) }
-
+                <pbs::Hero size=HeroSize::Medium body=body/>
+                { for players }
             </>
         }
     }

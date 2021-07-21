@@ -1,5 +1,6 @@
 use crate::components::Scores;
 use api::{Player, Quiz};
+use pbs::{Color, HeroSize};
 use std::collections::HashMap;
 use yew::prelude::*;
 
@@ -32,20 +33,13 @@ impl Component for Finish {
     }
 
     fn view(&self) -> Html {
+        let body =
+            html! { <Scores session_id=self.props.session_id players=self.props.players.clone()/> };
+
         html! {
             <>
-                <section class="hero">
-                    <div class="hero-body">
-                        <p class="title"> {&self.props.quiz.name} </p>
-                        <p class="subtitle"> {"finished"} </p>
-                    </div>
-                </section>
-
-                <section class="hero is-primary is-medium">
-                    <div class="hero-body">
-                        <Scores session_id=self.props.session_id players=self.props.players.clone() />
-                    </div>
-                </section>
+                <pbs::SimpleHero color=Color::Primary title=self.props.quiz.name.clone() subtitle={"finished"}/>
+                <pbs::Hero body=body color=Color::Primary size=HeroSize::Medium/>
             </>
         }
     }

@@ -1,9 +1,7 @@
+use crate::{Size, TextColor};
 use yew::events::MouseEvent;
 use yew::prelude::*;
 use yewtil::NeqAssign;
-
-use crate::common::TextColor;
-use crate::{Alignment, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct IconProps {

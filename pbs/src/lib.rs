@@ -4,6 +4,7 @@
 
 mod common;
 mod components;
+mod custom;
 mod elements;
 mod form;
 mod layout;
@@ -13,8 +14,8 @@ mod util;
 
 // common
 pub use common::{
-    Alignment, Color, HeaderSize, ImageSize, InputType, SectionSize, Separator, Size, TileCtx,
-    TileSize,
+    Alignment, Color, ColumnOffset, ColumnSize, HeaderSize, HeroSize, ImageSize, InputType,
+    SectionSize, Separator, Size, TextColor, TileCtx, TileSize,
 };
 
 // components
@@ -75,7 +76,7 @@ pub use layout::column::{Column, ColumnProps};
 pub use layout::columns::{Columns, ColumnsProps};
 pub use layout::container::{Container, ContainerProps};
 pub use layout::footer::{Footer, FooterProps};
-// pub use layout::hero::{Hero, HeroProps, HeroSize};
+pub use layout::hero::{Hero, HeroProps};
 // pub use layout::level::{
 //     Level, LevelItem, LevelItemProps, LevelLeft, LevelLeftProps, LevelProps, LevelRight,
 //     LevelRightProps,
@@ -86,3 +87,5 @@ pub use layout::footer::{Footer, FooterProps};
 // };
 pub use layout::section::{Section, SectionProps};
 pub use layout::tile::{Tile, TileProps};
+
+pub use custom::simplehero::{SimpleHero, SimpleHeroProps};

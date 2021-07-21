@@ -2,18 +2,21 @@ use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::classify;
 use crate::common::InputType;
 use crate::Size;
+use crate::{classify, Color};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct InputProps {
-    /// The `name` attribute for this form element.
-    pub name: String,
-    /// The controlled value of this form element.
-    pub value: String,
     /// The callback to be used for propagating changes to this element's value.
-    pub update: Callback<String>,
+    pub oninput: Callback<String>,
+
+    /// The `name` attribute for this form element.
+    #[prop_or_default]
+    pub name: Option<String>,
+    /// The controlled value of this form element.
+    #[prop_or_default]
+    pub value: Option<String>,
 
     #[prop_or_default]
     pub extra: String,
@@ -26,6 +29,9 @@ pub struct InputProps {
     /// The size of this component.
     #[prop_or_default]
     pub size: Size,
+
+    #[prop_or_default]
+    pub color: Option<Color>,
     /// Use rounded appearance.
     #[prop_or_default]
     pub rounded: bool,
@@ -64,7 +70,7 @@ impl Component for Input {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.props.update.emit(msg);
+        self.props.oninput.emit(msg);
         false
     }
 
@@ -84,6 +90,7 @@ impl Component for Input {
             "input",
             &self.props.extra,
             self.props.size.to_string(),
+            self.props.color.as_ref().map(ToString::to_string),
             classify!(rounded, loading, r#static)
         );
 

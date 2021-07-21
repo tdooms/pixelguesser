@@ -91,36 +91,32 @@ impl Component for Code {
     }
 
     fn view(&self) -> Html {
-        let oninput = self.link.callback(|data: InputData| Msg::Input(data.value));
+        let oninput = self.link.callback(Msg::Input);
         let onjoin = self.link.callback(|_| Msg::Join);
         let oncancel = self.link.callback(|_| Msg::Cancel);
 
         let field = match self.state {
             State::Available => html! {
-                <pbs::Field>
-                    <pbs::Label>{"Session code"}</pbs::Label>
-                    <pbs::Control right=true>
-                        <pbs::Input color=Color::Success oninput=oninput/>
-                        <pbs::Icon icon="fas fa-check" size=Size::Small extra="is-right"/>
-                    </pbs::Control>
-                    <pbs::Help text="This room is available."/>
+                <pbs::Field
+                    label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}
+                    help=html_nested!{<pbs::Help color=Color::Success> {"This room is available."} </pbs::Help>}>
+                <pbs::Control
+                    right=html_nested!{<pbs::Icon icon="fas fa-check" size=Size::Small extra="is-right"/>}
+                    inner=html!{<pbs::Input oninput=oninput color=Color::Success/>} />
                 </pbs::Field>
             },
             State::Invalid | State::Incorrect => html! {
-                <pbs::Field>
-                    <pbs::Label>{"Session code"}</pbs::Label>
-                    <pbs::Control right=true>
-                        <pbs::Input color=Color::Danger oninput=oninput/>
-                        <pbs::Icon icon="fas fa-exclamation-triangle" size=Size::Small extra="is-right"/>
-                    </pbs::Control>
-                    <pbs::Help text="The room code is invalid."/>
+                <pbs::Field
+                    label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}
+                    help=html_nested!{<pbs::Help color=Color::Danger> {"The room code is invalid."} </pbs::Help>}>
+                <pbs::Control
+                    right=html_nested!{<pbs::Icon icon="fas fa-exclamation-triangle" size=Size::Small extra="is-right"/>}
+                    inner=html!{<pbs::Input oninput=oninput color=Color::Danger/>} />
                 </pbs::Field>
             },
             State::None => html! {
-                <pbs::Field>
-                    <pbs::Control>
-                        <pbs::Input oninput=oninput/>
-                    </pbs::Control>
+                <pbs::Field label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}>
+                    <pbs::Control inner=html!{<pbs::Input oninput=oninput/>} />
                 </pbs::Field>
             },
         };
@@ -130,8 +126,8 @@ impl Component for Code {
                 <pbs::Container>
                     { field }
                     <pbs::Buttons>
-                        <pbs::Button text="Join" color=Color::Link size=Size::Large />
-                        <pbs::Button text="Cancel" color=Color::Link light=true size=Size::Large />
+                        <pbs::Button text="Join" color=Color::Link onclick=onjoin/>
+                        <pbs::Button text="Cancel" color=Color::Link light=true onclick=oncancel/>
                     </pbs::Buttons>
                 </pbs::Container>
             </pbs::Section>

@@ -1,4 +1,5 @@
 use api::Player;
+use pbs::ColumnSize;
 use std::collections::HashMap;
 use yew::prelude::*;
 
@@ -35,29 +36,29 @@ impl Component for Scores {
 
         let view_player = |player: &&Player| {
             html! {
-                <div class="box is-flex is-flex-direction-row is-justify-content-space-between mx-5">
+                <pbs::Box extra="is-flex is-flex-direction-row is-justify-content-space-between mx-5">
                     <p class="is-size-5"> {&player.name} </p>
                     <strong class="is-size-5"> {&player.score} </strong>
-                </div>
+                </pbs::Box>
             }
         };
 
         let view_winner = |player: &&Player| {
             html! {
-                <div class="box is-flex is-flex-direction-row is-justify-content-space-between">
+                <pbs::Box extra="is-flex is-flex-direction-row is-justify-content-space-between">
                     <p class="is-size-3"> {&player.name} </p>
                     <strong class="is-size-3"> {&player.score} </strong>
-                </div>
+                </pbs::Box>
             }
         };
 
         html! {
-            <div class="columns is-centered">
-                <div class="column is-half">
+            <pbs::Columns centered=true>
+                <pbs::Column size=ColumnSize::IsHalf>
                     { for players.first().map(view_winner) }
                     { for players.iter().skip(1).map(view_player) }
-               </div>
-            </div>
+               </pbs::Column>
+            </pbs::Columns>
         }
     }
 }

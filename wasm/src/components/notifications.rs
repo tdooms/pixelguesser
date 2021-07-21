@@ -1,5 +1,6 @@
 use crate::agents::NotifyAgent;
 use crate::notifications::Notification;
+use pbs::Color;
 use std::collections::HashMap;
 use std::rc::Rc;
 use yew::prelude::*;
@@ -48,24 +49,27 @@ impl Component for Notifications {
     }
 
     fn view(&self) -> Html {
-        let view_entry = |(id, notification): (&i64, &Rc<Notification>)| {
-            let id = *id;
-            let color = match **notification {
-                Notification::Error(_) => "is-danger",
-                Notification::Warning(_) => "is-warning",
-            };
+        let color_of = |notification: &Notification| match notification {
+            Notification::Error(_) => Color::Danger,
+            Notification::Warning(_) => Color::Warning,
+        };
 
+        let view_entry = |id: i64, notification: &Notification| {
             html! {
-                <div class=classes!("notification", color)>
-                    <button onclick=self.link.callback(move |_| Msg::Remove(id)) class="delete"></button>
-                    {notification}
-                </div>
+                <pbs::Notification color={color_of(&notification)} onclick=self.link.callback(move |_| Msg::Remove(id))>
+                    { notification }
+                </pbs::Notification>
             }
         };
 
+        let entries = self
+            .entries
+            .iter()
+            .map(|(id, notification)| view_entry(*id, &notification));
+
         html! {
             <div class="m-4" style="position:absolute; z-index:1000">
-                { for self.entries.iter().map(view_entry) }
+                { for entries }
             </div>
         }
     }

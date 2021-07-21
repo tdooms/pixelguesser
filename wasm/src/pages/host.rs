@@ -1,6 +1,6 @@
 use crate::agents::WebSocketAgent;
 use crate::components::{lobby, Finish, Pixelate, Scores};
-use api::{Alert, Player, Post, Quiz, Reply, Request, Response, Round, Stage};
+use api::{Alert, Player, Post, Quiz, Reply, Request, Response, Round, Stage, SessionData};
 use js_sys::Function;
 use std::collections::HashMap;
 use yew::prelude::*;
@@ -8,7 +8,8 @@ use yew::web_sys::window;
 
 #[derive(Clone, Properties)]
 pub struct Props {
-    pub quiz_id: i64,
+    pub session_id: u64,
+    pub session:
 }
 
 pub enum Msg {
@@ -21,10 +22,7 @@ pub struct Host {
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     props: Props,
 
-    data: Option<(u64, Quiz, Vec<Round>)>,
-    players: HashMap<u64, Player>,
-    stage: Stage,
-
+    session: SessionData,
     has_manager: bool,
 }
 
@@ -96,8 +94,8 @@ impl Component for Host {
         match msg {
             Msg::Response(response) => self.handle_response(response),
             Msg::Revealed => {
-                // let stage = Stage::Round {round: }
-                // self.ws_agent.send()
+                let stage = Stage::Round {round: }
+                self.ws_agent.send()
                 false
             }
         }

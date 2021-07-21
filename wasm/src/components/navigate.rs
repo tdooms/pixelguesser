@@ -122,7 +122,7 @@ impl Component for Navigate {
         };
 
         html! {
-            <div class="buttons is-centered mt-4">
+            <pbs::Buttons centered=true extra="mt-4">
                 <pbs::Button text="start" icon="fas fa-play" hidden=!show[0] size=Size::Large color=Color::Primary onclick=self.link.callback(|_| Msg::Start)/>
                 <pbs::Button text="pause" icon="fas fa-pause" hidden=!show[1] size=Size::Large color=Color::Light onclick=self.link.callback(|_| Msg::Pause)/>
                 <pbs::Button text="resume" icon="fas fa-play" hidden=!show[2] size=Size::Large color=Color::Light onclick=self.link.callback(|_| Msg::Resume)/>
@@ -131,7 +131,7 @@ impl Component for Navigate {
                 <pbs::Button text="reveal" icon="fas fa-eye" hidden=!show[5] size=Size::Large color=Color::Danger onclick=self.link.callback(|_| Msg::Reveal)/>
                 <pbs::Button text="finish" icon="fas fa-flag-checkered" hidden=!show[6] size=Size::Large light=true color=Color::Success onclick=self.link.callback(|_| Msg::Finish)/>
                 <pbs::Button text="leave" icon="fas fa-sign-out-alt" hidden=!show[7] size=Size::Large light=true color=Color::Danger onclick=self.link.callback(|_| Msg::Leave)/>
-            </div>
+            </pbs::Buttons>
         }
     }
 }
