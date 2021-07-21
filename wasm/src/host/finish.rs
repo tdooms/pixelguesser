@@ -1,4 +1,4 @@
-use crate::components::Scores;
+use crate::host::Scores;
 use api::{Player, Quiz};
 use pbs::{Color, HeroSize};
 use std::collections::HashMap;

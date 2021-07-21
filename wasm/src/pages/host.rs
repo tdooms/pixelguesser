@@ -1,15 +1,14 @@
 use crate::agents::WebSocketAgent;
-use crate::components::{lobby, Finish, Pixelate, Scores};
-use api::{Alert, Player, Post, Quiz, Reply, Request, Response, Round, Stage, SessionData};
+use crate::host::{Finish, Lobby, Pixelate};
+use api::{Alert, Player, Post, Reply, Request, Response, SessionData, Stage};
 use js_sys::Function;
-use std::collections::HashMap;
 use yew::prelude::*;
 use yew::web_sys::window;
 
 #[derive(Clone, Properties)]
 pub struct Props {
     pub session_id: u64,
-    pub session: SessionData
+    pub session: SessionData,
 }
 
 pub enum Msg {
@@ -29,18 +28,13 @@ impl Component for Host {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut ws_agent = WebSocketAgent::bridge(link.callback(|x| Msg::Response(x)));
-
         if let Some(window) = window() {
             window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
         }
 
-        let quiz_id = props.quiz_id;
-        ws_agent.send(Request::Post(Post::StartSession { quiz_id }));
-
         Self {
             link,
-            ws_agent,
+            ws_agent: WebSocketAgent::bridge(link.callback(|x| Msg::Response(x))),
             props,
             has_manager: false,
         }
@@ -51,8 +45,8 @@ impl Component for Host {
         match msg {
             Msg::Response(response) => self.handle_response(response),
             Msg::Revealed => {
-                let stage = Stage::Round {round: }
-                self.ws_agent.send()
+                // let stage = Stage::Round {round: }
+                // self.ws_agent.send()
                 false
             }
         }
@@ -64,22 +58,22 @@ impl Component for Host {
     }
 
     fn view(&self) -> Html {
-        match (&self.stage, &self.data) {
-            (Stage::Initial, _) => lobby(self.data.as_ref(), self.has_manager, &self.players),
-            (Stage::Round { round, status }, Some((_, _, rounds))) => html! {
-                <Pixelate on_revealed=self.link.callback(|_| Msg::Revealed) status=*status url=rounds[*round].image_url.clone()/>
-            },
-            (Stage::Scores { round: _ }, Some((session_id, _, _))) => html! {
-                <section class="section">
-                    <div class="container">
-                        <Scores session_id=*session_id players=self.players.clone()/>
-                    </div>
-                </section>
-            },
-            (Stage::Finish, Some((session_id, quiz, _))) => {
-                html! {<Finish session_id=*session_id players=self.players.clone() quiz=quiz.clone()/>}
+        match &self.props.session.stage {
+            Stage::Initial => {
+                html! { <Lobby session=self.props.session.clone()
+                session_id=self.props.session_id
+                has_manager=self.has_manager/> }
             }
-            _ => html! {<p> {"handul eror"} </p>},
+            Stage::Round { round, status } => {
+                html! { <Pixelate on_revealed=self.link.callback(|_| Msg::Revealed)
+                status=*status
+                url=self.props.session.rounds[*round].image_url.clone()/> }
+            }
+            Stage::Finish => {
+                html! { <Finish session_id=self.props.session_id
+                players=self.props.session.players.clone()
+                quiz=self.props.session.quiz.clone()/> }
+            }
         }
     }
 
@@ -88,27 +82,25 @@ impl Component for Host {
             window.set_onbeforeunload(None)
         }
 
-        if let Some((session_id, _, _)) = self.data {
-            let post = Post::StopSession { session_id };
-            self.ws_agent.send(Request::Post(post))
-        }
+        let session_id = self.props.session_id;
+        let post = Post::StopSession { session_id };
+        self.ws_agent.send(Request::Post(post))
     }
 }
 
 impl Host {
     fn handle_response(&mut self, response: Response) -> bool {
         match response {
-            Response::Reply(session_id, Reply::SessionCreated(quiz, rounds)) => {
-                self.data = Some((session_id, quiz, rounds));
-                true
-            }
             Response::Alert(_, Alert::PlayerAdded(id, name)) => {
-                self.players.insert(id, Player { score: 0, name });
+                self.props
+                    .session
+                    .players
+                    .insert(id, Player { score: 0, name });
                 true
             }
             Response::Alert(_, Alert::ScoreChanged(diff)) => {
                 for change in diff {
-                    match self.players.get_mut(&change.player_id) {
+                    match self.props.session.players.get_mut(&change.player_id) {
                         Some(player) => player.score += change.change,
                         None => log::debug!("no player with given id"),
                     }
@@ -125,7 +117,7 @@ impl Host {
                 true
             }
             Response::Alert(_, Alert::StageChanged(stage)) => {
-                self.stage = stage;
+                self.props.session.stage = stage;
                 true
             }
             _ => false,

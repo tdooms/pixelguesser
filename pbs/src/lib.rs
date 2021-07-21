@@ -88,4 +88,6 @@ pub use layout::hero::{Hero, HeroProps};
 pub use layout::section::{Section, SectionProps};
 pub use layout::tile::{Tile, TileProps};
 
+pub use custom::alerts::{Alerts, AlertsProps};
+pub use custom::loading::{Loading, LoadingProps, MaybeLoading, MaybeLoadingProps};
 pub use custom::simplehero::{SimpleHero, SimpleHeroProps};

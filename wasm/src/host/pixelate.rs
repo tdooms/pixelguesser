@@ -1,4 +1,4 @@
-use crate::agents::NotifyAgent;
+use crate::agents::AlertAgent;
 use crate::globals::IMAGE_ENDPOINT;
 use crate::notifications::{Error, Notification};
 use crate::utils::{draw_pixelated, TypeRef};
@@ -27,7 +27,7 @@ pub struct Props {
 
 pub struct Pixelate {
     link: ComponentLink<Self>,
-    log_agent: Dispatcher<NotifyAgent>,
+    logger: Dispatcher<AlertAgent>,
 
     _resizer: ResizeTask,
     props: Props,
@@ -42,7 +42,7 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(logger: &mut Dispatcher<NotifyAgent>, result: Result<(), Error>) {
+    fn log(logger: &mut Dispatcher<AlertAgent>, result: Result<(), Error>) {
         if let Err(err) = result {
             logger.send(Notification::Error(err))
         }
@@ -82,7 +82,7 @@ impl Component for Pixelate {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             props,
-            log_agent: NotifyAgent::dispatcher(),
+            logger: AlertAgent::dispatcher(),
             _resizer: ResizeService::register(link.callback(|_| Msg::Resize)),
             link,
             pixels: 4.0,

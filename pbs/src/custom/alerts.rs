@@ -1,37 +1,34 @@
 use crate::Color;
-use std::collections::HashMap;
 use std::fmt::Display;
 use yew::prelude::*;
-use yewtil::NeqAssign;
 
-pub struct AlertsProps<T: Display> {
-    entries: Vec<T>,
+#[derive(Clone, Debug, Properties)]
+pub struct AlertsProps<T: Clone + Display + 'static> {
+    pub entries: Vec<T>,
 }
 
-pub struct Alerts<T: Display> {
+pub struct Alerts<T: Clone + Display + 'static> {
     link: ComponentLink<Self>,
     props: AlertsProps<T>,
-    counter: u64,
 }
 
-impl<T: Display> Component for Alerts<T> {
-    type Message = u64;
+impl<T: Clone + Display + 'static> Component for Alerts<T> {
+    type Message = usize;
     type Properties = AlertsProps<T>;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            link,
-            props,
-            counter: 0,
-        }
+        Self { link, props }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
-        self.entries.remove(&msg).is_some()
+        // TODO: technically not panic safe...
+        self.props.entries.remove(msg);
+        true
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
-        self.props.neq_assign(props)
+        self.props = props;
+        true
     }
 
     fn view(&self) -> Html {

@@ -69,15 +69,15 @@ impl Component for Navigate {
                 },
                 (Status::Revealed, Msg::Next) => Stage::Finish,
                 (Status::Revealed, Msg::Finish) => Stage::Finish,
-                (Status::Revealed, Msg::Scores) => Stage::Scores { round },
-                _ => return false,
-            },
-            Stage::Scores { round } => match msg {
-                Msg::Next => Stage::Round {
+                (Status::Revealed, Msg::Scores) => Stage::Round {
+                    round,
+                    status: Status::Scores,
+                },
+                (Status::Scores, Msg::Next) => Stage::Round {
                     round: round + 1,
                     status: Status::Playing,
                 },
-                Msg::Finish => Stage::Finish,
+                (Status::Scores, Msg::Finish) => Stage::Finish,
                 _ => return false,
             },
             Stage::Finish => {
@@ -116,8 +116,8 @@ impl Component for Navigate {
                     vec![false, false, false, true, true, false, false, false]
                 }
                 Status::Revealed => vec![false, false, false, false, false, false, true, false],
+                Status::Scores => vec![false, false, false, true, false, false, false, false],
             },
-            Stage::Scores { .. } => vec![false, false, false, true, false, false, false, false],
             Stage::Finish => vec![false, false, false, false, false, false, false, true],
         };
 

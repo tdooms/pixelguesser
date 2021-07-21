@@ -1,4 +1,5 @@
 use instant::Duration;
+use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
@@ -6,12 +7,9 @@ use yew_services::timeout::TimeoutTask;
 use yew_services::TimeoutService;
 
 use crate::agents::{AlertAgent, WebSocketAgent};
-use crate::components::Notifications;
 use crate::notifications::Notification;
 use crate::pages::*;
 use crate::route::Route;
-use api::Alert;
-use std::rc::Rc;
 
 mod agents;
 mod components;
@@ -30,7 +28,7 @@ pub struct Model {
 
     alerts: Vec<Rc<Notification>>,
     link: ComponentLink<Self>,
-    timer: TimeoutTask,
+    // timer: TimeoutTask,
 }
 
 impl Component for Model {
@@ -38,14 +36,13 @@ impl Component for Model {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let ws_agent = WebSocketAgent::bridge(link.callback(|_| {}));
         // let timer = TimeoutService::spawn(Duration::from_millis(33), link.callback(|_| ()));
 
         Self {
-            _ws_agent: ws_agent,
+            _ws_agent: WebSocketAgent::bridge(Callback::noop()),
             alert_agent: AlertAgent::bridge(link.callback(|x| x)),
             alerts: Vec::new(),
-            timer,
+            // timer,
             link,
         }
     }
@@ -63,7 +60,7 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <Alerts entries=self.alerts>
+                <pbs::Alerts<Rc<Notification>> entries=self.alerts />
                 <Router<Route> render=Router::render(switch) />
             </main>
         }
@@ -72,9 +69,9 @@ impl Component for Model {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Host { quiz_id } => html! { <Host quiz_id=*quiz_id/> },
+        Route::Host { quiz_id } => html! { <HostLoader quiz_id=*quiz_id/> },
+        Route::Manage { session_id } => html! { <ManageLoader session_id=*session_id/> },
         Route::Code => html! { <Code/> },
-        Route::Manage { session_id } => html! { <Manage session_id=*session_id/> },
         Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },

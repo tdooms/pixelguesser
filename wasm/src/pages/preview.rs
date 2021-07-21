@@ -1,4 +1,4 @@
-use crate::components::Pixelate;
+use crate::host::Pixelate;
 use api::Status;
 use yew::prelude::*;
 

@@ -1942,6 +1942,7 @@ dependencies = [
  "yew 0.18.0",
  "yew-router",
  "yew-services",
+ "yewtil",
 ]
 
 [[package]]

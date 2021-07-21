@@ -1,4 +1,4 @@
-use crate::agents::NotifyAgent;
+use crate::agents::AlertAgent;
 use crate::globals::API_ENDPOINT;
 use crate::notifications::{Error, Notification, Warning};
 use api::{Request, Response};
@@ -21,7 +21,7 @@ pub struct WebSocketAgent {
 
     buffer: Vec<Request>,
     subscribers: HashSet<HandlerId>,
-    logger: Dispatcher<NotifyAgent>,
+    logger: Dispatcher<AlertAgent>,
 
     connected: bool,
 }
@@ -76,7 +76,7 @@ impl Agent for WebSocketAgent {
             link,
             buffer: vec![],
             subscribers: HashSet::new(),
-            logger: NotifyAgent::dispatcher(),
+            logger: AlertAgent::dispatcher(),
             connected: false,
         }
     }

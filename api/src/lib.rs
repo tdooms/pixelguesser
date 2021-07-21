@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Quiz {
     pub quiz_id: i64,
     pub name: String,
@@ -12,7 +12,7 @@ pub struct Quiz {
     pub time_created: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Round {
     pub round_id: i64,
     pub quiz_id: i64,
@@ -23,13 +23,13 @@ pub struct Round {
     pub answer: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Player {
     pub name: String,
     pub score: i64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ScoreChange {
     pub player_id: u64,
     pub change: i64,
@@ -38,7 +38,7 @@ pub struct ScoreChange {
 
 pub type ScoreDiff = Vec<ScoreChange>;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct SessionData {
     pub stage: Stage,
     pub quiz: Quiz,
@@ -55,7 +55,7 @@ pub enum Status {
     Scores,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Stage {
     Initial,
     Round { round: usize, status: Status },

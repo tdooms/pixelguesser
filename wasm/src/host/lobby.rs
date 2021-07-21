@@ -1,7 +1,6 @@
 use crate::utils::code_to_string;
-use api::{Player, Quiz, Round, SessionData};
+use api::SessionData;
 use pbs::{Color, ColumnSize, HeroSize};
-use std::collections::HashMap;
 use yew::prelude::*;
 
 use yew::prelude::*;
@@ -9,14 +8,11 @@ use yewtil::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LobbyProps {
-    session: SessionData,
-    session_id: u64,
-    has_manager: bool,
+    pub session: SessionData,
+    pub session_id: u64,
+    pub has_manager: bool,
 }
 
-/// A white box to contain other elements.
-///
-/// [https://bulma.io/documentation/elements/box/](https://bulma.io/documentation/elements/box/)
 pub struct Lobby {
     props: LobbyProps,
 }
@@ -38,7 +34,7 @@ impl Component for Lobby {
     }
 
     fn view(&self) -> Html {
-        let players = players.iter().map(|(_, player)| {
+        let players = self.props.session.players.iter().map(|(_, player)| {
             html! {
                 <pbs::Column size=ColumnSize::IsNarrow>
                     <pbs::Box> {&player.name} </pbs::Box>

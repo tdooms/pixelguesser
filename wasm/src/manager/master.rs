@@ -6,13 +6,12 @@ use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub session_id: u64,
+    pub onclick: Callback<Option<u64>>,
     pub round: usize,
-    pub data: SessionData,
+    pub session: SessionData,
 }
 
 pub struct Master {
-    ws_agent: Dispatcher<WebSocketAgent>,
     link: ComponentLink<Self>,
     props: Props,
     answer_given: bool,
@@ -24,7 +23,6 @@ impl Component for Master {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            ws_agent: WebSocketAgent::dispatcher(),
             link,
             props,
             answer_given: false,
@@ -44,7 +42,7 @@ impl Component for Master {
 
         let change = ScoreChange {
             player_id,
-            change: self.props.data.rounds[self.props.round].points,
+            change: self.props.session.rounds[self.props.round].points,
             reason: "".to_string(),
         };
         let post = Post::ChangeScores {
@@ -74,7 +72,7 @@ impl Component for Master {
 
         let players = self
             .props
-            .data
+            .session
             .players
             .iter()
             .map(|(id, player)| view_player(*id, player));
