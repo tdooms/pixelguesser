@@ -1,9 +1,9 @@
 #![allow(clippy::redundant_closure_call)]
 
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::classify;
 use crate::Size;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -53,9 +53,7 @@ impl Component for Tag {
     }
 
     fn view(&self) -> Html {
-        let TagProps {
-            rounded, delete, ..
-        } = self.props;
+        let TagProps { rounded, delete, .. } = self.props;
 
         let classes = classes!(
             "tag",
@@ -65,7 +63,7 @@ impl Component for Tag {
         );
 
         html! {
-            <@{ self.props.tag.clone() } class=classes onclick=self.props.onclick.clone()>
+            <@{ self.props.tag.clone() } class={classes} onclick={self.props.onclick.clone()}>
                 { for self.props.children.iter() }
             </@>
         }
@@ -110,14 +108,10 @@ impl Component for Tags {
     }
 
     fn view(&self) -> Html {
-        let classes = classes!(
-            "tags",
-            &self.props.extra,
-            &self.props.addons.then(|| "has-addons")
-        );
+        let classes = classes!("tags", &self.props.extra, &self.props.addons.then(|| "has-addons"));
 
         html! {
-            <div class=classes>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

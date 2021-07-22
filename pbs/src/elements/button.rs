@@ -1,6 +1,7 @@
+use yew::prelude::*;
+
 use crate::classify;
 use crate::{Color, Size};
-use yew::prelude::*;
 
 #[derive(Properties, Clone)]
 pub struct ButtonProps {
@@ -70,16 +71,8 @@ impl Component for Button {
     }
 
     fn view(&self) -> Html {
-        let ButtonProps {
-            hidden,
-            outlined,
-            light,
-            inverted,
-            rounded,
-            loading,
-            fullwidth,
-            ..
-        } = self.props;
+        let ButtonProps { hidden, outlined, light, inverted, rounded, loading, fullwidth, .. } =
+            self.props;
 
         let classes = classes!(
             "button",
@@ -100,7 +93,7 @@ impl Component for Button {
         };
 
         html! {
-            <button class=classes onclick=self.link.callback(|e| e)>
+            <button class={classes} onclick={self.link.callback(|e| e)}>
                 { icon_html }
                 { text_html }
             </button>

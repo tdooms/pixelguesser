@@ -1,12 +1,12 @@
 use crate::route::Route;
 use yew::prelude::*;
-use yew_router::components::Link;
+use yew_router::prelude::Link;
 
 pub fn navbar() -> Html {
     html! {
         <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-                <Link<Route> classes=classes!("navbar-item") route=Route::Overview>
+                <Link<Route> classes={classes!("navbar-item")} route={Route::Overview}>
                     <img src="https://temp.io/images/temp-logo.png" width="112" height="28"/>
                 </Link<Route>>
 
@@ -20,11 +20,11 @@ pub fn navbar() -> Html {
             <div id="navbar" class="navbar-menu">
                 <div class="navbar-start">
                     <div class="buttons">
-                        <Link<Route> classes=classes!("button", "is-primary") route=Route::Code>
+                        <Link<Route> classes={classes!("button", "is-primary")} route={Route::Code}>
                             <span>{"Quizmaster"}</span>
                         </Link<Route>>
 
-                        <Link<Route> classes=classes!("button", "is-light") route=Route::Create>
+                        <Link<Route> classes={classes!("button", "is-light")} route={Route::Create}>
                             <span>{"Create"}</span>
                         </Link<Route>>
                     </div>

@@ -1,6 +1,8 @@
-use crate::host::Pixelate;
-use api::Status;
 use yew::prelude::*;
+
+use api::Status;
+
+use crate::host::Pixelate;
 
 pub enum Msg {}
 
@@ -25,6 +27,6 @@ impl Component for Preview {
     }
 
     fn view(&self) -> Html {
-        html! { <Pixelate on_revealed=self.link.callback(|_|()) url="banana.jpg" status=Status::Playing /> }
+        html! { <Pixelate on_revealed={self.link.callback(|_|())} url={"banana.jpg"} status={Status::Playing{paused: false}} /> }
     }
 }

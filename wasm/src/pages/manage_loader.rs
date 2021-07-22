@@ -1,9 +1,10 @@
-use crate::agents::WebSocketAgent;
-use crate::pages::Host;
-use crate::pages::Manage;
-use api::{Post, Request, Response, SessionData};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use api::{Post, Reply, Request, Response, Session};
+
+use crate::agents::WebSocketAgent;
+use crate::pages::Manage;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ManageLoaderProps {
@@ -12,7 +13,7 @@ pub struct ManageLoaderProps {
 
 pub struct ManageLoader {
     props: ManageLoaderProps,
-    session: Option<SessionData>,
+    session: Option<Session>,
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
 }
 
@@ -27,15 +28,17 @@ impl Component for ManageLoader {
         let request = Request::Post(Post::JoinSession { session_id });
         ws_agent.send(request);
 
-        Self {
-            props,
-            session: None,
-            ws_agent,
-        }
+        Self { props, session: None, ws_agent }
     }
 
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
+    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+        match msg {
+            Response::Reply(session_id, Reply::SessionJoined(session)) => {
+                self.session = Some(session);
+                true
+            }
+            _ => false,
+        }
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
@@ -45,7 +48,7 @@ impl Component for ManageLoader {
     fn view(&self) -> Html {
         match &self.session {
             Some(session) => {
-                html! {<Manage session=session.clone() session_id=self.props.session_id/>}
+                html! {<Manage session={session.clone()} session_id={self.props.session_id}/>}
             }
             None => html! {},
         }

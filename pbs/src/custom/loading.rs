@@ -1,6 +1,7 @@
-use crate::Color;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::Color;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LoadingProps {
@@ -29,16 +30,13 @@ impl Component for Loading {
     }
 
     fn view(&self) -> Html {
-        let classes = classes!(
-            "progress",
-            self.props.color.as_ref().map(ToString::to_string)
-        );
+        let classes = classes!("progress", self.props.color.as_ref().map(ToString::to_string));
 
         html! {
             <section class="section is-fullheight">
                 <div class="columns is-centered is-desktop is-vcentered" style="height:100vh">
                     <div class="column is-half">
-                        <progress class=classes></progress>
+                        <progress class={classes}></progress>
                     </div>
                 </div>
             </section>
@@ -78,7 +76,7 @@ impl Component for MaybeLoading {
     fn view(&self) -> Html {
         match &self.props.html {
             Some(html) => html.clone(),
-            None => html! { <Loading color=self.props.color/> },
+            None => html! { <Loading color={self.props.color}/> },
         }
     }
 }

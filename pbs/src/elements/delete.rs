@@ -1,4 +1,5 @@
 #![allow(clippy::redundant_closure_call)]
+
 use yew::events::MouseEvent;
 use yew::prelude::*;
 use yewtil::NeqAssign;
@@ -41,9 +42,10 @@ impl Component for Delete {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("delete", &self.props.extra);
         html! {
-            <@{self.props.tag.clone()} class=classes!("delete", &self.props.extra) onclick=self.props.onclick.clone()>
-                {self.props.children.clone()}
+            <@{self.props.tag.clone()} class={classes} onclick={self.props.onclick.clone()}>
+                { for self.props.children.iter() }
             </@>
         }
     }

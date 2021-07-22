@@ -1,10 +1,11 @@
+use yew::prelude::*;
+
+use api::{Fetch, Get, Request, Response};
+use pbs::{Color, Size};
+
 use crate::agents::WebSocketAgent;
 use crate::route::Route;
 use crate::utils::string_to_code;
-use pbs::{Color, Size};
-
-use api::{Fetch, Get, Request, Response};
-use yew::prelude::*;
 
 enum State {
     Available,
@@ -95,30 +96,34 @@ impl Component for Code {
         let onjoin = self.link.callback(|_| Msg::Join);
         let oncancel = self.link.callback(|_| Msg::Cancel);
 
-        let field = match self.state {
-            State::Available => html! {
-                <pbs::Field
-                    label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}
-                    help=html_nested!{<pbs::Help color=Color::Success> {"This room is available."} </pbs::Help>}>
-                <pbs::Control
-                    right=html_nested!{<pbs::Icon icon="fas fa-check" size=Size::Small extra="is-right"/>}
-                    inner=html!{<pbs::Input oninput=oninput color=Color::Success/>} />
-                </pbs::Field>
-            },
-            State::Invalid | State::Incorrect => html! {
-                <pbs::Field
-                    label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}
-                    help=html_nested!{<pbs::Help color=Color::Danger> {"The room code is invalid."} </pbs::Help>}>
-                <pbs::Control
-                    right=html_nested!{<pbs::Icon icon="fas fa-exclamation-triangle" size=Size::Small extra="is-right"/>}
-                    inner=html!{<pbs::Input oninput=oninput color=Color::Danger/>} />
-                </pbs::Field>
-            },
-            State::None => html! {
-                <pbs::Field label=html_nested!{<pbs::Label>{"Session code"}</pbs::Label>}>
-                    <pbs::Control inner=html!{<pbs::Input oninput=oninput/>} />
-                </pbs::Field>
-            },
+        let (help, right, color) = match self.state {
+            State::Available => {
+                let help = Some(("This room is available.", Color::Success));
+                let right = Some("fas fa-check");
+                let color = Some(Color::Success);
+                (help, right, color)
+            }
+            State::Invalid | State::Incorrect => {
+                let help = Some(("The room code is invalid.", Color::Success));
+                let right = Some("fas fa-exclamation-triangle");
+                let color = Some(Color::Danger);
+                (help, right, color)
+            }
+            _ => (None, None, None),
+        };
+
+        let maybe_help =
+            help.map(|(str, color)| html_nested! { <pbs::Help color={color}> {str} </pbs::Help> });
+        let maybe_right = right.map(
+            |icon| html_nested! { <pbs::Icon icon={icon} size={Size::Small} extra="is-right"/> },
+        );
+        let label = html_nested! { <pbs::Label> {"Session code"} </pbs::Label> };
+        let inner = html! { <pbs::Input color={color} oninput={oninput}/> };
+
+        let field = html! {
+            <pbs::Field label={label} help={maybe_help}>
+                <pbs::Control right={maybe_right} inner={inner} />
+            </pbs::Field>
         };
 
         html! {
@@ -126,8 +131,8 @@ impl Component for Code {
                 <pbs::Container>
                     { field }
                     <pbs::Buttons>
-                        <pbs::Button text="Join" color=Color::Link onclick=onjoin/>
-                        <pbs::Button text="Cancel" color=Color::Link light=true onclick=oncancel/>
+                        <pbs::Button text="Join" color={Color::Link} onclick={onjoin}/>
+                        <pbs::Button text="Cancel" color={Color::Link} light=true onclick={oncancel}/>
                     </pbs::Buttons>
                 </pbs::Container>
             </pbs::Section>

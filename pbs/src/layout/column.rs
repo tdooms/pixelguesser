@@ -1,6 +1,7 @@
-use crate::{ColumnOffset, ColumnSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{ColumnOffset, ColumnSize};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ColumnProps {
@@ -53,7 +54,7 @@ impl Component for Column {
         );
 
         html! {
-            <div class=classes>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

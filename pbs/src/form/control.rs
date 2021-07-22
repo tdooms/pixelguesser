@@ -1,7 +1,8 @@
-use crate::{classify, Icon};
 use yew::prelude::*;
 use yew::virtual_dom::VChild;
 use yewtil::NeqAssign;
+
+use crate::{classify, Icon};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ControlProps {
@@ -58,7 +59,7 @@ impl Component for Control {
         );
 
         html! {
-            <@{ self.props.tag.clone() } class=classes>
+            <@{ self.props.tag.clone() } class={classes}>
                 { self.props.inner.clone() }
                 { self.props.left.clone().map(Html::from).unwrap_or(html!{}) }
                 { self.props.right.clone().map(Html::from).unwrap_or(html!{}) }

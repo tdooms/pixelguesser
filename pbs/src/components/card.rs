@@ -34,8 +34,9 @@ impl Component for Card {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("card", &self.props.extra);
         html! {
-            <div class=classes!("card", &self.props.extra)>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }
@@ -77,8 +78,9 @@ impl Component for CardHeader {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("card-header", &self.props.extra);
         html! {
-            <header class=classes!("card-header", &self.props.extra)>
+            <header class={classes}>
                 { for self.props.children.iter() }
             </header>
         }
@@ -120,9 +122,10 @@ impl Component for CardImage {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("card-image", &self.props.extra);
         html! {
-            <div class=classes!("card-image", &self.props.extra)>
-                {self.props.children.clone()}
+            <div class={classes}>
+                { for self.props.children.iter() }
             </div>
         }
     }
@@ -163,8 +166,9 @@ impl Component for CardContent {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("card-content", &self.props.extra);
         html! {
-            <div class=classes!("card-content", &self.props.extra)>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }
@@ -206,8 +210,9 @@ impl Component for CardFooter {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("card-footer", &self.props.extra);
         html! {
-            <footer class=classes!("card-footer", &self.props.extra)>
+            <footer class={classes}>
                 { for self.props.children.iter() }
             </footer>
         }

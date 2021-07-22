@@ -1,9 +1,10 @@
-use crate::globals::IMAGE_ENDPOINT;
-use crate::route::Route;
-use api::Quiz;
-
 use yew::prelude::*;
 use yew_router::components::Link;
+
+use api::Quiz;
+
+use crate::globals::IMAGE_ENDPOINT;
+use crate::route::Route;
 
 pub fn quiz_card(quiz: &Quiz) -> Html {
     html! {
@@ -25,7 +26,7 @@ pub fn quiz_card(quiz: &Quiz) -> Html {
                 </div>
             </div>
             <div class="card-footer">
-                <Link<Route> classes=classes!("button", "is-success", "is-fullwidth", "square-top") route=Route::Host{quiz_id: quiz.quiz_id}>
+                <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "square-top")} route={Route::Host{quiz_id: quiz.quiz_id}}>
                     <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
                 </Link<Route>>
             </div>

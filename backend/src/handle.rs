@@ -1,13 +1,15 @@
-use crate::db::{quiz_and_rounds, quizzes};
-use crate::error::Error;
-use crate::session::{Sender, Session};
-use crate::state::State;
-
-use api::{Alert, Fetch, Get, Player, Post, Reply, Request, Response, SessionData};
-use log::{debug, warn};
 use std::collections::HashMap;
+
+use log::{debug, warn};
 use tokio::sync::MutexGuard;
 use warp::ws::Message;
+
+use api::{Alert, Fetch, Get, Player, Post, Reply, Request, Response, Session};
+
+use crate::db::{quiz_and_rounds, quizzes};
+use crate::error::Error;
+use crate::session::{Sender, SessionData};
+use crate::state::State;
 
 fn send(response: Response, sender: &Sender) -> Result<(), Error> {
     let string = serde_json::to_string(&response)?;
@@ -23,11 +25,10 @@ fn notify(response: Response, host: &Sender, manager: Option<&Sender>) -> Result
 }
 
 fn get_session<'a>(
-    lock: &'a mut MutexGuard<HashMap<u64, Session>>,
+    lock: &'a mut MutexGuard<HashMap<u64, SessionData>>,
     session_id: u64,
-) -> Result<&'a mut Session, Error> {
-    lock.get_mut(&session_id)
-        .ok_or(Error::SessionDoesNotExist(session_id))
+) -> Result<&'a mut SessionData, Error> {
+    lock.get_mut(&session_id).ok_or(Error::SessionDoesNotExist(session_id))
 }
 
 async fn handle_get(get: Get, state: &State, sender: &Sender) -> Result<(), Error> {
@@ -56,7 +57,7 @@ async fn handle_get(get: Get, state: &State, sender: &Sender) -> Result<(), Erro
             let lock = state.sessions().await;
 
             match lock.get(&session_id) {
-                Some(Session { manager: None, .. }) => Fetch::SessionAvailable(session_id),
+                Some(SessionData { manager: None, .. }) => Fetch::SessionAvailable(session_id),
                 _ => Fetch::SessionInvalid(session_id),
             }
         }
@@ -90,7 +91,7 @@ async fn handle_post(post: Post, state: &State, sender: &Sender) -> Result<(), E
             session.manager = Some(sender.clone());
             let (quiz, rounds) = quiz_and_rounds(session.quiz_id, state.pool()).await?;
 
-            let data = SessionData {
+            let data = Session {
                 stage: session.stage.clone(),
                 quiz,
                 rounds,
@@ -107,10 +108,7 @@ async fn handle_post(post: Post, state: &State, sender: &Sender) -> Result<(), E
             let mut lock = state.sessions().await;
             let session = get_session(&mut lock, session_id)?;
 
-            let player = Player {
-                name: name.clone(),
-                score: 0,
-            };
+            let player = Player { name: name.clone(), score: 0 };
 
             let player_id = session.current_id;
             session.current_id += 1;
@@ -149,11 +147,7 @@ async fn handle_post(post: Post, state: &State, sender: &Sender) -> Result<(), E
         Post::StopSession { session_id } => {
             let mut lock = state.sessions().await;
 
-            if let Some(Session {
-                manager: Some(manager),
-                ..
-            }) = lock.remove(&session_id)
-            {
+            if let Some(SessionData { manager: Some(manager), .. }) = lock.remove(&session_id) {
                 let response = Response::Alert(session_id, Alert::SessionStopped);
                 send(response, &manager)?;
             }

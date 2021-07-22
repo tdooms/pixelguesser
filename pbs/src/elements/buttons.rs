@@ -1,6 +1,7 @@
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ButtonsProps {
@@ -39,8 +40,9 @@ impl Component for Buttons {
 
     fn view(&self) -> Html {
         let ButtonsProps { centered, .. } = self.props;
+        let classes = classes!("buttons", &self.props.extra, classify!(centered));
         html! {
-            <div class=classes!("buttons", &self.props.extra, classify!(centered))>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

@@ -9,10 +9,9 @@ license = "GNU GPLv3"
 
 [dependencies]
 derive_more = "0.99.16"
-yew = { git = "https://github.com/yewstack/yew.git" }
-yew-router = { git = "https://github.com/yewstack/yew.git" }
-yew-services = { git = "https://github.com/yewstack/yew.git" }
-yewtil = { version="0.3.2", features=["neq"] }
+yew = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa"}
+yewtil = { version = "0.3.2", features = ["neq"] }
 
 [package.metadata.docs.rs]
 features = ["docinclude"] # Activate `docinclude` during docs.rs build.

@@ -34,9 +34,10 @@ impl Component for Menu {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("menu", &self.props.extra);
         html! {
-            <aside class=classes!("menu", &self.props.extra)>
-                {self.props.children.clone()}
+            <aside class={classes}>
+                { for self.props.children.iter() }
             </aside>
         }
     }
@@ -78,9 +79,10 @@ impl Component for MenuList {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("menu-list", &self.props.extra);
         html! {
-            <ul class=classes!("menu-list", &self.props.extra)>
-                {self.props.children.clone()}
+            <ul class={classes}>
+                { for self.props.children.iter() }
             </ul>
         }
     }
@@ -123,8 +125,9 @@ impl Component for MenuLabel {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("menu-label", &self.props.extra);
         html! {
-            <p class=classes!("menu-label", &self.props.extra)>
+            <p class={classes}>
                 { self.props.text.clone() }
             </p>
         }

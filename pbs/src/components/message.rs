@@ -33,8 +33,9 @@ impl Component for Message {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("message", &self.props.extra);
         html! {
-            <article class=classes!("message", &self.props.extra)>
+            <article class={classes}>
                 { for self.props.children.iter() }
             </article>
         }
@@ -77,8 +78,9 @@ impl Component for MessageHeader {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("message-header", &self.props.extra);
         html! {
-            <div class=classes!("message-header", &self.props.extra)>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }
@@ -120,9 +122,10 @@ impl Component for MessageBody {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("message-body", &self.props.extra);
         html! {
-            <div class=classes!("message-body", &self.props.extra)>
-                {self.props.children.clone()}
+            <div class={classes}>
+                { for self.props.children.iter() }
             </div>
         }
     }

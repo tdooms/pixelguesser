@@ -1,16 +1,19 @@
-use crate::session::{Sender, Session};
-use api::Stage;
-use rand::Rng;
-use sqlx::PgPool;
 use std::collections::HashMap;
 use std::sync::Arc;
+
+use rand::Rng;
+use sqlx::PgPool;
 use tokio::sync::{Mutex, MutexGuard};
+
+use api::Stage;
+
+use crate::session::{Sender, SessionData};
 
 static MAX: u64 = 48u64.pow(6);
 
 #[derive(Default)]
 pub struct Inner {
-    sessions: Mutex<HashMap<u64, Session>>,
+    sessions: Mutex<HashMap<u64, SessionData>>,
 }
 
 #[derive(Clone)]
@@ -23,22 +26,19 @@ impl State {
     pub async fn new(uri: &str) -> Result<Self, sqlx::Error> {
         log::info!("Connecting to database with uri {}", uri);
 
-        Ok(Self {
-            pool: PgPool::connect(uri).await?,
-            inner: Arc::default(),
-        })
+        Ok(Self { pool: PgPool::connect(uri).await?, inner: Arc::default() })
     }
 
     pub fn pool(&self) -> PgPool {
         self.pool.clone()
     }
 
-    pub async fn sessions(&self) -> MutexGuard<'_, HashMap<u64, Session>> {
+    pub async fn sessions(&self) -> MutexGuard<'_, HashMap<u64, SessionData>> {
         self.inner.sessions.lock().await
     }
 
     pub async fn start_session(&self, sender: Sender, quiz_id: i64, rounds: usize) -> Option<u64> {
-        let session = Session {
+        let session = SessionData {
             host: sender,
             manager: None,
             rounds,

@@ -1,6 +1,7 @@
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TableProps {
@@ -52,15 +53,8 @@ impl Component for Table {
     }
 
     fn view(&self) -> Html {
-        let TableProps {
-            bordered,
-            striped,
-            narrow,
-            hoverable,
-            fullwidth,
-            scrollable,
-            ..
-        } = self.props;
+        let TableProps { bordered, striped, narrow, hoverable, fullwidth, scrollable, .. } =
+            self.props;
 
         let classes = classes!(
             "table",
@@ -69,7 +63,7 @@ impl Component for Table {
         );
 
         let table = html! {
-            <table class=classes>
+            <table class={classes}>
                 { for self.props.children.iter() }
             </table>
         };

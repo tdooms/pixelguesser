@@ -30,8 +30,9 @@ impl Component for Label {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("label", &self.props.extra);
         html! {
-            <div class=classes!("label", &self.props.extra)>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

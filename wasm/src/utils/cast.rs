@@ -1,9 +1,11 @@
-use crate::notifications::Error;
 use std::marker::PhantomData;
 use std::ops::Deref;
+
 use wasm_bindgen::JsValue;
 use yew::web_sys::Node;
 use yew::NodeRef;
+
+use crate::notifications::Error;
 
 pub struct TypeRef<T: AsRef<Node> + From<JsValue>> {
     node: NodeRef,
@@ -18,10 +20,7 @@ impl<T: AsRef<Node> + From<JsValue>> TypeRef<T> {
 
 impl<T: AsRef<Node> + From<JsValue>> Default for TypeRef<T> {
     fn default() -> Self {
-        Self {
-            node: NodeRef::default(),
-            phantom: Default::default(),
-        }
+        Self { node: NodeRef::default(), phantom: Default::default() }
     }
 }
 

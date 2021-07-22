@@ -1,20 +1,17 @@
-use crate::agents::WebSocketAgent;
 use api::*;
-use pbs::{HeroSize, Size};
-use yew::agent::Dispatcher;
+use pbs::Size;
+use std::collections::HashMap;
 use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub onclick: Callback<Option<u64>>,
-    pub round: usize,
-    pub session: SessionData,
+    pub onclick: Callback<u64>,
+    pub players: HashMap<u64, Player>,
 }
 
 pub struct Master {
     link: ComponentLink<Self>,
     props: Props,
-    answer_given: bool,
 }
 
 impl Component for Master {
@@ -22,37 +19,12 @@ impl Component for Master {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            link,
-            props,
-            answer_given: false,
-        }
+        Self { link, props }
     }
 
-    fn update(&mut self, player_id: Self::Message) -> bool {
-        let stage = Stage::Round {
-            round: self.props.round,
-            status: Status::Revealing,
-        };
-        let post = Post::ChangeStage {
-            session_id: self.props.session_id,
-            stage,
-        };
-        self.ws_agent.send(Request::Post(post));
-
-        let change = ScoreChange {
-            player_id,
-            change: self.props.session.rounds[self.props.round].points,
-            reason: "".to_string(),
-        };
-        let post = Post::ChangeScores {
-            session_id: self.props.session_id,
-            diff: vec![change],
-        };
-        self.ws_agent.send(Request::Post(post));
-
-        self.answer_given = true;
-        true
+    fn update(&mut self, msg: Self::Message) -> bool {
+        self.props.onclick.emit(msg);
+        false
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
@@ -62,31 +34,15 @@ impl Component for Master {
 
     fn view(&self) -> Html {
         let view_player = |id: u64, player: &Player| {
-            html! {
-                <pbs::Button
-                    outlined=true size=Size::Large fullwidth=true
-                    onclick=self.link.callback(move |_| id) text=player.name.clone()
-                />
-            }
+            let onclick = self.link.callback(move |_| id);
+            html! { <pbs::Button outlined=true size={Size::Large} fullwidth=true onclick={onclick} text={player.name.clone()}/> }
         };
 
-        let players = self
-            .props
-            .session
-            .players
-            .iter()
-            .map(|(id, player)| view_player(*id, player));
-
-        let body = html! {
-            <pbs::Container extra="has-text-centered">
-                <pbs::Title> {&self.props.data.rounds[self.props.round].answer} </pbs::Title>
-                <pbs::Subtitle> {self.props.data.rounds[self.props.round].points} {" points"} </pbs::Subtitle>
-            </pbs::Container>
-        };
+        let iter = self.props.players.iter();
+        let players = iter.map(|(id, player)| view_player(*id, player));
 
         html! {
             <>
-                <pbs::Hero size=HeroSize::Medium body=body/>
                 { for players }
             </>
         }

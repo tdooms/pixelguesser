@@ -1,4 +1,3 @@
-use yew::events::InputData;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
@@ -56,15 +55,16 @@ impl Component for Radio {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("radio", &self.props.extra);
         html! {
-            <label class=classes!("radio", &self.props.extra) disabled=self.props.disabled>
+            <label class={classes} disabled={self.props.disabled}>
                 <input
                     type="radio"
-                    name=self.props.name.clone()
-                    value=self.props.value.clone()
-                    checked=self.props.checked_value.as_ref().map(|val| val == &self.props.value).unwrap_or(false)
-                    oninput=self.link.callback(|data: InputData| data.value)
-                    disabled=self.props.disabled
+                    name={self.props.name.clone()}
+                    value={self.props.value.clone()}
+                    checked={self.props.checked_value.as_ref().map(|val| val == &self.props.value).unwrap_or(false)}
+                    oninput={self.link.callback(|data: InputData| data.value)}
+                    disabled={self.props.disabled}
                     />
                 { for self.props.children.iter() }
             </label>

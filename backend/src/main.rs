@@ -1,18 +1,19 @@
+use std::net::SocketAddrV4;
+
+use futures::StreamExt;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::UnboundedReceiverStream;
+use warp::ws::{WebSocket, Ws};
+use warp::Filter;
+
+use crate::handle::handle_request;
+use crate::state::State;
+
 mod db;
 mod error;
 mod handle;
 mod session;
 mod state;
-
-use crate::handle::handle_request;
-use crate::state::State;
-
-use futures::StreamExt;
-use std::net::SocketAddrV4;
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::UnboundedReceiverStream;
-use warp::ws::{WebSocket, Ws};
-use warp::Filter;
 
 async fn start_socket(socket: WebSocket, state: State) {
     log::debug!("new client connected");

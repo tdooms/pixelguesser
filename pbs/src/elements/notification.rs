@@ -1,6 +1,7 @@
-use crate::{classify, Color};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{classify, Color};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct NotificationProps {
@@ -53,8 +54,8 @@ impl Component for Notification {
             classify!(light)
         );
         html! {
-            <div class=classes>
-                <button class="delete" onclick=self.link.callback(|_| ())></button>
+            <div class={classes}>
+                <button class="delete" onclick={self.link.callback(|_| ())}></button>
                 { for self.props.children.iter() }
             </div>
         }

@@ -1,6 +1,8 @@
-use crate::Color;
 use std::fmt::Display;
+
 use yew::prelude::*;
+
+use crate::Color;
 
 #[derive(Clone, Debug, Properties)]
 pub struct AlertsProps<T: Clone + Display + 'static> {
@@ -34,7 +36,7 @@ impl<T: Clone + Display + 'static> Component for Alerts<T> {
     fn view(&self) -> Html {
         let view_entry = |(id, alert): (usize, &T)| {
             html! {
-                <crate::Notification color=Color::Warning light=true onclick=self.link.callback(move |_| id)>
+                <crate::Notification color={Color::Warning} light=true onclick={self.link.callback(move |_| id)}>
                     { format!("{}", alert) }
                 </crate::Notification>
             }

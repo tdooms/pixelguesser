@@ -79,12 +79,7 @@ impl Component for Input {
     }
 
     fn view(&self) -> Html {
-        let InputProps {
-            rounded,
-            loading,
-            r#static,
-            ..
-        } = self.props;
+        let InputProps { rounded, loading, r#static, .. } = self.props;
 
         let classes = classes!(
             "input",
@@ -96,14 +91,14 @@ impl Component for Input {
 
         html! {
             <input
-                name=self.props.name.clone()
-                value=self.props.value.clone()
-                oninput=self.link.callback(|input: InputData| input.value)
-                class=classes
-                type=self.props.r#type.to_string()
-                placeholder=self.props.placeholder.clone()
-                disabled=self.props.disabled
-                readonly=self.props.readonly
+                name={self.props.name.clone()}
+                value={self.props.value.clone()}
+                oninput={self.link.callback(|input: InputData| input.value)}
+                class={classes}
+                type={self.props.r#type.to_string()}
+                placeholder={self.props.placeholder.clone()}
+                disabled={self.props.disabled}
+                readonly={self.props.readonly}
                 />
         }
     }

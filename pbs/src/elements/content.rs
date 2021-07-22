@@ -38,9 +38,10 @@ impl Component for Content {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("content", &self.props.extra);
         html! {
-            <@{self.props.tag.clone()} class=classes!("content", &self.props.extra)>
-                {self.props.children.clone()}
+            <@{self.props.tag.clone()} class={classes}>
+                { for self.props.children.iter() }
             </@>
         }
     }

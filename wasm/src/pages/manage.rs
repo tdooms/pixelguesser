@@ -1,27 +1,29 @@
-use crate::agents::WebSocketAgent;
-use crate::manager::{Initialize, Master, Navigate};
-use crate::pages::view_or_loading;
-use crate::route::Route;
-
-use api::*;
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use api::*;
+
+use crate::agents::WebSocketAgent;
+use crate::manager::{Initialize, Master, Navigate, Rating};
+use crate::route::Route;
+
 pub enum Msg {
-    Guessed(Option<u64>),
+    ChangeStage(Stage),
+    PlayerAdded(String),
+    Guessed(u64),
     Response(Response),
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     pub session_id: u64,
-    pub session: SessionData,
+    pub session: Session,
 }
 
 pub struct Manage {
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
+    link: ComponentLink<Self>,
     props: Props,
-    session_closed: bool,
 }
 
 impl Component for Manage {
@@ -29,74 +31,110 @@ impl Component for Manage {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            ws_agent: WebSocketAgent::bridge(link.callback(|x| x)),
-            props,
-            session_closed: false,
-        }
+        Self { ws_agent: WebSocketAgent::bridge(link.callback(|x| Msg::Response(x))), link, props }
     }
 
-    fn update(&mut self, response: Self::Message) -> bool {
-        match response {
-            Response::Reply(_, Reply::SessionManaged) => {
+    fn update(&mut self, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Response(Response::Reply(_, Reply::SessionManaged)) => {
+                // TODO: what does this do?
                 yew_router::push_route(Route::Code);
                 false
             }
-            Response::Alert(_, Alert::StageChanged(stage)) => {
+            Msg::Response(Response::Alert(_, Alert::StageChanged(stage))) => {
                 self.props.session.stage = stage;
                 true
             }
-            Response::Alert(_, Alert::PlayerAdded(id, name)) => {
-                self.props
-                    .session
-                    .players
-                    .insert(id, Player { name, score: 0 });
+            Msg::Response(Response::Alert(_, Alert::PlayerAdded(id, name))) => {
+                self.props.session.players.insert(id, Player { name, score: 0 });
                 true
             }
-            Response::Error(Error::SessionDoesNotExist(_))
-            | Response::Alert(_, Alert::SessionStopped) => {
+            Msg::Response(Response::Alert(_, Alert::SessionStopped)) => {
                 yew_router::push_route(Route::Overview);
-                self.session_closed = true;
+                // TODO: give warning
                 false
             }
-            _ => false,
+            Msg::Response(Response::Error(Error::SessionDoesNotExist(_))) => {
+                yew_router::push_route(Route::Overview);
+                // TODO: give error
+                false
+            }
+            Msg::Response(_) => false,
+            Msg::Guessed(player_id) => {
+                let rounds = self.props.session.rounds.len();
+                let session_id = self.props.session_id;
+
+                match self.props.session.stage.perform(Action::Reveal, rounds) {
+                    Some(stage) => {
+                        let post = Post::ChangeStage { session_id, stage };
+                        self.ws_agent.send(Request::Post(post))
+                    }
+                    None => {} // TODO: error
+                }
+
+                if let Stage::Round { round, .. } = self.props.session.stage {
+                    let change = ScoreChange {
+                        player_id,
+                        change: self.props.session.rounds[round].points,
+                        reason: "".to_string(),
+                    };
+
+                    let post = Post::ChangeScores { session_id, diff: vec![change] };
+                    self.ws_agent.send(Request::Post(post));
+                } else {
+                    // Error
+                }
+
+                false
+            }
+            Msg::PlayerAdded(name) => {
+                let post = Post::AddPlayer { session_id: self.props.session_id, name };
+                self.ws_agent.send(Request::Post(post));
+                false
+            }
+            Msg::ChangeStage(stage) => {
+                let post = Post::ChangeStage { session_id: self.props.session_id, stage };
+                self.ws_agent.send(Request::Post(post));
+                false
+            }
         }
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
-        self.props.neq_assing(props)
+        self.props.neq_assign(props)
     }
 
     fn view(&self) -> Html {
-        let view_master = match self.props.session.stage {
-            Stage::Initial => html! {
-                <Initialize session_id=self.props.session_id/>
-            },
-            Stage::Round {
-                round,
-                status: Status::Playing | Status::Paused,
-            } => html! {
-                <Master session_id=self.props.session_id round=round data=data.clone()/>
-            },
-            Stage::Finish | Stage::Round { .. } => html! {},
+        let body = match self.props.session.stage {
+            Stage::Initial => {
+                let onchange = self.link.callback(|name| Msg::PlayerAdded(name));
+                html! { <Initialize onchange={onchange}/> }
+            }
+            Stage::Round { round, status: Status::Playing { .. } } => {
+                let onclick = self.link.callback(|guess| Msg::Guessed(guess));
+                html! { <Master players={self.props.session.players.clone()} onclick={onclick}/> }
+            }
+            Stage::Round { .. } => html! { <pbs::SimpleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
+            Stage::Scores { .. } => html! { <pbs::SimpleHero title="showing scores" subtitle=""/> },
+            Stage::Finish => html! { <Rating quiz={self.props.session.quiz.clone()} />},
         };
 
+        let stage = self.props.session.stage.clone();
+        let rounds = self.props.session.rounds.len();
+        let onchange = self.link.callback(|stage| Msg::ChangeStage(stage));
+
         html! {
-            // <pbs::Section>
+            <pbs::Section>
                 <pbs::Container>
-                    // { view_master }
-                    // <Navigate session_id=self.props.session_id stage=data.stage.clone() rounds=data.rounds.len()/>
+                    { body }
+                    <Navigate stage={stage} rounds={rounds} onchange={onchange}/>
                 </pbs::Container>
-            // </pbs:Section>
+            </pbs::Section>
         }
     }
 
     fn destroy(&mut self) {
-        if !self.session_closed {
-            let post = Post::LeaveSession {
-                session_id: self.session_id,
-            };
-            self.ws_agent.send(Request::Post(post));
-        }
+        let post = Post::LeaveSession { session_id: self.props.session_id };
+        self.ws_agent.send(Request::Post(post));
     }
 }

@@ -1,6 +1,7 @@
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ColumnsProps {
@@ -43,15 +44,11 @@ impl Component for Columns {
     }
 
     fn view(&self) -> Html {
-        let ColumnsProps {
-            vcentered,
-            multiline,
-            centered,
-            ..
-        } = self.props;
-
+        let ColumnsProps { vcentered, multiline, centered, .. } = self.props;
+        let classes =
+            classes!("columns", &self.props.extra, classify!(vcentered, multiline, centered));
         html! {
-            <div class=classes!("columns", &self.props.extra, classify!(vcentered, multiline, centered))>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

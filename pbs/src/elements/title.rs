@@ -1,8 +1,9 @@
 #![allow(clippy::redundant_closure_call)]
 
-use crate::{classify, HeaderSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{classify, HeaderSize};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TitleProps {
@@ -54,7 +55,7 @@ impl Component for Title {
         );
 
         html! {
-            <@{ self.props.tag.clone() } class=classes>
+            <@{ self.props.tag.clone() } class={classes}>
                 { for self.props.children.iter() }
             </@>
         }
@@ -109,7 +110,7 @@ impl Component for Subtitle {
         );
 
         html! {
-            <@{ self.props.tag.clone() } class=classes>
+            <@{ self.props.tag.clone() } class={classes}>
                 { for self.props.children.iter() }
             </@>
         }

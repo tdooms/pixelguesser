@@ -1,7 +1,8 @@
-use crate::{Size, TextColor};
 use yew::events::MouseEvent;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{Size, TextColor};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct IconProps {
@@ -56,8 +57,8 @@ impl Component for Icon {
         );
 
         let icon = html! {
-            <span class=classes onclick=self.props.onclick.clone()>
-                <i class=self.props.icon.clone()> </i>
+            <span class={classes} onclick={self.props.onclick.clone()}>
+                <i class={self.props.icon.clone()}> </i>
             </span>
         };
 

@@ -1,7 +1,8 @@
-use crate::classify;
-use crate::ImageSize;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
+use crate::ImageSize;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ImageProps {
@@ -42,17 +43,14 @@ impl Component for Image {
     }
 
     fn view(&self) -> Html {
-        let classes = classes!(
-            "image",
-            &self.props.extra,
-            self.props.size.as_ref().map(ToString::to_string)
-        );
+        let classes =
+            classes!("image", &self.props.extra, self.props.size.as_ref().map(ToString::to_string));
 
         let ImageProps { rounded, .. } = self.props;
 
         html! {
-            <figure class=classes>
-                <img class=classes!(classify!(rounded)) src={ self.props.src.clone() } />
+            <figure class={classes}>
+                <img class={classes!(classify!(rounded))} src={ self.props.src.clone() } />
             </figure>
         }
     }

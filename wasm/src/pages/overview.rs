@@ -1,9 +1,10 @@
+use yew::prelude::*;
+
+use api::{Fetch, Get, Quiz, Request, Response};
+
 use crate::agents::WebSocketAgent;
 use crate::components::{navbar, quiz_card};
 use crate::pages::view_or_loading;
-
-use api::{Fetch, Get, Quiz, Request, Response};
-use yew::prelude::*;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,

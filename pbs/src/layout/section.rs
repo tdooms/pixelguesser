@@ -1,6 +1,7 @@
-use crate::common::SectionSize;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::common::SectionSize;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct SectionProps {
@@ -44,7 +45,7 @@ impl Component for Section {
         );
 
         html! {
-            <section class=classes>
+            <section class={classes}>
                 { for self.props.children.iter() }
             </section>
         }

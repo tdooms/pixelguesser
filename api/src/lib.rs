@@ -1,33 +1,11 @@
-use chrono::{DateTime, Utc};
+mod entities;
+mod session;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Quiz {
-    pub quiz_id: i64,
-    pub name: String,
-    pub creator: String,
-    pub description: String,
-    pub image_url: String,
-    pub time_created: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Round {
-    pub round_id: i64,
-    pub quiz_id: i64,
-    pub image_url: String,
-    pub points: i64,
-    pub guesses: i64,
-    pub speed: Option<f64>,
-    pub answer: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Player {
-    pub name: String,
-    pub score: i64,
-}
+pub use crate::entities::*;
+pub use crate::session::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ScoreChange {
@@ -37,30 +15,6 @@ pub struct ScoreChange {
 }
 
 pub type ScoreDiff = Vec<ScoreChange>;
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct SessionData {
-    pub stage: Stage,
-    pub quiz: Quiz,
-    pub rounds: Vec<Round>,
-    pub players: HashMap<u64, Player>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Copy, Eq, PartialEq)]
-pub enum Status {
-    Paused,
-    Playing,
-    Revealing,
-    Revealed,
-    Scores,
-}
-
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
-pub enum Stage {
-    Initial,
-    Round { round: usize, status: Status },
-    Finish,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Error {
@@ -107,7 +61,7 @@ pub enum Post {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Reply {
     SessionCreated(Quiz, Vec<Round>),
-    SessionJoined(SessionData),
+    SessionJoined(Session),
     SessionManaged,
 }
 

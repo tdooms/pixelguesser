@@ -33,8 +33,9 @@ impl Component for Footer {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("footer", &self.props.extra);
         html! {
-            <footer class=classes!("footer", &self.props.extra)>
+            <footer class={classes}>
                 { for self.props.children.iter() }
             </footer>
         }

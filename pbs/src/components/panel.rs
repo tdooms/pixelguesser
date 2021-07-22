@@ -39,8 +39,9 @@ impl Component for Panel {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("panel", &self.props.extra);
         html! {
-            <nav class=classes!("panel", &self.props.extra)>
+            <nav class={classes}>
                 <p class="panel-heading">{ self.props.heading.clone() }</p>
                 { for self.props.children.iter() }
             </nav>
@@ -137,8 +138,8 @@ impl Component for PanelBlock {
         }
         let tag = self.props.tag.clone();
         html! {
-            <@{tag} class=classes onclick=self.props.onclick.clone()>
-                {self.props.children.clone()}
+            <@{tag} class={classes} onclick={self.props.onclick.clone()}>
+                { for self.props.children.iter() }
             </@>
         }
     }

@@ -1,7 +1,8 @@
-use crate::{classify, Control, Help, Label};
 use yew::prelude::*;
 use yew::virtual_dom::VChild;
 use yewtil::NeqAssign;
+
+use crate::{classify, Control, Help, Label};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct FieldProps {
@@ -58,7 +59,7 @@ impl Component for Field {
         );
 
         html! {
-            <div class=classes>
+            <div class={classes}>
                 { self.props.label.clone().map(Html::from).unwrap_or(html!{}) }
                 { for self.props.children.iter() }
                 { self.props.help.clone().map(Html::from).unwrap_or(html!{}) }

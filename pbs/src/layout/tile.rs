@@ -1,9 +1,10 @@
 #![allow(clippy::redundant_closure_call)]
 
-use crate::classify;
-use crate::common::{TileCtx, TileSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
+use crate::common::{TileCtx, TileSize};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TileProps {
@@ -66,7 +67,7 @@ impl Component for Tile {
         );
 
         html! {
-            <@{ self.props.tag.clone() } class=classes>
+            <@{ self.props.tag.clone() } class={classes}>
                 { for self.props.children.iter() }
             </@>
         }

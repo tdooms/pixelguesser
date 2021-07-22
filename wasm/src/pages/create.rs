@@ -45,7 +45,7 @@ impl Component for Create {
             <pbs::Box>
                 <pbs::Columns>
                     <pbs::Column>
-                        <pbs::File on_upload=callback filename=filename/>
+                        <pbs::File on_upload={callback} filename={filename}/>
                     </pbs::Column>
                     <pbs::Column>
                         <pbs::Image src={source} />

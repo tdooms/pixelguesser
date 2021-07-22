@@ -1,15 +1,6 @@
-use instant::Duration;
-use std::rc::Rc;
-use wasm_bindgen::prelude::*;
-use yew::prelude::*;
-use yew_router::prelude::*;
-use yew_services::timeout::TimeoutTask;
-use yew_services::TimeoutService;
-
-use crate::agents::{AlertAgent, WebSocketAgent};
-use crate::notifications::Notification;
-use crate::pages::*;
-use crate::route::Route;
+// Use `wee_alloc` as the global allocator.
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod agents;
 mod components;
@@ -21,6 +12,16 @@ mod pages;
 mod route;
 mod utils;
 
+use std::rc::Rc;
+use wasm_bindgen::prelude::*;
+use yew::prelude::*;
+use yew_router::prelude::*;
+
+use crate::agents::{AlertAgent, WebSocketAgent};
+use crate::notifications::Notification;
+use crate::pages::*;
+use crate::route::Route;
+
 pub struct Model {
     // Keeps WebSocket connection alive
     _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
@@ -28,7 +29,6 @@ pub struct Model {
 
     alerts: Vec<Rc<Notification>>,
     link: ComponentLink<Self>,
-    // timer: TimeoutTask,
 }
 
 impl Component for Model {
@@ -36,19 +36,15 @@ impl Component for Model {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        // let timer = TimeoutService::spawn(Duration::from_millis(33), link.callback(|_| ()));
-
         Self {
             _ws_agent: WebSocketAgent::bridge(Callback::noop()),
             alert_agent: AlertAgent::bridge(link.callback(|x| x)),
             alerts: Vec::new(),
-            // timer,
             link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        // self.timer = TimeoutService::spawn(Duration::from_millis(33), self.link.callback(|_| ()));
         self.alerts.push(msg);
         false
     }
@@ -60,8 +56,8 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <pbs::Alerts<Rc<Notification>> entries=self.alerts />
-                <Router<Route> render=Router::render(switch) />
+                <pbs::Alerts<Rc<Notification>> entries={self.alerts.clone()} />
+                <Router<Route> render={Router::render(switch)} />
             </main>
         }
     }
@@ -69,8 +65,8 @@ impl Component for Model {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Host { quiz_id } => html! { <HostLoader quiz_id=*quiz_id/> },
-        Route::Manage { session_id } => html! { <ManageLoader session_id=*session_id/> },
+        Route::Host { quiz_id } => html! { <HostLoader quiz_id={*quiz_id}/> },
+        Route::Manage { session_id } => html! { <ManageLoader session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
         Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },

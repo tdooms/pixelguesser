@@ -1,5 +1,6 @@
-use crate::{Color, Size};
 use yew::prelude::*;
+
+use crate::{Color, Size};
 
 #[derive(Properties, Clone)]
 pub struct FileProps {
@@ -62,10 +63,11 @@ impl Component for File {
         let callback = self.link.callback(|x| x);
         let accept = self.props.accept.clone();
 
+        let classes = classes!("file", maybe_name, &self.props.extra);
         html! {
-            <div class=classes!("file", maybe_name, &self.props.extra)>
+            <div class={classes}>
                 <label class="file-label">
-                <input class="file-input" type="file" accept=accept onchange=callback />
+                <input class="file-input" type="file" accept={accept} onchange={callback} />
                 <span class="file-cta">
                     <span class="file-icon">
                     <i class="fas fa-upload"></i>

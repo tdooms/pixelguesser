@@ -1,11 +1,12 @@
+use std::collections::HashMap;
+
+use yew::prelude::*;
+
 use api::Player;
 use pbs::ColumnSize;
-use std::collections::HashMap;
-use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub session_id: u64,
     pub players: HashMap<u64, Player>,
 }
 
@@ -54,7 +55,7 @@ impl Component for Scores {
 
         html! {
             <pbs::Columns centered=true>
-                <pbs::Column size=ColumnSize::IsHalf>
+                <pbs::Column size={ColumnSize::IsHalf}>
                     { for players.first().map(view_winner) }
                     { for players.iter().skip(1).map(view_player) }
                </pbs::Column>

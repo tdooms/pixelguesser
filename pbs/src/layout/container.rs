@@ -1,6 +1,7 @@
-use crate::classify;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ContainerProps {
@@ -41,7 +42,7 @@ impl Component for Container {
         let classes = classes!("container", &self.props.extra, classify!(fluid));
 
         html! {
-            <div class=classes>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

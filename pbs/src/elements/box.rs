@@ -33,8 +33,9 @@ impl Component for Box {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!("box", &self.props.extra);
         html! {
-            <div class=classes!("box", &self.props.extra)>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

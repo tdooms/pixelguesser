@@ -49,14 +49,15 @@ impl Component for Checkbox {
 
     fn view(&self) -> Html {
         let checked = self.props.checked;
+        let classes = classes!("checkbox", &self.props.extra);
         html! {
-            <label class=classes!("checkbox", &self.props.extra) disabled=self.props.disabled>
+            <label class={classes} disabled={self.props.disabled}>
                 <input
                     type="checkbox"
-                    checked=checked
-                    name=self.props.name.clone()
-                    onclick=self.link.callback(move |_| !checked)
-                    disabled=self.props.disabled
+                    checked={checked}
+                    name={self.props.name.clone()}
+                    onclick={self.link.callback(move |_| !checked)}
+                    disabled={self.props.disabled}
                     />
                 { for self.props.children.iter() }
             </label>

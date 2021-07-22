@@ -1,16 +1,19 @@
+use std::time::Duration;
+
+use yew::agent::{Dispatched, Dispatcher};
+use yew::prelude::*;
+use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
+use yew_services::resize::ResizeTask;
+use yew_services::timeout::TimeoutTask;
+use yew_services::{ResizeService, TimeoutService};
+use yewtil::NeqAssign;
+
+use api::Status;
+
 use crate::agents::AlertAgent;
 use crate::globals::IMAGE_ENDPOINT;
 use crate::notifications::{Error, Notification};
 use crate::utils::{draw_pixelated, TypeRef};
-use api::Status;
-use std::time::Duration;
-use yew::agent::Dispatcher;
-use yew::prelude::*;
-use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
-use yew::Properties;
-use yew_services::resize::ResizeTask;
-use yew_services::timeout::TimeoutTask;
-use yew_services::{ResizeService, TimeoutService};
 
 pub enum Msg {
     Loaded,
@@ -18,7 +21,7 @@ pub enum Msg {
     Resize,
 }
 
-#[derive(Debug, Clone, Properties)]
+#[derive(Debug, Clone, Properties, PartialEq)]
 pub struct Props {
     pub on_revealed: Callback<()>,
     pub url: String,
@@ -95,19 +98,18 @@ impl Component for Pixelate {
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
-        match (msg, self.props.status) {
-            (Msg::Loaded, _) => {
+        match msg {
+            Msg::Loaded => {
                 let _ = self.initialize();
                 let _ = self.draw();
 
                 self.link.send_message(Msg::Pixelate);
-                false
             }
-            (Msg::Pixelate, Status::Playing | Status::Paused | Status::Revealing) => {
-                // TODO: fix
+            Msg::Pixelate => {
                 let speed = match self.props.status {
-                    Status::Playing => 1.002,
-                    _ => 1.07,
+                    Status::Playing { paused: false } => 1.002,
+                    Status::Revealing => 1.07,
+                    Status::Revealed | Status::Playing { paused: true } => return false,
                 };
 
                 let max_pixels = match self.image.cast::<HtmlImageElement>() {
@@ -133,27 +135,26 @@ impl Component for Pixelate {
 
                 self.pixels = clamped_pixels;
                 let _ = self.draw();
-
-                false
             }
-            (Msg::Resize, _) => {
+            Msg::Resize => {
                 let _ = self.draw();
-                false
             }
-            _ => false,
         }
+        false
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
         if self.props.url != props.url {
             self.restart()
         }
-        if let (Some(_), Status::Paused) = (self.timer.as_ref(), props.status) {
-            self.timer = None;
-        }
 
-        self.props = props;
-        true
+        match props.status {
+            Status::Playing { paused: true } => self.timer = None,
+            Status::Playing { paused: false } => self.link.send_message(Msg::Pixelate),
+            _ => {}
+        };
+
+        self.props.neq_assign(props)
     }
 
     fn view(&self) -> Html {
@@ -161,12 +162,12 @@ impl Component for Pixelate {
             <>
                 <img src={format!("http://{}/{}", IMAGE_ENDPOINT, self.props.url)}
                      style="display:none"
-                     onload=self.link.callback(|_| Msg::Loaded)
-                     ref=self.image.clone()/>
-                <canvas style="display:none" ref=self.offscreen.clone()/>
+                     onload={self.link.callback(|_| Msg::Loaded)}
+                     ref={self.image.clone()}/>
+                <canvas style="display:none" ref={self.offscreen.clone()}/>
 
-                <div style="height:100vh" ref=self.container.clone()>
-                    <canvas style="display:block" ref=self.canvas.clone()/>
+                <div style="height:100vh" ref={self.container.clone()}>
+                    <canvas style="display:block" ref={self.canvas.clone()}/>
                 </div>
             </>
         }

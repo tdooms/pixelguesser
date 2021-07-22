@@ -78,9 +78,7 @@ impl Component for TextArea {
     }
 
     fn view(&self) -> Html {
-        let TextAreaProps {
-            loading, r#static, ..
-        } = self.props;
+        let TextAreaProps { loading, r#static, .. } = self.props;
 
         let classes = classes!(
             "textarea",
@@ -93,14 +91,14 @@ impl Component for TextArea {
 
         html! {
             <textarea
-                name=self.props.name.clone()
-                value=self.props.value.clone()
-                oninput=self.link.callback(|input: InputData| input.value)
-                class=classes
-                rows=self.props.rows.as_ref().map(ToString::to_string)
-                placeholder=self.props.placeholder.clone()
-                disabled=self.props.disabled
-                readonly=self.props.readonly
+                name={self.props.name.clone()}
+                value={self.props.value.clone()}
+                oninput={self.link.callback(|input: InputData| input.value)}
+                class={classes}
+                rows={self.props.rows.as_ref().map(ToString::to_string)}
+                placeholder={self.props.placeholder.clone()}
+                disabled={self.props.disabled}
+                readonly={self.props.readonly}
                 />
         }
     }

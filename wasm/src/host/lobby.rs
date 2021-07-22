@@ -1,14 +1,14 @@
-use crate::utils::code_to_string;
-use api::SessionData;
-use pbs::{Color, ColumnSize, HeroSize};
-use yew::prelude::*;
-
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use api::Session;
+use pbs::{Color, ColumnSize, HeroSize};
+
+use crate::utils::code_to_string;
+
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LobbyProps {
-    pub session: SessionData,
+    pub session: Session,
     pub session_id: u64,
     pub has_manager: bool,
 }
@@ -36,7 +36,7 @@ impl Component for Lobby {
     fn view(&self) -> Html {
         let players = self.props.session.players.iter().map(|(_, player)| {
             html! {
-                <pbs::Column size=ColumnSize::IsNarrow>
+                <pbs::Column size={ColumnSize::IsNarrow}>
                     <pbs::Box> {&player.name} </pbs::Box>
                 </pbs::Column>
             }
@@ -59,8 +59,8 @@ impl Component for Lobby {
 
         html! {
             <>
-                <pbs::SimpleHero title=title subtitle=subtitle />
-                <pbs::Hero color=Color::Primary size=HeroSize::Medium body=body />
+                <pbs::SimpleHero title={title} subtitle={subtitle} />
+                <pbs::Hero color={Color::Primary} size={HeroSize::Medium} body={body} />
 
                 <pbs::Columns multiline=true centered=true extra="mt-5">
                     { for players }

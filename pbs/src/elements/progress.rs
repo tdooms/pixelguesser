@@ -1,6 +1,7 @@
-use crate::{Color, Size};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{Color, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ProgressProps {
@@ -55,7 +56,7 @@ impl Component for Progress {
         let value = self.props.value.as_ref().map(ToString::to_string);
 
         html! {
-            <progress class=classes max=max value=value>
+            <progress class={classes} max={max} value={value}>
                 // { format!("{}%", self.props.value) }
             </progress>
         }

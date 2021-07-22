@@ -1,6 +1,7 @@
-use crate::{Color, HeroSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::{Color, HeroSize};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct HeroProps {
@@ -72,7 +73,7 @@ impl Component for Hero {
         };
 
         html! {
-            <section class=classes>
+            <section class={classes}>
                 {header} {body} {footer}
             </section>
         }

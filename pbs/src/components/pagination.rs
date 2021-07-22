@@ -1,8 +1,12 @@
-use crate::{classify, Alignment, Size};
 use derive_more::Display;
 use yew::events::MouseEvent;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+#[cfg(feature = "router")]
+pub use router::PaginationItemRouter;
+
+use crate::{classify, Alignment, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct PaginationProps {
@@ -61,7 +65,7 @@ impl Component for Pagination {
             classify!(rounded)
         );
         html! {
-            <nav class=classes role="navigation" aria-label="pagination">
+            <nav class={classes} role="navigation" aria-label="pagination">
                 { self.props.previous.clone() }
                 { self.props.next.clone() }
                 <ul class="pagination-list">
@@ -112,9 +116,10 @@ impl Component for PaginationItem {
     }
 
     fn view(&self) -> Html {
+        let classes = classes!(self.props.item_type.to_string());
         html! {
-            <a class=self.props.item_type.to_string() aria-label=self.props.label.clone() onclick=self.props.onclick.clone()>
-                {self.props.children.clone()}
+            <a class={classes} aria-label={self.props.label.clone()} onclick={self.props.onclick.clone()}>
+                { for self.props.children.iter() }
             </a>
         }
     }
@@ -169,9 +174,10 @@ impl Component for PaginationEllipsis {
 
 #[cfg(feature = "router")]
 mod router {
-    use super::*;
     use yew_router::components::RouterAnchor;
     use yew_router::{RouterState, Switch};
+
+    use super::*;
 
     #[derive(Clone, Properties, PartialEq)]
     pub struct RouterProps<SW: Switch + Clone + PartialEq + 'static> {
@@ -200,10 +206,7 @@ mod router {
         type Properties = RouterProps<SW>;
 
         fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-            Self {
-                props,
-                marker: std::marker::PhantomData,
-            }
+            Self { props, marker: std::marker::PhantomData }
         }
 
         fn update(&mut self, _: Self::Message) -> ShouldRender {
@@ -226,6 +229,3 @@ mod router {
         }
     }
 }
-
-#[cfg(feature = "router")]
-pub use router::PaginationItemRouter;

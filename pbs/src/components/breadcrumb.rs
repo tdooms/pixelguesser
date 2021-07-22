@@ -55,7 +55,7 @@ impl Component for Breadcrumb {
         );
 
         html! {
-            <nav class=classes aria-label="breadcrumbs">
+            <nav class={classes} aria-label="breadcrumbs">
                 <ul>
                     { for self.props.children.iter() }
                 </ul>

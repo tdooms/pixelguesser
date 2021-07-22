@@ -1,5 +1,6 @@
-use api::{Quiz, Round};
 use sqlx::{Error, PgPool};
+
+use api::{Quiz, Round};
 
 // FIXME: propagate errors
 pub async fn rounds(quiz_id: i64, pool: PgPool) -> Result<Vec<Round>, Error> {

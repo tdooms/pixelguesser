@@ -1,6 +1,7 @@
-use crate::Color;
 use yew::prelude::*;
 use yewtil::NeqAssign;
+
+use crate::Color;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct HelpProps {
@@ -34,8 +35,10 @@ impl Component for Help {
     }
 
     fn view(&self) -> Html {
+        let classes =
+            classes!("help", &self.props.extra, self.props.color.as_ref().map(ToString::to_string));
         html! {
-            <div class=classes!("help", &self.props.extra, self.props.color.as_ref().map(ToString::to_string))>
+            <div class={classes}>
                 { for self.props.children.iter() }
             </div>
         }

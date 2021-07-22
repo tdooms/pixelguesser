@@ -1,14 +1,16 @@
-use crate::agents::WebSocketAgent;
-use crate::host::{Finish, Lobby, Pixelate};
-use api::{Alert, Player, Post, Reply, Request, Response, SessionData, Stage};
 use js_sys::Function;
 use yew::prelude::*;
 use yew::web_sys::window;
 
+use api::{Action, Alert, Player, Post, Request, Response, Session, Stage, Status};
+
+use crate::agents::WebSocketAgent;
+use crate::host::{Finish, Lobby, Pixelate, Scores};
+
 #[derive(Clone, Properties)]
 pub struct Props {
     pub session_id: u64,
-    pub session: SessionData,
+    pub session: Session,
 }
 
 pub enum Msg {
@@ -32,12 +34,8 @@ impl Component for Host {
             window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
         }
 
-        Self {
-            link,
-            ws_agent: WebSocketAgent::bridge(link.callback(|x| Msg::Response(x))),
-            props,
-            has_manager: false,
-        }
+        let ws_agent = WebSocketAgent::bridge(link.callback(|x| Msg::Response(x)));
+        Self { ws_agent, link, props, has_manager: false }
     }
 
     // TODO: check session validity
@@ -45,8 +43,14 @@ impl Component for Host {
         match msg {
             Msg::Response(response) => self.handle_response(response),
             Msg::Revealed => {
-                // let stage = Stage::Round {round: }
-                // self.ws_agent.send()
+                match self.props.session.stage {
+                    Stage::Round { round, status: Status::Revealing } => {
+                        let stage = Stage::Round { round, status: Status::Revealed };
+                        let post = Post::ChangeStage { session_id: self.props.session_id, stage };
+                        self.ws_agent.send(Request::Post(post))
+                    }
+                    _ => {}
+                }
                 false
             }
         }
@@ -60,19 +64,37 @@ impl Component for Host {
     fn view(&self) -> Html {
         match &self.props.session.stage {
             Stage::Initial => {
-                html! { <Lobby session=self.props.session.clone()
-                session_id=self.props.session_id
-                has_manager=self.has_manager/> }
+                html! {
+                    <Lobby session={self.props.session.clone()}
+                        session_id={self.props.session_id}
+                        has_manager={self.has_manager}
+                    />
+                }
             }
             Stage::Round { round, status } => {
-                html! { <Pixelate on_revealed=self.link.callback(|_| Msg::Revealed)
-                status=*status
-                url=self.props.session.rounds[*round].image_url.clone()/> }
+                html! {
+                    <Pixelate on_revealed={self.link.callback(|_| Msg::Revealed)}
+                        status={*status}
+                        url={self.props.session.rounds[*round].image_url.clone()}
+                    />
+                }
+            }
+            Stage::Scores { round } => {
+                html! {
+                    <pbs::Section>
+                        <pbs::Container>
+                            <Scores players={self.props.session.players.clone()}/>
+                        </pbs::Container>
+                    </pbs::Section>
+                }
             }
             Stage::Finish => {
-                html! { <Finish session_id=self.props.session_id
-                players=self.props.session.players.clone()
-                quiz=self.props.session.quiz.clone()/> }
+                html! {
+                    <Finish session_id={self.props.session_id}
+                        players={self.props.session.players.clone()}
+                        quiz={self.props.session.quiz.clone()}
+                    />
+                }
             }
         }
     }
@@ -92,10 +114,7 @@ impl Host {
     fn handle_response(&mut self, response: Response) -> bool {
         match response {
             Response::Alert(_, Alert::PlayerAdded(id, name)) => {
-                self.props
-                    .session
-                    .players
-                    .insert(id, Player { score: 0, name });
+                self.props.session.players.insert(id, Player { score: 0, name });
                 true
             }
             Response::Alert(_, Alert::ScoreChanged(diff)) => {

@@ -56,13 +56,7 @@ impl Component for Tabs {
     }
 
     fn view(&self) -> Html {
-        let TabsProps {
-            boxed,
-            toggle,
-            rounded,
-            fullwidth,
-            ..
-        } = self.props;
+        let TabsProps { boxed, toggle, rounded, fullwidth, .. } = self.props;
 
         let classes = classes!(
             "tabs",
@@ -72,7 +66,7 @@ impl Component for Tabs {
         );
 
         html! {
-            <div class=classes>
+            <div class={classes}>
                 <ul>
                     { self.props.children.clone() }
                 </ul>

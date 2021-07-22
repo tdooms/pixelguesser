@@ -1,8 +1,11 @@
-use crate::host::Scores;
+use std::collections::HashMap;
+
+use yew::prelude::*;
+
 use api::{Player, Quiz};
 use pbs::{Color, HeroSize};
-use std::collections::HashMap;
-use yew::prelude::*;
+
+use crate::host::Scores;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
@@ -33,13 +36,12 @@ impl Component for Finish {
     }
 
     fn view(&self) -> Html {
-        let body =
-            html! { <Scores session_id=self.props.session_id players=self.props.players.clone()/> };
+        let body = html! { <Scores players={self.props.players.clone()}/> };
 
         html! {
             <>
-                <pbs::SimpleHero color=Color::Primary title=self.props.quiz.name.clone() subtitle={"finished"}/>
-                <pbs::Hero body=body color=Color::Primary size=HeroSize::Medium/>
+                <pbs::SimpleHero color={Color::Primary} title={self.props.quiz.name.clone()} subtitle={"finished"}/>
+                <pbs::Hero body={body} color={Color::Primary} size={HeroSize::Medium}/>
             </>
         }
     }

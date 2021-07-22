@@ -1,10 +1,11 @@
-use crate::agents::WebSocketAgent;
-use crate::notifications::{Error, Notification, Warning};
 use api::Response;
 use std::collections::HashSet;
 use std::rc::Rc;
 use yew::agent::{Agent, AgentLink, Context, HandlerId};
 use yew::{Bridge, Bridged};
+
+use crate::agents::WebSocketAgent;
+use crate::notifications::{Error, Notification, Warning};
 
 pub struct AlertAgent {
     link: AgentLink<Self>,
