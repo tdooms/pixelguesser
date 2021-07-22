@@ -6,7 +6,7 @@
 /static/wasm_bg.wasm
 /static/wasm_bg.wasm.d.ts
 
-/wasm/Cargo.lock
+/frontend/Cargo.lock
 /Cargo.lock
 
 /.env

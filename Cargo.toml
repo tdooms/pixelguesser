@@ -1,2 +1,2 @@
 [workspace]
-members = ["api", "backend", "wasm", "pbs"]
+members = ["api", "backend", "frontend", "pbs"]

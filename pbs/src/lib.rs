@@ -2,6 +2,14 @@
 #![cfg_attr(feature = "docinclude", doc(include = "../README.md"))]
 #![recursion_limit = "1024"]
 
+mod common;
+mod components;
+mod custom;
+mod elements;
+mod form;
+mod layout;
+mod util;
+
 // common
 pub use common::{
     Alignment, Color, ColumnOffset, ColumnSize, HeaderSize, HeroSize, ImageSize, InputType,
@@ -34,8 +42,13 @@ pub use components::panel::{
 };
 pub use components::tabs::{Tabs, TabsProps};
 pub use custom::alerts::{Alerts, AlertsProps};
+pub use custom::center::{Center, CenterProps};
+pub use custom::dynimage::{DynImage, DynImageProps};
+pub use custom::kvbuttons::{KvButtons, KvButtonsProps};
 pub use custom::loading::{Loading, LoadingProps, MaybeLoading, MaybeLoadingProps};
+pub use custom::sidebar::{Sidebar, SidebarAlignment, SidebarProps};
 pub use custom::simplehero::{SimpleHero, SimpleHeroProps};
+
 // elements
 pub use elements::button::{Button, ButtonProps};
 pub use elements::buttons::{Buttons, ButtonsProps};
@@ -77,13 +90,4 @@ pub use layout::hero::{Hero, HeroProps};
 pub use layout::section::{Section, SectionProps};
 pub use layout::tile::{Tile, TileProps};
 
-mod common;
-mod components;
-mod custom;
-mod elements;
-mod form;
-mod layout;
-mod util;
-
 // columns
-

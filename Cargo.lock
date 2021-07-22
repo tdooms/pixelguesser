@@ -355,6 +355,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "frontend"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "api",
+ "chrono",
+ "instant",
+ "js-sys",
+ "log",
+ "pbs",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-logger",
+ "web-sys",
+ "wee_alloc",
+ "yew 0.18.0",
+ "yew-router",
+ "yew-services",
+ "yewtil",
+]
+
+[[package]]
 name = "funty"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -987,6 +1012,10 @@ name = "pbs"
 version = "0.1.0"
 dependencies = [
  "derive_more",
+ "log",
+ "strum",
+ "strum_macros",
+ "web-sys",
  "yew 0.18.0",
  "yew-router",
  "yewtil",
@@ -1561,6 +1590,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "strum"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aaf86bbcfd1fa9670b7a129f64fc0c9fcbbfe4f1bc4210e9e98fe71ffc12cde2"
+
+[[package]]
+name = "strum_macros"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d06aaeeee809dbc59eb4556183dd927df67db1540de5be8d3ec0b6636358a5ec"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "subtle"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1926,31 +1973,6 @@ name = "wasi"
 version = "0.10.2+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
-
-[[package]]
-name = "wasm"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "api",
- "chrono",
- "instant",
- "js-sys",
- "log",
- "pbs",
- "serde",
- "serde_json",
- "thiserror",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "wasm-logger",
- "web-sys",
- "wee_alloc",
- "yew 0.18.0",
- "yew-router",
- "yew-services",
- "yewtil",
-]
 
 [[package]]
 name = "wasm-bindgen"

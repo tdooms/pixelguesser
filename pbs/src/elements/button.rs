@@ -44,6 +44,9 @@ pub struct ButtonProps {
     pub text: Option<String>,
 
     #[prop_or_default]
+    pub selected: bool,
+
+    #[prop_or_default]
     pub extra: String,
 }
 
@@ -71,12 +74,21 @@ impl Component for Button {
     }
 
     fn view(&self) -> Html {
-        let ButtonProps { hidden, outlined, light, inverted, rounded, loading, fullwidth, .. } =
-            self.props;
+        let ButtonProps {
+            hidden,
+            outlined,
+            light,
+            inverted,
+            rounded,
+            loading,
+            fullwidth,
+            selected,
+            ..
+        } = self.props;
 
         let classes = classes!(
             "button",
-            classify!(hidden, outlined, light, inverted, rounded, loading, fullwidth),
+            classify!(hidden, outlined, light, inverted, rounded, loading, fullwidth, selected),
             self.props.color.as_ref().map(ToString::to_string),
             self.props.size.to_string(),
             &self.props.extra

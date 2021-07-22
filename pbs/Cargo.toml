@@ -13,5 +13,11 @@ yew = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585
 yew-router = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa"}
 yewtil = { version = "0.3.2", features = ["neq"] }
 
+strum = "0.21"
+strum_macros = "0.21"
+
+log = "0.4"
+web-sys = { version = "0.3", features = ["HtmlImageElement", "HtmlDivElement"] }
+
 [package.metadata.docs.rs]
 features = ["docinclude"] # Activate `docinclude` during docs.rs build.

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 use api::{Action, Stage};
-use pbs::{Color, Size};
+use pbs::{Alignment, Color, Size};
 
 use crate::route::Route;
 
@@ -78,7 +78,7 @@ impl Component for Navigate {
         };
 
         html! {
-            <pbs::Buttons centered=true extra="mt-4">
+            <pbs::Buttons alignment={Alignment::Centered} extra="mt-4">
                 { for ACTIONS.iter().copied().map(map_action) }
             </pbs::Buttons>
         }

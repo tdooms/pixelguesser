@@ -86,7 +86,7 @@ impl Stage {
                 true => vec![Action::Finish],
                 false => vec![Action::Next, Action::Scores],
             },
-            Stage::Round { round, status: Status::Revealing } => vec![],
+            Stage::Round { round: _, status: Status::Revealing } => vec![],
             Stage::Scores { round } if round < rounds - 1 => vec![Action::Next],
             _ => vec![Action::Leave],
         }

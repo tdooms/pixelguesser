@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::classify;
+use crate::Alignment;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ButtonsProps {
@@ -12,7 +12,10 @@ pub struct ButtonsProps {
     pub extra: String,
 
     #[prop_or_default]
-    pub centered: bool,
+    pub alignment: Alignment,
+
+    #[prop_or_default]
+    pub addons: bool,
 }
 
 /// A white box to contain other elements.
@@ -39,8 +42,13 @@ impl Component for Buttons {
     }
 
     fn view(&self) -> Html {
-        let ButtonsProps { centered, .. } = self.props;
-        let classes = classes!("buttons", &self.props.extra, classify!(centered));
+        let classes = classes!(
+            "buttons",
+            &self.props.extra,
+            self.props.alignment.to_string(),
+            self.props.addons.then(|| "has-addons")
+        );
+
         html! {
             <div class={classes}>
                 { for self.props.children.iter() }

@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use crate::{Color, Size};
+use crate::{classify, Alignment, Color, Size};
 
 #[derive(Properties, Clone)]
 pub struct FileProps {
@@ -15,6 +15,12 @@ pub struct FileProps {
 
     #[prop_or_default]
     pub accept: Option<String>,
+
+    #[prop_or_default]
+    pub boxed: bool,
+
+    #[prop_or_default]
+    pub alignment: Alignment,
 
     #[prop_or_default]
     pub extra: String,
@@ -59,11 +65,19 @@ impl Component for File {
             Some(file) => html! {<span class="file-name"> {file} </span>},
         };
 
+        let boxed = self.props.boxed;
         let maybe_name = self.props.filename.as_ref().map(|_| "has-name");
         let callback = self.link.callback(|x| x);
         let accept = self.props.accept.clone();
 
-        let classes = classes!("file", maybe_name, &self.props.extra);
+        let classes = classes!(
+            "file",
+            classify!(boxed),
+            maybe_name,
+            self.props.alignment.to_string(),
+            &self.props.extra
+        );
+
         html! {
             <div class={classes}>
                 <label class="file-label">

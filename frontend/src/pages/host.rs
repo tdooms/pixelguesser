@@ -2,7 +2,7 @@ use js_sys::Function;
 use yew::prelude::*;
 use yew::web_sys::window;
 
-use api::{Action, Alert, Player, Post, Request, Response, Session, Stage, Status};
+use api::{Alert, Player, Post, Request, Response, Session, Stage, Status};
 
 use crate::agents::WebSocketAgent;
 use crate::host::{Finish, Lobby, Pixelate, Scores};
