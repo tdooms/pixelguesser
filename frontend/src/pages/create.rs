@@ -1,11 +1,18 @@
-use pbs::{Alignment, Color, ColumnSize};
 use std::collections::HashMap;
+
 use yew::prelude::*;
 use yew::web_sys::{File as SysFile, Url};
 
+use pbs::{Alignment, Color, ColumnSize, SidebarAlignment};
+
 pub enum Msg {
     Upload(Vec<SysFile>),
+    Add,
     Input,
+    Remove,
+    Reveal,
+    Pause,
+    Resume,
 }
 
 pub struct Create {
@@ -28,6 +35,14 @@ impl Component for Create {
                 true
             }
             Msg::Input => false,
+            Msg::Remove => {
+                self.file = None;
+                true
+            }
+            Msg::Reveal => false,
+            Msg::Pause => false,
+            Msg::Resume => false,
+            Msg::Add => false,
         }
     }
 
@@ -42,8 +57,28 @@ impl Component for Create {
             .map(|file| Url::create_object_url_with_blob(file).unwrap())
             .unwrap_or_default();
 
-        let callback = self.link.callback(|x| Msg::Upload(x));
-        let filename = self.file.as_ref().map(|file| file.name());
+        let on_upload = self.link.callback(|x| Msg::Upload(x));
+        let on_remove = self.link.callback(|_| Msg::Remove);
+        let on_add = self.link.callback(|_| Msg::Add);
+
+        let file_or_image = match &self.file {
+            Some(file) => html! {
+                <>
+                <pbs::DynImage src={source.clone()} height=85/>
+
+                <pbs::Buttons alignment={Alignment::Centered} extra="mt-5">
+                    <pbs::Button text="reveal" icon="fas fa-eye" onclick={self.link.callback(|_| Msg::Reveal)}/>
+                    <pbs::Button text="resume" icon="fas fa-play" onclick={self.link.callback(|_| Msg::Resume)}/>
+                    <pbs::Button text="pause" icon="fas fa-pause" onclick={self.link.callback(|_| Msg::Pause)}/>
+                </pbs::Buttons>
+                </>
+            },
+            None => html! {
+                <pbs::Center>
+                    <pbs::File boxed=true alignment={Alignment::Centered} on_upload={on_upload} />
+                </pbs::Center>
+            },
+        };
 
         let points_values: Vec<(_, _)> = (1..=5).map(|x| (x.to_string(), x)).collect();
         let guesses_values: Vec<(_, _)> = (1..=3).map(|x| (x.to_string(), x)).collect();
@@ -57,20 +92,22 @@ impl Component for Create {
         let guesses_label = html_nested! { <pbs::Label> {"Guesses"} </pbs::Label> };
         let guesses_inner = html! { <pbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
 
+        let side_images = match &self.file {
+            Some(file) => html! { <pbs::DynImage src={source} height=10/> },
+            None => html! {},
+        };
+
         html! {
             <pbs::Columns>
-                <pbs::Column size=ColumnSize::Is10>
-                    <pbs::Section>
-                        <pbs::Container>
-                            <pbs::Center>
-                                <pbs::File boxed=true alignment={Alignment::Centered} on_upload={callback} filename={filename}/>
-                                <pbs::DynImage src={source} />
-                            </pbs::Center>
-                        </pbs::Container>
-                    </pbs::Section>
+                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left}>
+                    { side_images }
+                </pbs::Sidebar>
+
+                <pbs::Column size=ColumnSize::Is8>
+                    { file_or_image }
                 </pbs::Column>
 
-                <pbs::Sidebar>
+                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Right}>
                     <pbs::Field label={answer_label}>
                         <pbs::Control inner={answer_inner} />
                     </pbs::Field>
@@ -80,6 +117,11 @@ impl Component for Create {
                     <pbs::Field label={guesses_label}>
                         <pbs::Control inner={guesses_inner} />
                     </pbs::Field>
+
+                    <pbs::Buttons>
+                        <pbs::Button icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove image" onclick={on_remove}/>
+                        <pbs::Button icon="fas fa-plus" fullwidth=true color={Color::Success} light=true text="add round" onclick={on_add}/>
+                    </pbs::Buttons>
                 </pbs::Sidebar>
             </pbs::Columns>
         }

@@ -17,7 +17,6 @@ strum = "0.21"
 strum_macros = "0.21"
 
 log = "0.4"
-web-sys = { version = "0.3", features = ["HtmlImageElement", "HtmlDivElement"] }
 
 [package.metadata.docs.rs]
 features = ["docinclude"] # Activate `docinclude` during docs.rs build.

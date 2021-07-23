@@ -1015,7 +1015,6 @@ dependencies = [
  "log",
  "strum",
  "strum_macros",
- "web-sys",
  "yew 0.18.0",
  "yew-router",
  "yewtil",

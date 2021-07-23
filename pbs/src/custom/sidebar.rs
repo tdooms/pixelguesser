@@ -1,6 +1,8 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::ColumnSize;
+
 #[derive(Clone, Debug, Copy, PartialEq)]
 pub enum SidebarAlignment {
     Right,
@@ -15,7 +17,10 @@ pub struct SidebarProps {
     pub extra: String,
 
     #[prop_or(SidebarAlignment::Right)]
-    pub align: SidebarAlignment,
+    pub alignment: SidebarAlignment,
+
+    #[prop_or(ColumnSize::Is2)]
+    pub size: ColumnSize,
 }
 
 pub struct Sidebar {
@@ -39,16 +44,14 @@ impl Component for Sidebar {
     }
 
     fn view(&self) -> Html {
-        let classes = classes!("p-6", &self.props.extra);
+        let classes = classes!("column", "p-6", &self.props.extra, self.props.size.to_string());
 
-        let style = match self.props.align {
-            SidebarAlignment::Right => {
-                "box-shadow:-10px 0px 10px 1px #eeeeee;height:100vh;overflow-y:auto"
-            }
-            SidebarAlignment::Left => {
-                "box-shadow:10px 0px -10px 1px #eeeeee;height:100vh;overflow-y:auto"
-            }
+        let shadow = match self.props.alignment {
+            SidebarAlignment::Right => "-10px 0px 10px 1px #eeeeee",
+            SidebarAlignment::Left => "10px 0px 10px 1px #eeeeee",
         };
+
+        let style = format!("box-shadow:{};height:100vh;overflow-y:auto", shadow);
 
         html! {
             <div class={classes} style={style}>

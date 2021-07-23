@@ -1,17 +1,17 @@
 use yew::prelude::*;
-use yew::web_sys::{HtmlDivElement, HtmlImageElement};
 use yewtil::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct DynImageProps {
     #[prop_or_default]
     pub src: String,
+
+    #[prop_or(100)]
+    pub height: u32,
 }
 
 pub struct DynImage {
     props: DynImageProps,
-    container: NodeRef,
-    image: NodeRef,
 }
 
 impl Component for DynImage {
@@ -19,17 +19,10 @@ impl Component for DynImage {
     type Properties = DynImageProps;
 
     fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props, container: Default::default(), image: Default::default() }
+        Self { props }
     }
 
     fn update(&mut self, _: Self::Message) -> ShouldRender {
-        // TODO: remove unwraps
-        let container = self.container.cast::<HtmlDivElement>().unwrap();
-        let image = self.container.cast::<HtmlImageElement>().unwrap();
-
-        image.set_width(container.offset_width() as u32);
-        image.set_height(container.offset_height() as u32);
-
         false
     }
 
@@ -38,11 +31,8 @@ impl Component for DynImage {
     }
 
     fn view(&self) -> Html {
-        // TODO: trigger update i guess
-        html! {
-            <div style="height:100vh" ref={self.container.clone()}>
-                <img src={self.props.src.clone()} />
-            </div>
-        }
+        let style = format!("height:{}vh;background-image:url('{}');background-size:contain;background-repeat:no-repeat;background-position:center center;", self.props.height, self.props.src);
+
+        html! { <div style={style}> </div> }
     }
 }
