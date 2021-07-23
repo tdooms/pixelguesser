@@ -4,6 +4,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod agents;
 mod components;
+mod create;
 mod globals;
 mod host;
 mod manager;
