@@ -22,6 +22,15 @@ pub struct Round {
     pub answer: String,
 }
 
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct DraftRound {
+    pub image_url: Option<String>,
+    pub points: i64,
+    pub guesses: i64,
+    pub speed: Option<f64>,
+    pub answer: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Player {
     pub name: String,

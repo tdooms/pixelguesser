@@ -1,11 +1,11 @@
-use std::collections::HashMap;
-
+use api::DraftRound;
+use pbs::{Alignment, Color};
 use yew::prelude::*;
+use yew::web_sys::File as SysFile;
 use yewtil::NeqAssign;
 
-use api::Round;
-
 pub enum Msg {
+    Upload(Vec<SysFile>),
     Remove,
     Add,
     Answer(String),
@@ -15,24 +15,27 @@ pub enum Msg {
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<Round>,
+    pub onchange: Callback<DraftRound>,
     pub onremove: Callback<()>,
     pub onadd: Callback<()>,
 }
 
-pub struct SideImage {
+pub struct SideOptions {
     props: Props,
+    link: ComponentLink<Self>,
+
     answer: Option<String>,
-    points: u32,
-    guesses: u32,
+    image: Option<String>,
+    points: i64,
+    guesses: i64,
 }
 
-impl Component for SideImage {
-    type Message = ();
+impl Component for SideOptions {
+    type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props, answer: None, points: 1, guesses: 1 }
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        Self { props, link, image: None, answer: None, points: 1, guesses: 1 }
     }
 
     fn update(&mut self, _: Self::Message) -> bool {
@@ -56,6 +59,10 @@ impl Component for SideImage {
         let guesses_label = html_nested! { <pbs::Label> {"Guesses"} </pbs::Label> };
         let guesses_inner = html! { <pbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
 
+        let onremove = self.link.callback(|_| Msg::Remove);
+        let onadd = self.link.callback(|_| Msg::Add);
+        let onupload = self.link.callback(Msg::Upload);
+
         html! {
             <>
             <div>
@@ -68,6 +75,8 @@ impl Component for SideImage {
                 <pbs::Field label={guesses_label}>
                     <pbs::Control inner={guesses_inner} />
                 </pbs::Field>
+
+                <pbs::File boxed=true alignment={Alignment::Centered} onupload={onupload} />
             </div>
 
             <pbs::Buttons extra="mt-auto">

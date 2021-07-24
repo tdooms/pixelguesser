@@ -1,10 +1,7 @@
-use std::collections::HashMap;
-
+use pbs::Alignment;
 use yew::prelude::*;
 use yew::web_sys::File as SysFile;
 use yewtil::NeqAssign;
-
-use api::Round;
 
 pub enum Msg {
     Upload(String),
@@ -19,16 +16,17 @@ pub struct Props {
     pub image: Option<String>,
 }
 
-pub struct SideImage {
+pub struct CenterImage {
     props: Props,
+    link: ComponentLink<Self>,
 }
 
-impl Component for SideImage {
+impl Component for CenterImage {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        Self { props, link }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -48,7 +46,7 @@ impl Component for SideImage {
         match &self.props.image {
             Some(image) => html! {
                 <>
-                <pbs::DynImage src={image} height=85/>
+                <pbs::DynImage src={image.clone()} height=85/>
 
                 <pbs::Buttons alignment={Alignment::Centered} extra="mt-5">
                     <pbs::Button text="reveal" icon="fas fa-eye" onclick={self.link.callback(|_| Msg::Reveal)}/>
@@ -59,9 +57,9 @@ impl Component for SideImage {
             },
             None => html! {
                 <pbs::Center>
-                    <pbs::File boxed=true alignment={Alignment::Centered} on_upload={self.link.callback(Msg::Upload)} />
+                    <pbs::Title> {"Please upload an image"} </pbs::Title>
                 </pbs::Center>
             },
-        };
+        }
     }
 }

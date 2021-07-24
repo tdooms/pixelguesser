@@ -1,14 +1,12 @@
-use std::collections::HashMap;
-
+use crate::create::{CenterImage, SideImages, SideOptions};
+use api::{DraftRound, Round};
+use pbs::{ColumnSize, SidebarAlignment};
 use yew::prelude::*;
-use yew::web_sys::{File as SysFile, Url};
-
-use api::Round;
-use pbs::{Alignment, Color, ColumnSize, SidebarAlignment};
+use yew::web_sys::File as SysFile;
 
 pub enum Msg {
     Upload(usize, SysFile),
-    Change(usize, Round),
+    Change(usize, DraftRound),
     Remove(usize),
     Clicked(usize),
     Add,
@@ -16,8 +14,8 @@ pub enum Msg {
 
 pub struct Create {
     link: ComponentLink<Self>,
-    rounds: Vec<Option<Round>>,
-    current: Option<usize>,
+    rounds: Vec<DraftRound>,
+    current: usize,
 }
 
 impl Component for Create {
@@ -25,7 +23,7 @@ impl Component for Create {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, current: None, rounds: vec![] }
+        Self { link, current: 0, rounds: vec![DraftRound::default()] }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -44,42 +42,30 @@ impl Component for Create {
     }
 
     fn view(&self) -> Html {
-        let source = self
-            .file
-            .as_ref()
-            .map(|file| Url::create_object_url_with_blob(file).unwrap())
-            .unwrap_or_default();
+        let current = self.current;
 
-        let on_upload = ;
-        let on_remove = self.link.callback(|_| Msg::Remove);
-        let on_add = self.link.callback(|_| Msg::Add);
+        let onchange = self.link.callback(move |draft| Msg::Change(current, draft));
+        let onremove = self.link.callback(move |_| Msg::Remove(current));
+        let onadd = self.link.callback(|_| Msg::Add);
+        let onclick = self.link.callback(Msg::Clicked);
+
+        let image = self.rounds[current].image_url.clone();
+        let onupload = self.link.callback(move |file| Msg::Upload(current, file));
 
         let side_classes = "is-flex is-flex-direction-column is-justify-content-space-between";
-
-        let round = self.current.map(|index| self.rounds[index]).flatten();
-
-        match self.current {
-            Some(current) => {
-
-            }
-            None => html! {
-                "please select a round"
-            }
-        }
-        let onupload = self.link.callback(|x| Msg::Upload(x));
 
         html! {
             <pbs::Columns>
                 <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left}>
-                    { side_images }
+                    <SideImages images=vec![] onclick=onclick />
                 </pbs::Sidebar>
 
                 <pbs::Column size=ColumnSize::Is8>
-                    <CenterImage onupload={}>
+                    <CenterImage onupload={onupload} image={image} />
                 </pbs::Column>
 
                 <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Right} extra={side_classes}>
-                    <SideOptions >
+                    <SideOptions onchange={onchange} onremove={onremove} onadd={onadd} />
                 </pbs::Sidebar>
             </pbs::Columns>
         }

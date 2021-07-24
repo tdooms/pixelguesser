@@ -25,7 +25,7 @@ pub struct FileProps {
     #[prop_or_default]
     pub extra: String,
 
-    pub on_upload: Callback<Vec<yew::web_sys::File>>,
+    pub onupload: Callback<Vec<yew::web_sys::File>>,
 }
 
 pub struct File {
@@ -45,7 +45,7 @@ impl Component for File {
         match msg {
             ChangeData::Files(files) => {
                 let vec = (0..files.length()).filter_map(|i| files.get(i)).collect();
-                self.props.on_upload.emit(vec);
+                self.props.onupload.emit(vec);
                 false
             }
             _ => unreachable!(

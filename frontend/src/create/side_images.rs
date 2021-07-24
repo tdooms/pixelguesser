@@ -1,9 +1,5 @@
-use std::collections::HashMap;
-
 use yew::prelude::*;
 use yewtil::NeqAssign;
-
-use api::Round;
 
 pub enum Msg {
     Clicked(usize),
@@ -15,11 +11,11 @@ pub struct Props {
     pub images: Vec<String>,
 }
 
-pub struct SideImage {
+pub struct SideImages {
     props: Props,
 }
 
-impl Component for SideImage {
+impl Component for SideImages {
     type Message = ();
     type Properties = Props;
 
@@ -36,10 +32,10 @@ impl Component for SideImage {
     }
 
     fn view(&self) -> Html {
-        let map_view = |src| html! { <pbs::DynImage src={src} height=10/> };
+        let map_view = |src: &String| html! { <pbs::DynImage src={src.clone()} height=10/> };
 
         html! {
-            { for self.props.images.iter(map_view) }
+            { for self.props.images.iter().map(map_view) }
         }
     }
 }
