@@ -1,11 +1,12 @@
-mod entities;
-mod session;
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 pub use crate::entities::*;
 pub use crate::session::*;
+
+mod entities;
+mod session;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ScoreChange {
@@ -56,6 +57,7 @@ pub enum Post {
     AddPlayer { session_id: u64, name: String },
     ChangeScores { session_id: u64, diff: ScoreDiff },
     ChangeStage { session_id: u64, stage: Stage },
+    // UploadDraft { session_id: u64, quiz_id: i64, rounds: DraftRound },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

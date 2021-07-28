@@ -1,6 +1,8 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use pbs::{Color, ColumnSize};
+
 pub enum Msg {
     Clicked(usize),
 }
@@ -8,23 +10,28 @@ pub enum Msg {
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onclick: Callback<usize>,
-    pub images: Vec<String>,
+    pub images: Vec<Option<String>>,
+    pub current: usize,
 }
 
 pub struct SideImages {
+    link: ComponentLink<Self>,
     props: Props,
 }
 
 impl Component for SideImages {
-    type Message = ();
+    type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        Self { link, props }
     }
 
-    fn update(&mut self, _: Self::Message) -> bool {
-        false
+    fn update(&mut self, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Clicked(index) => self.props.onclick.emit(index),
+        };
+        true
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
@@ -32,10 +39,29 @@ impl Component for SideImages {
     }
 
     fn view(&self) -> Html {
-        let map_view = |src: &String| html! { <pbs::DynImage src={src.clone()} height=10/> };
+        let map_view = |(index, src): (usize, &Option<String>)| {
+            let image = match src {
+                Some(src) => html! { <pbs::DynImage src={src.clone()} height=10/> },
+                None => html! {},
+            };
+            let grey = (index == self.props.current)
+                .then(|| "has-background-white-ter")
+                .unwrap_or_default();
+
+            html! {
+                <div class=classes!("box", "m-1", grey) onclick={self.link.callback(move |_| Msg::Clicked(index))}>
+                    <pbs::Columns>
+                        <pbs::Column size={ColumnSize::IsNarrow}> <p> {index} </p> </pbs::Column>
+                        <pbs::Column extra="p-0"> {image} </pbs::Column>
+                    </pbs::Columns>
+                </div>
+            }
+        };
 
         html! {
-            { for self.props.images.iter().map(map_view) }
+            <div class="p-4" style="overflow-y:auto">
+                { for self.props.images.iter().enumerate().map(map_view) }
+            </div>
         }
     }
 }

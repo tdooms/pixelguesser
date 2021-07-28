@@ -1,33 +1,27 @@
+use yew::prelude::*;
+use yew::web_sys::{File as SysFile, Url};
+use yewtil::NeqAssign;
+
 use api::DraftRound;
 use pbs::{Alignment, Color};
-use yew::prelude::*;
-use yew::web_sys::File as SysFile;
-use yewtil::NeqAssign;
 
 pub enum Msg {
     Upload(Vec<SysFile>),
-    Remove,
-    Add,
     Answer(String),
-    Points(u32),
-    Guesses(u32),
+    Points(i64),
+    Guesses(i64),
+    Remove,
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onchange: Callback<DraftRound>,
-    pub onremove: Callback<()>,
-    pub onadd: Callback<()>,
+    pub draft: DraftRound,
 }
 
 pub struct SideOptions {
     props: Props,
     link: ComponentLink<Self>,
-
-    answer: Option<String>,
-    image: Option<String>,
-    points: i64,
-    guesses: i64,
 }
 
 impl Component for SideOptions {
@@ -35,11 +29,35 @@ impl Component for SideOptions {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link, image: None, answer: None, points: 1, guesses: 1 }
+        Self { props, link }
     }
 
-    fn update(&mut self, _: Self::Message) -> bool {
-        false
+    fn update(&mut self, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Upload(images) => {
+                self.props.draft.image_url = images
+                    .iter()
+                    .next()
+                    .as_ref()
+                    .map(|file| Url::create_object_url_with_blob(file).unwrap())
+            }
+            Msg::Remove => self.props.draft.image_url = None,
+            Msg::Answer(answer) => {
+                if answer.is_empty() {
+                    self.props.draft.answer = None
+                } else {
+                    self.props.draft.answer = Some(answer)
+                }
+            }
+            Msg::Points(points) => {
+                self.props.draft.points = points;
+            }
+            Msg::Guesses(guesses) => {
+                self.props.draft.guesses = guesses;
+            }
+        }
+        self.props.onchange.emit(self.props.draft.clone());
+        true
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
@@ -59,31 +77,31 @@ impl Component for SideOptions {
         let guesses_label = html_nested! { <pbs::Label> {"Guesses"} </pbs::Label> };
         let guesses_inner = html! { <pbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
 
-        let onremove = self.link.callback(|_| Msg::Remove);
-        let onadd = self.link.callback(|_| Msg::Add);
         let onupload = self.link.callback(Msg::Upload);
+        let onremove = self.link.callback(|_| Msg::Remove);
 
-        html! {
-            <>
-            <div>
-                <pbs::Field label={answer_label}>
-                    <pbs::Control inner={answer_inner} />
-                </pbs::Field>
-                <pbs::Field label={points_label}>
-                    <pbs::Control inner={points_inner} />
-                </pbs::Field>
-                <pbs::Field label={guesses_label}>
-                    <pbs::Control inner={guesses_inner} />
-                </pbs::Field>
-
-                <pbs::File boxed=true alignment={Alignment::Centered} onupload={onupload} />
-            </div>
-
-            <pbs::Buttons extra="mt-auto">
+        match &self.props.draft.image_url {
+            Some(image) => html! {
+                <>
+                <div>
+                    <pbs::Field label={answer_label}>
+                        <pbs::Control inner={answer_inner} />
+                    </pbs::Field>
+                    <pbs::Field label={points_label}>
+                        <pbs::Control inner={points_inner} />
+                    </pbs::Field>
+                    <pbs::Field label={guesses_label}>
+                        <pbs::Control inner={guesses_inner} />
+                    </pbs::Field>
+                </div>
                 <pbs::Button icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove image" onclick={onremove}/>
-                <pbs::Button icon="fas fa-plus" fullwidth=true color={Color::Success} light=true text="add round" onclick={onadd}/>
-            </pbs::Buttons>
-            </>
+                </>
+            },
+            None => html! {
+                <pbs::Center>
+                    <pbs::File boxed=true alignment={Alignment::Centered} onupload={onupload} />
+                </pbs::Center>
+            },
         }
     }
 }

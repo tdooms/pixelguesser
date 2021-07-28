@@ -1,14 +1,16 @@
-use crate::create::{CenterImage, SideImages, SideOptions};
-use api::{DraftRound, Round};
-use pbs::{ColumnSize, SidebarAlignment};
 use yew::prelude::*;
 use yew::web_sys::File as SysFile;
 
+use api::{DraftRound, Round};
+use pbs::Color;
+use pbs::{ColumnSize, SidebarAlignment};
+
+use crate::create::{CenterImage, SideImages, SideOptions};
+
 pub enum Msg {
-    Upload(usize, SysFile),
     Change(usize, DraftRound),
-    Remove(usize),
     Clicked(usize),
+    Remove,
     Add,
 }
 
@@ -28,13 +30,21 @@ impl Component for Create {
 
     fn update(&mut self, msg: Self::Message) -> bool {
         match msg {
-            Msg::Upload(_, _) => {}
-            Msg::Change(_, _) => {}
-            Msg::Remove(_) => {}
-            Msg::Add => {}
-            Msg::Clicked(_) => {}
+            Msg::Change(index, draft) => {
+                self.rounds[index] = draft;
+            }
+            Msg::Remove => {
+                self.rounds.remove(self.current);
+            }
+            Msg::Add => {
+                self.current = self.rounds.len();
+                self.rounds.push(DraftRound::default());
+            }
+            Msg::Clicked(index) => {
+                self.current = index;
+            }
         };
-        false
+        true
     }
 
     fn change(&mut self, _props: Self::Properties) -> bool {
@@ -45,27 +55,35 @@ impl Component for Create {
         let current = self.current;
 
         let onchange = self.link.callback(move |draft| Msg::Change(current, draft));
-        let onremove = self.link.callback(move |_| Msg::Remove(current));
+        let onremove = self.link.callback(move |_| Msg::Remove);
         let onadd = self.link.callback(|_| Msg::Add);
         let onclick = self.link.callback(Msg::Clicked);
 
         let image = self.rounds[current].image_url.clone();
-        let onupload = self.link.callback(move |file| Msg::Upload(current, file));
-
         let side_classes = "is-flex is-flex-direction-column is-justify-content-space-between";
+
+        let images: Vec<_> = self.rounds.iter().map(|round| round.image_url.clone()).collect();
+        let draft = self.rounds[self.current].clone();
 
         html! {
             <pbs::Columns>
-                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left}>
-                    <SideImages images=vec![] onclick=onclick />
+                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={side_classes} overflow=false>
+                    <SideImages images={images} onclick={onclick} current=self.current/>
+                    <div>
+                        <hr/>
+                        <pbs::Buttons extra="mt-auto px-4 py-2">
+                            <pbs::Button icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove round" onclick={onremove}/>
+                            <pbs::Button icon="fas fa-plus" fullwidth=true color={Color::Success} light=true text="add round" onclick={onadd}/>
+                        </pbs::Buttons>
+                    </div>
                 </pbs::Sidebar>
 
-                <pbs::Column size=ColumnSize::Is8>
-                    <CenterImage onupload={onupload} image={image} />
+                <pbs::Column size={ColumnSize::Is8}>
+                    <CenterImage image={image} />
                 </pbs::Column>
 
-                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Right} extra={side_classes}>
-                    <SideOptions onchange={onchange} onremove={onremove} onadd={onadd} />
+                <pbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra={format!("p-6 {}", side_classes)}>
+                    <SideOptions draft={draft} onchange={onchange}/>
                 </pbs::Sidebar>
             </pbs::Columns>
         }

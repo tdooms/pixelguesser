@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv()?;
     pretty_env_logger::try_init()?;
 
-    let uri = std::env::var("DATABASE_URI")?;
+    let uri = std::env::var("DATABASE_URL")?;
 
     let address = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1:8001".to_owned());
     let address = address.parse::<SocketAddrV4>()?;

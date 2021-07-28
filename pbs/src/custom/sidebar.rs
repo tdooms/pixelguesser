@@ -21,6 +21,9 @@ pub struct SidebarProps {
 
     #[prop_or(ColumnSize::Is2)]
     pub size: ColumnSize,
+
+    #[prop_or(true)]
+    pub overflow: bool,
 }
 
 pub struct Sidebar {
@@ -44,14 +47,15 @@ impl Component for Sidebar {
     }
 
     fn view(&self) -> Html {
-        let classes = classes!("column", "p-6", &self.props.extra, self.props.size.to_string());
+        let classes = classes!("column", &self.props.extra, self.props.size.to_string());
 
         let shadow = match self.props.alignment {
             SidebarAlignment::Right => "-10px 0px 10px 1px #eeeeee",
             SidebarAlignment::Left => "10px 0px 10px 1px #eeeeee",
         };
 
-        let style = format!("box-shadow:{};height:100vh;overflow-y:auto", shadow);
+        let overflow = self.props.overflow.then(|| "overflow-y:auto").unwrap_or_default();
+        let style = format!("box-shadow:{};height:100vh;{}", shadow, overflow);
 
         html! {
             <div class={classes} style={style}>

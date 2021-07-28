@@ -12,7 +12,6 @@ pub enum Msg {
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onupload: Callback<SysFile>,
     pub image: Option<String>,
 }
 
@@ -55,11 +54,7 @@ impl Component for CenterImage {
                 </pbs::Buttons>
                 </>
             },
-            None => html! {
-                <pbs::Center>
-                    <pbs::Title> {"Please upload an image"} </pbs::Title>
-                </pbs::Center>
-            },
+            None => html! {},
         }
     }
 }
