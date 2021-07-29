@@ -4,6 +4,7 @@ pub mod dropdown;
 pub mod menu;
 pub mod message;
 pub mod modal;
+pub mod modal_card;
 pub mod navbar;
 pub mod pagination;
 pub mod panel;

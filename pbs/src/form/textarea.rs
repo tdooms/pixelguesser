@@ -8,11 +8,13 @@ use crate::{Color, Size};
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TextAreaProps {
     /// The `name` attribute for this form element.
-    pub name: String,
+    #[prop_or_default]
+    pub name: Option<String>,
     /// The controlled value of this form element.
-    pub value: String,
+    #[prop_or_default]
+    pub value: Option<String>,
     /// The callback to be used for propagating changes to this element's value.
-    pub update: Callback<String>,
+    pub oninput: Callback<String>,
 
     #[prop_or_default]
     pub extra: String,
@@ -69,7 +71,7 @@ impl Component for TextArea {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.props.update.emit(msg);
+        self.props.oninput.emit(msg);
         false
     }
 

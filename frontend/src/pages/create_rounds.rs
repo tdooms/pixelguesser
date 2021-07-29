@@ -14,13 +14,13 @@ pub enum Msg {
     Add,
 }
 
-pub struct Create {
+pub struct CreateRounds {
     link: ComponentLink<Self>,
     rounds: Vec<DraftRound>,
     current: usize,
 }
 
-impl Component for Create {
+impl Component for CreateRounds {
     type Message = Msg;
     type Properties = ();
 
@@ -67,7 +67,7 @@ impl Component for Create {
 
         html! {
             <pbs::Columns>
-                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={side_classes} overflow=false>
+                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
                     <SideImages images={images} onclick={onclick} current=self.current/>
                     <div>
                         <hr/>

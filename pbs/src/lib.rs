@@ -33,6 +33,7 @@ pub use components::message::{
 //     Navbar, NavbarDivider, NavbarDividerProps, NavbarDropdown, NavbarDropdownProps, NavbarFixed,
 //     NavbarItem, NavbarItemProps, NavbarItemTag, NavbarMsg, NavbarProps,
 // };
+pub use components::modal_card::{ModalCard, ModalCardProps};
 pub use components::pagination::{
     Pagination, PaginationEllipsis, PaginationItem, PaginationItemProps, PaginationItemType,
     PaginationProps,
@@ -41,6 +42,7 @@ pub use components::panel::{
     Panel, PanelBlock, PanelBlockProps, PanelProps, PanelTabs, PanelTabsProps,
 };
 pub use components::tabs::{Tabs, TabsProps};
+
 pub use custom::alerts::{Alerts, AlertsProps};
 pub use custom::center::{Center, CenterProps};
 pub use custom::dynimage::{DynImage, DynImageProps};
