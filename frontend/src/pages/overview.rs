@@ -4,7 +4,9 @@ use api::{Fetch, Get, Quiz, Request, Response};
 
 use crate::agents::WebSocketAgent;
 use crate::components::{navbar, QuizCard};
+use crate::globals::IMAGE_ENDPOINT;
 use crate::pages::view_or_loading;
+use crate::route::Route;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -38,9 +40,11 @@ impl Component for Overview {
 
     fn view(&self) -> Html {
         let view_quiz_card = |quiz: Quiz| {
+            let url = format!("http://{}/{}", IMAGE_ENDPOINT, quiz.image_url);
+            let route = Route::Host { quiz_id: quiz.quiz_id };
             html! {
                 <div class="column is-3">
-                    <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} image_url={quiz.image_url}/>
+                    <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} image_url={url} route={route}/>
                 </div>
             }
         };

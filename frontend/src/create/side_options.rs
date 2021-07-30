@@ -68,15 +68,6 @@ impl Component for SideOptions {
         let points_values: Vec<(_, _)> = (1..=5).map(|x| (x.to_string(), x)).collect();
         let guesses_values: Vec<(_, _)> = (1..=3).map(|x| (x.to_string(), x)).collect();
 
-        let answer_label = html_nested! { <pbs::Label> {"Answer"} </pbs::Label> };
-        let answer_inner = html! { <pbs::Input oninput={self.link.callback(Msg::Answer)} /> };
-
-        let points_label = html_nested! { <pbs::Label> {"Points"} </pbs::Label> };
-        let points_inner = html! { <cbs::KvButtons<i32> values={points_values} color={Color::Link} alignment={Alignment::Centered} /> };
-
-        let guesses_label = html_nested! { <pbs::Label> {"Guesses"} </pbs::Label> };
-        let guesses_inner = html! { <cbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
-
         let onupload = self.link.callback(Msg::Upload);
         let onremove = self.link.callback(|_| Msg::Remove);
 
@@ -84,17 +75,17 @@ impl Component for SideOptions {
             Some(image) => html! {
                 <>
                 <div>
-                    <pbs::Field label={answer_label}>
-                        <pbs::Control inner={answer_inner} />
-                    </pbs::Field>
-                    <pbs::Field label={points_label}>
-                        <pbs::Control inner={points_inner} />
-                    </pbs::Field>
-                    <pbs::Field label={guesses_label}>
-                        <pbs::Control inner={guesses_inner} />
-                    </pbs::Field>
+                    <cbs::SimpleField label="Answer">
+                        <pbs::Input oninput={self.link.callback(Msg::Answer)} />
+                    </cbs::SimpleField>
+                    <cbs::SimpleField label="Points">
+                        <cbs::KvButtons<i32> values={points_values} color={Color::Link} alignment={Alignment::Centered} />
+                    </cbs::SimpleField>
+                    <cbs::SimpleField label="Guesses">
+                        <cbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} />
+                    </cbs::SimpleField>
                 </div>
-                <pbs::Button icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove image" onclick={onremove}/>
+                <cbs::IconButton icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove image" onclick={onremove}/>
                 </>
             },
             None => html! {

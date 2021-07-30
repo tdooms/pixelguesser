@@ -81,9 +81,9 @@ impl Component for CreateRounds {
                     <CenterImage image={image} />
                 </pbs::Column>
 
-                <pbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra={format!("p-6 {}", side_classes)}>
+                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra={format!("p-6 {}", side_classes)}>
                     <SideOptions draft={draft} onchange={onchange}/>
-                </pbs::Sidebar>
+                </cbs::Sidebar>
             </pbs::Columns>
         }
     }

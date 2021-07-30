@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew::virtual_dom::VChild;
 use yewtil::NeqAssign;
 
 use crate::{classify, Icon};

@@ -32,12 +32,13 @@ fn shorten_style(style: &str) -> Option<(&str, &str)> {
 fn write_style(writer: &mut impl Write, style: &str, name: &str, multiple: bool) {
     if let Some((style, suffix)) = shorten_style(style) {
         let append = multiple.then(|| suffix).unwrap_or_default();
-        writer.write_fmt(format_args!("\t#[fmt(\"{} fa-{}\")]\n", style, name));
+        writer.write_fmt(format_args!("\t#[display(fmt = \"{} fa-{}\")]\n", style, name));
         writer.write_fmt(format_args!("\t{}{},\n", name.to_case(Case::Pascal), append));
     }
 }
 
 fn export_icons(writer: &mut impl Write, icons: BTreeMap<String, Icon>) {
+    writer.write(b"use derive_more::Display;\n\n");
     writer.write(b"#[derive(Debug, Clone, Copy, Display)]\n");
     writer.write(b"pub enum Icons {\n");
 
@@ -67,7 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let icons = import_from_file()?;
 
     // export_icons(&mut std::io::stdout(), icons);
-    export_icons(&mut File::create("enum.txt")?, icons);
+    export_icons(&mut File::create("lib.rs")?, icons);
 
     Ok(())
 }

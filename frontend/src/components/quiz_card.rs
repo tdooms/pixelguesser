@@ -42,18 +42,18 @@ impl Component for QuizCard {
 
     fn view(&self) -> Html {
         let src = match &self.props.image_url {
-            Some(url) => format!("http://{}/{}", IMAGE_ENDPOINT, url),
+            Some(url) => url.clone(),
             None => "https://bulma.io/images/placeholders/480x320.png".to_owned(),
         };
 
         let footer = match &self.props.route {
             Some(route) => html! {
-                <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "square-top")} route={route.clone()}>
+                <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "has-square-top")} route={route.clone()}>
                     <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
                 </Link<Route>>
             },
             None => html! {
-                <button class=classes!("button", "is-success", "is-fullwidth", "square-top")>
+                <button class=classes!("button", "is-success", "is-fullwidth", "has-square-top")>
                     <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
                 </button>
             },

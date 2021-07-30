@@ -161,6 +161,7 @@ name = "cbs"
 version = "0.1.0"
 dependencies = [
  "derive_more",
+ "fa",
  "pbs",
  "yew 0.18.0",
  "yew-router",
@@ -385,6 +386,9 @@ dependencies = [
 [[package]]
 name = "fa"
 version = "0.1.0"
+dependencies = [
+ "derive_more",
+]
 
 [[package]]
 name = "fa-scraper"

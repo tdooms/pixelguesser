@@ -6,25 +6,25 @@ use pbs::Color;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct SimpleFieldProps {
     #[prop_or_default]
-    children: Children,
+    pub children: Children,
 
     #[prop_or_default]
-    extra: String,
+    pub extra: String,
 
     #[prop_or_default]
-    label: Option<String>,
+    pub label: Option<String>,
 
     #[prop_or_default]
-    help: Option<String>,
+    pub help: Option<String>,
 
     #[prop_or_default]
-    help_color: Option<Color>,
+    pub help_color: Option<Color>,
 
     #[prop_or_default]
-    icon_right: Option<String>,
+    pub icon_right: Option<String>,
 
     #[prop_or_default]
-    icon_left: Option<String>,
+    pub icon_left: Option<String>,
 }
 
 pub struct SimpleField {
@@ -72,8 +72,8 @@ impl Component for SimpleField {
 
         let control_classes = classes!(
             "control",
-            self.props.icon_right.then(|| "has-icons-right"),
-            self.props.icon_left.then(|| "has-icons-left")
+            self.props.icon_right.as_ref().map(|_| "has-icons-right"),
+            self.props.icon_left.as_ref().map(|_| "has-icons-left")
         );
 
         html! {

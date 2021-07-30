@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 pbs = { path = "../pbs" }
+fa = { path = "../fa" }
 
 derive_more = "0.99.16"
 yew = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }

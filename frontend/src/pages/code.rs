@@ -96,34 +96,22 @@ impl Component for Code {
         let onjoin = self.link.callback(|_| Msg::Join);
         let oncancel = self.link.callback(|_| Msg::Cancel);
 
-        let (help, right, color) = match self.state {
-            State::Available => {
-                let help = Some(("This room is available.", Color::Success));
-                let right = Some("fas fa-check");
-                let color = Some(Color::Success);
-                (help, right, color)
-            }
-            State::Invalid | State::Incorrect => {
-                let help = Some(("The room code is invalid.", Color::Success));
-                let right = Some("fas fa-exclamation-triangle");
-                let color = Some(Color::Danger);
-                (help, right, color)
-            }
-            _ => (None, None, None),
-        };
-
-        let maybe_help =
-            help.map(|(str, color)| html_nested! { <pbs::Help color={color}> {str} </pbs::Help> });
-        let maybe_right = right.map(
-            |icon| html_nested! { <pbs::Icon icon={icon} size={Size::Small} extra="is-right"/> },
-        );
-        let label = html_nested! { <pbs::Label> {"Session code"} </pbs::Label> };
-        let inner = html! { <pbs::Input color={color} oninput={oninput}/> };
-
-        let field = html! {
-            <pbs::Field label={label} help={maybe_help}>
-                <pbs::Control right={maybe_right} inner={inner} />
-            </pbs::Field>
+        let field = match self.state {
+            State::Available => html! {
+                <cbs::SimpleField label="Session code" help="This room is available." help_color={Color::Success} icon_right="fas fa-check">
+                    <pbs::Input color={Color::Success} oninput={oninput} />
+                </cbs::SimpleField>
+            },
+            State::Invalid | State::Incorrect => html! {
+                <cbs::SimpleField label="Session code" help="The room code is invalid." help_color={Color::Danger} icon_right="fas fa-exclamation-triangle">
+                    <pbs::Input color={Color::Danger} oninput={oninput} />
+                </cbs::SimpleField>
+            },
+            _ => html! {
+                <cbs::SimpleField label="Session code">
+                    <pbs::Input oninput={oninput} />
+                </cbs::SimpleField>
+            },
         };
 
         html! {
@@ -131,8 +119,8 @@ impl Component for Code {
                 <pbs::Container>
                     { field }
                     <pbs::Buttons>
-                        <pbs::Button text="Join" color={Color::Link} onclick={onjoin}/>
-                        <pbs::Button text="Cancel" color={Color::Link} light=true onclick={oncancel}/>
+                        <cbs::IconButton text="Join" color={Color::Link} onclick={onjoin}/>
+                        <cbs::IconButton text="Cancel" color={Color::Link} light=true onclick={oncancel}/>
                     </pbs::Buttons>
                 </pbs::Container>
             </pbs::Section>

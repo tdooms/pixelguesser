@@ -35,7 +35,7 @@ impl Component for Master {
     fn view(&self) -> Html {
         let view_player = |id: u64, player: &Player| {
             let onclick = self.link.callback(move |_| id);
-            html! { <pbs::Button outlined=true size={Size::Large} fullwidth=true onclick={onclick} text={player.name.clone()}/> }
+            html! { <cbs::IconButton outlined=true size={Size::Large} fullwidth=true onclick={onclick} text={player.name.clone()}/> }
         };
 
         let iter = self.props.players.iter();

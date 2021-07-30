@@ -73,7 +73,7 @@ impl Component for Navigate {
             let callback = self.link.callback(move |_| action);
             let hidden = !actions.contains(&action);
 
-            html! { <pbs::Button hidden={hidden} text={text} icon={icon} color={color}
+            html! { <cbs::IconButton hidden={hidden} text={text} icon={icon} color={color}
             light={light} size={Size::Large} onclick={callback}/> }
         };
 
