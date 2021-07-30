@@ -1,17 +1,15 @@
+use pbs::{Color, HeroSize};
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::{Color, HeroSize};
-
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct SimpleHeroProps {
+pub struct TitleHeroProps {
     /// Extra classes for the hero container.
     #[prop_or_default]
     pub extra: String,
 
     #[prop_or_default]
     pub color: Option<Color>,
-
     /// The size for this hero.
     #[prop_or_default]
     pub size: Option<HeroSize>,
@@ -21,16 +19,13 @@ pub struct SimpleHeroProps {
     pub subtitle: String,
 }
 
-/// An imposing hero banner to showcase something.
-///
-/// [https://bulma.io/documentation/layout/hero/](https://bulma.io/documentation/layout/hero/)
-pub struct SimpleHero {
-    props: SimpleHeroProps,
+pub struct TitleHero {
+    props: TitleHeroProps,
 }
 
-impl Component for SimpleHero {
+impl Component for TitleHero {
     type Message = ();
-    type Properties = SimpleHeroProps;
+    type Properties = TitleHeroProps;
 
     fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
         Self { props }

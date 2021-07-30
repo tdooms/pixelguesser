@@ -5,7 +5,11 @@ use crate::{Color, Size};
 
 #[derive(Properties, Clone)]
 pub struct ButtonProps {
+    #[prop_or_default]
     pub onclick: Callback<MouseEvent>,
+
+    #[prop_or_default]
+    pub children: Children,
 
     #[prop_or_default]
     pub hidden: bool,
@@ -36,12 +40,6 @@ pub struct ButtonProps {
 
     #[prop_or_default]
     pub color: Option<Color>,
-
-    #[prop_or_default]
-    pub icon: Option<String>,
-
-    #[prop_or_default]
-    pub text: Option<String>,
 
     #[prop_or_default]
     pub selected: bool,
@@ -94,20 +92,9 @@ impl Component for Button {
             &self.props.extra
         );
 
-        let icon_html = match &self.props.icon {
-            Some(icon) => html! { <span class="icon"><i class={icon}></i></span> },
-            None => html! {},
-        };
-
-        let text_html = match &self.props.text {
-            Some(text) => html! { <span>{text}</span> },
-            None => html! {},
-        };
-
         html! {
             <button class={classes} onclick={self.link.callback(|e| e)}>
-                { icon_html }
-                { text_html }
+            { for self.props.children.iter() }
             </button>
         }
     }

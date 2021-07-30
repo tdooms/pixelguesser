@@ -115,7 +115,7 @@ input:checked + .toggle:before {
 }
 
 /* Square top corners */
-.square-top {
+.has-square-top {
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
 }

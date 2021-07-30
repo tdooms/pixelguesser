@@ -11,6 +11,9 @@ pub struct FileProps {
     pub color: Option<Color>,
 
     #[prop_or_default]
+    pub fullwidth: bool,
+
+    #[prop_or_default]
     pub filename: Option<String>,
 
     #[prop_or_default]
@@ -65,14 +68,14 @@ impl Component for File {
             Some(file) => html! {<span class="file-name"> {file} </span>},
         };
 
-        let boxed = self.props.boxed;
+        let FileProps { boxed, fullwidth, .. } = self.props;
         let maybe_name = self.props.filename.as_ref().map(|_| "has-name");
         let callback = self.link.callback(|x| x);
         let accept = self.props.accept.clone();
 
         let classes = classes!(
             "file",
-            classify!(boxed),
+            classify!(fullwidth, boxed),
             maybe_name,
             self.props.alignment.to_string(),
             &self.props.extra

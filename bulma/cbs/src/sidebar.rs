@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::ColumnSize;
+use pbs::ColumnSize;
 
 #[derive(Clone, Debug, Copy, PartialEq)]
 pub enum SidebarAlignment {

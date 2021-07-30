@@ -1,6 +1,5 @@
 use pbs::Alignment;
 use yew::prelude::*;
-use yew::web_sys::File as SysFile;
 use yewtil::NeqAssign;
 
 pub enum Msg {
@@ -45,12 +44,12 @@ impl Component for CenterImage {
         match &self.props.image {
             Some(image) => html! {
                 <>
-                <pbs::DynImage src={image.clone()} height=85/>
+                <cbs::DynImage src={image.clone()} height=85/>
 
                 <pbs::Buttons alignment={Alignment::Centered} extra="mt-5">
-                    <pbs::Button text="reveal" icon="fas fa-eye" onclick={self.link.callback(|_| Msg::Reveal)}/>
-                    <pbs::Button text="resume" icon="fas fa-play" onclick={self.link.callback(|_| Msg::Resume)}/>
-                    <pbs::Button text="pause" icon="fas fa-pause" onclick={self.link.callback(|_| Msg::Pause)}/>
+                    <cbs::IconButton text="reveal" icon="fas fa-eye" onclick={self.link.callback(|_| Msg::Reveal)}/>
+                    <cbs::IconButton text="resume" icon="fas fa-play" onclick={self.link.callback(|_| Msg::Resume)}/>
+                    <cbs::IconButton text="pause" icon="fas fa-pause" onclick={self.link.callback(|_| Msg::Pause)}/>
                 </pbs::Buttons>
                 </>
             },

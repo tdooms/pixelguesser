@@ -1,9 +1,8 @@
 use yew::prelude::*;
-use yew::web_sys::File as SysFile;
 
-use api::{DraftRound, Round};
-use pbs::Color;
-use pbs::{ColumnSize, SidebarAlignment};
+use api::DraftRound;
+use cbs::SidebarAlignment;
+use pbs::{Color, ColumnSize};
 
 use crate::create::{CenterImage, SideImages, SideOptions};
 
@@ -67,16 +66,16 @@ impl Component for CreateRounds {
 
         html! {
             <pbs::Columns>
-                <pbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
+                <cbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
                     <SideImages images={images} onclick={onclick} current=self.current/>
                     <div>
                         <hr/>
                         <pbs::Buttons extra="mt-auto px-4 py-2">
-                            <pbs::Button icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove round" onclick={onremove}/>
-                            <pbs::Button icon="fas fa-plus" fullwidth=true color={Color::Success} light=true text="add round" onclick={onadd}/>
+                            <cbs::IconButton icon="fas fa-trash" fullwidth=true color={Color::Danger} light=true text="remove round" onclick={onremove}/>
+                            <cbs::IconButton icon="fas fa-plus" fullwidth=true color={Color::Success} light=true text="add round" onclick={onadd}/>
                         </pbs::Buttons>
                     </div>
-                </pbs::Sidebar>
+                </cbs::Sidebar>
 
                 <pbs::Column size={ColumnSize::Is8}>
                     <CenterImage image={image} />

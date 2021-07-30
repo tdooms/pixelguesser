@@ -72,10 +72,10 @@ impl Component for SideOptions {
         let answer_inner = html! { <pbs::Input oninput={self.link.callback(Msg::Answer)} /> };
 
         let points_label = html_nested! { <pbs::Label> {"Points"} </pbs::Label> };
-        let points_inner = html! { <pbs::KvButtons<i32> values={points_values} color={Color::Link} alignment={Alignment::Centered} /> };
+        let points_inner = html! { <cbs::KvButtons<i32> values={points_values} color={Color::Link} alignment={Alignment::Centered} /> };
 
         let guesses_label = html_nested! { <pbs::Label> {"Guesses"} </pbs::Label> };
-        let guesses_inner = html! { <pbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
+        let guesses_inner = html! { <cbs::KvButtons<i32> values={guesses_values} color={Color::Link} alignment={Alignment::Centered} /> };
 
         let onupload = self.link.callback(Msg::Upload);
         let onremove = self.link.callback(|_| Msg::Remove);
@@ -98,9 +98,9 @@ impl Component for SideOptions {
                 </>
             },
             None => html! {
-                <pbs::Center>
+                <cbs::Center>
                     <pbs::File boxed=true alignment={Alignment::Centered} onupload={onupload} />
-                </pbs::Center>
+                </cbs::Center>
             },
         }
     }

@@ -40,7 +40,7 @@ impl Component for Finish {
 
         html! {
             <>
-                <pbs::SimpleHero color={Color::Primary} title={self.props.quiz.name.clone()} subtitle={"finished"}/>
+                <cbs::TitleHero color={Color::Primary} title={self.props.quiz.name.clone()} subtitle={"finished"}/>
                 <pbs::Hero body={body} color={Color::Primary} size={HeroSize::Medium}/>
             </>
         }

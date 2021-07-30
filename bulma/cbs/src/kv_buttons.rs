@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::{Alignment, Color};
+use pbs::{Alignment, Color};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct KvButtonsProps<T: Clone + PartialEq + 'static> {
@@ -51,14 +51,16 @@ impl<T: Clone + PartialEq + 'static> Component for KvButtons<T> {
             let onclick = self.link.callback(move |_| index);
 
             html! {
-                <crate::Button onclick={onclick} text={key} color={color} selected={selected} />
+                <pbs::Button color={color} onclick={onclick} selected={selected}>
+                    {key}
+                </pbs::Button>
             }
         };
 
         html! {
-            <crate::Buttons addons=true alignment={self.props.alignment}>
+            <pbs::Buttons addons=true alignment={self.props.alignment}>
                 { for self.props.values.iter().enumerate().map(|(index, (key, _))| button_map(index, key.clone())) }
-            </crate::Buttons>
+            </pbs::Buttons>
         }
     }
 }

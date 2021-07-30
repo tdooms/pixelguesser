@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::Color;
+use pbs::Color;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LoadingProps {

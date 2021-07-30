@@ -7,7 +7,7 @@ use crate::{classify, Icon};
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ControlProps {
     #[prop_or_default]
-    pub inner: Html,
+    pub children: Children,
 
     #[prop_or_default]
     pub extra: String,
@@ -17,12 +17,6 @@ pub struct ControlProps {
     /// A modifier to have the controlled element fill up the remaining space.
     #[prop_or_default]
     pub expanded: bool,
-
-    #[prop_or_default]
-    pub left: Option<VChild<Icon>>,
-
-    #[prop_or_default]
-    pub right: Option<VChild<Icon>>,
 }
 
 /// A container with which you can wrap the form controls.
@@ -50,19 +44,11 @@ impl Component for Control {
 
     fn view(&self) -> Html {
         let ControlProps { expanded, .. } = self.props;
-        let classes = classes!(
-            "control",
-            &self.props.extra,
-            classify!(expanded),
-            self.props.right.as_ref().map(|_| "has-icons-right"),
-            self.props.left.as_ref().map(|_| "has-icons-left")
-        );
+        let classes = classes!("control", &self.props.extra, classify!(expanded));
 
         html! {
             <@{ self.props.tag.clone() } class={classes}>
-                { self.props.inner.clone() }
-                { self.props.left.clone().map(Html::from).unwrap_or(html!{}) }
-                { self.props.right.clone().map(Html::from).unwrap_or(html!{}) }
+                { for self.props.children.iter() }
             </@>
         }
     }

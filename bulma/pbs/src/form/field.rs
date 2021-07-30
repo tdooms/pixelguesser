@@ -7,12 +7,7 @@ use crate::{classify, Control, Help, Label};
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct FieldProps {
     #[prop_or_default]
-    pub label: Option<VChild<Label>>,
-
-    pub children: ChildrenWithProps<Control>,
-
-    #[prop_or_default]
-    pub help: Option<VChild<Help>>,
+    pub children: Children,
 
     #[prop_or_default]
     pub extra: String,
@@ -60,9 +55,7 @@ impl Component for Field {
 
         html! {
             <div class={classes}>
-                { self.props.label.clone().map(Html::from).unwrap_or(html!{}) }
                 { for self.props.children.iter() }
-                { self.props.help.clone().map(Html::from).unwrap_or(html!{}) }
             </div>
         }
     }

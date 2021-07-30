@@ -59,7 +59,7 @@ impl Component for Lobby {
 
         html! {
             <>
-                <pbs::SimpleHero title={title} subtitle={subtitle} />
+                <cbs::TitleHero title={title} subtitle={subtitle} />
                 <pbs::Hero color={Color::Primary} size={HeroSize::Medium} body={body} />
 
                 <pbs::Columns multiline=true centered=true extra="mt-5">

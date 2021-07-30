@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use pbs::{Color, ColumnSize};
+use pbs::ColumnSize;
 
 pub enum Msg {
     Clicked(usize),
@@ -41,7 +41,7 @@ impl Component for SideImages {
     fn view(&self) -> Html {
         let map_view = |(index, src): (usize, &Option<String>)| {
             let image = match src {
-                Some(src) => html! { <pbs::DynImage src={src.clone()} height=10/> },
+                Some(src) => html! { <cbs::DynImage src={src.clone()} height=10/> },
                 None => html! {},
             };
             let grey = (index == self.props.current)

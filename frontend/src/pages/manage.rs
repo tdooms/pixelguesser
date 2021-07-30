@@ -114,8 +114,8 @@ impl Component for Manage {
                 let onclick = self.link.callback(|guess| Msg::Guessed(guess));
                 html! { <Master players={self.props.session.players.clone()} onclick={onclick}/> }
             }
-            Stage::Round { .. } => html! { <pbs::SimpleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
-            Stage::Scores { .. } => html! { <pbs::SimpleHero title="showing scores" subtitle=""/> },
+            Stage::Round { .. } => html! { <cbs::TitleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
+            Stage::Scores { .. } => html! { <cbs::TitleHero title="showing scores" subtitle=""/> },
             Stage::Finish => html! { <Rating quiz={self.props.session.quiz.clone()} />},
         };
 

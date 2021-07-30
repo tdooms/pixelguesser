@@ -57,7 +57,7 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <pbs::Alerts<Rc<Notification>> entries={self.alerts.clone()} />
+                <cbs::Alerts<Rc<Notification>> entries={self.alerts.clone()} />
                 <Router<Route> render={Router::render(switch)} />
             </main>
         }

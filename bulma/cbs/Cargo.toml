@@ -1,0 +1,14 @@
+[package]
+name = "cbs"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pbs = { path = "../pbs" }
+
+derive_more = "0.99.16"
+yew = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa"}
+yewtil = { version = "0.3.2", features = ["neq"] }
