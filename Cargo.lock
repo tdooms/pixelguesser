@@ -383,6 +383,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "fa"
+version = "0.1.0"
+
+[[package]]
 name = "fa-scraper"
 version = "0.1.0"
 dependencies = [
@@ -811,10 +815,6 @@ dependencies = [
  "tokio",
  "tokio-native-tls",
 ]
-
-[[package]]
-name = "icons"
-version = "0.1.0"
 
 [[package]]
 name = "idna"
