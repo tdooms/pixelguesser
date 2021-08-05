@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
-use crate::{classify, Icon};
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ControlProps {

@@ -1,3 +1,4 @@
+use gloo_file::FileList;
 use yew::prelude::*;
 
 use crate::{classify, Alignment, Color, Size};
@@ -28,7 +29,7 @@ pub struct FileProps {
     #[prop_or_default]
     pub extra: String,
 
-    pub onupload: Callback<Vec<yew::web_sys::File>>,
+    pub onupload: Callback<FileList>,
 }
 
 pub struct File {
@@ -47,14 +48,13 @@ impl Component for File {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             ChangeData::Files(files) => {
-                let vec = (0..files.length()).filter_map(|i| files.get(i)).collect();
-                self.props.onupload.emit(vec);
-                false
+                self.props.onupload.emit(FileList::from(files));
             }
             _ => unreachable!(
                 "invariant violation: received non-file change event from a file input element"
             ),
         }
+        true
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {

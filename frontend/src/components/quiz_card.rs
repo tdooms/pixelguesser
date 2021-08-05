@@ -1,9 +1,8 @@
 use yew::prelude::*;
 use yew_router::components::Link;
-
-use crate::globals::IMAGE_ENDPOINT;
-use crate::route::Route;
 use yewtil::NeqAssign;
+
+use crate::route::Route;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {

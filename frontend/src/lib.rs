@@ -69,7 +69,7 @@ fn switch(routes: &Route) -> Html {
         Route::Host { quiz_id } => html! { <HostLoader quiz_id={*quiz_id}/> },
         Route::Manage { session_id } => html! { <ManageLoader session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
-        Route::Create => html! { <CreateQuiz/> },
+        Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }

@@ -15,6 +15,15 @@ pub struct ScoreChange {
     pub reason: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct NewQuiz {
+    name: String,
+    creator: String,
+    description: String,
+    filename: String,
+    image: Vec<u8>,
+}
+
 pub type ScoreDiff = Vec<ScoreChange>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,7 +66,7 @@ pub enum Post {
     AddPlayer { session_id: u64, name: String },
     ChangeScores { session_id: u64, diff: ScoreDiff },
     ChangeStage { session_id: u64, stage: Stage },
-    // UploadDraft { session_id: u64, quiz_id: i64, rounds: DraftRound },
+    UploadQuiz { session_id: u64, quiz: NewQuiz }, // UploadDraft { session_id: u64, quiz_id: i64, rounds: DraftRound },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

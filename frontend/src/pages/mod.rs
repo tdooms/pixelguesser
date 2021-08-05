@@ -1,6 +1,5 @@
 pub use code::Code;
-pub use create_quiz::CreateQuiz;
-pub use create_rounds::CreateRounds;
+pub use create::Create;
 pub use host::Host;
 pub use host_loader::HostLoader;
 pub use loading::*;
@@ -10,8 +9,7 @@ pub use overview::Overview;
 pub use preview::Preview;
 
 mod code;
-mod create_quiz;
-mod create_rounds;
+mod create;
 mod host;
 mod host_loader;
 mod loading;

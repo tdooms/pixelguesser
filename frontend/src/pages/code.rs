@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 use api::{Fetch, Get, Request, Response};
-use pbs::{Color, Size};
+use pbs::Color;
 
 use crate::agents::WebSocketAgent;
 use crate::route::Route;
