@@ -1,13 +1,14 @@
-use crate::route::Route;
 use yew::prelude::*;
 use yew_router::prelude::Link;
+
+use crate::route::Route;
 
 pub fn navbar() -> Html {
     html! {
         <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
                 <Link<Route> classes={classes!("navbar-item")} route={Route::Overview}>
-                    <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28"/>
+                    <img src="https://styles.io/images/styles-logo.png" width="112" height="28"/>
                 </Link<Route>>
 
                 <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbar">

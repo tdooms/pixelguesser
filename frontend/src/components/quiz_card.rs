@@ -42,7 +42,7 @@ impl Component for QuizCard {
     fn view(&self) -> Html {
         let src = match &self.props.image_url {
             Some(url) => url.clone(),
-            None => "https://bulma.io/images/placeholders/480x320.png".to_owned(),
+            None => "https://styles.io/images/placeholders/480x320.png".to_owned(),
         };
 
         let footer = match &self.props.route {

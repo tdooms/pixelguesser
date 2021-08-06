@@ -13,8 +13,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 api = { path = "../api" }
-pbs = { path = "../bulma/pbs" }
-cbs = { path = "../bulma/cbs" }
+pbs = { path = "../styles/pbs" }
+cbs = { path = "../styles/cbs" }
 
 instant = { version = "0.1", features = ["wasm-bindgen"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -26,9 +26,9 @@ wee_alloc = "0.4"
 anyhow = "1.0"
 thiserror = "1.0"
 
-yew = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa"}
-yew-services = { git = "https://github.com/yewstack/yew.git", rev="91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa"}
+yew = { git = "https://github.com/yewstack/yew.git", rev = "91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
+yew-services = { git = "https://github.com/yewstack/yew.git", rev = "91ab14bfd3ee0e6cd6e585a6f41f7421076ebbaa" }
 yewtil = { version = "0.3.2", features = ["neq"] }
 
 serde = { version = "1.0", features = ["derive"] }

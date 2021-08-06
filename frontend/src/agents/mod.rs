@@ -1,7 +1,7 @@
-pub use alert::AlertAgent;
+pub use error::ErrorAgent;
+pub use info::InfoAgent;
 pub use websocket::WebSocketAgent;
 
-mod alert;
-mod online;
+mod error;
+mod info;
 mod websocket;
-

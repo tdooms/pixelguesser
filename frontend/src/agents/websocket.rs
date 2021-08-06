@@ -1,16 +1,18 @@
-use crate::agents::AlertAgent;
-use crate::globals::API_ENDPOINT;
-use crate::notifications::{Error, Notification, Warning};
-use api::{Request, Response};
 use std::collections::HashSet;
+
 use yew::agent::Dispatcher;
 use yew::prelude::*;
 use yew::worker::{Agent, AgentLink, Context, HandlerId};
 use yew_services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
 
+use api::{Request, Response};
+
+use crate::constants::API_ENDPOINT;
+use crate::structs::Error;
+
 pub enum Msg {
     Response(Response),
-    Notify(Notification),
+    Error(Error),
     Connected,
     Disconnected,
 }
@@ -30,7 +32,7 @@ impl WebSocketAgent {
     fn send(&mut self, request: Request) {
         match serde_json::to_string(&request) {
             Ok(string) => self.ws.send(Ok(string)),
-            Err(err) => self.logger.send(Notification::Error(Error::JsonError(err))),
+            Err(err) => self.logger.send(Error::JsonError(err)),
         }
     }
 

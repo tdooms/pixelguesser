@@ -1,46 +1,56 @@
+use std::rc::Rc;
+
+use wasm_bindgen::prelude::*;
+use yew::prelude::*;
+use yew_router::prelude::*;
+
+use crate::agents::*;
+use crate::pages::*;
+use crate::route::Route;
+use crate::structs::{Error, Info};
+
 // Use `wee_alloc` as the global allocator.
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod agents;
 mod components;
-mod create;
-mod globals;
-mod host;
-mod manager;
-mod notifications;
+mod constants;
 mod pages;
 mod route;
+mod structs;
 mod utils;
 
-use std::rc::Rc;
-use wasm_bindgen::prelude::*;
-use yew::prelude::*;
-use yew_router::prelude::*;
-
-use crate::agents::{AlertAgent, WebSocketAgent};
-use crate::notifications::Notification;
-use crate::pages::*;
-use crate::route::Route;
+pub enum Msg {
+    Error(Rc<Error>),
+    Info(Rc<Info>),
+}
 
 pub struct Model {
-    // Keeps WebSocket connection alive
+    // Keeps agents alive
     _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
-    alert_agent: Box<dyn Bridge<AlertAgent>>,
+    _error_agent: Box<dyn Bridge<ErrorAgent>>,
+    _info_agent: Box<dyn Bridge<InfoAgent>>,
 
-    alerts: Vec<Rc<Notification>>,
+    errors: Vec<Rc<Error>>,
+    infos: Vec<Rc<Info>>,
+
     link: ComponentLink<Self>,
 }
 
 impl Component for Model {
-    type Message = Rc<Notification>;
+    type Message = Msg;
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             _ws_agent: WebSocketAgent::bridge(Callback::noop()),
-            alert_agent: AlertAgent::bridge(link.callback(|x| x)),
-            alerts: Vec::new(),
+            _error_agent: ErrorAgent::bridge(link.callback(Msg::Error)),
+            _info_agent: InfoAgent::bridge(link.callback(Msg::Info)),
+
+            errors: vec![],
+            infos: vec![],
+
             link,
         }
     }
