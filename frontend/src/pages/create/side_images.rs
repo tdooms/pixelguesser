@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yewtil::NeqAssign;
 
+use crate::utils::bytes_to_url;
 use pbs::ColumnSize;
 
 pub enum Msg {
@@ -10,7 +11,7 @@ pub enum Msg {
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onclick: Callback<usize>,
-    pub images: Vec<Option<String>>,
+    pub images: Vec<Option<Vec<u8>>>,
     pub current: usize,
 }
 
@@ -39,9 +40,9 @@ impl Component for SideImages {
     }
 
     fn view(&self) -> Html {
-        let map_view = |(index, src): (usize, &Option<String>)| {
+        let map_view = |(index, src): (usize, &Option<Vec<u8>>)| {
             let image = match src {
-                Some(src) => html! { <cbs::DynImage src={src.clone()} height=10/> },
+                Some(src) => html! { <cbs::DynImage src={bytes_to_url(src)} height=10/> },
                 None => html! {},
             };
             let grey = (index == self.props.current)

@@ -1,1 +1,1 @@
-pub struct Modal {}
+pub struct Modal;

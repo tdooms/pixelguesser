@@ -1,8 +1,8 @@
+use crate::agents::WebSocketAgent;
+use crate::pages::host::InnerHost;
 use api::{Post, Reply, Request, Response, Session, Stage};
 use yew::prelude::*;
 use yewtil::NeqAssign;
-
-use crate::agents::WebSocketAgent;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct HostLoaderProps {
@@ -46,7 +46,7 @@ impl Component for Host {
     fn view(&self) -> Html {
         match &self.session {
             Some((session_id, session)) => {
-                html! {<Host session={session.clone()} session_id={*session_id}/>}
+                html! {<InnerHost session={session.clone()} session_id={*session_id}/>}
             }
             None => html! {},
         }

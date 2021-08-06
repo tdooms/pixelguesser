@@ -5,6 +5,8 @@ use yew::web_sys::window;
 use api::{Alert, Player, Post, Request, Response, Session, Stage, Status};
 
 use crate::agents::WebSocketAgent;
+use crate::components::Pixelate;
+use crate::pages::host::{Finish, Lobby, Scores};
 
 #[derive(Clone, Properties)]
 pub struct Props {
@@ -17,14 +19,14 @@ pub enum Msg {
     Revealed,
 }
 
-pub struct HostInner {
+pub struct InnerHost {
     link: ComponentLink<Self>,
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     props: Props,
     has_manager: bool,
 }
 
-impl Component for HostInner {
+impl Component for InnerHost {
     type Message = Msg;
     type Properties = Props;
 
@@ -109,7 +111,7 @@ impl Component for HostInner {
     }
 }
 
-impl HostInner {
+impl InnerHost {
     fn handle_response(&mut self, response: Response) -> bool {
         match response {
             Response::Alert(_, Alert::PlayerAdded(id, name)) => {

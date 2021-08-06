@@ -1,38 +1,39 @@
-use gloo_file::callbacks::FileReader;
-use gloo_file::{File, FileList, FileReadError};
+use gloo_file::callbacks::{read_as_bytes, FileReader};
+use gloo_file::{File, FileReadError};
+use validator::ValidationErrors;
 use yew::prelude::*;
-use yew::web_sys::Url;
+use yewtil::NeqAssign;
 
+use api::NewQuiz;
 use pbs::{Color, ColumnSize};
 
 use crate::components::QuizCard;
+use crate::utils::bytes_to_url;
 
 pub enum Msg {
     Name(String),
     Creator(String),
     Description(String),
-    Upload(FileList),
+    Upload(Vec<File>),
     Cancel,
     Continue,
     Read(Result<Vec<u8>, FileReadError>),
 }
 
-#[derive(Properties, Clone)]
+#[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    oncontinue: Callback<Vec<u8>>,
-    oncancel: Callback<()>,
+    pub oncontinue: Callback<NewQuiz>,
+    pub oncancel: Callback<()>,
 }
 
 pub struct CreateQuiz {
     link: ComponentLink<Self>,
     props: Props,
-
     reader: Option<FileReader>,
 
-    name: String,
-    creator: String,
-    description: String,
-    image: Option<File>,
+    draft: NewQuiz,
+    image_name: Option<String>,
+    errors: ValidationErrors,
 }
 
 impl Component for CreateQuiz {
@@ -44,40 +45,48 @@ impl Component for CreateQuiz {
             link,
             props,
             reader: None,
-            name: String::new(),
-            creator: String::new(),
-            description: String::new(),
-            image: None,
+            draft: DraftQuiz::default(),
+            errors: ValidationErrors::default(),
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Name(name) => self.name = name,
-            Msg::Creator(creator) => self.creator = creator,
-            Msg::Description(description) => self.description = description,
-            Msg::Upload(files) => {} // self.image = Some(files.to_vec().remove(0)), // this sucks
+            Msg::Name(name) => self.draft.name = name,
+            Msg::Creator(creator) => self.draft.creator = creator,
+            Msg::Description(description) => self.draft.description = description,
+            Msg::Upload(mut files) if files.len() == 1 => {
+                self.draft.image_name = Some(files[0].name());
+
+                let scope = self.link.clone();
+                let callback = move |x| scope.send_message(Msg::Read(x));
+
+                self.reader = Some(read_as_bytes(&files[0], callback))
+            }
+            Msg::Upload(_) => {
+                // give error
+            }
             Msg::Cancel => {
                 self.props.oncancel.emit(());
             }
-            Msg::Continue => {
-                if let Some(image) = &self.image {
-                    // FileReader::read_as_bytes(image, self.link.callback(Msg::Read))
-                }
+            Msg::Continue => {}
+            Msg::Read(Ok(bytes)) => {
+                self.draft.image_bytes = Some(bytes);
             }
-            Msg::Read(Ok(bytes)) => self.props.oncontinue.emit(bytes),
-            Msg::Read(Err(err)) => {}
+            Msg::Read(Err(err)) => {
+                // give error
+            }
         };
         true
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        false
+        self.props.neq_assign(props)
     }
 
     fn view(&self) -> Html {
-        let filename = self.image.as_ref().map(|file| file.name()).unwrap_or_default();
-        let image = self.image.as_ref().map(|file| Url::create_object_url_with_blob(file).unwrap());
+        let DraftQuiz { name, creator, description, image_name, .. } = &self.draft;
+        let image_url = self.draft.image_bytes.as_ref().map(bytes_to_url);
 
         html! {
             <pbs::Section>
@@ -97,7 +106,7 @@ impl Component for CreateQuiz {
                             </cbs::SimpleField>
 
                             <cbs::SimpleField label="Image">
-                                <pbs::File fullwidth=true filename={filename} onupload={self.link.callback(Msg::Upload)}/>
+                                <pbs::File fullwidth=true filename={image_name.clone()} onupload={self.link.callback(Msg::Upload)}/>
                             </cbs::SimpleField>
 
                             <pbs::Buttons>
@@ -107,7 +116,7 @@ impl Component for CreateQuiz {
 
                         </pbs::Column>
                         <pbs::Column size={ColumnSize::Is4}>
-                            <QuizCard name={self.name.clone()} creator={self.creator.clone()} description={self.description.clone()} image_url={image}/>
+                            <QuizCard name={name.clone()} creator={creator.clone()} description={description.clone()} image_url={image_url}/>
                         </pbs::Column>
                     </pbs::Columns>
                 </pbs::Container>

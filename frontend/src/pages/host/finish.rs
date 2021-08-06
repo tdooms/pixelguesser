@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use yew::prelude::*;
 
+use crate::pages::host::Scores;
 use api::{Player, Quiz};
 use pbs::{Color, HeroSize};
 

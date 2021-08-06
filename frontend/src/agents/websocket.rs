@@ -7,8 +7,9 @@ use yew_services::websocket::{WebSocketService, WebSocketStatus, WebSocketTask};
 
 use api::{Request, Response};
 
+use crate::agents::{ErrorAgent, InfoAgent};
 use crate::constants::API_ENDPOINT;
-use crate::structs::Error;
+use crate::structs::{Error, Info};
 
 pub enum Msg {
     Response(Response),
@@ -23,7 +24,9 @@ pub struct WebSocketAgent {
 
     buffer: Vec<Request>,
     subscribers: HashSet<HandlerId>,
-    logger: Dispatcher<AlertAgent>,
+
+    info: Dispatcher<InfoAgent>,
+    error: Dispatcher<ErrorAgent>,
 
     connected: bool,
 }
@@ -32,7 +35,7 @@ impl WebSocketAgent {
     fn send(&mut self, request: Request) {
         match serde_json::to_string(&request) {
             Ok(string) => self.ws.send(Ok(string)),
-            Err(err) => self.logger.send(Error::JsonError(err)),
+            Err(err) => self.error.send(Error::JsonError(err)),
         }
     }
 
@@ -44,9 +47,9 @@ impl WebSocketAgent {
         let mapper = |result: anyhow::Result<String>| match result {
             Ok(string) => match serde_json::from_str(&string) {
                 Ok(response) => Msg::Response(response),
-                Err(err) => Msg::Notify(Notification::Error(Error::JsonError(err))),
+                Err(err) => Msg::Error(Error::JsonError(err)),
             },
-            Err(err) => Msg::Notify(Notification::Error(Error::WsError(err))),
+            Err(err) => Msg::Error(Error::WsError(err)),
         };
 
         let callback = link.callback(mapper);
@@ -78,7 +81,8 @@ impl Agent for WebSocketAgent {
             link,
             buffer: vec![],
             subscribers: HashSet::new(),
-            logger: AlertAgent::dispatcher(),
+            info: InfoAgent::dispatcher(),
+            error: ErrorAgent::dispatcher(),
             connected: false,
         }
     }
@@ -96,8 +100,7 @@ impl Agent for WebSocketAgent {
                 }
             }
             Msg::Disconnected => {
-                let notification = Notification::Warning(Warning::WsDisconnect);
-                self.logger.send(notification);
+                self.info.send(Info::WsDisconnect);
 
                 self.connected = false;
                 self.ws = Self::connect(&self.link);
@@ -109,7 +112,7 @@ impl Agent for WebSocketAgent {
                     self.link.respond(*sub, response.clone());
                 }
             }
-            Msg::Notify(_) => {} // self.logger.send(notification),
+            Msg::Error(_) => {} // self.logger.send(notification),
         }
     }
 

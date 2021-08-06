@@ -1,11 +1,12 @@
 use yew::prelude::*;
 
-use api::DraftRound;
+use crate::pages::create::{CenterImage, SideImages, SideOptions};
+use api::RoundDiff;
 use cbs::SidebarAlignment;
 use pbs::{Color, ColumnSize};
 
 pub enum Msg {
-    Change(usize, DraftRound),
+    Change(usize, RoundDiff),
     Clicked(usize),
     Remove,
     Add,
@@ -13,7 +14,7 @@ pub enum Msg {
 
 pub struct CreateRounds {
     link: ComponentLink<Self>,
-    rounds: Vec<DraftRound>,
+    rounds: Vec<RoundDiff>,
     current: usize,
 }
 
@@ -22,7 +23,7 @@ impl Component for CreateRounds {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, current: 0, rounds: vec![DraftRound::default()] }
+        Self { link, current: 0, rounds: vec![RoundDiff::default()] }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -35,7 +36,7 @@ impl Component for CreateRounds {
             }
             Msg::Add => {
                 self.current = self.rounds.len();
-                self.rounds.push(DraftRound::default());
+                self.rounds.push(RoundDiff::default());
             }
             Msg::Clicked(index) => {
                 self.current = index;
@@ -56,16 +57,18 @@ impl Component for CreateRounds {
         let onadd = self.link.callback(|_| Msg::Add);
         let onclick = self.link.callback(Msg::Clicked);
 
-        let image = self.rounds[current].image_url.clone();
-        let side_classes = "is-flex is-flex-direction-column is-justify-content-space-between";
+        // TODO: This will copy whole images :(
+        let center_image = self.rounds[current].image_bytes.clone();
+        let side_images: Vec<_> =
+            self.rounds.iter().map(|round| round.image_bytes.clone()).collect();
 
-        let images: Vec<_> = self.rounds.iter().map(|round| round.image_url.clone()).collect();
+        let side_classes = "is-flex is-flex-direction-column is-justify-content-space-between";
         let draft = self.rounds[self.current].clone();
 
         html! {
             <pbs::Columns>
                 <cbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
-                    <SideImages images={images} onclick={onclick} current=self.current/>
+                    <SideImages images={side_images} onclick={onclick} current=self.current/>
                     <div>
                         <hr/>
                         <pbs::Buttons extra="mt-auto px-4 py-2">
@@ -76,7 +79,7 @@ impl Component for CreateRounds {
                 </cbs::Sidebar>
 
                 <pbs::Column size={ColumnSize::Is8}>
-                    <CenterImage image={image} />
+                    <CenterImage image_bytes={center_image} />
                 </pbs::Column>
 
                 <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra={format!("p-6 {}", side_classes)}>

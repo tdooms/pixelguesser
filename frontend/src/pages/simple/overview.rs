@@ -69,6 +69,9 @@ impl Component for Overview {
             }
         };
 
-        view_or_loading(self.quizzes.as_ref(), view_quizzes)
+        match self.quizzes.as_ref() {
+            Some(quizzes) => view_quizzes(quizzes),
+            None => html! { <Loading/> },
+        }
     }
 }

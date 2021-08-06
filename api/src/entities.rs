@@ -12,6 +12,14 @@ pub struct Quiz {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct NewQuiz {
+    pub name: String,
+    pub creator: String,
+    pub description: String,
+    pub image_bytes: Option<Vec<u8>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Round {
     pub round_id: i64,
     pub quiz_id: i64,
@@ -22,13 +30,13 @@ pub struct Round {
     pub answer: String,
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct DraftRound {
-    pub image_url: Option<String>,
-    pub points: i64,
-    pub guesses: i64,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct RoundDiff {
+    pub points: Option<i64>,
+    pub guesses: Option<i64>,
     pub speed: Option<f64>,
     pub answer: Option<String>,
+    pub image_bytes: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

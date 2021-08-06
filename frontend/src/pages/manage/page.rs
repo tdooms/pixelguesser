@@ -3,6 +3,7 @@ use yew::prelude::*;
 use yewtil::NeqAssign;
 
 use crate::agents::WebSocketAgent;
+use crate::pages::manage::InnerManage;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ManageLoaderProps {
@@ -46,7 +47,7 @@ impl Component for Manage {
     fn view(&self) -> Html {
         match &self.session {
             Some(session) => {
-                html! {<Manage session={session.clone()} session_id={self.props.session_id}/>}
+                html! {<InnerManage session={session.clone()} session_id={self.props.session_id}/>}
             }
             None => html! {},
         }

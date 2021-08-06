@@ -42,6 +42,7 @@ pub enum Get {
     Stage { session_id: u64 },
     Players { session_id: u64 },
     CheckSession { session_id: u64 },
+    DraftQuiz {}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,7 +67,9 @@ pub enum Post {
     AddPlayer { session_id: u64, name: String },
     ChangeScores { session_id: u64, diff: ScoreDiff },
     ChangeStage { session_id: u64, stage: Stage },
-    UploadQuiz { session_id: u64, quiz: NewQuiz }, // UploadDraft { session_id: u64, quiz_id: i64, rounds: DraftRound },
+
+    UploadQuiz { quiz: NewQuiz },
+    UploadRound { round_id:}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

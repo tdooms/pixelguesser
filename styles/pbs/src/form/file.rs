@@ -1,4 +1,4 @@
-use gloo_file::FileList;
+use gloo_file::File as SysFile;
 use yew::prelude::*;
 
 use crate::{classify, Alignment, Color, Size};
@@ -29,7 +29,9 @@ pub struct FileProps {
     #[prop_or_default]
     pub extra: String,
 
-    pub onupload: Callback<FileList>,
+    // We don't use gloo_file filelist because it
+    // doesn't allow to move from it for some reason.
+    pub onupload: Callback<Vec<SysFile>>,
 }
 
 pub struct File {
@@ -48,7 +50,10 @@ impl Component for File {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             ChangeData::Files(files) => {
-                self.props.onupload.emit(FileList::from(files));
+                let list =
+                    (0..files.length()).filter_map(|i| files.get(i)).map(SysFile::from).collect();
+
+                self.props.onupload.emit(list);
             }
             _ => unreachable!(
                 "invariant violation: received non-file change event from a file input element"

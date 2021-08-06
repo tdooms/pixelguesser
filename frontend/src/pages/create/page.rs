@@ -1,29 +1,43 @@
-use crate::route::Route;
-use gloo_file::File;
+use yew::agent::Dispatcher;
 use yew::prelude::*;
 
+use api::{NewQuiz, Post, Request, RoundDiff};
+
+use crate::agents::WebSocketAgent;
+use crate::pages::create::CreateQuiz;
+use crate::route::Route;
+
 pub enum Msg {
-    Continue(File),
+    Continue(NewQuiz),
+    Change(Vec<RoundDiff>),
     Cancel,
 }
 
 #[derive(Properties, Clone)]
 pub struct Props {}
 
-pub struct Create {}
+pub struct Create {
+    link: ComponentLink<Self>,
+    props: Props,
+    ws_agent: Dispatcher<WebSocketAgent>,
+}
 
 impl Component for Create {
     type Message = Msg;
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {}
+        Self { ws_agent: WebSocketAgent::dispatcher(), props, link }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Continue(file) => {} //file.read_as_bytes,
+            Msg::Continue(quiz) => {
+                let post = Post::UploadQuiz { quiz };
+                self.ws_agent.send(Request::Post(post));
+            }
             Msg::Cancel => yew_router::push_route(Route::Overview),
+            Msg::Change(change) => {}
         }
         true
     }
@@ -33,6 +47,9 @@ impl Component for Create {
     }
 
     fn view(&self) -> Html {
-        html! { <CreateQuiz /> }
+        let oncancel = self.link.callback(|_| Msg::Cancel);
+        let oncontinue = self.link.callback(Msg::Continue);
+
+        html! { <CreateQuiz oncontinue={oncontinue} oncancel={oncancel}/> }
     }
 }

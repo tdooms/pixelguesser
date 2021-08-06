@@ -5,6 +5,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::agents::*;
+use crate::components::Alerts;
 use crate::pages::*;
 use crate::route::Route;
 use crate::structs::{Error, Info};
@@ -56,7 +57,10 @@ impl Component for Model {
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.alerts.push(msg);
+        match msg {
+            Msg::Error(err) => self.errors.push(err),
+            Msg::Info(_) => {}
+        }
         false
     }
 
@@ -67,7 +71,7 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <main>
-                <cbs::Alerts<Rc<Notification>> entries={self.alerts.clone()} />
+                <Alerts<Rc<Info>> entries={self.infos.clone()} />
                 <Router<Route> render={Router::render(switch)} />
             </main>
         }
@@ -76,8 +80,8 @@ impl Component for Model {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Host { quiz_id } => html! { <HostLoader quiz_id={*quiz_id}/> },
-        Route::Manage { session_id } => html! { <ManageLoader session_id={*session_id}/> },
+        Route::Host { quiz_id } => html! { <Host quiz_id={*quiz_id}/> },
+        Route::Manage { session_id } => html! { <Manage session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
         Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },

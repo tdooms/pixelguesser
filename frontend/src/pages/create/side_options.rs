@@ -1,12 +1,14 @@
 use yew::prelude::*;
-use yew::web_sys::{File as SysFile, Url};
 use yewtil::NeqAssign;
 
-use api::DraftRound;
+use api::RoundDiff;
+use gloo_file::callbacks::FileReader;
+use gloo_file::File;
 use pbs::{Alignment, Color};
 
 pub enum Msg {
-    Upload(Vec<SysFile>),
+    Upload(Vec<File>),
+    // Read(),
     Answer(String),
     Points(i64),
     Guesses(i64),
@@ -15,8 +17,8 @@ pub enum Msg {
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<DraftRound>,
-    pub draft: DraftRound,
+    pub onchange: Callback<RoundDiff>,
+    pub draft: RoundDiff,
 }
 
 pub struct SideOptions {
@@ -34,26 +36,24 @@ impl Component for SideOptions {
 
     fn update(&mut self, msg: Self::Message) -> bool {
         match msg {
-            Msg::Upload(images) => {
-                self.props.draft.image_url = images
-                    .iter()
-                    .next()
-                    .as_ref()
-                    .map(|file| Url::create_object_url_with_blob(file).unwrap())
+            Msg::Upload(images) if images.len() == 1 => {
+                //
             }
-            Msg::Remove => self.props.draft.image_url = None,
+            Msg::Upload(images) => {
+                // give error
+            }
+            Msg::Remove => {
+                self.props.draft.image_bytes = None;
+            }
             Msg::Answer(answer) => {
-                if answer.is_empty() {
-                    self.props.draft.answer = None
-                } else {
-                    self.props.draft.answer = Some(answer)
-                }
+                // Convert empty string to None
+                self.props.draft.answer = Some(answer).filter(|x| !x.is_empty());
             }
             Msg::Points(points) => {
-                self.props.draft.points = points;
+                self.props.draft.points = Some(points);
             }
             Msg::Guesses(guesses) => {
-                self.props.draft.guesses = guesses;
+                self.props.draft.guesses = Some(guesses);
             }
         }
         self.props.onchange.emit(self.props.draft.clone());
@@ -71,8 +71,8 @@ impl Component for SideOptions {
         let onupload = self.link.callback(Msg::Upload);
         let onremove = self.link.callback(|_| Msg::Remove);
 
-        match &self.props.draft.image_url {
-            Some(image) => html! {
+        match &self.props.draft.image_bytes {
+            Some(bytes) => html! {
                 <>
                 <div>
                     <cbs::SimpleField label="Answer">

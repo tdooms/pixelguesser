@@ -8,6 +8,7 @@ use yew_services::timeout::TimeoutTask;
 use yew_services::{ResizeService, TimeoutService};
 use yewtil::NeqAssign;
 
+use crate::agents::ErrorAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
 use crate::utils::{draw_pixelated, TypeRef};
@@ -27,7 +28,7 @@ pub struct Props {
 
 pub struct Pixelate {
     link: ComponentLink<Self>,
-    logger: Dispatcher<AlertAgent>,
+    logger: Dispatcher<ErrorAgent>,
 
     _resizer: ResizeTask,
     props: Props,
@@ -42,9 +43,9 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(logger: &mut Dispatcher<AlertAgent>, result: Result<(), Error>) {
+    fn log(logger: &mut Dispatcher<ErrorAgent>, result: Result<(), Error>) {
         if let Err(err) = result {
-            logger.send(Notification::Error(err))
+            logger.send(err)
         }
     }
 
@@ -82,7 +83,7 @@ impl Component for Pixelate {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             props,
-            logger: AlertAgent::dispatcher(),
+            logger: ErrorAgent::dispatcher(),
             _resizer: ResizeService::register(link.callback(|_| Msg::Resize)),
             link,
             pixels: 4.0,

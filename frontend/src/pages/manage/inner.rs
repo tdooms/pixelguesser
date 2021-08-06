@@ -3,7 +3,7 @@ use yew::prelude::*;
 use yewtil::NeqAssign;
 
 use crate::agents::WebSocketAgent;
-use crate::manage::{Initialize, Master, Navigate, Rating};
+use crate::pages::manage::{Initialize, Master, Navigate, Rating};
 use crate::route::Route;
 
 pub enum Msg {
@@ -19,13 +19,13 @@ pub struct Props {
     pub session: Session,
 }
 
-pub struct ManageInner {
+pub struct InnerManage {
     ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     link: ComponentLink<Self>,
     props: Props,
 }
 
-impl Component for ManageInner {
+impl Component for InnerManage {
     type Message = Msg;
     type Properties = Props;
 

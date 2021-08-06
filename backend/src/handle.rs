@@ -163,6 +163,10 @@ async fn handle_post(post: Post, state: &State, sender: &Sender) -> Result<(), E
             let response = Response::Alert(session_id, Alert::ManagerLeft);
             send(response, &session.host)
         }
+        Post::UploadQuiz { session_id, quiz } => {
+            log::debug!("{:?}", quiz);
+            Ok(())
+        }
     }
 }
 
