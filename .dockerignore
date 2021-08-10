@@ -1,5 +1,5 @@
 /target
-/images
+/static/images
 /Cargo.lock
 /static/package.json
 /static/wasm.d.ts

@@ -1,2 +1,5 @@
 [workspace]
-members = ["api", "backend", "frontend", "styles/pbs", "styles/cbs", "styles/classify", "styles/fa", "tools/fa-scraper"]
+members = ["api", "backend/sessions", "backend/images", "backend/spar",
+    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs",
+    "frontend/styles/classify", "frontend/styles/fa",
+    "tools/fa-scraper"]

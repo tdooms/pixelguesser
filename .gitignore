@@ -1,14 +1,7 @@
 /target
-/images
-/static/package.json
-/static/wasm.d.ts
-/static/wasm.js
-/static/wasm_bg.wasm
-/static/wasm_bg.wasm.d.ts
+/data
 
-/frontend/Cargo.lock
-/Cargo.lock
+*.lock
 
 /.env
 /.idea
-/Cargo.lock
