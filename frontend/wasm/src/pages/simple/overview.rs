@@ -1,46 +1,38 @@
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 
 use api::{Fetch, Get, Quiz, Request, Response};
 use cbs::Loading;
 
 use crate::agents::WebSocketAgent;
 use crate::components::{navbar, QuizCard};
-use crate::constants::IMAGE_ENDPOINT;
 use crate::route::Route;
+use crate::utils::{exec_query, image_url, OVERVIEW_QUERY, Quiz};
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
-    _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
 }
 
 impl Component for Overview {
-    type Message = Response;
+    type Message = Vec<Quiz>;
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut ws_agent = WebSocketAgent::bridge(link.callback(|x| x));
-        ws_agent.send(Request::Get(Get::Quizzes));
-
-        Self { quizzes: None, _ws_agent: ws_agent }
+        link.send_future(exec_query(OVERVIEW_QUERY, |x| x));
+        Self { quizzes: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
-        match msg {
-            Response::Fetch(Fetch::Quizzes(quizzes)) => {
-                self.quizzes = Some(quizzes);
-                true
-            }
-            _ => false,
-        }
+        self.quizzes.neq_assign(Some(msg))
     }
 
-    fn change(&mut self, _props: Self::Properties) -> bool {
+    fn change(&mut self, props: Self::Properties) -> bool {
         false
     }
 
     fn view(&self) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let url = format!("http://{}/{}", IMAGE_ENDPOINT, quiz.image_url);
+            let url = image_url(quiz.image_url);
             let route = Route::Host { quiz_id: quiz.quiz_id };
             html! {
                 <div class="column is-3">

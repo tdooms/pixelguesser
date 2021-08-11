@@ -6,3 +6,11 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = { version = "1.9", features = ["full"] }
+rocket = { version = "0.5.0-rc.1", features = ["json"] }
+
+shared = { path = "../../shared" }
+
+clap = "3.0.0-beta.2"
+
+rand = "0.8"

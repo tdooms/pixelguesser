@@ -4,6 +4,7 @@ use yew::prelude::*;
 
 use api::*;
 use pbs::Size;
+use shared::Player;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {

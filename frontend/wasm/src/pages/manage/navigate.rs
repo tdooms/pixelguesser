@@ -4,6 +4,18 @@ use api::{Action, Stage};
 use pbs::{Alignment, Color, Size};
 
 use crate::route::Route;
+use shared::{Stage, Action};
+
+static ACTIONS: [Action; 8] = [
+    Action::Start,
+    Action::Pause,
+    Action::Resume,
+    Action::Reveal,
+    Action::Scores,
+    Action::Next,
+    Action::Finish,
+    Action::Leave,
+];
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
@@ -55,17 +67,6 @@ impl Component for Navigate {
             Action::Leave => ("leave", "fas fa-sign-out-alt", Color::Danger, true),
         };
 
-        static ACTIONS: [Action; 8] = [
-            Action::Start,
-            Action::Pause,
-            Action::Resume,
-            Action::Reveal,
-            Action::Scores,
-            Action::Next,
-            Action::Finish,
-            Action::Leave,
-        ];
-
         let actions = self.props.stage.actions(self.props.rounds);
 
         let map_action = |action: Action| {
@@ -73,8 +74,9 @@ impl Component for Navigate {
             let callback = self.link.callback(move |_| action);
             let hidden = !actions.contains(&action);
 
-            html! { <cbs::IconButton hidden={hidden} text={text} icon={icon} color={color}
-            light={light} size={Size::Large} onclick={callback}/> }
+            html! {
+                <cbs::IconButton hidden={hidden} text={text} icon={icon} color={color} light={light} size={Size::Large} onclick={callback}/>
+            }
         };
 
         html! {

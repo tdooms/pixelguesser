@@ -45,7 +45,7 @@ impl Component for CenterImage {
         match self.props.image_bytes.as_ref().map(base64::encode) {
             Some(base64) => html! {
                 <>
-                <cbs::DynImage src=format!("data:image/png;base64,{}", base64) height=85/>
+                <cbs::DynImage src={format!("data:image/png;base64,{}", base64)} height=85/>
 
                 <pbs::Buttons alignment={Alignment::Centered} extra="mt-5">
                     <cbs::IconButton text="reveal" icon="fas fa-eye" onclick={self.link.callback(|_| Msg::Reveal)}/>

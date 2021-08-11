@@ -1,7 +1,6 @@
 use yew::prelude::*;
 
 use crate::pages::create::{CenterImage, SideImages, SideOptions};
-use api::RoundDiff;
 use cbs::SidebarAlignment;
 use pbs::{Color, ColumnSize};
 
@@ -68,8 +67,8 @@ impl Component for CreateRounds {
 
         html! {
             <pbs::Columns>
-                <cbs::Sidebar size=ColumnSize::Is2 alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
-                    <SideImages images={side_images} onclick={onclick} current=self.current/>
+                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
+                    <SideImages images={side_images} onclick={onclick} current={self.current}/>
                     <div>
                         <hr/>
                         <pbs::Buttons extra="mt-auto px-4 py-2">

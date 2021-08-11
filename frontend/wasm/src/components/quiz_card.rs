@@ -52,7 +52,7 @@ impl Component for QuizCard {
                 </Link<Route>>
             },
             None => html! {
-                <button class=classes!("button", "is-success", "is-fullwidth", "has-square-top", "has-no-pointer")>
+                <button class={classes!("button", "is-success", "is-fullwidth", "has-square-top", "has-no-pointer")}>
                     <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
                 </button>
             },

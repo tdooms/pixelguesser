@@ -5,7 +5,10 @@ use pbs::Color;
 
 use crate::agents::WebSocketAgent;
 use crate::route::Route;
-use crate::utils::string_to_code;
+use crate::utils::{string_to_code, session_get};
+use crate::constants::SESSION_ENDPOINT;
+use yewtil::NeqAssign;
+use gloo::timers::callback::Timeout;
 
 enum State {
     Available,
@@ -15,17 +18,18 @@ enum State {
 }
 
 pub enum Msg {
-    Response(Response),
+    Response(bool),
     Input(String),
+    Timer,
     Cancel,
     Join,
 }
 
 pub struct Code {
     link: ComponentLink<Self>,
-    ws_agent: Box<dyn Bridge<WebSocketAgent>>,
+    timer: Option<Timeout>,
 
-    current: String,
+    current: Option<u64>,
     state: State,
 }
 
@@ -35,55 +39,39 @@ impl Component for Code {
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            ws_agent: WebSocketAgent::bridge(link.callback(Msg::Response)),
             link,
-            current: String::new(),
+            timer: None,
+            current: None,
             state: State::None,
         }
     }
 
-    // FIXME: this code is too verbose
     fn update(&mut self, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Response(Response::Fetch(Fetch::SessionInvalid(session_id))) => {
-                let res = string_to_code(&self.current) == Some(session_id);
-                if res {
-                    self.state = State::Invalid
-                }
-                res
+        match (msg, self.current) {
+            (Msg::Response(true), _) => {
+                self.state.neq_assign(State::Available)
             }
-            Msg::Response(Response::Fetch(Fetch::SessionAvailable(session_id))) => {
-                let res = string_to_code(&self.current) == Some(session_id);
-                if res {
-                    self.state = State::Available
-                }
-                res
+            (Msg::Response(false), _) => {
+                self.state.neq_assign(State::Invalid)
             }
-            Msg::Input(string) => {
-                self.current = string;
-
-                self.state = match string_to_code(&self.current) {
-                    Some(session_id) => {
-                        let get = Get::CheckSession { session_id };
-                        self.ws_agent.send(Request::Get(get));
-                        State::None
-                    }
-                    None => State::Incorrect,
-                };
-
-                true
+            (Msg::Input(string), _) => {
+                self.timer = Some(Timeout::new(200, self.link.callback(Msg::Timer)));
+                self.current.neq_assign(string_to_code(&string))
             }
-            Msg::Join => {
-                if let Some(session_id) = string_to_code(&self.current) {
-                    yew_router::push_route(Route::Manage { session_id });
-                }
+            (Msg::Timer, Some(session_id)) => {
+                let future = session_get(format!("/{}/check", session_id), Msg::Response);
+                self.link.send_future(future);
                 false
             }
-            Msg::Cancel => {
+            (Msg::Join, Some(session_id)) => {
+                yew_router::push_route(Route::Manage { session_id });
+                false
+            }
+            (Msg::Cancel, _) => {
                 yew_router::push_route(Route::Overview);
                 false
-            }
-            Msg::Response(_) => false,
+            },
+            _ => {}
         }
     }
 

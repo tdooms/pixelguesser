@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 
 use self::Action::*;
@@ -31,6 +29,10 @@ pub enum Stage {
     Round { round: usize, status: Status },
     Ranking { round: usize },
     Finished,
+}
+
+impl Default for Stage {
+    fn default() -> Self { Stage::Initial }
 }
 
 impl Stage {

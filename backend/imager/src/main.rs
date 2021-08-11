@@ -26,7 +26,7 @@ pub async fn upload(bytes: Data<'_>, path: &State<Path>) -> std::io::Result<Stri
     Ok(filename)
 }
 
-/// spar (SPA-serveR) is a simple program to serve a folder for serving single page applications.
+/// imager (IMAGE-serveR) is a program  to efficiently serve images
 #[derive(Clap)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
 #[clap(setting = AppSettings::ColoredHelp)]

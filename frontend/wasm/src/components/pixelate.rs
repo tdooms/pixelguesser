@@ -1,6 +1,5 @@
 use api::Status;
 use std::time::Duration;
-use yew::agent::{Dispatched, Dispatcher};
 use yew::prelude::*;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew_services::resize::ResizeTask;

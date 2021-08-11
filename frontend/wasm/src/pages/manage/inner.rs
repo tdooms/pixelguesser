@@ -5,6 +5,7 @@ use yewtil::NeqAssign;
 use crate::agents::WebSocketAgent;
 use crate::pages::manage::{Initialize, Master, Navigate, Rating};
 use crate::route::Route;
+use shared::{Session, Stage};
 
 pub enum Msg {
     ChangeStage(Stage),

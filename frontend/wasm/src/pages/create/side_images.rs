@@ -50,7 +50,7 @@ impl Component for SideImages {
                 .unwrap_or_default();
 
             html! {
-                <div class=classes!("columns", grey) onclick={self.link.callback(move |_| Msg::Clicked(index))}>
+                <div class={classes!("columns", grey)} onclick={self.link.callback(move |_| Msg::Clicked(index))}>
                     <pbs::Column size={ColumnSize::IsNarrow}> <p> {index} </p> </pbs::Column>
                     <pbs::Column extra="p-1"> {image} </pbs::Column>
                 </div>

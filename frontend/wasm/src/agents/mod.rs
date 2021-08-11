@@ -4,4 +4,3 @@ pub use websocket::WebSocketAgent;
 
 mod error;
 mod info;
-mod websocket;
