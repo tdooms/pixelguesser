@@ -1,10 +1,10 @@
 use yew::events::InputData;
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
+use crate::{classify, Color};
 use crate::common::InputType;
 use crate::Size;
-use crate::{classify, Color};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct InputProps {

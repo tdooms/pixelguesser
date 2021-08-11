@@ -1,14 +1,14 @@
+use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
 use api::{Fetch, Get, Request, Response};
 use pbs::Color;
+use yew::utils::NeqAssign;
 
 use crate::agents::WebSocketAgent;
-use crate::route::Route;
-use crate::utils::{string_to_code, session_get};
 use crate::constants::SESSION_ENDPOINT;
-use yewtil::NeqAssign;
-use gloo::timers::callback::Timeout;
+use crate::route::Route;
+use crate::utils::{check_session, string_to_code};
 
 enum State {
     Available,
@@ -18,7 +18,7 @@ enum State {
 }
 
 pub enum Msg {
-    Response(bool),
+    Check(Option<u64>),
     Input(String),
     Timer,
     Cancel,
@@ -48,29 +48,33 @@ impl Component for Code {
 
     fn update(&mut self, msg: Self::Message) -> bool {
         match (msg, self.current) {
-            (Msg::Response(true), _) => {
+            (Msg::Check(Some(id)), Some(current)) if id == current => {
                 self.state.neq_assign(State::Available)
             }
-            (Msg::Response(false), _) => {
+            (Msg::Check(None), _) => {
                 self.state.neq_assign(State::Invalid)
             }
             (Msg::Input(string), _) => {
                 self.timer = Some(Timeout::new(200, self.link.callback(Msg::Timer)));
-                self.current.neq_assign(string_to_code(&string))
+
+                let res1 = self.state.neq_assign(State::Invalid);
+                let res2 = self.current.neq_assign(string_to_code(&string));
+
+                res1 | res2
             }
             (Msg::Timer, Some(session_id)) => {
-                let future = session_get(format!("/{}/check", session_id), Msg::Response);
+                let future = check_session(session_id, Msg::Check);
                 self.link.send_future(future);
                 false
             }
-            (Msg::Join, Some(session_id)) => {
+            (Msg::Join, Some(session_id)) if self.state == State::Available => {
                 yew_router::push_route(Route::Manage { session_id });
                 false
             }
             (Msg::Cancel, _) => {
                 yew_router::push_route(Route::Overview);
                 false
-            },
+            }
             _ => {}
         }
     }
@@ -107,7 +111,7 @@ impl Component for Code {
                 <pbs::Container>
                     { field }
                     <pbs::Buttons>
-                        <cbs::IconButton text="Join" color={Color::Link} onclick={onjoin}/>
+                        <cbs::IconButton text="Join" color={Color::Link} onclick={onjoin} disabled={self.state != State::Available}/>
                         <cbs::IconButton text="Cancel" color={Color::Link} light=true onclick={oncancel}/>
                     </pbs::Buttons>
                 </pbs::Container>

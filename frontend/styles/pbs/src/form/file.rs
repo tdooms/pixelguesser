@@ -1,7 +1,7 @@
-use gloo_file::File as SysFile;
+use gloo::file::File as SysFile;
 use yew::prelude::*;
 
-use crate::{classify, Alignment, Color, Size};
+use crate::{Alignment, classify, Color, Size};
 
 #[derive(Properties, Clone)]
 pub struct FileProps {

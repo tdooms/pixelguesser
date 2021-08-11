@@ -1,27 +1,28 @@
-use api::*;
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
+
+use api::*;
+use shared::{Player, Session, Stage, Status};
 
 use crate::agents::WebSocketAgent;
 use crate::pages::manage::{Initialize, Master, Navigate, Rating};
 use crate::route::Route;
-use shared::{Session, Stage};
 
 pub enum Msg {
-    ChangeStage(Stage),
-    PlayerAdded(String),
-    Guessed(u64),
-    Response(Response),
+    UpdateStage(Stage),
+    NewPlayer(String),
+    Guessed(String),
 }
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
+    pub onchange: Callback<Session>,
+
     pub session_id: u64,
     pub session: Session,
 }
 
 pub struct InnerManage {
-    ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     link: ComponentLink<Self>,
     props: Props,
 }
@@ -31,73 +32,33 @@ impl Component for InnerManage {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { ws_agent: WebSocketAgent::bridge(link.callback(|x| Msg::Response(x))), link, props }
+        Self { link, props }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Response(Response::Reply(_, Reply::SessionManaged)) => {
-                // TODO: what does this do?
-                yew_router::push_route(Route::Code);
-                false
+        let changed = match msg {
+            Msg::UpdateStage(stage) => {
+                self.props.session.stage.neq_assign(stage)
             }
-            Msg::Response(Response::Alert(_, Alert::StageChanged(stage))) => {
-                self.props.session.stage = stage;
-                true
-            }
-            Msg::Response(Response::Alert(_, Alert::PlayerAdded(id, name))) => {
-                self.props.session.players.insert(id, Player { name, score: 0 });
-                true
-            }
-            Msg::Response(Response::Alert(_, Alert::SessionStopped)) => {
-                yew_router::push_route(Route::Overview);
-                // TODO: give warning
-                false
-            }
-            Msg::Response(Response::Error(Error::SessionDoesNotExist(_))) => {
-                yew_router::push_route(Route::Overview);
-                // TODO: give error
-                false
-            }
-            Msg::Response(_) => false,
-            Msg::Guessed(player_id) => {
-                let rounds = self.props.session.rounds.len();
-                let session_id = self.props.session_id;
-
-                match self.props.session.stage.perform(Action::Reveal, rounds) {
-                    Some(stage) => {
-                        let post = Post::ChangeStage { session_id, stage };
-                        self.ws_agent.send(Request::Post(post))
+            Msg::NewPlayer(name) => {
+                match self.props.session.players.iter().find(|player| player.name == name) {
+                    None => {
+                        self.props.session.players.push(Player { name, score: 0 });
+                        true
                     }
-                    None => {} // TODO: error
+                    Some(_) => false // TODO: give error
                 }
-
-                if let Stage::Round { round, .. } = self.props.session.stage {
-                    let change = ScoreDiff {
-                        player_id,
-                        change: self.props.session.rounds[round].points,
-                        reason: "".to_string(),
-                    };
-
-                    let post = Post::ChangeScores { session_id, diff: vec![change] };
-                    self.ws_agent.send(Request::Post(post));
-                } else {
-                    // Error
+            }
+            Msg::Guessed(name) => {
+                match self.props.session.players.iter_mut().find(|player| player.name == name) {
+                    None => {} // TODO: give error
+                    Some(player) => player.score += 1
                 }
+            }
+        };
 
-                false
-            }
-            Msg::PlayerAdded(name) => {
-                let post = Post::AddPlayer { session_id: self.props.session_id, name };
-                self.ws_agent.send(Request::Post(post));
-                false
-            }
-            Msg::ChangeStage(stage) => {
-                let post = Post::ChangeStage { session_id: self.props.session_id, stage };
-                self.ws_agent.send(Request::Post(post));
-                false
-            }
-        }
+        if changed { self.props.onchange.emit(self.props.session.clone()) };
+        changed
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
@@ -111,8 +72,8 @@ impl Component for InnerManage {
                 html! { <Initialize onchange={onchange}/> }
             }
             Stage::Round { round, status: Status::Playing { .. } } => {
-                let onclick = self.link.callback(|guess| Msg::Guessed(guess));
-                html! { <Master players={self.props.session.players.clone()} onclick={onclick}/> }
+                let onguess = self.link.callback(|guess| Msg::Guessed(guess));
+                html! { <Master players={self.props.session.players.clone()} onguess={onguess}/> }
             }
             Stage::Round { .. } => html! { <cbs::TitleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
             Stage::Scores { .. } => html! { <cbs::TitleHero title="showing scores" subtitle=""/> },
@@ -121,7 +82,7 @@ impl Component for InnerManage {
 
         let stage = self.props.session.stage.clone();
         let rounds = self.props.session.rounds.len();
-        let onchange = self.link.callback(|stage| Msg::ChangeStage(stage));
+        let onchange = self.link.callback(|stage| Msg::UpdateStage(stage));
 
         html! {
             <pbs::Section>

@@ -1,26 +1,23 @@
 use js_sys::Function;
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 use yew::web_sys::window;
-use yewtil::NeqAssign;
 
 use crate::agents::WebSocketAgent;
 use crate::components::Pixelate;
 use crate::pages::host::{Finish, Lobby, Scores};
+use shared::{Stage, Session};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     pub session_id: u64,
     pub session: Session,
 
-    #[prop_or_default]
-    pub has_manager: bool,
-
     pub onrevealed: Callback<()>,
 }
 
 pub struct InnerHost {
     link: ComponentLink<Self>,
-    ws_agent: Box<dyn Bridge<WebSocketAgent>>,
     props: Props,
 }
 
@@ -33,21 +30,11 @@ impl Component for InnerHost {
             window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
         }
 
-        let ws_agent = WebSocketAgent::bridge(link.callback(|x| Msg::Response(x)));
-        Self { ws_agent, link, props }
+        Self { link, props }
     }
 
     fn update(&mut self, _: Self::Message) -> bool {
         self.props.onrevealed.emit(());
-
-        match self.props.session.stage {
-            Stage::Round { round, status: Status::Revealing } => {
-                let stage = Stage::Round { round, status: Status::Revealed };
-                let post = Post::ChangeStage { session_id: self.props.session_id, stage };
-                self.ws_agent.send(Request::Post(post))
-            }
-            _ => {}
-        }
         false
     }
 
@@ -97,9 +84,6 @@ impl Component for InnerHost {
         if let Some(window) = window() {
             window.set_onbeforeunload(None)
         }
-
-        let session_id = self.props.session_id;
-        let post = Post::StopSession { session_id };
-        self.ws_agent.send(Request::Post(post))
+        // TODO: kill session?
     }
 }

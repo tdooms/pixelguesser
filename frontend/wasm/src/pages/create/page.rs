@@ -17,9 +17,8 @@ pub enum Msg {
 pub struct Props {}
 
 pub struct Create {
-    link: ComponentLink<Self>,
     props: Props,
-    ws_agent: Dispatcher<WebSocketAgent>,
+    link: ComponentLink<Self>,
 }
 
 impl Component for Create {
@@ -27,7 +26,7 @@ impl Component for Create {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { ws_agent: WebSocketAgent::dispatcher(), props, link }
+        Self { props, link }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {

@@ -1,15 +1,17 @@
 use std::collections::HashMap;
 
 use yew::prelude::*;
-use yewtil::NeqAssign;
 
 use api::{Alert, Post, Reply, Request, Response, Session, Stage};
 
 use crate::agents::WebSocketAgent;
 use crate::pages::host::InnerHost;
+use shared::Session;
+use yew::utils::NeqAssign;
 
 pub enum Msg {
-    Response(Response),
+    Created((u64, Session)),
+    Hosted(),
     Revealed,
 }
 
@@ -20,8 +22,9 @@ pub struct HostLoaderProps {
 
 pub struct Host {
     props: HostLoaderProps,
-    session: Option<(u64, Session, bool)>,
-    ws_agent: Box<dyn Bridge<WebSocketAgent>>,
+    link: ComponentLink<Self>,
+
+    session: Option<(u64, Session)>,
 }
 
 impl Component for Host {
@@ -29,86 +32,26 @@ impl Component for Host {
     type Properties = HostLoaderProps;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut ws_agent = WebSocketAgent::bridge(link.callback(|x| x));
-        ws_agent.send(Request::Post(Post::StartSession { quiz_id: props.quiz_id }));
+        // TODO: create session
+        // TODO: host session
 
-        Self { props, session: None, ws_agent }
+        Self { props, link, session: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match (msg, &self.session) {
-            (Msg::Response(Response::Reply(session_id, reply)), None) => match reply {
-                Reply::SessionCreated(quiz, rounds) => {
-                    let players = HashMap::new();
-                    let session = Session { stage: Stage::Initial, quiz, rounds, players };
-
-                    self.session = Some((session_id, session, false));
-                    true
-                }
-                _ => false,
+        match msg {
+            Msg::Created(tuple) => {
+                self.session = Some(tuple);
+                true
             },
-            (Msg::Response(Response::Alert(session_id, alert)), Some(mut data)) => match alert {
-                Alert::SessionStopped => {
-                    // TODO: error
-                }
-                Alert::ManagerChanged(bool) => {
-                    // TODO: alert
-                    data.2 = bool;
-                    true
-                }
-                Alert::ScoreChanged(diff) => {
-                    for change in diff {
-                        match data.1.players.get_mut(&change.player_id) {
-                            Some(player) => player.score += change.change,
-                            None => log::debug!("no player with given id"), // TODO: error?
-                        }
-                    }
-                    true
-                }
-                Alert::StageChanged(stage) => data.1.stage = stage,
-                Alert::PlayerAdded(id, name) => {
-                    session.players.insert(id, Player { score: 0, name });
-                    true
-                }
+            Msg::Hosted() => {
+                // TODO: initialise ws socket
+                false
             },
-        }
-
-        match (msg, &self.session) {
-            (Response::Reply(session_id, Reply::SessionCreated(quiz, rounds)), None) => {
-                let players = HashMap::new();
-                let session = Session { stage: Stage::Initial, quiz, rounds, players };
-
-                self.session = Some((session_id, session, false));
+            Msg::Revealed => {
+                // TODO: change stage of session
                 true
-            }
-            (Response::Alert(_, Alert::PlayerAdded(id, name)), Some((_, mut session, _))) => {
-                session.players.insert(id, Player { score: 0, name });
-                true
-            }
-            (Response::Alert(_, Alert::ScoreChanged(diff)), Some((_, mut session, _))) => {
-                for change in diff {
-                    match session.players.get_mut(&change.player_id) {
-                        Some(player) => player.score += change.change,
-                        None => log::debug!("no player with given id"), // TODO: error?
-                    }
-                }
-                true
-            }
-            (Response::Alert(_, Alert::Man), Some((_, _, mut manager))) => {
-                // TODO: alert
-                manager = true;
-                true
-            }
-            (Response::Alert(_, Alert::ManagerLeft), Some((_, _, mut manager))) => {
-                // TODO: alert
-                manager = false;
-                true
-            }
-            (Response::Alert(_, Alert::StageChanged(stage)), Some((_, mut session))) => {
-                session.stage = stage;
-                true
-            }
-            _ => false,
+            },
         }
     }
 

@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct RadioProps {

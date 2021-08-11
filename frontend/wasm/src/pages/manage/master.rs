@@ -8,8 +8,8 @@ use shared::Player;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub onclick: Callback<u64>,
-    pub players: HashMap<u64, Player>,
+    pub onguess: Callback<String>,
+    pub players: Vec<Player>,
 }
 
 pub struct Master {
@@ -18,7 +18,7 @@ pub struct Master {
 }
 
 impl Component for Master {
-    type Message = u64;
+    type Message = String;
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
@@ -36,18 +36,13 @@ impl Component for Master {
     }
 
     fn view(&self) -> Html {
-        let view_player = |id: u64, player: &Player| {
-            let onclick = self.link.callback(move |_| id);
+        let view_player = |player: &Player| {
+            let onclick = self.link.callback(move |_| player.name.clone());
             html! { <cbs::IconButton outlined=true size={Size::Large} fullwidth=true onclick={onclick} text={player.name.clone()}/> }
         };
 
-        let iter = self.props.players.iter();
-        let players = iter.map(|(id, player)| view_player(*id, player));
-
         html! {
-            <>
-                { for players }
-            </>
+            { for self.props.players.iter().map(view_player) }
         }
     }
 }

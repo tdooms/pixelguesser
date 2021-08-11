@@ -1,8 +1,9 @@
 use yew::prelude::*;
 
-use crate::pages::create::{CenterImage, SideImages, SideOptions};
 use cbs::SidebarAlignment;
 use pbs::{Color, ColumnSize};
+
+use crate::pages::create::{CenterImage, SideImages, SideOptions};
 
 pub enum Msg {
     Change(usize, RoundDiff),

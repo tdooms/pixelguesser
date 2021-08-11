@@ -1,0 +1,1 @@
+pub const OVERVIEW: &str = "query overview { quizzes { data { name description author created image_url} } }";

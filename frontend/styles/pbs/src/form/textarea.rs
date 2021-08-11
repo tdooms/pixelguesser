@@ -1,9 +1,9 @@
 use yew::events::InputData;
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
-use crate::classify;
 use crate::{Color, Size};
+use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TextAreaProps {

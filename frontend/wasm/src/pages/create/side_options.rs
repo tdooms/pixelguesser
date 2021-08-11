@@ -1,10 +1,10 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
 
 use api::RoundDiff;
 use gloo_file::callbacks::FileReader;
 use gloo_file::File;
 use pbs::{Alignment, Color};
+use yew::utils::NeqAssign;
 
 pub enum Msg {
     Upload(Vec<File>),

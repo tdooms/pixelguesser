@@ -1,11 +1,13 @@
-use api::Status;
 use std::time::Duration;
+
 use yew::prelude::*;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
+
+use api::Status;
+use yew_services::{ResizeService, TimeoutService};
 use yew_services::resize::ResizeTask;
 use yew_services::timeout::TimeoutTask;
-use yew_services::{ResizeService, TimeoutService};
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 use crate::agents::ErrorAgent;
 use crate::constants::IMAGE_ENDPOINT;

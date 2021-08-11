@@ -1,8 +1,9 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+
+use pbs::ColumnSize;
+use yew::utils::NeqAssign;
 
 use crate::utils::bytes_to_url;
-use pbs::ColumnSize;
 
 pub enum Msg {
     Clicked(usize),

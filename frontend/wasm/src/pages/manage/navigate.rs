@@ -2,9 +2,9 @@ use yew::prelude::*;
 
 use api::{Action, Stage};
 use pbs::{Alignment, Color, Size};
+use shared::{Action, Stage};
 
 use crate::route::Route;
-use shared::{Stage, Action};
 
 static ACTIONS: [Action; 8] = [
     Action::Start,

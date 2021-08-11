@@ -1,6 +1,7 @@
 use yew::prelude::*;
 use yew_router::components::Link;
-use yewtil::NeqAssign;
+
+use yew::utils::NeqAssign;
 
 use crate::route::Route;
 

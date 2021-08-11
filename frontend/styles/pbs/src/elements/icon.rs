@@ -1,6 +1,6 @@
 use yew::events::MouseEvent;
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 use crate::{Size, TextColor};
 

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::rc::Rc;
 
-use yew_agent::{Agent, AgentLink, Context, HandlerId, Bridge, Bridged};
+use yew_agent::{Agent, AgentLink, Bridge, Bridged, Context, HandlerId};
 
 use api::Response;
 

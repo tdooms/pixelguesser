@@ -1,6 +1,8 @@
-use pbs::Color;
 use std::fmt::Display;
+
 use yew::prelude::*;
+
+use pbs::Color;
 
 #[derive(Clone, Debug, Properties)]
 pub struct AlertsProps<T: Clone + Display + 'static> {

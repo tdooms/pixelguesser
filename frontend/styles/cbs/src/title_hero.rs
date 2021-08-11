@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 use pbs::{Color, HeroSize};
 

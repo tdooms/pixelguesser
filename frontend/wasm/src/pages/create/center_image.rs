@@ -1,7 +1,7 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
 
 use pbs::Alignment;
+use yew::utils::NeqAssign;
 
 pub enum Msg {
     Upload(String),

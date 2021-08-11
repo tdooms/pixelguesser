@@ -1,8 +1,9 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 use api::*;
 use pbs::HeroSize;
+
 use crate::utils::Quiz;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

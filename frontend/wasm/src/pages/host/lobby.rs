@@ -1,16 +1,16 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
 
 use api::Session;
 use pbs::{Color, ColumnSize, HeroSize};
 
 use crate::utils::code_to_string;
+use shared::Session;
+use yew::utils::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LobbyProps {
-    pub session: Session,
     pub session_id: u64,
-    pub has_manager: bool,
+    pub session: Session,
 }
 
 pub struct Lobby {

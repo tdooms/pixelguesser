@@ -1,7 +1,7 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
-use crate::{classify, Alignment, Size};
+use crate::{Alignment, classify, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct TabsProps {

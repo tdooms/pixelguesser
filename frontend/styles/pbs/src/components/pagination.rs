@@ -1,12 +1,12 @@
 use derive_more::Display;
 use yew::events::MouseEvent;
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 #[cfg(feature = "router")]
 pub use router::PaginationItemRouter;
 
-use crate::{classify, Alignment, Size};
+use crate::{Alignment, classify, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct PaginationProps {
@@ -174,8 +174,8 @@ impl Component for PaginationEllipsis {
 
 #[cfg(feature = "router")]
 mod router {
-    use yew_router::components::RouterAnchor;
     use yew_router::{RouterState, Switch};
+    use yew_router::components::RouterAnchor;
 
     use super::*;
 
@@ -200,7 +200,7 @@ mod router {
     }
 
     impl<SW: Switch + Clone + PartialEq + 'static, STATE: RouterState> Component
-        for PaginationItemRouter<SW, STATE>
+    for PaginationItemRouter<SW, STATE>
     {
         type Message = ();
         type Properties = RouterProps<SW>;

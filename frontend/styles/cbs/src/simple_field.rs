@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use yewtil::NeqAssign;
+use yew::utils::NeqAssign;
 
 use pbs::Color;
 
@@ -77,9 +77,9 @@ impl Component for SimpleField {
         );
 
         html! {
-            <div class=classes!("field", self.props.extra.clone())>
+            <div class={classes!("field", self.props.extra.clone())}>
                 { label }
-                <div class=control_classes>
+                <div class={control_classes}>
                     { right }
                     { left }
                     { for self.props.children.iter() }

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use crate::classify;
 use crate::{Color, Size};
+use crate::classify;
 
 #[derive(Properties, Clone)]
 pub struct ButtonProps {
