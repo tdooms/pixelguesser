@@ -1,3 +1,6 @@
+use crate::{Quiz, Round};
+use serde::{Serialize, Deserialize};
+
 #[derive(Deserialize, Debug)]
 pub struct Query<T> {
     data: T,

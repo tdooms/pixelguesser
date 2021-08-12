@@ -5,9 +5,6 @@ pub async fn exec_query<Call, Ret, Msg>(query: impl Display, callback: Call) -> 
     where Ret: DeserializeOwned,
           Call: FnOnce(Ret) -> Msg
 {
-    // shh this is mine
-
-
     let body = format!("{{ \"query\":\"{}\" }}", query);
 
     let res: Query<T> = reqwest::Client::new().post(URL)

@@ -1,18 +1,27 @@
+use serde::{Deserialize, Serialize};
+
 use crate::Session;
-use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Request {
     Read(u64),
-    Update(Session),
+    Update(u64, Session),
     Check(u64),
+
     Create,
+    Host(u64),
+    Manage(u64)
 }
 
 pub enum Response {
     Read(Session),
     Updated(Session),
     Checked(Option<u64>),
-    Created
+
+    Created(u64),
+    Hosted(u64),
+    Managed(u64),
+
+    Error(String),
 }
 

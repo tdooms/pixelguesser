@@ -3,11 +3,11 @@ use std::collections::HashMap;
 use yew::prelude::*;
 
 use api::{Player, Quiz};
+use graphql::Quiz;
 use pbs::{Color, HeroSize};
 use shared::Player;
 
 use crate::pages::host::Scores;
-use crate::utils::Quiz;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {

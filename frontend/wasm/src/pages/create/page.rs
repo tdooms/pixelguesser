@@ -1,4 +1,4 @@
-use yew::agent::Dispatcher;
+use yew_agent::Dispatcher;
 use yew::prelude::*;
 
 use api::{NewQuiz, Post, Request, RoundDiff};

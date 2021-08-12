@@ -1,5 +1,4 @@
 [workspace]
-members = ["shared", "backend/sessions", "backend/imager", "backend/spar",
-    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs",
-    "frontend/styles/classify", "frontend/styles/fa",
+members = ["backend/shared", "backend/sessions", "backend/imager", "backend/spar", "backend/graphql",
+    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs", "frontend/styles/classify", "frontend/styles/fa",
     "tools/fa-scraper"]

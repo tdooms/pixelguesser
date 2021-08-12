@@ -1,8 +1,7 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use shared::{Post, Reply, Request, Response, Session};
-use reqwest::Client;
+use shared::Session;
 
 use crate::pages::manage::InnerManage;
 use crate::utils::create_session;
@@ -34,7 +33,7 @@ impl Component for Manage {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::Updated(session) => {
-                // TODO: send webscoket session change
+                // TODO: send websocket session change
                 false
             }
             Msg::Managed(session) => {

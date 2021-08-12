@@ -459,6 +459,7 @@ dependencies = [
  "cbs",
  "chrono",
  "gloo 0.3.0",
+ "graphql",
  "js-sys",
  "log",
  "pbs",
@@ -735,6 +736,14 @@ dependencies = [
  "js-sys",
  "wasm-bindgen",
  "web-sys",
+]
+
+[[package]]
+name = "graphql"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
 ]
 
 [[package]]

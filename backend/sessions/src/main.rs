@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 
 use clap::{AppSettings, Clap};
@@ -9,8 +10,9 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::{Error, Filter};
 use warp::ws::{Message, WebSocket, Ws};
 
-use shared::{Player, Request, Session, Stage};
-use std::net::{Ipv4Addr, IpAddr};
+use shared::{Player, Request, Response, Session, Stage};
+use rand::Rng;
+use std::collections::hash_map::Entry;
 
 /// sessions is a server to manage pixelguesser game sessions
 #[derive(Clap)]
@@ -28,6 +30,7 @@ struct Opts {
 
 pub type Sender = mpsc::UnboundedSender<Result<Message, warp::Error>>;
 
+#[derive(Clone, Debug, Default)]
 pub struct SessionData {
     pub host: Option<Sender>,
     pub manager: Option<Sender>,
@@ -37,17 +40,86 @@ pub struct SessionData {
 
 pub type State = Arc<Mutex<HashMap<u64, SessionData>>>;
 
+fn send_message(sender: &Sender, response: &Response) {
+    let str = serde_json::to_string(response).unwrap();
+    sender.send(Ok(Message::text(str))).unwrap()
+}
+
+async fn manipulate_session(sender: &Sender, session_id: u64, state: &State, mapper: impl FnOnce(&SessionData) -> Response) {
+    let response = match state.lock().await.get(&session_id) {
+        None => Response::Error("no session with id".to_owned()),
+        Some(data) => mapper(data)
+    };
+    send_message(sender, &response)
+}
+
 async fn handle_request(request: &[u8], state: &State, sender: &Sender) {
     match serde_json::from_slice(request) {
         Ok(Request::Read(session_id)) => {
-            let lock = state.lock().await;
-
-            match lock.get(&session_id) {
-                None => {}
-                Some(SessionData { session, .. }) => {
-                    sender.send()
+            let response = match state.lock().await.get(&session_id) {
+                None => Response::Error("no session with id".to_owned()),
+                Some(SessionData { session, .. }) => Response::Read(session.clone())
+            };
+            send_message(sender, &response);
+        }
+        Ok(Request::Check(session_id)) => {
+            let response = match state.lock().await.get(&session_id) {
+                None => Response::Checked(None),
+                Some(SessionData { manager: Some(_), .. }) => Response::Checked(None),
+                _ => Response::Checked(Some(session_id)),
+            };
+            send_message(sender, &response);
+        }
+        Ok(Request::Update(session_id, session)) => {
+            match state.lock().await.get_mut(&session_id) {
+                None => {
+                    send_message(sender, &Response::Error("no session with id".to_owned()));
                 }
+                Some(data) => {
+                    data.session = session.clone();
+                    let response = Response::Updated(session);
+
+                    data.manager.as_ref().map(|manager| send_message(manager, &response));
+                    data.host.as_ref().map(|host| send_message(host, &response));
+                }
+            };
+        }
+        Ok(Request::Create) => {
+            static SESSION_MAX: u64 = 48u64.pow(6);
+            let mut lock = state.lock().await;
+
+            for _ in 0..10 {
+                let id = rand::thread_rng().gen_range(0..SESSION_MAX);
+
+                // insert if available, continue if not
+                match lock.entry(id) {
+                    Entry::Occupied(_) => continue,
+                    Entry::Vacant(entry) => entry.insert(SessionData::default())
+                }
+
+                // send message if inserted and return from function to prevent further messages
+                send_message(sender, &Response::Created(id));
+                return
             }
+            send_message(sender, &Response::Error("could not make session".to_owned()));
+        },
+        Ok(Request::Host(session_id)) => {
+            let response = match state.lock().await.get(&session_id) {
+                None => Response::Error("no session with id".to_owned()),
+                Some(SessionData { session, .. }) => Response::Read(session.clone())
+            };
+            send_message(sender, &response);
+        }
+        Ok(Request::Manage(session_id)) => {
+            let response = match state.lock().await.get(&session_id) {
+                None => Response::Error("no session with id".to_owned()),
+                Some(SessionData { manager, .. }) => Response::Read(session.clone())
+            };
+            send_message(sender, &response);
+        }
+        Err(err) => {
+            log!("{:?}", err);
+            send_message(sender, &Response::Error("deserialize error".to_owned()));
         }
     }
 }

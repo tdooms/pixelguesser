@@ -12,7 +12,9 @@ license = "GNU GPLv3"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-shared = { path = "../../shared" }
+shared = { path = "../../backend/shared" }
+graphql = { path = "../../backend/graphql" }
+
 pbs = { path = "../styles/pbs" }
 cbs = { path = "../styles/cbs" }
 
