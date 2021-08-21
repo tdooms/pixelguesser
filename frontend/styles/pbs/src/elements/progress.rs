@@ -1,10 +1,8 @@
+use crate::properties::{Color, Size};
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-
-use crate::{Color, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ProgressProps {
+pub struct Props {
     #[prop_or_default]
     pub extra: String,
     /// The maximum amount of progress; the 100% value.
@@ -24,41 +22,16 @@ pub struct ProgressProps {
 /// A native HTML progress bar.
 ///
 /// [https://bulma.io/documentation/elements/progress/](https://bulma.io/documentation/elements/progress/)
-pub struct Progress {
-    props: ProgressProps,
-}
+#[function_component(Image)]
+pub fn image(props: &Props) -> Html {
+    let classes = classes!("progress", &props.extra, props.size, props.color);
 
-impl Component for Progress {
-    type Message = ();
-    type Properties = ProgressProps;
+    let max = props.max.to_string();
+    let value = props.value.as_ref().map(ToString::to_string);
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let classes = classes!(
-            "progress",
-            &self.props.extra,
-            self.props.size.to_string(),
-            self.props.color.as_ref().map(ToString::to_string)
-        );
-
-        let max = self.props.max.to_string();
-        let value = self.props.value.as_ref().map(ToString::to_string);
-
-        html! {
-            <progress class={classes} max={max} value={value}>
-                // { format!("{}%", self.props.value) }
-            </progress>
-        }
+    html! {
+        <progress class={classes} max={max} value={value}>
+            // { format!("{}%", self.props.value) }
+        </progress>
     }
 }

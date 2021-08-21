@@ -1,13 +1,9 @@
-#![allow(clippy::redundant_closure_call)]
-
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::classify;
-use crate::common::{TileCtx, TileSize};
+use crate::properties::{TileCtx, TileSize, Vertical};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct TileProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -26,7 +22,7 @@ pub struct TileProps {
     /// Stack tiles vertically.
     /// https://bulma.io/documentation/layout/tiles/#modifiers
     #[prop_or_default]
-    pub vertical: bool,
+    pub vertical: Vertical,
 
     /// The size to assign to this tile element.
     /// https://bulma.io/documentation/layout/tiles/#modifiers
@@ -37,41 +33,13 @@ pub struct TileProps {
 /// A single tile element to build 2-dimensional whatever-you-like grids.
 ///
 /// [https://bulma.io/documentation/layout/tiles/](https://bulma.io/documentation/layout/tiles/)
-pub struct Tile {
-    props: TileProps,
-}
+#[function_component(Field)]
+pub fn field(props: &Props) -> Html {
+    let classes = classes!("tile", &props.extra, props.ctx, props.size, props.vertical);
 
-impl Component for Tile {
-    type Message = ();
-    type Properties = TileProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let TileProps { vertical, .. } = self.props;
-
-        let classes = classes!(
-            "tile",
-            &self.props.extra,
-            self.props.ctx.as_ref().map(ToString::to_string),
-            self.props.size.as_ref().map(ToString::to_string),
-            classify!(vertical)
-        );
-
-        html! {
-            <@{ self.props.tag.clone() } class={classes}>
-                { for self.props.children.iter() }
-            </@>
-        }
+    html! {
+        <@{ props.tag.clone() } class={classes}>
+            { for props.children.iter() }
+        </@>
     }
 }

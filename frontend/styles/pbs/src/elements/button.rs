@@ -1,101 +1,78 @@
 use yew::prelude::*;
 
-use crate::{Color, Size};
-use crate::classify;
+use crate::properties::{
+    Color, Disabled, Fullwidth, Hidden, Inverted, Light, Loading, Outlined, Rounded, Selected, Size,
+};
 
-#[derive(Properties, Clone)]
-pub struct ButtonProps {
+#[derive(Properties, Clone, PartialEq)]
+pub struct Props {
     #[prop_or_default]
-    pub onclick: Callback<MouseEvent>,
+    pub onclick: Callback<()>,
 
     #[prop_or_default]
     pub children: Children,
 
     #[prop_or_default]
-    pub hidden: bool,
-
-    #[prop_or_default]
     pub size: Size,
 
     #[prop_or_default]
-    pub outlined: bool,
+    pub hidden: Hidden,
 
     #[prop_or_default]
-    pub inverted: bool,
+    pub outlined: Outlined,
 
     #[prop_or_default]
-    pub rounded: bool,
+    pub inverted: Inverted,
 
     #[prop_or_default]
-    pub light: bool,
+    pub rounded: Rounded,
 
     #[prop_or_default]
-    pub loading: bool,
+    pub light: Light,
 
     #[prop_or_default]
-    pub disabled: bool,
+    pub loading: Loading,
 
     #[prop_or_default]
-    pub fullwidth: bool,
+    pub disabled: Disabled,
+
+    #[prop_or_default]
+    pub fullwidth: Fullwidth,
+
+    #[prop_or_default]
+    pub selected: Selected,
 
     #[prop_or_default]
     pub color: Option<Color>,
 
     #[prop_or_default]
-    pub selected: bool,
-
-    #[prop_or_default]
     pub extra: String,
 }
 
-pub struct Button {
-    link: ComponentLink<Self>,
-    props: ButtonProps,
-}
+/// A generic button
+/// [https://bulma.io/documentation/elements/button/](https://bulma.io/documentation/elements/button/)
+#[function_component(Button)]
+pub fn button(props: &Props) -> Html {
+    let classes = classes!(
+        "button",
+        props.hidden,
+        props.outlined,
+        props.light,
+        props.inverted,
+        props.rounded,
+        props.loading,
+        props.fullwidth,
+        props.selected,
+        props.color,
+        props.size,
+        &props.extra
+    );
 
-impl Component for Button {
-    type Message = MouseEvent;
-    type Properties = ButtonProps;
+    let onclick = props.onclick.reform(|_| ());
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, props }
-    }
-
-    fn update(&mut self, msg: Self::Message) -> bool {
-        self.props.onclick.emit(msg);
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> bool {
-        self.props = props;
-        true
-    }
-
-    fn view(&self) -> Html {
-        let ButtonProps {
-            hidden,
-            outlined,
-            light,
-            inverted,
-            rounded,
-            loading,
-            fullwidth,
-            selected,
-            ..
-        } = self.props;
-
-        let classes = classes!(
-            "button",
-            classify!(hidden, outlined, light, inverted, rounded, loading, fullwidth, selected),
-            self.props.color.as_ref().map(ToString::to_string),
-            self.props.size.to_string(),
-            &self.props.extra
-        );
-
-        html! {
-            <button class={classes} onclick={self.link.callback(|e| e)}>
-            { for self.props.children.iter() }
-            </button>
-        }
+    html! {
+        <button class={classes} onclick={onclick}>
+            { for props.children.iter() }
+        </button>
     }
 }

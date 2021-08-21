@@ -1,10 +1,8 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use api::*;
 use shared::{Player, Session, Stage, Status};
 
-use crate::agents::WebSocketAgent;
 use crate::pages::manage::{Initialize, Master, Navigate, Rating};
 use crate::route::Route;
 
@@ -68,7 +66,7 @@ impl Component for InnerManage {
     fn view(&self) -> Html {
         let body = match self.props.session.stage {
             Stage::Initial => {
-                let onchange = self.link.callback(|name| Msg::PlayerAdded(name));
+                let onchange = self.link.callback(|name| Msg::NewPlayer(name));
                 html! { <Initialize onchange={onchange}/> }
             }
             Stage::Round { round, status: Status::Playing { .. } } => {
@@ -76,8 +74,8 @@ impl Component for InnerManage {
                 html! { <Master players={self.props.session.players.clone()} onguess={onguess}/> }
             }
             Stage::Round { .. } => html! { <cbs::TitleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
-            Stage::Scores { .. } => html! { <cbs::TitleHero title="showing scores" subtitle=""/> },
-            Stage::Finish => html! { <Rating quiz={self.props.session.quiz.clone()} />},
+            Stage::Ranking { .. } => html! { <cbs::TitleHero title="showing scores" subtitle=""/> },
+            Stage::Finished => html! { <Rating quiz={self.props.session.quiz.clone()} />},
         };
 
         let stage = self.props.session.stage.clone();
@@ -95,7 +93,8 @@ impl Component for InnerManage {
     }
 
     fn destroy(&mut self) {
-        let post = Post::LeaveSession { session_id: self.props.session_id };
-        self.ws_agent.send(Request::Post(post));
+        // let post = Post::LeaveSession { session_id: self.props.session_id };
+        // self.ws_agent.send(Request::Post(post));
+        // TODO: stop session
     }
 }

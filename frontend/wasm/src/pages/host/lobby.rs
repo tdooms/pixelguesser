@@ -1,16 +1,16 @@
 use yew::prelude::*;
 
-use api::Session;
 use pbs::{Color, ColumnSize, HeroSize};
 
 use crate::utils::code_to_string;
 use shared::Session;
 use yew::utils::NeqAssign;
+use graphql::Quiz;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct LobbyProps {
-    pub session_id: u64,
     pub session: Session,
+    pub quiz: Quiz,
 }
 
 pub struct Lobby {
@@ -34,7 +34,7 @@ impl Component for Lobby {
     }
 
     fn view(&self) -> Html {
-        let players = self.props.session.players.iter().map(|(_, player)| {
+        let players = self.props.session.players.iter().map(|player| {
             html! {
                 <pbs::Column size={ColumnSize::IsNarrow}>
                     <pbs::Box> {&player.name} </pbs::Box>
@@ -42,9 +42,9 @@ impl Component for Lobby {
             }
         });
 
-        let title = self.props.session.quiz.name.clone();
+        let title = self.props.quiz.name.clone();
 
-        let subtitle = match self.props.has_manager {
+        let subtitle = match self.props.session.has_manager {
             true => "quiz master present",
             false => "no quiz master",
         };

@@ -1,10 +1,10 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use pbs::Color;
+use pbs::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct SimpleFieldProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -27,65 +27,45 @@ pub struct SimpleFieldProps {
     pub icon_left: Option<String>,
 }
 
-pub struct SimpleField {
-    props: SimpleFieldProps,
-}
-
-impl Component for SimpleField {
-    type Message = ();
-    type Properties = SimpleFieldProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let help = match &self.props.help {
-            Some(help) => {
-                html! { <pbs::Help color={self.props.help_color}> {help.clone()} </pbs::Help> }
-            }
-            None => html! {},
-        };
-
-        let label = match &self.props.label {
-            Some(label) => html! {<pbs::Label> {label.clone()} </pbs::Label>},
-            None => html! {},
-        };
-
-        let right = match &self.props.icon_right {
-            Some(right) => html! {<pbs::Icon icon={right.clone()} extra="is-right"/>},
-            None => html! {},
-        };
-
-        let left = match &self.props.icon_left {
-            Some(left) => html! {<pbs::Icon icon={left.clone()} extra="is-left"/>},
-            None => html! {},
-        };
-
-        let control_classes = classes!(
-            "control",
-            self.props.icon_right.as_ref().map(|_| "has-icons-right"),
-            self.props.icon_left.as_ref().map(|_| "has-icons-left")
-        );
-
-        html! {
-            <div class={classes!("field", self.props.extra.clone())}>
-                { label }
-                <div class={control_classes}>
-                    { right }
-                    { left }
-                    { for self.props.children.iter() }
-                </div>
-                { help }
-            </div>
+#[function_component(SimpleField)]
+pub fn simple_field(props: &Props) {
+    let help = match &props.help {
+        Some(help) => {
+            html! { <Help color={props.help_color}> {help.clone()} </Help> }
         }
+        None => html! {},
+    };
+
+    let label = match &props.label {
+        Some(label) => html! {<Label> {label.clone()} </Label>},
+        None => html! {},
+    };
+
+    let right = match &props.icon_right {
+        Some(right) => html! {<Icon icon={right.clone()} extra="is-right"/>},
+        None => html! {},
+    };
+
+    let left = match &props.icon_left {
+        Some(left) => html! {<Icon icon={left.clone()} extra="is-left"/>},
+        None => html! {},
+    };
+
+    let control_classes = classes!(
+        "control",
+        props.icon_right.as_ref().map(|_| "has-icons-right"),
+        props.icon_left.as_ref().map(|_| "has-icons-left")
+    );
+
+    html! {
+        <div class={classes!("field", props.extra.clone())}>
+            { label }
+            <div class={control_classes}>
+                { right }
+                { left }
+                { for props.children.iter() }
+            </div>
+            { help }
+        </div>
     }
 }

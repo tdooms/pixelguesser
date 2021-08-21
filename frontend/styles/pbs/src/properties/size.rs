@@ -1,22 +1,5 @@
 use derive_more::Display;
-
-/// Common alignment classes.
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "is-{}")]
-pub enum Alignment {
-    #[display(fmt = "left")]
-    Left,
-    #[display(fmt = "centered")]
-    Centered,
-    #[display(fmt = "right")]
-    Right,
-}
-
-impl Default for Alignment {
-    fn default() -> Self {
-        Alignment::Left
-    }
-}
+use yew::Classes;
 
 /// Common size classes.
 /// TODO: are-* sizes for buttons https://bulma.io/documentation/elements/button/#sizes
@@ -39,111 +22,10 @@ impl Default for Size {
     }
 }
 
-/// Common color classes.
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "is-{}")]
-pub enum Color {
-    #[display(fmt = "white")]
-    White,
-    #[display(fmt = "light")]
-    Light,
-    #[display(fmt = "dark")]
-    Dark,
-    #[display(fmt = "black")]
-    Black,
-    #[display(fmt = "primary")]
-    Primary,
-    #[display(fmt = "link")]
-    Link,
-    #[display(fmt = "info")]
-    Info,
-    #[display(fmt = "success")]
-    Success,
-    #[display(fmt = "warning")]
-    Warning,
-    #[display(fmt = "danger")]
-    Danger,
-}
-
-/// https://bulma.io/documentation/helpers/color-helpers/
-/// Text color classes.
-/// TODO: this is the same as background colors with 'has-background-{}'
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "has-text-{}")]
-pub enum TextColor {
-    #[display(fmt = "white")]
-    White,
-    #[display(fmt = "light")]
-    Light,
-    #[display(fmt = "dark")]
-    Dark,
-    #[display(fmt = "black")]
-    Black,
-    #[display(fmt = "primary")]
-    Primary,
-    #[display(fmt = "link")]
-    Link,
-    #[display(fmt = "info")]
-    Info,
-    #[display(fmt = "success")]
-    Success,
-    #[display(fmt = "danger")]
-    Danger,
-    #[display(fmt = "black-bis")]
-    BlackBis,
-    #[display(fmt = "black-ter")]
-    BlackTer,
-    #[display(fmt = "grey-darker")]
-    GreyDarker,
-    #[display(fmt = "grey-dark")]
-    GreyDark,
-    #[display(fmt = "grey")]
-    Grey,
-    #[display(fmt = "grey-light")]
-    GreyLight,
-    #[display(fmt = "grey-lighter")]
-    GreyLighter,
-    #[display(fmt = "white-ter")]
-    WhiteTer,
-    #[display(fmt = "white-bis")]
-    WhiteBis,
-    #[display(fmt = "primary-light")]
-    PrimaryLight,
-    #[display(fmt = "link-light")]
-    LinkLight,
-    #[display(fmt = "info-light")]
-    InfoLight,
-    #[display(fmt = "success-light")]
-    SuccessLight,
-    #[display(fmt = "warning-light")]
-    WarningLight,
-    #[display(fmt = "danger-light")]
-    DangerLight,
-    #[display(fmt = "primary-dark")]
-    PrimaryDark,
-    #[display(fmt = "link-dark")]
-    LinkDark,
-    #[display(fmt = "info-dark")]
-    InfoDark,
-    #[display(fmt = "success-dark")]
-    SuccessDark,
-    #[display(fmt = "warning-dark")]
-    WarningDark,
-    #[display(fmt = "danger-dark")]
-    DangerDark,
-}
-
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "has-{}-separator")]
-pub enum Separator {
-    #[display(fmt = "arrow")]
-    Arrow,
-    #[display(fmt = "bullet")]
-    Bullet,
-    #[display(fmt = "dot")]
-    Dot,
-    #[display(fmt = "succeeds")]
-    Succeeds,
+impl Into<Classes> for Size {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
 }
 
 /// Available placeholder sizes for figures.
@@ -200,6 +82,12 @@ pub enum ImageSize {
     Is1by3,
 }
 
+impl Into<Classes> for ImageSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
+}
+
 /// The six sizes available for titles & subtitles.
 ///
 /// https://bulma.io/documentation/elements/title/#sizes
@@ -220,24 +108,9 @@ pub enum HeaderSize {
     Is6,
 }
 
-/// The 4 allowed types for an input component.
-///
-/// https://bulma.io/documentation/form/input/
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-pub enum InputType {
-    #[display(fmt = "text")]
-    Text,
-    #[display(fmt = "password")]
-    Password,
-    #[display(fmt = "email")]
-    Email,
-    #[display(fmt = "tel")]
-    Tel,
-}
-
-impl Default for InputType {
-    fn default() -> Self {
-        InputType::Text
+impl Into<Classes> for HeaderSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
     }
 }
 
@@ -250,6 +123,12 @@ pub enum SectionSize {
     Medium,
     #[display(fmt = "large")]
     Large,
+}
+
+impl Into<Classes> for SectionSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
 }
 
 /// Container sizes
@@ -267,17 +146,10 @@ pub enum ContainerSize {
     MaxWidescreen,
 }
 
-/// Tile context modifiers.
-/// https://bulma.io/documentation/layout/tiles/#modifiers
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "is-{}")]
-pub enum TileCtx {
-    #[display(fmt = "ancestor")]
-    Ancestor,
-    #[display(fmt = "parent")]
-    Parent,
-    #[display(fmt = "child")]
-    Child,
+impl Into<Classes> for ContainerSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
 }
 
 // TODO: https://bulma.io/documentation/columns/sizes/#narrow-column
@@ -333,53 +205,10 @@ pub enum ColumnSize {
     IsNarrow,
 }
 
-#[derive(Clone, Debug, Display, PartialEq, Copy)]
-#[display(fmt = "is-offset-{}")]
-pub enum ColumnOffset {
-    #[display(fmt = "1")]
-    Is1,
-    #[display(fmt = "2")]
-    Is2,
-    #[display(fmt = "3")]
-    Is3,
-    #[display(fmt = "4")]
-    Is4,
-    #[display(fmt = "5")]
-    Is5,
-    #[display(fmt = "6")]
-    Is6,
-    #[display(fmt = "7")]
-    Is7,
-    #[display(fmt = "8")]
-    Is8,
-    #[display(fmt = "9")]
-    Is9,
-    #[display(fmt = "10")]
-    Is10,
-    #[display(fmt = "11")]
-    Is11,
-    #[display(fmt = "12")]
-    Is12,
-    #[display(fmt = "full")]
-    IsFull,
-    #[display(fmt = "four-fifths")]
-    IsFourFifths,
-    #[display(fmt = "three-quarters")]
-    IsThreeQuarters,
-    #[display(fmt = "two-thirds")]
-    IsTwoThirds,
-    #[display(fmt = "three-fifths")]
-    IsThreeFifths,
-    #[display(fmt = "half")]
-    IsHalf,
-    #[display(fmt = "two-fifths")]
-    IsTwoFifths,
-    #[display(fmt = "one-third")]
-    IsOneThird,
-    #[display(fmt = "one-quarter")]
-    IsOneQuarter,
-    #[display(fmt = "one-fifth")]
-    IsOneFifth,
+impl Into<Classes> for ColumnSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
 }
 
 /// Tile size modifiers.
@@ -414,6 +243,12 @@ pub enum TileSize {
     Twelve,
 }
 
+impl Into<Classes> for TileSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
+}
+
 /// The 6 sizes available for heros.
 ///
 /// [https://bulma.io/documentation/layout/hero/#sizes](https://bulma.io/documentation/layout/hero/#sizes)
@@ -433,4 +268,10 @@ pub enum HeroSize {
     Fullheight,
     #[display(fmt = "fullheight-with-navbar")]
     FullheightWithNavbar,
+}
+
+impl Into<Classes> for HeroSize {
+    fn into(self) -> Classes {
+        Classes::from(self.to_string())
+    }
 }

@@ -1,14 +1,13 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct CheckboxProps {
+pub struct Props {
     /// The `name` attribute for this form element.
     pub name: String,
     /// The controlled value of this form element.
     pub checked: bool,
     /// The callback to be used for propagating changes to this element's value.
-    pub update: Callback<bool>,
+    pub onchange: Callback<bool>,
 
     #[prop_or_default]
     pub children: Children,
@@ -23,46 +22,23 @@ pub struct CheckboxProps {
 /// The 2-state checkbox in its native format.
 ///
 /// [https://bulma.io/documentation/form/checkbox/](https://bulma.io/documentation/form/checkbox/)
-///
-/// All YBC form components are controlled components. This means that the value of the field must
-/// be provided from a parent component, and changes to this component are propagated to the parent
-/// component via callback.
-pub struct Checkbox {
-    props: CheckboxProps,
-    link: ComponentLink<Self>,
-}
+#[function_component(Checkbox)]
+pub fn checkbox(props: &Props) -> Html {
+    let classes = classes!("checkbox", &props.extra);
 
-impl Component for Checkbox {
-    type Message = bool;
-    type Properties = CheckboxProps;
+    let copied = !props.checked;
+    let onchange = props.onchange.reform(move |_| copied);
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link }
-    }
-
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.props.update.emit(msg);
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let checked = self.props.checked;
-        let classes = classes!("checkbox", &self.props.extra);
-        html! {
-            <label class={classes} disabled={self.props.disabled}>
-                <input
-                    type="checkbox"
-                    checked={checked}
-                    name={self.props.name.clone()}
-                    onclick={self.link.callback(move |_| !checked)}
-                    disabled={self.props.disabled}
-                    />
-                { for self.props.children.iter() }
-            </label>
-        }
+    html! {
+        <label class={classes}>
+            <input
+                type="checkbox"
+                checked={props.checked}
+                name={props.name.clone()}
+                onclick={onchange}
+                disabled={props.disabled}
+                />
+            { for props.children.iter() }
+        </label>
     }
 }

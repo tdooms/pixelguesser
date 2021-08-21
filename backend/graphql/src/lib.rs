@@ -1,14 +1,10 @@
 mod entities;
-mod fauna;
-mod queries;
+mod functions;
+mod keys;
 
 pub use entities::*;
-pub use fauna::*;
-pub use queries::*;
+pub use functions::*;
 
-// shh this is mine
-pub const KEY: &str = "fnAEQQ8uCwACDLpj_kfilwMMyeItMBlcHTGn4Rb1";
-pub const URL: &str = "https://graphql.fauna.com/graphql";
 
 
 

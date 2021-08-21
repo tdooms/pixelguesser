@@ -4,7 +4,6 @@ use yew::utils::NeqAssign;
 use shared::Session;
 
 use crate::pages::manage::InnerManage;
-use crate::utils::create_session;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ManageLoaderProps {
@@ -50,7 +49,8 @@ impl Component for Manage {
     fn view(&self) -> Html {
         match &self.session {
             Some(session) => {
-                html! {<InnerManage session={session.clone()} session_id={self.props.session_id}/>}
+                let onchange = self.link.callback(Msg::Updated);
+                html! {<InnerManage session={session.clone()} session_id={self.props.session_id} onchange={onchange} />}
             }
             None => html! {},
         }

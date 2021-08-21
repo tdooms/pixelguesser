@@ -1,10 +1,9 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::{Alignment, classify, Size};
+use crate::properties::{Alignment, Boxed, Fullwidth, Rounded, Size, Toggle};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct TabsProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
@@ -17,16 +16,16 @@ pub struct TabsProps {
     pub size: Option<Size>,
     /// Add a more classic style with borders to this component.
     #[prop_or_default]
-    pub boxed: bool,
+    pub boxed: Boxed,
     /// Add the "radio button" style to the elements of this component.
     #[prop_or_default]
-    pub toggle: bool,
+    pub toggle: Toggle,
     /// Make the tab elements of this component rounded.
     #[prop_or_default]
-    pub rounded: bool,
+    pub rounded: Rounded,
     /// Make this component fullwidth.
     #[prop_or_default]
-    pub fullwidth: bool,
+    pub fullwidth: Fullwidth,
 }
 
 /// Simple responsive horizontal navigation tabs, with different styles.
@@ -35,42 +34,23 @@ pub struct TabsProps {
 ///
 /// For integration with Yew Router, it is recommended that the `RouterButton` or `RouterAnchor`
 /// components be used as the individual tab elements for this component.
-pub struct Tabs {
-    props: TabsProps,
-}
+#[function_component(Tabs)]
+pub fn tabs(props: &Props) -> Html {
+    let classes = classes!(
+        "tabs",
+        &props.extra,
+        props.size,
+        props.boxed,
+        props.toggle,
+        props.rounded,
+        props.fullwidth
+    );
 
-impl Component for Tabs {
-    type Message = ();
-    type Properties = TabsProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let TabsProps { boxed, toggle, rounded, fullwidth, .. } = self.props;
-
-        let classes = classes!(
-            "tabs",
-            &self.props.extra,
-            self.props.size.as_ref().map(ToString::to_string),
-            classify!(boxed, toggle, rounded, fullwidth)
-        );
-
-        html! {
-            <div class={classes}>
-                <ul>
-                    { self.props.children.clone() }
-                </ul>
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            <ul>
+                { for props.children.iter() }
+            </ul>
+        </div>
     }
 }

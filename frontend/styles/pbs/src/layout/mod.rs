@@ -1,9 +1,19 @@
-pub mod column;
-pub mod columns;
-pub mod container;
-pub mod footer;
-pub mod hero;
-pub mod level;
-pub mod media;
-pub mod section;
-pub mod tile;
+pub use column::*;
+pub use columns::*;
+pub use container::*;
+pub use footer::*;
+pub use hero::*;
+pub use level::*;
+pub use media::*;
+pub use section::*;
+pub use tile::*;
+
+mod column;
+mod columns;
+mod container;
+mod footer;
+mod hero;
+mod level;
+mod media;
+mod section;
+mod tile;

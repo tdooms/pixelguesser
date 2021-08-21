@@ -1,10 +1,9 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::Alignment;
+use crate::properties::{Addons, Alignment};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ButtonsProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -15,44 +14,18 @@ pub struct ButtonsProps {
     pub alignment: Alignment,
 
     #[prop_or_default]
-    pub addons: bool,
+    pub addons: Addons,
 }
 
-/// A white box to contain other elements.
-///
+/// TODO
 /// [https://bulma.io/documentation/elements/button/#list-of-buttons](https://bulma.io/documentation/elements/button/#list-of-buttons)
-pub struct Buttons {
-    props: ButtonsProps,
-}
+#[function_component(Buttons)]
+pub fn buttons(props: &Props) -> Html {
+    let classes = classes!("buttons", &props.extra, props.alignment, props.addons);
 
-impl Component for Buttons {
-    type Message = ();
-    type Properties = ButtonsProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let classes = classes!(
-            "buttons",
-            &self.props.extra,
-            self.props.alignment.to_string(),
-            self.props.addons.then(|| "has-addons")
-        );
-
-        html! {
-            <div class={classes}>
-                { for self.props.children.iter() }
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            { for props.children.iter() }
+        </div>
     }
 }

@@ -1,10 +1,9 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::Color;
+use crate::properties::Color;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct HelpProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
@@ -14,33 +13,13 @@ pub struct HelpProps {
     pub color: Option<Color>,
 }
 
-pub struct Help {
-    props: HelpProps,
-}
+#[function_component(Help)]
+pub fn help(props: &Props) -> Html {
+    let classes = classes!("help", &props.extra, props.color);
 
-impl Component for Help {
-    type Message = ();
-    type Properties = HelpProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let classes =
-            classes!("help", &self.props.extra, self.props.color.as_ref().map(ToString::to_string));
-        html! {
-            <div class={classes}>
-                { for self.props.children.iter() }
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            { for props.children.iter() }
+        </div>
     }
 }

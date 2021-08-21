@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use yew::prelude::*;
 
-use api::{Player, Quiz};
 use graphql::Quiz;
 use pbs::{Color, HeroSize};
 use shared::Player;
@@ -11,8 +10,7 @@ use crate::pages::host::Scores;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub session_id: u64,
-    pub players: HashMap<u64, Player>,
+    pub players: Vec<Player>,
     pub quiz: Quiz,
 }
 

@@ -1,10 +1,9 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::{Alignment, Separator, Size};
+use crate::properties::{Alignment, Separator, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct BreadcrumbProps {
+pub struct Props {
     /// The `li` child elements of this breadcrumb.
     #[prop_or_default]
     pub children: Children,
@@ -23,43 +22,17 @@ pub struct BreadcrumbProps {
 }
 
 /// A simple breadcrumb component to improve your navigation experience.
-///
 /// [https://bulma.io/documentation/components/breadcrumb/](https://bulma.io/documentation/components/breadcrumb/)
-pub struct Breadcrumb {
-    props: BreadcrumbProps,
-}
+#[function_component(BreadCrumb)]
+pub fn breadcrumb(props: &Props) -> Html {
+    let classes =
+        classes!("breadcrumb", props.size, props.alignment, props.separator, &props.extra);
 
-impl Component for Breadcrumb {
-    type Message = ();
-    type Properties = BreadcrumbProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let classes = classes!(
-            "breadcrumb",
-            self.props.size.as_ref().map(ToString::to_string),
-            self.props.alignment.as_ref().map(ToString::to_string),
-            self.props.separator.as_ref().map(ToString::to_string),
-            &self.props.extra
-        );
-
-        html! {
-            <nav class={classes} aria-label="breadcrumbs">
-                <ul>
-                    { for self.props.children.iter() }
-                </ul>
-            </nav>
-        }
+    html! {
+        <nav class={classes} aria-label="breadcrumbs">
+            <ul>
+                { for props.children.iter() }
+            </ul>
+        </nav>
     }
 }

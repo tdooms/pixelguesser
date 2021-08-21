@@ -1,14 +1,12 @@
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
-use api::{Fetch, Get, Request, Response};
 use pbs::Color;
 use yew::utils::NeqAssign;
 
-use crate::agents::WebSocketAgent;
 use crate::constants::SESSION_ENDPOINT;
 use crate::route::Route;
-use crate::utils::{check_session, string_to_code};
+use crate::utils::string_to_code;
 
 enum State {
     Available,
@@ -63,8 +61,7 @@ impl Component for Code {
                 res1 | res2
             }
             (Msg::Timer, Some(session_id)) => {
-                let future = check_session(session_id, Msg::Check);
-                self.link.send_future(future);
+                // TODO: send session check
                 false
             }
             (Msg::Join, Some(session_id)) if self.state == State::Available => {

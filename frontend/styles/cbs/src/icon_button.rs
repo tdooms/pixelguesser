@@ -1,6 +1,8 @@
 use yew::prelude::*;
 
-use pbs::{classify, Color, Size};
+use pbs::properties::{
+    Color, Disabled, Fullwidth, Inverted, Light, Loading, Outlined, Rounded, Selected, Size,
+};
 
 #[derive(Properties, Clone)]
 pub struct IconButtonProps {
@@ -14,25 +16,25 @@ pub struct IconButtonProps {
     pub size: Size,
 
     #[prop_or_default]
-    pub outlined: bool,
+    pub outlined: Outlined,
 
     #[prop_or_default]
-    pub inverted: bool,
+    pub inverted: Inverted,
 
     #[prop_or_default]
-    pub rounded: bool,
+    pub rounded: Rounded,
 
     #[prop_or_default]
-    pub light: bool,
+    pub light: Light,
 
     #[prop_or_default]
-    pub loading: bool,
+    pub loading: Loading,
 
     #[prop_or_default]
-    pub disabled: bool,
+    pub disabled: Disabled,
 
     #[prop_or_default]
-    pub fullwidth: bool,
+    pub fullwidth: Fullwidth,
 
     #[prop_or_default]
     pub color: Option<Color>,
@@ -44,7 +46,7 @@ pub struct IconButtonProps {
     pub text: Option<String>,
 
     #[prop_or_default]
-    pub selected: bool,
+    pub selected: Selected,
 
     #[prop_or_default]
     pub extra: String,

@@ -3,16 +3,15 @@ use std::time::Duration;
 use yew::prelude::*;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 
-use api::Status;
-use yew_services::{ResizeService, TimeoutService};
-use yew_services::resize::ResizeTask;
-use yew_services::timeout::TimeoutTask;
 use yew::utils::NeqAssign;
 
-use crate::agents::ErrorAgent;
+use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
-use crate::utils::{draw_pixelated, TypeRef};
+use crate::utils::{draw_pixelated, TypeRef, Resizer};
+use shared::Status;
+use gloo::timers::callback::Timeout;
+use yew_agent::{Dispatcher, Dispatched};
 
 pub enum Msg {
     Loaded,
@@ -22,20 +21,20 @@ pub enum Msg {
 
 #[derive(Debug, Clone, Properties, PartialEq)]
 pub struct Props {
-    pub on_revealed: Callback<()>,
+    pub onrevealed: Callback<()>,
     pub url: String,
     pub status: Status,
 }
 
 pub struct Pixelate {
     link: ComponentLink<Self>,
-    logger: Dispatcher<ErrorAgent>,
-
-    _resizer: ResizeTask,
     props: Props,
 
     pixels: f64,
-    timer: Option<TimeoutTask>,
+
+    resizer: Resizer,
+    timer: Option<Timeout>,
+    notifications: Dispatcher<NotificationAgent>,
 
     canvas: TypeRef<HtmlCanvasElement>,
     image: TypeRef<HtmlImageElement>,
@@ -44,9 +43,9 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(logger: &mut Dispatcher<ErrorAgent>, result: Result<(), Error>) {
+    fn log(notifications: &mut Dispatcher<NotificationAgent>, result: Result<(), Error>) {
         if let Err(err) = result {
-            logger.send(err)
+            // logger.send(err)
         }
     }
 
@@ -84,11 +83,11 @@ impl Component for Pixelate {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             props,
-            logger: ErrorAgent::dispatcher(),
-            _resizer: ResizeService::register(link.callback(|_| Msg::Resize)),
+            resizer: Resizer::new(link.callback(|_| Msg::Resize)),
             link,
             pixels: 4.0,
             timer: None,
+            notifications: NotificationAgent::dispatcher(),
             canvas: Default::default(),
             image: Default::default(),
             offscreen: Default::default(),
@@ -125,11 +124,8 @@ impl Component for Pixelate {
                     self.props.on_revealed.emit(());
                     self.timer = None;
                 } else {
-                    let duration = Duration::from_millis(33);
-                    let callback = self.link.callback(|_| Msg::Pixelate);
-                    let task = TimeoutService::spawn(duration, callback);
-
-                    self.timer = Some(task);
+                    // TODO: ??
+                    // self.timer = Some(Timeout::new(33, self.link.callback_once(|_| Msg::Pixelate)));
                 }
 
                 self.pixels = clamped_pixels;

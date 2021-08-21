@@ -15,3 +15,4 @@ mod loading;
 mod sidebar;
 mod simple_field;
 mod title_hero;
+mod slider;

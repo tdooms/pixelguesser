@@ -1,11 +1,9 @@
-use yew::events::MouseEvent;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::{Size, TextColor};
+use crate::properties::{Size, TextColor};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct IconProps {
+pub struct Props {
     #[prop_or_default]
     pub text: Option<String>,
 
@@ -16,7 +14,7 @@ pub struct IconProps {
 
     /// The click handler to use for this component.
     #[prop_or_else(Callback::noop)]
-    pub onclick: Callback<MouseEvent>,
+    pub onclick: Callback<()>,
     /// The size of this component; to help prevent page "jumps" during load.
     #[prop_or_default]
     pub size: Size,
@@ -26,45 +24,20 @@ pub struct IconProps {
 }
 
 /// A container for any type of icon font.
-///
 /// [https://bulma.io/documentation/elements/icon/](https://bulma.io/documentation/elements/icon/)
-pub struct Icon {
-    props: IconProps,
-}
+#[function_component(Delete)]
+pub fn delete(props: &Props) -> Html {
+    let classes = classes!("icon", &props.extra, props.size, props.color);
+    let onclick = props.onclick.reform(|_| ());
 
-impl Component for Icon {
-    type Message = ();
-    type Properties = IconProps;
+    let icon = html! {
+        <span class={classes} onclick={onclick}>
+            <i class={props.icon.clone()}> </i>
+        </span>
+    };
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let classes = classes!(
-            "icon",
-            &self.props.extra,
-            self.props.size.to_string(),
-            self.props.color.as_ref().map(ToString::to_string)
-        );
-
-        let icon = html! {
-            <span class={classes} onclick={self.props.onclick.clone()}>
-                <i class={self.props.icon.clone()}> </i>
-            </span>
-        };
-
-        match &self.props.text {
-            Some(text) => html! {<span class="icon-text"> { icon } <span>{ text }</span> </span>},
-            None => icon,
-        }
+    match &props.text {
+        Some(text) => html! {<span class="icon-text"> { icon } <span>{ text }</span> </span>},
+        None => icon,
     }
 }

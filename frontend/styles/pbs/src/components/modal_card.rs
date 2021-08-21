@@ -1,10 +1,8 @@
+use crate::properties::Active;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-
-use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ModalCardProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -17,54 +15,33 @@ pub struct ModalCardProps {
     pub extra: String,
 
     #[prop_or_default]
-    pub active: bool,
+    pub active: Active,
 }
 
-pub struct ModalCard {
-    props: ModalCardProps,
-}
+#[function_component(ModalCard)]
+pub fn modal_card(props: &Props) -> Html {
+    let classes = classes!("modal", &props.extra, props.active);
 
-impl Component for ModalCard {
-    type Message = ();
-    type Properties = ModalCardProps;
+    let footer = match &props.footer {
+        Some(html) => html.clone(),
+        None => html! {},
+    };
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let active = self.props.active;
-        let classes = classes!("modal", &self.props.extra, classify!(active));
-
-        let footer = match &self.props.footer {
-            Some(html) => html.clone(),
-            None => html! {},
-        };
-
-        html! {
-            <div class={classes}>
-                <div class="modal-background"></div>
-                <div class="modal-card">
-                    <header class="modal-card-head">
-                        <p class="modal-card-title">{ self.props.title.clone() }</p>
-                        <button class="delete" aria-label="close"></button>
-                    </header>
-                    <section class="modal-card-body">
-                        { for self.props.children.iter() }
-                    </section>
-                    <footer class="modal-card-foot">
-                        { footer }
-                    </footer>
-                </div>
+    html! {
+        <div class={classes}>
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">{ props.title.clone() }</p>
+                    <button class="delete" aria-label="close"></button>
+                </header>
+                <section class="modal-card-body">
+                    { for props.children.iter() }
+                </section>
+                <footer class="modal-card-foot">
+                    { footer }
+                </footer>
             </div>
-        }
+        </div>
     }
 }

@@ -1,6 +1,3 @@
-pub use error::ErrorAgent;
-pub use info::InfoAgent;
-pub use websocket::WebSocketAgent;
+mod notification;
 
-mod error;
-mod info;
+pub use notification::NotificationAgent;

@@ -1,13 +1,10 @@
 use std::collections::HashMap;
-
-use yew::prelude::*;
-
-use api::{Alert, Post, Reply, Request, Response, Session, Stage};
-
-use crate::agents::WebSocketAgent;
-use crate::pages::host::InnerHost;
 use shared::Session;
 use yew::utils::NeqAssign;
+use yew::prelude::*;
+
+use crate::pages::host::InnerHost;
+
 
 pub enum Msg {
     Created((u64, Session)),
@@ -43,15 +40,15 @@ impl Component for Host {
             Msg::Created(tuple) => {
                 self.session = Some(tuple);
                 true
-            },
+            }
             Msg::Hosted() => {
                 // TODO: initialise ws socket
                 false
-            },
+            }
             Msg::Revealed => {
                 // TODO: change stage of session
                 true
-            },
+            }
         }
     }
 
@@ -61,8 +58,9 @@ impl Component for Host {
 
     fn view(&self) -> Html {
         match &self.session {
-            Some((session_id, session)) => {
-                html! {<InnerHost session={session.clone()} session_id={*session_id}/>}
+            Some((_, session)) => {
+                let onrevealed = self.link.callback(|_| Msg::Revealed);
+                html! {<InnerHost session={session.clone()} onrevealed={onrevealed} quiz={self.props.}/> }
             }
             None => html! {},
         }

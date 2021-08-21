@@ -1,4 +1,4 @@
 [workspace]
 members = ["backend/shared", "backend/sessions", "backend/imager", "backend/spar", "backend/graphql",
-    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs", "frontend/styles/classify", "frontend/styles/fa",
+    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs", "frontend/styles/fa",
     "tools/fa-scraper"]

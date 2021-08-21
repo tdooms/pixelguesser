@@ -1,10 +1,8 @@
+use crate::properties::Expanded;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-
-use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ControlProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -15,40 +13,19 @@ pub struct ControlProps {
     pub tag: String,
     /// A modifier to have the controlled element fill up the remaining space.
     #[prop_or_default]
-    pub expanded: bool,
+    pub expanded: Expanded,
 }
 
 /// A container with which you can wrap the form controls.
 ///
 /// [https://bulma.io/documentation/form/general/](https://bulma.io/documentation/form/general/)
-pub struct Control {
-    props: ControlProps,
-}
+#[function_component(Control)]
+pub fn control(props: &Props) -> Html {
+    let classes = classes!("control", &props.extra, props.expanded);
 
-impl Component for Control {
-    type Message = ();
-    type Properties = ControlProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let ControlProps { expanded, .. } = self.props;
-        let classes = classes!("control", &self.props.extra, classify!(expanded));
-
-        html! {
-            <@{ self.props.tag.clone() } class={classes}>
-                { for self.props.children.iter() }
-            </@>
-        }
+    html! {
+        <@{ props.tag.clone() } class={classes}>
+            { for props.children.iter() }
+        </@>
     }
 }

@@ -1,29 +1,28 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::classify;
+use crate::properties::{Bordered, Fullwidth, Hoverable, Narrow, Striped};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct TableProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
     pub extra: String,
     /// Add borders to all the cells.
     #[prop_or_default]
-    pub bordered: bool,
+    pub bordered: Bordered,
     /// Add stripes to the table.
     #[prop_or_default]
-    pub striped: bool,
+    pub striped: Striped,
     /// Make the cells narrower.
     #[prop_or_default]
-    pub narrow: bool,
+    pub narrow: Narrow,
     /// Add a hover effect on each row.
     #[prop_or_default]
-    pub hoverable: bool,
+    pub hoverable: Hoverable,
     /// Make the table fullwidth.
     #[prop_or_default]
-    pub fullwidth: bool,
+    pub fullwidth: Fullwidth,
     /// Make the table scrollable, wrapping the table in a `div.table-container`.
     #[prop_or_default]
     pub scrollable: bool,
@@ -32,45 +31,26 @@ pub struct TableProps {
 /// An HTML table component.
 ///
 /// [https://bulma.io/documentation/elements/table/](https://bulma.io/documentation/elements/table/)
-pub struct Table {
-    props: TableProps,
-}
+#[function_component(Image)]
+pub fn image(props: &Props) -> html {
+    let classes = classes!(
+        "table",
+        &props.extra,
+        props.bordered,
+        props.striped,
+        props.narrow,
+        props.hoverable,
+        props.fullwidth,
+    );
 
-impl Component for Table {
-    type Message = ();
-    type Properties = TableProps;
+    let table = html! {
+        <table class={classes}>
+            { for props.children.iter() }
+        </table>
+    };
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let TableProps { bordered, striped, narrow, hoverable, fullwidth, scrollable, .. } =
-            self.props;
-
-        let classes = classes!(
-            "table",
-            &self.props.extra,
-            classify!(bordered, striped, narrow, hoverable, fullwidth, scrollable)
-        );
-
-        let table = html! {
-            <table class={classes}>
-                { for self.props.children.iter() }
-            </table>
-        };
-
-        match self.props.scrollable {
-            true => html! {<div class="table-container"> {table} </div> },
-            false => table,
-        }
+    match props.scrollable {
+        true => html! {<div class="table-container"> {table} </div> },
+        false => table,
     }
 }

@@ -1,10 +1,8 @@
+use crate::properties::{Centered, Gapless, Multiline, VCentered};
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-
-use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ColumnsProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -13,54 +11,37 @@ pub struct ColumnsProps {
 
     /// Align child columns vertically.
     #[prop_or_default]
-    pub vcentered: bool,
+    pub vcentered: VCentered,
 
     /// Allow for multiline rows.
     #[prop_or_default]
-    pub multiline: bool,
+    pub multiline: Multiline,
 
     /// Center all child columns within their row.
     #[prop_or_default]
-    pub centered: bool,
+    pub centered: Centered,
 
     /// Remove the gaps between columns.
     #[prop_or_default]
-    pub gapless: bool,
+    pub gapless: Gapless,
 }
 
 /// The container for a set of responsive columns.
 /// [https://bulma.io/documentation/columns/](https://bulma.io/documentation/columns/)
-pub struct Columns {
-    props: ColumnsProps,
-}
+#[function_component(Columns)]
+pub fn columns(props: &Props) -> Html {
+    let classes = classes!(
+        "columns",
+        &props.extra,
+        props.vcentered,
+        props.multiline,
+        props.centered,
+        props.gapless
+    );
 
-impl Component for Columns {
-    type Message = ();
-    type Properties = ColumnsProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let ColumnsProps { vcentered, multiline, centered, gapless, .. } = self.props;
-        let classes = classes!(
-            "columns",
-            &self.props.extra,
-            classify!(vcentered, multiline, centered, gapless)
-        );
-        html! {
-            <div class={classes}>
-                { for self.props.children.iter() }
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            { for props.children.iter() }
+        </div>
     }
 }

@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 use yew::prelude::*;
 
-use api::Player;
 use pbs::ColumnSize;
+use shared::Player;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
-    pub players: HashMap<u64, Player>,
+    pub players: Vec<Player>,
 }
 
 pub struct Scores {
@@ -32,8 +32,8 @@ impl Component for Scores {
     }
 
     fn view(&self) -> Html {
-        let mut players: Vec<_> = self.props.players.iter().map(|x| x.1).collect();
-        players.sort_by_key(|player| std::cmp::Reverse(player.score));
+        let mut sorted = self.props.players.clone();
+        sorted.sort_by_key(|player| std::cmp::Reverse(player.score));
 
         let view_player = |player: &&Player| {
             html! {
@@ -56,8 +56,8 @@ impl Component for Scores {
         html! {
             <pbs::Columns centered=true>
                 <pbs::Column size={ColumnSize::IsHalf}>
-                    { for players.first().map(view_winner) }
-                    { for players.iter().skip(1).map(view_player) }
+                    { for sorted.first().map(view_winner) }
+                    { for sorted.iter().skip(1).map(view_player) }
                </pbs::Column>
             </pbs::Columns>
         }

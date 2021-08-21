@@ -1,29 +1,33 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use api::{Fetch, Get, Quiz, Request, Response};
+use graphql::{Quiz, quizzes};
+use reqwasm::Error;
 use cbs::Loading;
 
-use crate::agents::WebSocketAgent;
 use crate::components::{navbar, QuizCard};
 use crate::route::Route;
-use crate::utils::{exec_query, image_url, OVERVIEW_QUERY, Quiz};
+use crate::constants::IMAGE_ENDPOINT;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
 }
 
 impl Component for Overview {
-    type Message = Vec<Quiz>;
+    type Message = Result<Vec<Quiz>, Error>;
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        link.send_future(exec_query(OVERVIEW_QUERY, |x| x));
+        link.send_future(quizzes());
         Self { quizzes: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
-        self.quizzes.neq_assign(Some(msg))
+        match msg {
+            Ok(quizzes) => self.quizzes.neq_assign(Some(quizzes)),
+            Err(_) => {} // TODO: error
+        }
+
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
@@ -32,7 +36,7 @@ impl Component for Overview {
 
     fn view(&self) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let url = image_url(quiz.image_url);
+            let url = format!("{}/{}", IMAGE_ENDPOINT, quiz.image_url.unwrap_or("".to_owned()));
             let route = Route::Host { quiz_id: quiz.quiz_id };
             html! {
                 <div class="column is-3">

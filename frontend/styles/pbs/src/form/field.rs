@@ -1,10 +1,8 @@
+use crate::properties::{Addons, Grouped, GroupedMultiline};
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-
-use crate::classify;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct FieldProps {
+pub struct Props {
     #[prop_or_default]
     pub children: Children,
 
@@ -12,50 +10,22 @@ pub struct FieldProps {
     pub extra: String,
 
     #[prop_or_default]
-    pub grouped: bool,
+    pub grouped: Grouped,
 
     #[prop_or_default]
-    pub multiline: bool,
+    pub multiline: GroupedMultiline,
 
     #[prop_or_default]
-    pub addons: bool,
+    pub addons: Addons,
 }
 
-pub struct Field {
-    props: FieldProps,
-}
+#[function_component(Field)]
+pub fn field(props: &Props) -> Html {
+    let classes = classes!("field", &props.extra, props.multiline, props.addons, props.grouped,);
 
-impl Component for Field {
-    type Message = ();
-    type Properties = FieldProps;
-
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let FieldProps { grouped, .. } = self.props;
-
-        let classes = classes!(
-            "field",
-            &self.props.extra,
-            self.props.multiline.then(|| "is-grouped-multiline"),
-            self.props.addons.then(|| "has-addons"),
-            classify!(grouped),
-        );
-
-        html! {
-            <div class={classes}>
-                { for self.props.children.iter() }
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            { for props.children.iter() }
+        </div>
     }
 }

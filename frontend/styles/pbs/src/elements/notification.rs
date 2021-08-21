@@ -1,10 +1,9 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use crate::{classify, Color};
+use crate::properties::{Color, Light};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct NotificationProps {
+pub struct Props {
     pub onclick: Callback<()>,
 
     #[prop_or_default]
@@ -17,47 +16,20 @@ pub struct NotificationProps {
     pub color: Option<Color>,
 
     #[prop_or_default]
-    pub light: bool,
+    pub light: Light,
 }
 
 /// Bold notification blocks, to alert your users of something.
-///
 /// [https://bulma.io/documentation/elements/notification/](https://bulma.io/documentation/elements/notification/)
-pub struct Notification {
-    props: NotificationProps,
-    link: ComponentLink<Self>,
-}
+#[function_component(Image)]
+pub fn image(props: &Props) -> Html {
+    let classes = classes!("notification", &props.extra, props.color, props.light);
+    let onclick = props.onclick.reform(|_| ());
 
-impl Component for Notification {
-    type Message = ();
-    type Properties = NotificationProps;
-
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link }
-    }
-
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        self.props.onclick.emit(());
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let NotificationProps { light, .. } = self.props;
-        let classes = classes!(
-            "notification",
-            &self.props.extra,
-            self.props.color.as_ref().map(ToString::to_string),
-            classify!(light)
-        );
-        html! {
-            <div class={classes}>
-                <button class="delete" onclick={self.link.callback(|_| ())}></button>
-                { for self.props.children.iter() }
-            </div>
-        }
+    html! {
+        <div class={classes}>
+            <button class="delete" onclick={onclick}></button>
+            { for props.children.iter() }
+        </div>
     }
 }

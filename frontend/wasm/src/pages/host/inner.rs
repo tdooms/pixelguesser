@@ -3,15 +3,17 @@ use yew::prelude::*;
 use yew::utils::NeqAssign;
 use yew::web_sys::window;
 
-use crate::agents::WebSocketAgent;
 use crate::components::Pixelate;
 use crate::pages::host::{Finish, Lobby, Scores};
 use shared::{Stage, Session};
+use futures::StreamExt;
+use graphql::{Quiz, Round};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
-    pub session_id: u64,
     pub session: Session,
+    pub quiz: Quiz,
+    pub rounds: Vec<Round>,
 
     pub onrevealed: Callback<()>,
 }
@@ -34,7 +36,6 @@ impl Component for InnerHost {
     }
 
     fn update(&mut self, _: Self::Message) -> bool {
-        self.props.onrevealed.emit(());
         false
     }
 
@@ -45,22 +46,15 @@ impl Component for InnerHost {
     fn view(&self) -> Html {
         match &self.props.session.stage {
             Stage::Initial => {
-                html! {
-                    <Lobby session={self.props.session.clone()}
-                        session_id={self.props.session_id}
-                        has_manager={self.has_manager}
-                    />
-                }
+                html! { <Lobby session={self.props.session.clone()} quiz={self.props.quiz}/> }
             }
             Stage::Round { round, status } => {
-                html! {
-                    <Pixelate on_revealed={self.link.callback(|_| ())}
-                        status={*status}
-                        url={self.props.session.rounds[*round].image_url.clone()}
-                    />
-                }
+                let onrevealed = self.props.onrevealed.reform(|x| x);
+                let url = self.props.rounds[*round].image_url.clone();
+                    
+                html! { <Pixelate onrevealed={onrevealed} status={*status} url={url}/> }
             }
-            Stage::Scores { round } => {
+            Stage::Ranking { round } => {
                 html! {
                     <pbs::Section>
                         <pbs::Container>
@@ -69,13 +63,8 @@ impl Component for InnerHost {
                     </pbs::Section>
                 }
             }
-            Stage::Finish => {
-                html! {
-                    <Finish session_id={self.props.session_id}
-                        players={self.props.session.players.clone()}
-                        quiz={self.props.session.quiz.clone()}
-                    />
-                }
+            Stage::Finished => {
+                html! { <Finish players={self.props.session.players.clone()} quiz={self.props.quiz.clone()}/> }
             }
         }
     }

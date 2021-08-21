@@ -24,7 +24,6 @@ log = "0.4"
 wasm-logger = "0.2"
 wee_alloc = "0.4"
 
-anyhow = "1.0"
 thiserror = "1.0"
 
 yew = { git = "https://github.com/yewstack/yew.git" }
@@ -43,4 +42,6 @@ js-sys = "0.3"
 gloo = "0.3"
 base64 = "0.13"
 
+futures = "0.3"
 validator = { version = "0.12", features = ["derive"] }
+reqwasm = "0.2.1"

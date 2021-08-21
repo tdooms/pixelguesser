@@ -1,6 +1,5 @@
 use yew::prelude::*;
 
-use api::{Action, Stage};
 use pbs::{Alignment, Color, Size};
 use shared::{Action, Stage};
 

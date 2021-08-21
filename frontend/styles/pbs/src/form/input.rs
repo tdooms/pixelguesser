@@ -1,13 +1,10 @@
-use yew::events::InputData;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
+use yew::web_sys::HtmlInputElement;
 
-use crate::{classify, Color};
-use crate::common::InputType;
-use crate::Size;
+use crate::properties::{Color, InputType, Loading, Rounded, Size, Static};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-pub struct InputProps {
+pub struct Props {
     /// The callback to be used for propagating changes to this element's value.
     pub oninput: Callback<String>,
 
@@ -34,10 +31,10 @@ pub struct InputProps {
     pub color: Option<Color>,
     /// Use rounded appearance.
     #[prop_or_default]
-    pub rounded: bool,
+    pub rounded: Rounded,
     /// Display a loading spinner within this component.
     #[prop_or_default]
-    pub loading: bool,
+    pub loading: Loading,
     /// Disable this component.
     #[prop_or_default]
     pub disabled: bool,
@@ -46,60 +43,37 @@ pub struct InputProps {
     pub readonly: bool,
     /// Make this component static.
     #[prop_or_default]
-    pub r#static: bool,
+    pub r#static: Static,
 }
 
 /// A text input element.
 ///
 /// [https://bulma.io/documentation/form/input/](https://bulma.io/documentation/form/input/)
-///
-/// All YBC form components are controlled components. This means that the value of the field must
-/// be provided from a parent component, and changes to this component are propagated to the parent
-/// component via callback.
-pub struct Input {
-    props: InputProps,
-    link: ComponentLink<Self>,
-}
+#[function_component(Checkbox)]
+pub fn checkbox(props: &Props) -> Html {
+    let classes = classes!(
+        "input",
+        &props.extra,
+        props.size,
+        props.color,
+        props.rounded,
+        props.loading,
+        props.r#static,
+    );
 
-impl Component for Input {
-    type Message = String;
-    type Properties = InputProps;
+    let oninput =
+        props.oninput.reform(|e: InputEvent| e.target_unchecked_into::<HtmlInputElement>().value());
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link }
-    }
-
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        self.props.oninput.emit(msg);
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let InputProps { rounded, loading, r#static, .. } = self.props;
-
-        let classes = classes!(
-            "input",
-            &self.props.extra,
-            self.props.size.to_string(),
-            self.props.color.as_ref().map(ToString::to_string),
-            classify!(rounded, loading, r#static)
-        );
-
-        html! {
-            <input
-                name={self.props.name.clone()}
-                value={self.props.value.clone()}
-                oninput={self.link.callback(|input: InputData| input.value)}
-                class={classes}
-                type={self.props.r#type.to_string()}
-                placeholder={self.props.placeholder.clone()}
-                disabled={self.props.disabled}
-                readonly={self.props.readonly}
-                />
-        }
+    html! {
+        <input
+            name={props.name.clone()}
+            value={props.value.clone()}
+            oninput={oninput}
+            class={classes}
+            type={props.r#type.to_string()}
+            placeholder={props.placeholder.clone()}
+            disabled={props.disabled}
+            readonly={props.readonly}
+            />
     }
 }

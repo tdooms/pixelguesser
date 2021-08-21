@@ -4,7 +4,6 @@ use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::agents::*;
 use crate::components::Alerts;
 use crate::pages::*;
 use crate::route::Route;
@@ -14,13 +13,13 @@ use crate::structs::{Error, Info};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-mod agents;
 mod components;
 mod constants;
 mod pages;
 mod route;
 mod structs;
 mod utils;
+mod agents;
 
 pub enum Msg {
     Error(Rc<Error>),
@@ -28,11 +27,6 @@ pub enum Msg {
 }
 
 pub struct Model {
-    // Keeps agents alive
-    _ws_agent: Box<dyn Bridge<WebSocketAgent>>,
-    _error_agent: Box<dyn Bridge<ErrorAgent>>,
-    _info_agent: Box<dyn Bridge<InfoAgent>>,
-
     errors: Vec<Rc<Error>>,
     infos: Vec<Rc<Info>>,
 
@@ -45,10 +39,6 @@ impl Component for Model {
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
-            _ws_agent: WebSocketAgent::bridge(Callback::noop()),
-            _error_agent: ErrorAgent::bridge(link.callback(Msg::Error)),
-            _info_agent: InfoAgent::bridge(link.callback(Msg::Info)),
-
             errors: vec![],
             infos: vec![],
 
@@ -83,7 +73,7 @@ fn switch(routes: &Route) -> Html {
         Route::Host { quiz_id } => html! { <Host quiz_id={*quiz_id}/> },
         Route::Manage { session_id } => html! { <Manage session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
-        Route::Create => html! { <Create/> },
+        Route::Create => html!{<p>{"yo"}</p>}, //html! { <Create/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }

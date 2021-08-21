@@ -12,5 +12,7 @@ pub struct Player {
 pub struct Session {
     pub stage: Stage,
     pub players: Vec<Player>,
-    pub managed: bool,
+
+    pub has_manager: bool,
+    pub has_host: bool,
 }

@@ -1,7 +1,7 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("The websocket connection encountered an error: {0}")]
-    WsError(#[from] anyhow::Error),
+    #[error("The graphql connection encountered an error: {0}")]
+    Graphql(#[from] reqwasm::Error),
 
     #[error("Could not (de)serialize response/request from websocket: {0}")]
     JsonError(#[from] serde_json::Error),
