@@ -8,8 +8,8 @@ pub struct Props {
     pub extra: String,
 }
 
-#[function_component(Checkbox)]
-pub fn checkbox(props: &Props) -> Html {
+#[function_component(Label)]
+pub fn label(props: &Props) -> Html {
     let classes = classes!("label", &props.extra);
 
     html! {

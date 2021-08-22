@@ -20,6 +20,8 @@ cbs = { path = "../styles/cbs" }
 
 chrono = { version = "0.4", features = ["serde"] }
 
+strum = "0.21"
+
 log = "0.4"
 wasm-logger = "0.2"
 wee_alloc = "0.4"

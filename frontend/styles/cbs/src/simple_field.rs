@@ -1,7 +1,5 @@
-use yew::prelude::*;
-use yew::utils::NeqAssign;
-
 use pbs::prelude::*;
+use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -28,7 +26,7 @@ pub struct Props {
 }
 
 #[function_component(SimpleField)]
-pub fn simple_field(props: &Props) {
+pub fn simple_field(props: &Props) -> Html {
     let help = match &props.help {
         Some(help) => {
             html! { <Help color={props.help_color}> {help.clone()} </Help> }

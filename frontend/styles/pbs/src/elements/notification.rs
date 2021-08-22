@@ -21,8 +21,8 @@ pub struct Props {
 
 /// Bold notification blocks, to alert your users of something.
 /// [https://bulma.io/documentation/elements/notification/](https://bulma.io/documentation/elements/notification/)
-#[function_component(Image)]
-pub fn image(props: &Props) -> Html {
+#[function_component(Notification)]
+pub fn notification(props: &Props) -> Html {
     let classes = classes!("notification", &props.extra, props.color, props.light);
     let onclick = props.onclick.reform(|_| ());
 

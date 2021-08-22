@@ -33,8 +33,8 @@ pub struct Props {
 /// A single tile element to build 2-dimensional whatever-you-like grids.
 ///
 /// [https://bulma.io/documentation/layout/tiles/](https://bulma.io/documentation/layout/tiles/)
-#[function_component(Field)]
-pub fn field(props: &Props) -> Html {
+#[function_component(Tile)]
+pub fn tile(props: &Props) -> Html {
     let classes = classes!("tile", &props.extra, props.ctx, props.size, props.vertical);
 
     html! {

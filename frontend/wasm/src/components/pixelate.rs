@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use yew::prelude::*;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 
@@ -8,10 +6,10 @@ use yew::utils::NeqAssign;
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
-use crate::utils::{draw_pixelated, TypeRef, Resizer};
-use shared::Status;
+use crate::utils::{draw_pixelated, Resizer, TypeRef};
 use gloo::timers::callback::Timeout;
-use yew_agent::{Dispatcher, Dispatched};
+use shared::Status;
+use yew_agent::{Dispatched, Dispatcher};
 
 pub enum Msg {
     Loaded,
@@ -121,7 +119,7 @@ impl Component for Pixelate {
                 // TODO: max pixels should be screen size instead of image size maybe?
                 if clamped_pixels == max_pixels {
                     self.props.status = Status::Revealed;
-                    self.props.on_revealed.emit(());
+                    self.props.onrevealed.emit(());
                     self.timer = None;
                 } else {
                     // TODO: ??

@@ -1,20 +1,10 @@
 use yew::prelude::*;
 
-use pbs::{Alignment, Color, Size};
+use pbs::prelude::*;
 use shared::{Action, Stage};
+use strum::IntoEnumIterator;
 
 use crate::route::Route;
-
-static ACTIONS: [Action; 8] = [
-    Action::Start,
-    Action::Pause,
-    Action::Resume,
-    Action::Reveal,
-    Action::Scores,
-    Action::Next,
-    Action::Finish,
-    Action::Leave,
-];
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {
@@ -74,14 +64,16 @@ impl Component for Navigate {
             let hidden = !actions.contains(&action);
 
             html! {
-                <cbs::IconButton hidden={hidden} text={text} icon={icon} color={color} light={light} size={Size::Large} onclick={callback}/>
+                <Button hidden={hidden} color={color} light={light} size={Size::Large} onclick={callback}>
+                    <span class="icon"> {icon} </span> <span> {text} </span>
+                </Button>
             }
         };
 
         html! {
-            <pbs::Buttons alignment={Alignment::Centered} extra="mt-4">
-                { for ACTIONS.iter().copied().map(map_action) }
-            </pbs::Buttons>
+            <Buttons alignment={Alignment::Centered} extra="mt-4">
+                { for Action::iter().map(map_action) }
+            </Buttons>
         }
     }
 }

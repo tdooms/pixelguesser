@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Quiz {
+    pub quiz_id: u64,
     pub name: String,
     pub description: String,
     pub author: String,

@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use pbs::{Color, InputType, Size};
+use pbs::prelude::*;
 
 #[derive(Clone, Properties)]
 pub struct Props {
@@ -44,19 +44,15 @@ impl Component for Initialize {
         let oninput = self.link.callback(Msg::Value);
         let onclick = self.link.callback(|_| Msg::Submit);
 
-        let input = html! {};
-
-        let button = html! {};
-
         html! {
-            <pbs::Field grouped=true>
-                <pbs::Control expanded=true>
-                    <pbs::Input size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={self.value.clone()} oninput={oninput}/>
-                </pbs::Control>
-                <pbs::Control>
-                    <cbs::IconButton size={Size::Large} color={Color::Info} onclick={onclick} icon="fas fa-plus"/>
-                </pbs::Control>
-            </pbs::Field>
+            <Field grouped=true>
+                <Control expanded=true>
+                    <Input size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={self.value.clone()} oninput={oninput}/>
+                </Control>
+                <Control>
+                    <Button size={Size::Large} color={Color::Info} onclick={onclick}> <Icon icon="fas fa-plus"> </Icon> </Button>
+                </Control>
+            </Field>
         }
     }
 }

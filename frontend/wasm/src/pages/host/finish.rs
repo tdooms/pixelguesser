@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-
 use yew::prelude::*;
 
 use graphql::Quiz;
-use pbs::{Color, HeroSize};
+use pbs::prelude::*;
 use shared::Player;
 
 use crate::pages::host::Scores;
@@ -36,12 +34,14 @@ impl Component for Finish {
     }
 
     fn view(&self) -> Html {
-        let body = html! { <Scores players={self.props.players.clone()}/> };
+        let Props { players, quiz, .. } = &self.props;
+
+        let body = html! { <Scores players={players.clone()}/> };
 
         html! {
             <>
-                <cbs::TitleHero color={Color::Primary} title={self.props.quiz.name.clone()} subtitle={"finished"}/>
-                <pbs::Hero body={body} color={Color::Primary} size={HeroSize::Medium}/>
+                <cbs::TitleHero color={Color::Primary} title={quiz.name.clone()} subtitle={"finished"}/>
+                <Hero body={body} color={Color::Primary} size={HeroSize::Medium}/>
             </>
         }
     }

@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumIter;
 
 use self::Action::*;
 use self::Stage::*;
 use self::Status::*;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, EnumIter)]
 pub enum Action {
     Start,
     Pause,
@@ -32,7 +33,9 @@ pub enum Stage {
 }
 
 impl Default for Stage {
-    fn default() -> Self { Stage::Initial }
+    fn default() -> Self {
+        Stage::Initial
+    }
 }
 
 impl Stage {

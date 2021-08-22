@@ -3,6 +3,7 @@ use yew_router::prelude::Link;
 
 use crate::route::Route;
 
+#[function_component(Navbar)]
 pub fn navbar() -> Html {
     html! {
         <nav class="navbar" role="navigation" aria-label="main navigation">

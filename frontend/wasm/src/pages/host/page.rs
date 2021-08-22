@@ -1,27 +1,29 @@
-use std::collections::HashMap;
-use shared::Session;
-use yew::utils::NeqAssign;
+use shared::{Request, Response, Session};
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 
 use crate::pages::host::InnerHost;
-
+use crate::utils::{code_to_string, WebsocketTask};
+use graphql::{Quiz, Round};
 
 pub enum Msg {
-    Created((u64, Session)),
-    Hosted(),
+    WsResponse(Response),
     Revealed,
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct HostLoaderProps {
-    pub quiz_id: i64,
+    pub quiz_id: u64,
 }
 
 pub struct Host {
     props: HostLoaderProps,
     link: ComponentLink<Self>,
 
+    ws: WebsocketTask,
+
     session: Option<(u64, Session)>,
+    quiz_data: Option<(Quiz, Vec<Round>)>,
 }
 
 impl Component for Host {
@@ -31,21 +33,30 @@ impl Component for Host {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         // TODO: create session
         // TODO: host session
+        // TODO: fetch quizzes
+        let ws = WebsocketTask::create("TODO", link.callback(Msg::WsResponse));
+        ws.send(Request::Create);
 
-        Self { props, link, session: None }
+        Self { props, link, ws, session: None, quiz_data: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Created(tuple) => {
-                self.session = Some(tuple);
+            Msg::WsResponse(Response::Created(session_id)) => {
+                // TODO: store session_id
+                self.ws.send(Request::Host(session_id));
                 true
             }
-            Msg::Hosted() => {
-                // TODO: initialise ws socket
+            Msg::WsResponse(Response::Updated(session)) => {
+                // TODO: set session
+                true
+            }
+            Msg::WsResponse(_) => {
+                log::error!("unexpected response");
                 false
             }
             Msg::Revealed => {
+                // self.ws.send(Request::Update())
                 // TODO: change stage of session
                 true
             }
@@ -57,12 +68,14 @@ impl Component for Host {
     }
 
     fn view(&self) -> Html {
-        match &self.session {
-            Some((_, session)) => {
+        match (&self.session, &self.quiz_data) {
+            (Some((session_id, session)), Some((quiz, rounds))) => {
                 let onrevealed = self.link.callback(|_| Msg::Revealed);
-                html! {<InnerHost session={session.clone()} onrevealed={onrevealed} quiz={self.props.}/> }
+                let code = code_to_string(*session_id).unwrap_or_default();
+
+                html! {<InnerHost code={code} session={session.clone()} onrevealed={onrevealed} quiz={quiz.clone()} rounds={rounds.clone()}/> }
             }
-            None => html! {},
+            _ => html! {},
         }
     }
 }

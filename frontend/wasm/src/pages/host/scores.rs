@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use yew::prelude::*;
 
-use pbs::ColumnSize;
+use pbs::prelude::*;
 use shared::Player;
 
 #[derive(Clone, Debug, Properties)]
@@ -35,31 +33,31 @@ impl Component for Scores {
         let mut sorted = self.props.players.clone();
         sorted.sort_by_key(|player| std::cmp::Reverse(player.score));
 
-        let view_player = |player: &&Player| {
+        let view_player = |player: &Player| {
             html! {
-                <pbs::Box extra="is-flex is-flex-direction-row is-justify-content-space-between mx-5">
-                    <p class="is-size-5"> {&player.name} </p>
-                    <strong class="is-size-5"> {&player.score} </strong>
-                </pbs::Box>
+                <Box extra="is-flex is-flex-direction-row is-justify-content-space-between mx-5">
+                    <p class="is-size-5"> {player.name.clone()} </p>
+                    <strong class="is-size-5"> {player.score.clone()} </strong>
+                </Box>
             }
         };
 
-        let view_winner = |player: &&Player| {
+        let view_winner = |player: &Player| {
             html! {
-                <pbs::Box extra="is-flex is-flex-direction-row is-justify-content-space-between">
-                    <p class="is-size-3"> {&player.name} </p>
-                    <strong class="is-size-3"> {&player.score} </strong>
-                </pbs::Box>
+                <Box extra="is-flex is-flex-direction-row is-justify-content-space-between">
+                    <p class="is-size-3"> {player.name.clone()} </p>
+                    <strong class="is-size-3"> {player.score.clone()} </strong>
+                </Box>
             }
         };
 
         html! {
-            <pbs::Columns centered=true>
-                <pbs::Column size={ColumnSize::IsHalf}>
+            <Columns centered=true>
+                <Column size={ColumnSize::IsHalf}>
                     { for sorted.first().map(view_winner) }
                     { for sorted.iter().skip(1).map(view_player) }
-               </pbs::Column>
-            </pbs::Columns>
+               </Column>
+            </Columns>
         }
     }
 }

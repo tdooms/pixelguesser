@@ -4,7 +4,7 @@ use yew::prelude::*;
 use pbs::prelude::*;
 
 #[derive(Clone, Properties, PartialEq)]
-pub struct Props<T: IntoEnumIterator + ToString + Copy + PartialEq> {
+pub struct Props<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static> {
     #[prop_or_default]
     pub children: Children,
 
@@ -22,7 +22,9 @@ pub struct Props<T: IntoEnumIterator + ToString + Copy + PartialEq> {
 }
 
 #[function_component(KvButtons)]
-pub fn kv_buttons<T: IntoEnumIterator + ToString + Copy + PartialEq>(props: &Props<T>) -> Html {
+pub fn kv_buttons<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static>(
+    props: &Props<T>,
+) -> Html {
     let button_map = |variant: T| {
         let selected = props.value == variant;
         let color = selected.then(|| props.color);

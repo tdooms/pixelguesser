@@ -1,13 +1,15 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use graphql::{Quiz, quizzes};
-use reqwasm::Error;
-use cbs::Loading;
+use cbs::MaybeLoading;
+use pbs::prelude::*;
 
-use crate::components::{navbar, QuizCard};
-use crate::route::Route;
+use graphql::{quizzes, Quiz};
+use reqwasm::Error;
+
+use crate::components::{Navbar, QuizCard};
 use crate::constants::IMAGE_ENDPOINT;
+use crate::route::Route;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -25,12 +27,11 @@ impl Component for Overview {
     fn update(&mut self, msg: Self::Message) -> bool {
         match msg {
             Ok(quizzes) => self.quizzes.neq_assign(Some(quizzes)),
-            Err(_) => {} // TODO: error
+            Err(_) => false, // TODO: error
         }
-
     }
 
-    fn change(&mut self, props: Self::Properties) -> bool {
+    fn change(&mut self, _: Self::Properties) -> bool {
         false
     }
 
@@ -38,36 +39,34 @@ impl Component for Overview {
         let view_quiz_card = |quiz: Quiz| {
             let url = format!("{}/{}", IMAGE_ENDPOINT, quiz.image_url.unwrap_or("".to_owned()));
             let route = Route::Host { quiz_id: quiz.quiz_id };
+
             html! {
-                <div class="column is-3">
+                <Column size={ColumnSize::Is3}>
                     <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} image_url={url} route={route}/>
-                </div>
+                </Column>
             }
         };
         let view_quiz_cards = |chunk: &[Quiz]| {
             html! {
-                <div class="columns">
+                <Columns>
                     { for chunk.iter().cloned().map(view_quiz_card) }
-                </div>
+                </Columns>
             }
         };
 
         let view_quizzes = |quizzes: &Vec<Quiz>| {
             html! {
                 <>
-                { navbar() }
-                <section class="section">
-                    <div class="container">
+                <Navbar/>
+                <Section>
+                    <Container>
                         { for quizzes.chunks(4).map(view_quiz_cards) }
-                    </div>
-                </section>
+                    </Container>
+                </Section>
                 </>
             }
         };
 
-        match self.quizzes.as_ref() {
-            Some(quizzes) => view_quizzes(quizzes),
-            None => html! { <Loading/> },
-        }
+        html! { <MaybeLoading html={self.quizzes.as_ref().map(view_quizzes)}/> }
     }
 }

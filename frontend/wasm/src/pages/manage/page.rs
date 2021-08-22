@@ -4,6 +4,7 @@ use yew::utils::NeqAssign;
 use shared::Session;
 
 use crate::pages::manage::InnerManage;
+use graphql::{Quiz, Round};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ManageLoaderProps {
@@ -17,7 +18,9 @@ pub enum Msg {
 
 pub struct Manage {
     props: ManageLoaderProps,
+    link: ComponentLink<Self>,
     session: Option<Session>,
+    quiz_data: Option<(Quiz, Vec<Round>)>,
 }
 
 impl Component for Manage {
@@ -26,7 +29,7 @@ impl Component for Manage {
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         // TODO: manage session
-        Self { props, session: None }
+        Self { props, link, session: None, quiz_data: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -47,12 +50,12 @@ impl Component for Manage {
     }
 
     fn view(&self) -> Html {
-        match &self.session {
-            Some(session) => {
+        match (&self.session, &self.quiz_data) {
+            (Some(session), Some((quiz, rounds))) => {
                 let onchange = self.link.callback(Msg::Updated);
-                html! {<InnerManage session={session.clone()} session_id={self.props.session_id} onchange={onchange} />}
+                html! {<InnerManage session={session.clone()} quiz={quiz.clone()} rounds={rounds.clone()} onchange={onchange} />}
             }
-            None => html! {},
+            _ => html! {},
         }
     }
 }

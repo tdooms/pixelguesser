@@ -9,7 +9,9 @@ license = "GNU GPLv3"
 
 [dependencies]
 yew = { git = "https://github.com/yewstack/yew.git" }
-yew-router = { git = "https://github.com/yewstack/yew.git" }
+
+strum = "0.21"
+strum_macros = "0.21"
 
 derive_more = "0.99.16"
 gloo = "0.3"

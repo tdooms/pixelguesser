@@ -17,7 +17,7 @@ pub enum Error {
     UnableToManage(u64),
 
     #[error("Could not parse request")]
-    UnknownRequest
+    UnknownRequest,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -27,9 +27,7 @@ pub enum Request {
 
     Create,
     Host(u64),
-    UnHost(u64),
     Manage(u64),
-    UnManage(u64)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -39,4 +37,3 @@ pub enum Response {
     Created(u64),
     Error(Error),
 }
-

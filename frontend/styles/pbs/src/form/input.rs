@@ -49,8 +49,8 @@ pub struct Props {
 /// A text input element.
 ///
 /// [https://bulma.io/documentation/form/input/](https://bulma.io/documentation/form/input/)
-#[function_component(Checkbox)]
-pub fn checkbox(props: &Props) -> Html {
+#[function_component(Input)]
+pub fn input(props: &Props) -> Html {
     let classes = classes!(
         "input",
         &props.extra,

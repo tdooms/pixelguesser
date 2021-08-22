@@ -25,8 +25,8 @@ pub struct Props {
 
 /// A container for any type of icon font.
 /// [https://bulma.io/documentation/elements/icon/](https://bulma.io/documentation/elements/icon/)
-#[function_component(Delete)]
-pub fn delete(props: &Props) -> Html {
+#[function_component(Icon)]
+pub fn icon(props: &Props) -> Html {
     let classes = classes!("icon", &props.extra, props.size, props.color);
     let onclick = props.onclick.reform(|_| ());
 

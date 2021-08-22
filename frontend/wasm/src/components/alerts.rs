@@ -1,8 +1,7 @@
 use std::fmt::Display;
 
+use pbs::prelude::*;
 use yew::prelude::*;
-
-use pbs::Color;
 
 #[derive(Clone, Debug, Properties)]
 pub struct AlertsProps<T: Clone + Display + 'static> {
@@ -36,9 +35,9 @@ impl<T: Clone + Display + 'static> Component for Alerts<T> {
     fn view(&self) -> Html {
         let view_entry = |(id, alert): (usize, &T)| {
             html! {
-                <pbs::Notification color={Color::Warning} light=true onclick={self.link.callback(move |_| id)}>
+                <Notification color={Color::Warning} light=true onclick={self.link.callback(move |_| id)}>
                     { format!("{}", alert) }
-                </pbs::Notification>
+                </Notification>
             }
         };
 

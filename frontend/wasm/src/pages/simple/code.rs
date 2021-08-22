@@ -1,13 +1,13 @@
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
-use pbs::Color;
+use pbs::prelude::*;
 use yew::utils::NeqAssign;
 
-use crate::constants::SESSION_ENDPOINT;
 use crate::route::Route;
 use crate::utils::string_to_code;
 
+#[derive(Debug, Clone, PartialEq)]
 enum State {
     Available,
     Invalid,
@@ -36,12 +36,7 @@ impl Component for Code {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            link,
-            timer: None,
-            current: None,
-            state: State::None,
-        }
+        Self { link, timer: None, current: None, state: State::None }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -49,11 +44,10 @@ impl Component for Code {
             (Msg::Check(Some(id)), Some(current)) if id == current => {
                 self.state.neq_assign(State::Available)
             }
-            (Msg::Check(None), _) => {
-                self.state.neq_assign(State::Invalid)
-            }
+            (Msg::Check(None), _) => self.state.neq_assign(State::Invalid),
             (Msg::Input(string), _) => {
-                self.timer = Some(Timeout::new(200, self.link.callback(Msg::Timer)));
+                let cloned = self.link.clone();
+                self.timer = Some(Timeout::new(200, move || cloned.send_message(Msg::Timer)));
 
                 let res1 = self.state.neq_assign(State::Invalid);
                 let res2 = self.current.neq_assign(string_to_code(&string));
@@ -72,7 +66,7 @@ impl Component for Code {
                 yew_router::push_route(Route::Overview);
                 false
             }
-            _ => {}
+            _ => false,
         }
     }
 
@@ -88,31 +82,31 @@ impl Component for Code {
         let field = match self.state {
             State::Available => html! {
                 <cbs::SimpleField label="Session code" help="This room is available." help_color={Color::Success} icon_right="fas fa-check">
-                    <pbs::Input color={Color::Success} oninput={oninput} />
+                    <Input color={Color::Success} oninput={oninput} />
                 </cbs::SimpleField>
             },
             State::Invalid | State::Incorrect => html! {
                 <cbs::SimpleField label="Session code" help="The room code is invalid." help_color={Color::Danger} icon_right="fas fa-exclamation-triangle">
-                    <pbs::Input color={Color::Danger} oninput={oninput} />
+                    <Input color={Color::Danger} oninput={oninput} />
                 </cbs::SimpleField>
             },
             _ => html! {
                 <cbs::SimpleField label="Session code">
-                    <pbs::Input oninput={oninput} />
+                    <Input oninput={oninput} />
                 </cbs::SimpleField>
             },
         };
 
         html! {
-            <pbs::Section>
-                <pbs::Container>
+            <Section>
+                <Container>
                     { field }
-                    <pbs::Buttons>
-                        <cbs::IconButton text="Join" color={Color::Link} onclick={onjoin} disabled={self.state != State::Available}/>
-                        <cbs::IconButton text="Cancel" color={Color::Link} light=true onclick={oncancel}/>
-                    </pbs::Buttons>
-                </pbs::Container>
-            </pbs::Section>
+                    <Buttons>
+                        <Button color={Color::Link} onclick={onjoin} disabled={self.state != State::Available}> {"Join"} </Button>
+                        <Button color={Color::Link} light=true onclick={oncancel}> {"Cancel"} </Button>
+                    </Buttons>
+                </Container>
+            </Section>
         }
     }
 }

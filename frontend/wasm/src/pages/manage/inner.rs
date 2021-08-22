@@ -1,10 +1,10 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
+use super::{Initialize, Master, Navigate, Rating};
+use graphql::{Quiz, Round};
+use pbs::prelude::*;
 use shared::{Player, Session, Stage, Status};
-
-use crate::pages::manage::{Initialize, Master, Navigate, Rating};
-use crate::route::Route;
 
 pub enum Msg {
     UpdateStage(Stage),
@@ -16,8 +16,9 @@ pub enum Msg {
 pub struct Props {
     pub onchange: Callback<Session>,
 
-    pub session_id: u64,
     pub session: Session,
+    pub quiz: Quiz,
+    pub rounds: Vec<Round>,
 }
 
 pub struct InnerManage {
@@ -35,27 +36,28 @@ impl Component for InnerManage {
 
     fn update(&mut self, msg: Self::Message) -> bool {
         let changed = match msg {
-            Msg::UpdateStage(stage) => {
-                self.props.session.stage.neq_assign(stage)
-            }
+            Msg::UpdateStage(stage) => self.props.session.stage.neq_assign(stage),
             Msg::NewPlayer(name) => {
                 match self.props.session.players.iter().find(|player| player.name == name) {
                     None => {
                         self.props.session.players.push(Player { name, score: 0 });
                         true
                     }
-                    Some(_) => false // TODO: give error
+                    Some(_) => false, // TODO: give error
                 }
             }
             Msg::Guessed(name) => {
                 match self.props.session.players.iter_mut().find(|player| player.name == name) {
                     None => {} // TODO: give error
-                    Some(player) => player.score += 1
+                    Some(player) => player.score += 1,
                 }
+                true
             }
         };
 
-        if changed { self.props.onchange.emit(self.props.session.clone()) };
+        if changed {
+            self.props.onchange.emit(self.props.session.clone())
+        };
         changed
     }
 
@@ -75,20 +77,20 @@ impl Component for InnerManage {
             }
             Stage::Round { .. } => html! { <cbs::TitleHero title="revealing" subtitle=""/> }, // TODO: don't show when revealed
             Stage::Ranking { .. } => html! { <cbs::TitleHero title="showing scores" subtitle=""/> },
-            Stage::Finished => html! { <Rating quiz={self.props.session.quiz.clone()} />},
+            Stage::Finished => html! { <Rating quiz={self.props.quiz.clone()} />},
         };
 
         let stage = self.props.session.stage.clone();
-        let rounds = self.props.session.rounds.len();
+        let rounds = self.props.rounds.len();
         let onchange = self.link.callback(|stage| Msg::UpdateStage(stage));
 
         html! {
-            <pbs::Section>
-                <pbs::Container>
+            <Section>
+                <Container>
                     { body }
                     <Navigate stage={stage} rounds={rounds} onchange={onchange}/>
-                </pbs::Container>
-            </pbs::Section>
+                </Container>
+            </Section>
         }
     }
 

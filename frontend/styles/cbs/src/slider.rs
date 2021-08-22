@@ -1,13 +1,9 @@
 use std::fmt::Display;
 use std::ops::Range;
-use std::rc::Rc;
 
 use num::{FromPrimitive, ToPrimitive};
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 use yew::web_sys::HtmlInputElement;
-
-use pbs::Color;
 
 // maybe use num crate to define the trait bounds
 #[derive(Clone, PartialEq, Properties)]
@@ -24,10 +20,10 @@ pub struct Props<T: PartialEq + Clone + Display + FromPrimitive + ToPrimitive + 
 }
 
 #[function_component(Slider)]
-pub fn slider<T: PartialEq + Clone + Display + FromPrimitive + ToPrimitive>(
+pub fn slider<T: PartialEq + Clone + Display + FromPrimitive + ToPrimitive + 'static>(
     props: &Props<T>,
 ) -> Html {
-    let SliderProps { value, range, steps, postfix, .. } = props.clone();
+    let Props { value, range, steps, postfix, .. } = props.clone();
     let (start, end) = (range.start.to_f64().unwrap(), range.end.to_f64().unwrap());
 
     let percent = 100.0 * (value.to_f64().unwrap() - start) / (end - start);

@@ -1,19 +1,21 @@
 use js_sys::Function;
+use pbs::prelude::*;
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 use yew::web_sys::window;
 
+use graphql::{Quiz, Round};
+use shared::{Session, Stage};
+
 use crate::components::Pixelate;
 use crate::pages::host::{Finish, Lobby, Scores};
-use shared::{Stage, Session};
-use futures::StreamExt;
-use graphql::{Quiz, Round};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
     pub session: Session,
     pub quiz: Quiz,
     pub rounds: Vec<Round>,
+    pub code: String,
 
     pub onrevealed: Callback<()>,
 }
@@ -44,27 +46,29 @@ impl Component for InnerHost {
     }
 
     fn view(&self) -> Html {
-        match &self.props.session.stage {
+        let Props { quiz, rounds, session, code, .. } = &self.props;
+
+        match &session.stage {
             Stage::Initial => {
-                html! { <Lobby session={self.props.session.clone()} quiz={self.props.quiz}/> }
+                html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
             }
             Stage::Round { round, status } => {
                 let onrevealed = self.props.onrevealed.reform(|x| x);
-                let url = self.props.rounds[*round].image_url.clone();
-                    
+                let url = rounds[*round].image_url.clone();
+
                 html! { <Pixelate onrevealed={onrevealed} status={*status} url={url}/> }
             }
             Stage::Ranking { round } => {
                 html! {
-                    <pbs::Section>
-                        <pbs::Container>
-                            <Scores players={self.props.session.players.clone()}/>
-                        </pbs::Container>
-                    </pbs::Section>
+                    <Section>
+                        <Container>
+                            <Scores players={session.players.clone()}/>
+                        </Container>
+                    </Section>
                 }
             }
             Stage::Finished => {
-                html! { <Finish players={self.props.session.players.clone()} quiz={self.props.quiz.clone()}/> }
+                html! { <Finish players={session.players.clone()} quiz={quiz.clone()}/> }
             }
         }
     }
@@ -73,6 +77,5 @@ impl Component for InnerHost {
         if let Some(window) = window() {
             window.set_onbeforeunload(None)
         }
-        // TODO: kill session?
     }
 }

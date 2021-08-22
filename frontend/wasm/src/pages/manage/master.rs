@@ -1,11 +1,10 @@
-use std::collections::HashMap;
-
 use yew::prelude::*;
 
-use pbs::Size;
+use pbs::prelude::*;
 use shared::Player;
+use yew::utils::NeqAssign;
 
-#[derive(Clone, Debug, Properties)]
+#[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onguess: Callback<String>,
     pub players: Vec<Player>,
@@ -17,27 +16,26 @@ pub struct Master {
 }
 
 impl Component for Master {
-    type Message = String;
+    type Message = ();
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self { link, props }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
-        self.props.onclick.emit(msg);
+    fn update(&mut self, _: Self::Message) -> bool {
         false
     }
 
     fn change(&mut self, props: Self::Properties) -> bool {
-        self.props = props;
-        true
+        self.props.neq_assign(props)
     }
 
     fn view(&self) -> Html {
         let view_player = |player: &Player| {
-            let onclick = self.link.callback(move |_| player.name.clone());
-            html! { <cbs::IconButton outlined=true size={Size::Large} fullwidth=true onclick={onclick} text={player.name.clone()}/> }
+            let cloned = player.name.clone();
+            let onclick = self.props.onguess.reform(move |_| cloned.clone());
+            html! { <Button outlined=true size={Size::Large} fullwidth=true onclick={onclick}> {player.name.clone()} </Button> }
         };
 
         html! {

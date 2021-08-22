@@ -1,9 +1,8 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use pbs::HeroSize;
 use graphql::Quiz;
-
+use pbs::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -33,18 +32,18 @@ impl Component for Rating {
 
     fn view(&self) -> Html {
         let header = html! {
-            <pbs::Subtitle> {self.props.quiz.name.clone()} </pbs::Subtitle>
+            <Subtitle> {self.props.quiz.name.clone()} </Subtitle>
         };
 
         let body = html! {
-            <pbs::Container extra="has-text-centered">
-                <pbs::Title> {"give rating"} </pbs::Title>
-                <pbs::Subtitle> {"TODO"} </pbs::Subtitle>
-            </pbs::Container>
+            <Container extra="has-text-centered">
+                <Title> {"give rating"} </Title>
+                <Subtitle> {"TODO"} </Subtitle>
+            </Container>
         };
 
         html! {
-            <pbs::Hero size={HeroSize::Medium} header={header} body={body}/>
+            <Hero size={HeroSize::Medium} header={header} body={body}/>
         }
     }
 }
