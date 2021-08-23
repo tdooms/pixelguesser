@@ -21,6 +21,7 @@ mod pages;
 mod route;
 mod structs;
 mod utils;
+mod error;
 
 pub enum Msg {
     Error(Rc<Error>),
@@ -69,7 +70,7 @@ fn switch(routes: &Route) -> Html {
         Route::Host { quiz_id } => html! { <Host quiz_id={*quiz_id}/> },
         Route::Manage { session_id } => html! { <Manage session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
-        Route::Create => html! {<p>{"yo"}</p>}, //html! { <Create/> },
+        Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }

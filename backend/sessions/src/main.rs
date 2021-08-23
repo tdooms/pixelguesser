@@ -10,8 +10,8 @@ use warp::Filter;
 use crate::handle::handle_request;
 use crate::structs::State;
 
-mod handle;
 mod structs;
+mod handle;
 
 /// sessions is a server to manage pixelguesser game sessions
 #[derive(Clap)]

@@ -10,6 +10,7 @@ pub struct Player {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
+    pub session_id: u64,
     pub quiz_id: u64,
 
     pub stage: Stage,
@@ -17,4 +18,10 @@ pub struct Session {
 
     pub has_manager: bool,
     pub has_host: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct SessionDiff {
+    pub stage: Option<Stage>,
+    pub players: Option<Vec<Player>>,
 }

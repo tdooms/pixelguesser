@@ -1,26 +1,40 @@
-use super::keys::{GRAPHQL_API, GRAPHQL_SECRET};
-use crate::graphql::{Quiz, Round};
+use std::fmt::Debug;
+
 use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
+use serde_json::Value;
 
-#[derive(serde::Deserialize)]
-struct Data<T> {
-    data: T,
+use crate::graphql::{Quiz, Round};
+
+use super::keys::{GRAPHQL_API, GRAPHQL_SECRET};
+use crate::error::Error;
+
+#[derive(serde::Deserialize, Debug)]
+struct GraphqlError {
+    extensions: Value,
+    message: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
+#[serde(untagged)]
+enum Response<T> {
+    Data { data: T },
+    Errors { errors: Vec<GraphqlError> },
+}
+
+#[derive(serde::Deserialize, Debug)]
 struct QuizzesData {
     pub quizzes: Vec<Quiz>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 struct QuizData {
-    pub quiz: Quiz,
+    pub quizzes_by_pk: Quiz,
     pub rounds: Vec<Round>,
 }
 
-pub async fn exec<T: DeserializeOwned>(query: &str) -> Result<T, reqwasm::Error> {
-    Request::new(GRAPHQL_API)
+pub async fn exec<T: DeserializeOwned + Debug>(query: &str) -> Result<T, Error> {
+    let response: Response<T> = Request::new(GRAPHQL_API)
         .method(Method::POST)
         .header("content-type", "application/json")
         .header("x-hasura-admin-secret", GRAPHQL_SECRET)
@@ -28,19 +42,25 @@ pub async fn exec<T: DeserializeOwned>(query: &str) -> Result<T, reqwasm::Error>
         .send()
         .await?
         .json()
-        .await
+        .await?;
+
+    log::info!("{:?}", response);
+
+    match response {
+        Response::Data {data} => Ok(data),
+        Response::Errors {errors} => Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
+    }
 }
 
-pub async fn quizzes() -> Result<Vec<Quiz>, reqwasm::Error> {
+pub async fn quizzes() -> Result<Vec<Quiz>, Error> {
     const QUERY: &str =
         "query overview { quizzes { quiz_id name description creator created_at image_url } }";
-    let body: Data<QuizzesData> = exec(QUERY).await?;
-    Ok(body.data.quizzes)
+    let data: QuizzesData = exec(QUERY).await?;
+    Ok(data.quizzes)
 }
 
-pub async fn quiz() -> Result<(Quiz, Vec<Round>), reqwasm::Error> {
-    const QUERY: &str =
-        "query overview { quizzes { quiz_id name description creator created_at image_url } }";
-    let body: Data<QuizData> = exec(QUERY).await?;
-    Ok((body.data.quiz, body.data.rounds))
+pub async fn quiz(quiz_id: u64) -> Result<(Quiz, Vec<Round>), Error> {
+    let query = format!("query {{ quizzes_by_pk(quiz_id: {}) {{ quiz_id name description creator created_at image_url }} rounds(where: {{quiz_id: {{ _eq: {} }} }}) {{ answer points guesses image_url }} }}", quiz_id, quiz_id);
+    let data: QuizData = exec(&query).await?;
+    Ok((data.quizzes_by_pk, data.rounds))
 }

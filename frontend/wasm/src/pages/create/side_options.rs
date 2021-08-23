@@ -2,7 +2,6 @@ use pbs::prelude::*;
 use yew::prelude::*;
 
 use crate::graphql::{DraftRound, GuessChoices, PointChoices};
-use derive_more::Display;
 use pbs::properties::{Alignment, Color};
 use yew::utils::NeqAssign;
 

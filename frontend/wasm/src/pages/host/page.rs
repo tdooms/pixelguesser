@@ -1,8 +1,11 @@
 use futures::FutureExt;
-use shared::{Request, Response, Session};
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
+use shared::{Request, Response, Session, SessionDiff, Stage, Status};
+
+use crate::constants::SESSION_ENDPOINT;
+use crate::error::Error;
 use crate::graphql::{quiz, Quiz, Round};
 use crate::pages::host::InnerHost;
 use crate::utils::misc::code_to_string;
@@ -10,7 +13,7 @@ use crate::utils::yew::WebsocketTask;
 
 pub enum Msg {
     WsResponse(Response),
-    Quiz(Result<(Quiz, Vec<Round>), reqwasm::Error>),
+    Quiz(Result<(Quiz, Vec<Round>), Error>),
     Revealed,
 }
 
@@ -25,8 +28,8 @@ pub struct Host {
 
     ws: WebsocketTask,
 
-    session: Option<(u64, Session)>,
-    quiz_data: Option<(Quiz, Vec<Round>)>,
+    session: Option<Session>,
+    data: Option<(Quiz, Vec<Round>)>,
 }
 
 impl Component for Host {
@@ -34,23 +37,23 @@ impl Component for Host {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let ws = WebsocketTask::create("TODO", link.callback(Msg::WsResponse));
-        ws.send(Request::Create { quiz_id: props.quiz_id });
+        let url = format!("ws://{}/ws", SESSION_ENDPOINT);
+        let mut ws = WebsocketTask::create(url, link.callback(Msg::WsResponse));
 
-        Self { props, link, ws, session: None, quiz_data: None }
+        ws.send(&Request::Create { quiz_id: props.quiz_id });
+        link.send_future(quiz(props.quiz_id).map(Msg::Quiz));
+
+        Self { props, link, ws, session: None, data: None }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match (msg, &mut self.session) {
-            (Msg::WsResponse(Response::Created(session_id, session)), None) => {
-                self.session = Some((session_id, session));
-
-                self.ws.send(Request::Host { session_id });
-                self.link.send_future(quiz().map(Msg::Quiz));
-
+            (Msg::WsResponse(Response::Created(session)), None) => {
+                self.ws.send(&Request::Host { session_id: session.session_id });
+                self.session = Some(session);
                 true
             }
-            (Msg::WsResponse(Response::Updated(session)), Some((_, old))) => {
+            (Msg::WsResponse(Response::Updated(session)), Some(old)) => {
                 *old = session;
                 true
             }
@@ -59,15 +62,20 @@ impl Component for Host {
                 false
             }
             (Msg::Quiz(Ok(pair)), _) => {
-                self.quiz_data = Some(pair);
+                self.data = Some(pair);
                 true
             }
             (Msg::Quiz(Err(err)), _) => {
-                log::error!("{}", err);
+                log::error!("{:?}", err);
                 false
             }
-            (Msg::Revealed, Some((session_id, session))) => {
-                self.ws.send(Request::Update { session_id: *session_id, session: session.clone() });
+            (Msg::Revealed, Some(session)) => {
+                let stage = match session.stage {
+                    Stage::Round { round, .. } => Stage::Round { round, status: Status::Revealed },
+                    _ => return false // TODO: give error
+                };
+                let diff = SessionDiff { stage: Some(stage), players: vec![] };
+                self.ws.send(&Request::Update { session_id: session.session_id, diff });
                 false
             }
             _ => {
@@ -89,7 +97,7 @@ impl Component for Host {
             html! {<InnerHost code={code} session={session.clone()} onrevealed={onrevealed} quiz={quiz.clone()} rounds={rounds.to_vec()}/> }
         };
 
-        match (&self.session, &self.quiz_data) {
+        match (&self.session, &self.data) {
             (Some((session_id, session)), Some((quiz, rounds))) => {
                 view_page(*session_id, session, quiz, rounds)
             }

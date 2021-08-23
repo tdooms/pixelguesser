@@ -2,22 +2,43 @@ use std::collections::hash_map::Entry;
 use std::ops::Range;
 
 use rand::Rng;
-
 use warp::ws::Message;
 
-use shared::{Error, Request, Response, Session};
+use shared::{Error, Request, Response, Session, SessionDiff};
 
-use crate::structs::{Sender, SessionData, State};
+use crate::structs::{InternalSession, Sender, State};
+
+fn into_session(session_id: u64, internal: &InternalSession) -> Session {
+    Session {
+        session_id,
+        quiz_id: internal.quiz_id,
+        stage: internal.stage,
+        players: internal.players.clone(),
+        has_manager: internal.manager.is_some(),
+        has_host: internal.host.is_some(),
+    }
+}
+
+fn combine(internal: &mut InternalSession, mut diff: SessionDiff) {
+    internal.players.append(&mut diff.players);
+    internal.stage = diff.stage.unwrap_or(internal.stage);
+}
 
 fn send_response(sender: &Sender, response: &Response) {
     let str = serde_json::to_string(response).unwrap();
     sender.send(Ok(Message::text(str))).unwrap()
 }
 
-fn broadcast_update(data: &SessionData) {
-    let response = Response::Updated(data.session.clone());
-    data.manager.as_ref().map(|manager| send_response(manager, &response));
-    data.host.as_ref().map(|host| send_response(host, &response));
+fn broadcast_update(session_id: u64, internal: &InternalSession) {
+    let response = Response::Updated(into_session(session_id, internal));
+    internal.manager.as_ref().map(|manager| send_response(manager, &response));
+    internal.host.as_ref().map(|host| send_response(host, &response));
+}
+
+fn maybe_insert_sender(option: &mut Option<Sender>, sender: &Sender) -> bool {
+    let ret = option.is_some();
+    *option = option.as_ref().or_else(|| Some(sender)).cloned();
+    ret
 }
 
 async fn create(state: &State, quiz_id: u64) -> Response {
@@ -30,102 +51,68 @@ async fn create(state: &State, quiz_id: u64) -> Response {
         match lock.entry(id) {
             Entry::Occupied(_) => continue,
             Entry::Vacant(entry) => {
-                let session = Session {
+                let internal = InternalSession {
                     quiz_id,
-                    stage: Default::default(),
+                    host: None,
+                    manager: None,
                     players: vec![],
-                    has_manager: false,
-                    has_host: false,
+                    stage: Default::default(),
                 };
 
-                entry.insert(SessionData { manager: None, host: None, session: session.clone() });
-                return Response::Created(id, session);
+                let session = into_session(id, &internal);
+                entry.insert(internal);
+                return Response::Created(session);
             }
         }
     }
     Response::Error(Error::UnableToCreate)
 }
 
-async fn find_and_read(sender: &Sender, state: &State, session_id: u64) {
-    let response = match state.lock().await.get_mut(&session_id) {
-        None => Response::Error(Error::SessionDoesNotExist(session_id)),
-        Some(data) => Response::Read(data.session.clone()),
-    };
-    send_response(sender, &response)
-}
-
-async fn find_and_broadcast_update(
-    sender: &Sender,
-    state: &State,
-    session_id: u64,
-    mapper: impl FnOnce(&mut SessionData),
-) {
-    match state.lock().await.get_mut(&session_id) {
-        None => send_response(sender, &Response::Error(Error::SessionDoesNotExist(session_id))),
-        Some(data) => {
-            mapper(data);
-            broadcast_update(data)
-        }
-    }
-}
-
-async fn find_and_broadcast_or_error(
-    sender: &Sender,
-    state: &State,
-    session_id: u64,
-    mapper: impl FnOnce(&mut SessionData) -> bool,
-    error: Error,
-) {
-    match state.lock().await.get_mut(&session_id) {
-        None => send_response(sender, &Response::Error(Error::SessionDoesNotExist(session_id))),
-        Some(data) => match mapper(data) {
-            true => send_response(sender, &Response::Error(error)),
-            false => broadcast_update(data),
-        },
-    }
-}
-
-fn maybe_insert_sender(option: &mut Option<Sender>, sender: &Sender) -> bool {
-    let ret = option.is_some();
-    *option = option.as_ref().or_else(|| Some(sender)).cloned();
-    ret
+pub enum Kind {
+    Read,
+    Update(SessionDiff),
+    Host,
+    Manage,
 }
 
 pub async fn handle_request(request: &[u8], state: &State, sender: &Sender) {
-    match serde_json::from_slice(request) {
-        Ok(Request::Read { session_id }) => {
-            find_and_read(sender, state, session_id).await;
+    let (session_id, kind) = match serde_json::from_slice(request) {
+        Ok(Request::Read { session_id }) => (session_id, Kind::Read),
+        Ok(Request::Update { session_id, diff }) => (session_id, Kind::Update(diff)),
+        Ok(Request::Host { session_id }) => (session_id, Kind::Host),
+        Ok(Request::Manage { session_id }) => (session_id, Kind::Manage),
+        Ok(Request::Create { quiz_id }) => {
+            return send_response(sender, &create(state, quiz_id).await);
         }
-        Ok(Request::Update { session_id, session }) => {
-            let mapper = |data: &mut SessionData| data.session = session.clone();
-            find_and_broadcast_update(sender, state, session_id, mapper).await;
+        Err(_) => {
+            return send_response(sender, &Response::Error(Error::UnknownRequest));
         }
-        Ok(Request::Create { quiz_id }) => send_response(sender, &create(state, quiz_id).await),
-        Ok(Request::Host { session_id }) => {
-            let mapper = |data: &mut SessionData| maybe_insert_sender(&mut data.host, sender);
-            find_and_broadcast_or_error(
-                sender,
-                state,
-                session_id,
-                mapper,
-                Error::UnableToHost(session_id),
-            )
-            .await;
+    };
+
+    let mut lock = state.lock().await;
+    let internal = match lock.get_mut(&session_id) {
+        None => return send_response(sender, &Response::Error(Error::SessionDoesNotExist(session_id))),
+        Some(x) => x
+    };
+
+    match kind {
+        Kind::Read => {
+            let response = Response::Read(into_session(session_id, internal));
+            send_response(sender, &response);
+        },
+        Kind::Update(diff) => {
+            combine(internal, diff);
+            broadcast_update(session_id, &internal);
         }
-        Ok(Request::Manage { session_id }) => {
-            let mapper = |data: &mut SessionData| maybe_insert_sender(&mut data.host, sender);
-            find_and_broadcast_or_error(
-                sender,
-                state,
-                session_id,
-                mapper,
-                Error::UnableToManage(session_id),
-            )
-            .await;
+        Kind::Host => {
+            if maybe_insert_sender(&mut internal.host, sender){
+                broadcast_update(session_id, internal)
+            }
         }
-        Err(err) => {
-            log::warn!("{:?}", err);
-            send_response(sender, &Response::Error(Error::UnknownRequest));
+        Kind::Manage => {
+            if maybe_insert_sender(&mut internal.manager, sender){
+                broadcast_update(session_id, internal)
+            }
         }
-    }
+    };
 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::Session;
+use crate::{Session, SessionDiff};
 
 #[derive(thiserror::Error, Clone, Debug, Serialize, Deserialize)]
 pub enum Error {
@@ -23,7 +23,7 @@ pub enum Error {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Request {
     Read { session_id: u64 },
-    Update { session_id: u64, session: Session },
+    Update { session_id: u64, diff: SessionDiff },
 
     Create { quiz_id: u64 },
     Host { session_id: u64 },
@@ -34,6 +34,6 @@ pub enum Request {
 pub enum Response {
     Read(Session),
     Updated(Session),
-    Created(u64, Session),
+    Created(Session),
     Error(Error),
 }

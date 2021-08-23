@@ -12,7 +12,10 @@ macro_rules! bool_prop {
 
         impl std::convert::Into<yew::Classes> for $x {
             fn into(self) -> yew::Classes {
-                yew::Classes::from($y)
+                match self.0 {
+                    true => yew::Classes::from($y),
+                    false => yew::Classes::new(),
+                }
             }
         }
 

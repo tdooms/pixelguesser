@@ -4,7 +4,7 @@ use crate::graphql::{quizzes, Quiz};
 use cbs::MaybeLoading;
 use pbs::prelude::*;
 use pbs::properties::ColumnSize;
-use reqwasm::Error;
+use crate::error::Error;
 
 use crate::components::{Navbar, QuizCard};
 use crate::constants::IMAGE_ENDPOINT;

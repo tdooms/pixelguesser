@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
-use shared::{Request, Response, Session};
+use shared::{Request, Response, Session, SessionDiff};
 
 use crate::graphql::{Quiz, Round};
 use crate::pages::manage::InnerManage;
@@ -13,7 +13,7 @@ pub struct ManageLoaderProps {
 }
 
 pub enum Msg {
-    Changed(Session),
+    Changed(SessionDiff),
     WsResponse(Response),
 }
 
@@ -32,8 +32,8 @@ impl Component for Manage {
     type Properties = ManageLoaderProps;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let ws = WebsocketTask::create("TODO", link.callback(Msg::WsResponse));
-        ws.send(Request::Manage { session_id: props.session_id });
+        let mut ws = WebsocketTask::create("TODO", link.callback(Msg::WsResponse));
+        ws.send(&Request::Manage { session_id: props.session_id });
 
         Self { props, link, ws, session: None, quiz_data: None }
     }
@@ -48,9 +48,9 @@ impl Component for Manage {
                 log::error!("unknown response");
                 false
             }
-            Msg::Changed(session) => {
+            Msg::Changed(diff) => {
                 self.session = Some(session.clone());
-                self.ws.send(Request::Update { session_id: self.props.session_id, session });
+                self.ws.send(&Request::Update { session_id: self.props.session_id, session });
                 false
             }
         }

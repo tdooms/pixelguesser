@@ -6,6 +6,9 @@ use yew::utils::NeqAssign;
 
 use crate::route::Route;
 use crate::utils::misc::string_to_code;
+use crate::utils::yew::WebsocketTask;
+use crate::constants::SESSION_ENDPOINT;
+use shared::{Request, Response};
 
 #[derive(Debug, Clone, PartialEq)]
 enum State {
@@ -16,6 +19,7 @@ enum State {
 }
 
 pub enum Msg {
+    WsResponse(Response),
     Check(Option<u64>),
     Input(String),
     Timer,
@@ -25,6 +29,7 @@ pub enum Msg {
 
 pub struct Code {
     link: ComponentLink<Self>,
+    ws: WebsocketTask,
     timer: Option<Timeout>,
 
     current: Option<u64>,
@@ -36,7 +41,10 @@ impl Component for Code {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, timer: None, current: None, state: State::None }
+        let url = format!("ws://{}/ws", SESSION_ENDPOINT);
+        let ws = WebsocketTask::create(url, link.callback(Msg::WsResponse));
+
+        Self { link, ws, timer: None, current: None, state: State::None }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -55,12 +63,16 @@ impl Component for Code {
                 res1 | res2
             }
             (Msg::Timer, Some(session_id)) => {
-                // TODO: send session check
+                self.ws.send(&Request::Read {session_id});
                 false
             }
             (Msg::Join, Some(session_id)) if self.state == State::Available => {
                 yew_router::push_route(Route::Manage { session_id });
                 false
+            }
+            (Msg::WsResponse(Response::Read(session)), _) => {
+                self.state = if session.has_manager { State::Invalid } else { State::Available };
+                true
             }
             (Msg::Cancel, _) => {
                 yew_router::push_route(Route::Overview);
@@ -79,28 +91,24 @@ impl Component for Code {
         let onjoin = self.link.callback(|_| Msg::Join);
         let oncancel = self.link.callback(|_| Msg::Cancel);
 
-        let field = match self.state {
-            State::Available => html! {
-                <cbs::SimpleField label="Session code" help="This room is available." help_color={Color::Success} icon_right="fas fa-check">
-                    <Input color={Color::Success} oninput={oninput} />
-                </cbs::SimpleField>
-            },
-            State::Invalid | State::Incorrect => html! {
-                <cbs::SimpleField label="Session code" help="The room code is invalid." help_color={Color::Danger} icon_right="fas fa-exclamation-triangle">
-                    <Input color={Color::Danger} oninput={oninput} />
-                </cbs::SimpleField>
-            },
-            _ => html! {
-                <cbs::SimpleField label="Session code">
-                    <Input oninput={oninput} />
-                </cbs::SimpleField>
-            },
+        let (help, help_color, icon_right, input_color) = match self.state {
+            State::Available => {
+                (Some("This room is available."), Some(Color::Success), Some("fas fa-check"), Some(Color::Success))
+            }
+            State::Invalid | State::Incorrect => {
+                (Some("This room is unavailable."), Some(Color::Danger), Some("fas fa-exclamation-triangle"), Some(Color::Danger))
+            }
+            State::None => {
+                (None, None, None, None)
+            }
         };
 
         html! {
             <Section>
                 <Container>
-                    { field }
+                    <cbs::SimpleField label="Session code" help={help} help_color={help_color} icon_right={icon_right}>
+                        <Input color={input_color} oninput={oninput} />
+                    </cbs::SimpleField>
                     <Buttons>
                         <Button color={Color::Link} onclick={onjoin} disabled={self.state != State::Available}> {"Join"} </Button>
                         <Button color={Color::Link} light=true onclick={oncancel}> {"Cancel"} </Button>
