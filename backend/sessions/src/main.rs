@@ -1,19 +1,14 @@
-use std::collections::hash_map::Entry;
-use std::collections::HashMap;
 use std::net::SocketAddr;
-use std::ops::Range;
-use std::sync::Arc;
 
 use clap::{AppSettings, Clap};
 use futures::StreamExt;
-use rand::Rng;
-use tokio::sync::{mpsc, Mutex};
+use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
-use warp::ws::{Message, WebSocket, Ws};
+use warp::ws::{WebSocket, Ws};
 use warp::Filter;
 
+use crate::handle::handle_request;
 use crate::structs::State;
-use shared::{Error, Request, Response, Session};
 
 mod handle;
 mod structs;

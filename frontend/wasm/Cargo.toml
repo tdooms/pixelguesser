@@ -13,7 +13,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 shared = { path = "../../backend/shared" }
-graphql = { path = "../../backend/graphql" }
 
 pbs = { path = "../styles/pbs" }
 cbs = { path = "../styles/cbs" }
@@ -21,6 +20,9 @@ cbs = { path = "../styles/cbs" }
 chrono = { version = "0.4", features = ["serde"] }
 
 strum = "0.21"
+strum_macros = "0.21"
+derive_more = "0.99.16"
+serde_repr = "0.1"
 
 log = "0.4"
 wasm-logger = "0.2"
@@ -45,5 +47,4 @@ gloo = "0.3"
 base64 = "0.13"
 
 futures = "0.3"
-validator = { version = "0.12", features = ["derive"] }
 reqwasm = "0.2.1"

@@ -2,6 +2,7 @@ use strum::IntoEnumIterator;
 use yew::prelude::*;
 
 use pbs::prelude::*;
+use pbs::properties::{Alignment, Color};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static> {

@@ -8,8 +8,10 @@ pub struct Player {
     pub score: u64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
+    pub quiz_id: u64,
+
     pub stage: Stage,
     pub players: Vec<Player>,
 

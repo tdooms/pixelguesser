@@ -1,8 +1,8 @@
+use pbs::prelude::*;
+use pbs::properties::{Color, ColumnSize, HeroSize};
 use yew::prelude::*;
 
-use pbs::prelude::*;
-
-use graphql::Quiz;
+use crate::graphql::Quiz;
 use shared::Session;
 use yew::utils::NeqAssign;
 

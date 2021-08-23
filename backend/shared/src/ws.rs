@@ -22,18 +22,18 @@ pub enum Error {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Request {
-    Read(u64),
-    Update(u64, Session),
+    Read { session_id: u64 },
+    Update { session_id: u64, session: Session },
 
-    Create,
-    Host(u64),
-    Manage(u64),
+    Create { quiz_id: u64 },
+    Host { session_id: u64 },
+    Manage { session_id: u64 },
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Response {
     Read(Session),
     Updated(Session),
-    Created(u64),
+    Created(u64, Session),
     Error(Error),
 }

@@ -1,8 +1,8 @@
+use pbs::prelude::*;
+use pbs::properties::HeroSize;
 use yew::prelude::*;
 
-use pbs::prelude::*;
-
-use graphql::Round;
+use crate::graphql::Round;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

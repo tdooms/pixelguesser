@@ -1,9 +1,10 @@
 use yew::prelude::*;
 
-use graphql::Quiz;
 use pbs::prelude::*;
+use pbs::properties::{Color, HeroSize};
 use shared::Player;
 
+use crate::graphql::Quiz;
 use crate::pages::host::Scores;
 
 #[derive(Clone, Debug, Properties)]

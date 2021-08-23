@@ -1,4 +1,5 @@
 use pbs::prelude::*;
+use pbs::properties::Color;
 use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

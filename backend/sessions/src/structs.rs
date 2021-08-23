@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use futures::channel::mpsc;
+use tokio::sync::mpsc;
 use tokio::sync::Mutex;
 use warp::ws::Message;
 
@@ -9,7 +9,7 @@ use shared::Session;
 
 pub type Sender = mpsc::UnboundedSender<Result<Message, warp::Error>>;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct SessionData {
     pub host: Option<Sender>,
     pub manager: Option<Sender>,

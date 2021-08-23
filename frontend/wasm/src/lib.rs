@@ -13,13 +13,14 @@ use crate::structs::{Error, Info};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+mod agents;
 mod components;
 mod constants;
+pub mod graphql;
 mod pages;
 mod route;
 mod structs;
 mod utils;
-mod agents;
 
 pub enum Msg {
     Error(Rc<Error>),
@@ -38,12 +39,7 @@ impl Component for Model {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            errors: vec![],
-            infos: vec![],
-
-            link,
-        }
+        Self { errors: vec![], infos: vec![], link }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -73,7 +69,7 @@ fn switch(routes: &Route) -> Html {
         Route::Host { quiz_id } => html! { <Host quiz_id={*quiz_id}/> },
         Route::Manage { session_id } => html! { <Manage session_id={*session_id}/> },
         Route::Code => html! { <Code/> },
-        Route::Create => html!{<p>{"yo"}</p>}, //html! { <Create/> },
+        Route::Create => html! {<p>{"yo"}</p>}, //html! { <Create/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }

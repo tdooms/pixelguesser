@@ -1,15 +1,15 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
+use crate::graphql::{quizzes, Quiz};
 use cbs::MaybeLoading;
 use pbs::prelude::*;
-
-use graphql::{quizzes, Quiz};
+use pbs::properties::ColumnSize;
 use reqwasm::Error;
 
 use crate::components::{Navbar, QuizCard};
 use crate::constants::IMAGE_ENDPOINT;
 use crate::route::Route;
+use yew::utils::NeqAssign;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -27,7 +27,10 @@ impl Component for Overview {
     fn update(&mut self, msg: Self::Message) -> bool {
         match msg {
             Ok(quizzes) => self.quizzes.neq_assign(Some(quizzes)),
-            Err(_) => false, // TODO: error
+            Err(err) => {
+                log::error!("http error: {:?}", err);
+                false
+            }
         }
     }
 

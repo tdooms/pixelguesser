@@ -1,8 +1,8 @@
-use gloo::file::File as SysFile;
 use yew::prelude::*;
 use yew::web_sys::HtmlInputElement;
 
 use crate::properties::{Alignment, Boxed, Color, Fullwidth, Size};
+use yew::web_sys;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -30,9 +30,7 @@ pub struct Props {
     #[prop_or_default]
     pub extra: String,
 
-    // We don't use gloo_file filelist because it
-    // doesn't allow to move from it for some reason.
-    pub onupload: Callback<Vec<SysFile>>,
+    pub onupload: Callback<Vec<web_sys::File>>,
 }
 
 #[function_component(File)]
@@ -53,7 +51,7 @@ pub fn file(props: &Props) -> Html {
 
     let onchange = props.onupload.reform(|e: Event| {
         let files = e.target_unchecked_into::<HtmlInputElement>().files().unwrap();
-        (0..files.length()).filter_map(|i| files.get(i)).map(SysFile::from).collect()
+        (0..files.length()).filter_map(|i| files.get(i)).collect()
     });
 
     html! {

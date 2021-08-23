@@ -4,7 +4,7 @@ use yew::prelude::*;
 use yew::utils::NeqAssign;
 use yew::web_sys::window;
 
-use graphql::{Quiz, Round};
+use crate::graphql::{Quiz, Round};
 use shared::{Session, Stage};
 
 use crate::components::Pixelate;

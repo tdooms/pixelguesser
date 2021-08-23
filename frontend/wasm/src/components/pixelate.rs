@@ -6,7 +6,9 @@ use yew::utils::NeqAssign;
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
-use crate::utils::{draw_pixelated, Resizer, TypeRef};
+use crate::utils::misc::draw_pixelated;
+use crate::utils::yew::{Resizer, TypeRef};
+
 use gloo::timers::callback::Timeout;
 use shared::Status;
 use yew_agent::{Dispatched, Dispatcher};
@@ -122,8 +124,8 @@ impl Component for Pixelate {
                     self.props.onrevealed.emit(());
                     self.timer = None;
                 } else {
-                    // TODO: ??
-                    // self.timer = Some(Timeout::new(33, self.link.callback_once(|_| Msg::Pixelate)));
+                    let cloned = self.link.clone();
+                    self.timer = Some(Timeout::new(33, move || cloned.send_message(Msg::Pixelate)));
                 }
 
                 self.pixels = clamped_pixels;

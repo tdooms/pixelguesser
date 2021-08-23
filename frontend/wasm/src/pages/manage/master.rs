@@ -1,6 +1,7 @@
 use yew::prelude::*;
 
 use pbs::prelude::*;
+use pbs::properties::Size;
 use shared::Player;
 use yew::utils::NeqAssign;
 

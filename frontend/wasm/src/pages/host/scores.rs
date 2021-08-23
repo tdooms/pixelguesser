@@ -1,7 +1,7 @@
-use yew::prelude::*;
-
 use pbs::prelude::*;
+use pbs::properties::ColumnSize;
 use shared::Player;
+use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties)]
 pub struct Props {

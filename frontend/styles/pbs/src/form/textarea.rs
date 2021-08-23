@@ -59,8 +59,8 @@ pub struct Props {
 /// A multiline textarea component.
 ///
 /// [https://bulma.io/documentation/form/textarea/](https://bulma.io/documentation/form/textarea/)
-#[function_component(Checkbox)]
-pub fn checkbox(props: &Props) -> Html {
+#[function_component(Textarea)]
+pub fn textarea(props: &Props) -> Html {
     let classes = classes!(
         "textarea",
         &props.extra,

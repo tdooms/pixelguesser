@@ -13,5 +13,4 @@ pub mod prelude {
     pub use crate::elements::*;
     pub use crate::form::*;
     pub use crate::layout::*;
-    pub use crate::properties::*;
 }

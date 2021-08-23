@@ -14,4 +14,3 @@ strum = "0.21"
 strum_macros = "0.21"
 
 derive_more = "0.99.16"
-gloo = "0.3"

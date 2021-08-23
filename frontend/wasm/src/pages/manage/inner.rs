@@ -2,7 +2,7 @@ use yew::prelude::*;
 use yew::utils::NeqAssign;
 
 use super::{Initialize, Master, Navigate, Rating};
-use graphql::{Quiz, Round};
+use crate::graphql::{Quiz, Round};
 use pbs::prelude::*;
 use shared::{Player, Session, Stage, Status};
 
