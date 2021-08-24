@@ -4,10 +4,10 @@ use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
+use crate::error::Error;
 use crate::graphql::{Quiz, Round};
 
 use super::keys::{GRAPHQL_API, GRAPHQL_SECRET};
-use crate::error::Error;
 
 #[derive(serde::Deserialize, Debug)]
 struct GraphqlError {
@@ -47,8 +47,8 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: &str) -> Result<T, Error> 
     log::info!("{:?}", response);
 
     match response {
-        Response::Data {data} => Ok(data),
-        Response::Errors {errors} => Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
+        Response::Data { data } => Ok(data),
+        Response::Errors { errors } => Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
     }
 }
 

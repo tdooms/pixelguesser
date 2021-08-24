@@ -1,4 +1,3 @@
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("reqwasm error {0}")]

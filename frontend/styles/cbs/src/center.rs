@@ -9,7 +9,7 @@ pub struct Props {
 #[function_component(Center)]
 pub fn center(props: &Props) -> Html {
     html! {
-        <div class="columns is-centered is-desktop is-vcentered" style="height:100vh">
+        <div class="columns is-centered is-desktop is-vcentered p-0 m-0" style="height:100vh">
             <div class="column">
                 { for props.children.iter() }
             </div>

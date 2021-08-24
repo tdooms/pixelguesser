@@ -1,8 +1,9 @@
+use strum::IntoEnumIterator;
+use yew::prelude::*;
+
 use pbs::prelude::*;
 use pbs::properties::{Alignment, Color, Size};
 use shared::{Action, Stage};
-use strum::IntoEnumIterator;
-use yew::prelude::*;
 
 use crate::route::Route;
 
@@ -65,7 +66,7 @@ impl Component for Navigate {
 
             html! {
                 <Button hidden={hidden} color={color} light={light} size={Size::Large} onclick={callback}>
-                    <span class="icon"> {icon} </span> <span> {text} </span>
+                    <Icon icon={icon}/> <span>{text}</span>
                 </Button>
             }
         };

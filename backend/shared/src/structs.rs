@@ -20,7 +20,7 @@ pub struct Session {
     pub has_host: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct SessionDiff {
     pub stage: Option<Stage>,
     pub players: Option<Vec<Player>>,

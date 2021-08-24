@@ -1,9 +1,9 @@
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 
 use pbs::prelude::*;
 use pbs::properties::Size;
 use shared::Player;
-use yew::utils::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

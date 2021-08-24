@@ -1,12 +1,14 @@
 use yew::prelude::*;
 use yew_router::components::Link;
+use pbs::prelude::*;
+use pbs::properties::Color;
 
 use crate::route::Route;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     #[prop_or_default]
-    pub image_url: Option<String>,
+    pub src: String,
 
     pub name: String,
 
@@ -20,21 +22,16 @@ pub struct Props {
 
 #[function_component(QuizCard)]
 pub fn quiz_card(props: &Props) -> Html {
-    let src = match &props.image_url {
-        Some(url) => url.clone(),
-        None => "https://styles.io/images/placeholders/480x320.png".to_owned(),
-    };
-
     let footer = match &props.route {
         Some(route) => html! {
             <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "has-square-top")} route={route.clone()}>
-                <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
+                <Icon icon={"fas fa-play"}/> <span>{"Play"}</span>
             </Link<Route>>
         },
         None => html! {
-            <button class={classes!("button", "is-success", "is-fullwidth", "has-square-top", "has-no-pointer")}>
-                <span class="icon"><i class="fas fa-play"></i></span> <strong>{"Play"}</strong>
-            </button>
+            <Button color={Color::Success} fullwidth=true extra={"has-square-top has-no-pointer"}>
+                <Icon icon={"fas fa-play"}/> <span>{"Play"}</span>
+            </Button>
         },
     };
 
@@ -42,7 +39,7 @@ pub fn quiz_card(props: &Props) -> Html {
         <div class="card" style="height:100%;display:flex;flex-direction:column">
             <div class="card-image">
                 <figure class="image is-3by2">
-                    <img src={src}/>
+                    <img src={props.src.clone()}/>
                 </figure>
             </div>
             <div class="card-content" style="height:100%">

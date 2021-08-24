@@ -1,9 +1,9 @@
+use futures::{SinkExt, StreamExt};
 use futures::channel::mpsc::UnboundedSender;
 use reqwasm::websocket::{Message, WebSocket};
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
 
-use futures::{StreamExt, SinkExt};
 use shared::{Request, Response};
 
 pub struct WebsocketTask {
@@ -19,7 +19,7 @@ impl WebsocketTask {
 
         spawn_local(async move {
             cloned.send(Message::Text(str)).await.unwrap()
-        } );
+        });
     }
 
     pub fn create(url: impl AsRef<str>, callback: Callback<Response>) -> Self {
@@ -35,7 +35,7 @@ impl WebsocketTask {
                         Ok(response) => {
                             log::debug!("ws response: {:?}", response);
                             callback.emit(response)
-                        },
+                        }
                         Err(err) => log::error!("TODO: handle deserialize error"),
                     },
                     Ok(Message::Bytes(m)) => log::error!("TODO: handle deserialize bytes over ws"),

@@ -1,5 +1,4 @@
 use initialize::Initialize;
-use inner::InnerManage;
 use master::Master;
 use navigate::Navigate;
 pub use page::Manage;
@@ -7,7 +6,6 @@ use rating::Rating;
 use round_info::RoundInfo;
 
 mod initialize;
-mod inner;
 mod master;
 mod navigate;
 mod page;

@@ -1,15 +1,15 @@
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 
-use crate::graphql::{quizzes, Quiz};
 use cbs::MaybeLoading;
 use pbs::prelude::*;
 use pbs::properties::ColumnSize;
-use crate::error::Error;
 
 use crate::components::{Navbar, QuizCard};
-use crate::constants::IMAGE_ENDPOINT;
+use crate::constants::{IMAGE_ENDPOINT, image_url, PLACEHOLDER};
+use crate::error::Error;
+use crate::graphql::{Quiz, quizzes};
 use crate::route::Route;
-use yew::utils::NeqAssign;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -40,12 +40,12 @@ impl Component for Overview {
 
     fn view(&self) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let url = format!("{}/{}", IMAGE_ENDPOINT, quiz.image_url.unwrap_or("".to_owned()));
+            let src = quiz.image_url.as_ref().map(image_url).unwrap_or_else(|| PLACEHOLDER.to_owned());
             let route = Route::Host { quiz_id: quiz.quiz_id };
 
             html! {
                 <Column size={ColumnSize::Is3}>
-                    <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} image_url={url} route={route}/>
+                    <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} src={src} route={route}/>
                 </Column>
             }
         };

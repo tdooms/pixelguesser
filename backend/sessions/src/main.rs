@@ -56,8 +56,12 @@ async fn start_socket(socket: WebSocket, state: State) {
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init();
+
     let opts: Opts = Opts::parse();
-    let state = warp::any().map(move || State::default());
+
+    let state = State::default();
+    let state = warp::any().map(move || state.clone());
 
     let ws = warp::path("ws")
         .and(warp::ws())

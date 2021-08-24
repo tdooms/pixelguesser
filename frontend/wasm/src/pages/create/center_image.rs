@@ -1,23 +1,29 @@
 use yew::prelude::*;
+use yew::utils::NeqAssign;
 
 use pbs::prelude::*;
 use pbs::properties::Alignment;
-use yew::utils::NeqAssign;
 
 pub enum Msg {
     Reveal,
     Pause,
     Resume,
+    Preview,
+    Remove,
+    Revealed
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub image_url: String,
+    pub src: String,
+    pub onremove: Callback<()>,
 }
 
 pub struct CenterImage {
     props: Props,
     link: ComponentLink<Self>,
+
+    preview: bool,
 }
 
 impl Component for CenterImage {
@@ -25,7 +31,7 @@ impl Component for CenterImage {
     type Properties = Props;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link }
+        Self { props, link, preview: false }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
@@ -33,6 +39,9 @@ impl Component for CenterImage {
             Msg::Reveal => false,
             Msg::Pause => false,
             Msg::Resume => false,
+            Msg::Preview => false,
+            Msg::Remove => false,
+            Msg::Revealed => false
         }
     }
 
@@ -41,21 +50,32 @@ impl Component for CenterImage {
     }
 
     fn view(&self) -> Html {
-        html! {
-            <>
-            <cbs::DynImage src={self.props.image_url.clone()} height=85/>
 
+        let pixelate_buttons = || html!{
             <Buttons alignment={Alignment::Centered} extra="mt-5">
                 <Button onclick={self.link.callback(|_| Msg::Reveal)}>
-                    <span class="icon"> <Icon icon={"fas fa-eye"} /> </span> <span> {"reveal"} </span>
+                    <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>
                 </Button>
                 <Button onclick={self.link.callback(|_| Msg::Resume)}>
-                    <span class="icon"> <Icon icon={"fas fa-play"} /> </span> <span> {"resume"} </span>
+                    <Icon icon={"fas fa-play"} /> <span> {"resume"} </span>
                 </Button>
                 <Button onclick={self.link.callback(|_| Msg::Pause)}>
-                    <span class="icon"> <Icon icon={"fas fa-pause"} /> </span> <span> {"pause"} </span>
+                   <Icon icon={"fas fa-pause"} /> <span> {"pause"} </span>
                 </Button>
             </Buttons>
+        };
+
+        html! {
+            <>
+                <cbs::DynImage src={self.props.src.clone()} height=85/>
+                <Buttons alignment={Alignment::Centered} extra="mt-5">
+                    <Button onclick={self.link.callback(|_| Msg::Preview)}>
+                        <span> {"preview"} </span>
+                    </Button>
+                    <Button onclick={self.props.onremove.clone()}>
+                        <Icon icon={"fas fa-trash"} /> <span> {"remove image"} </span>
+                    </Button>
+                </Buttons>
             </>
         }
     }

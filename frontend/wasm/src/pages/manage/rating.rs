@@ -1,8 +1,10 @@
-use crate::graphql::Quiz;
-use pbs::prelude::*;
-use pbs::properties::HeroSize;
 use yew::prelude::*;
 use yew::utils::NeqAssign;
+
+use pbs::prelude::*;
+use pbs::properties::HeroSize;
+
+use crate::graphql::Quiz;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

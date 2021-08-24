@@ -1,72 +1,75 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
-use shared::{Request, Response, Session, SessionDiff};
+use pbs::prelude::*;
+use shared::{Player, Session, SessionDiff, Stage, Status};
 
 use crate::graphql::{Quiz, Round};
-use crate::pages::manage::InnerManage;
-use crate::utils::yew::WebsocketTask;
 
-#[derive(Clone, Debug, Properties, PartialEq)]
-pub struct ManageLoaderProps {
-    pub session_id: u64,
+use super::{Initialize, Master, Navigate, Rating};
+
+#[derive(Clone, Properties, PartialEq)]
+pub struct Props {
+    pub onchange: Callback<SessionDiff>,
+
+    pub session: Session,
+    pub quiz: Quiz,
+    pub rounds: Vec<Round>,
 }
 
-pub enum Msg {
-    Changed(SessionDiff),
-    WsResponse(Response),
-}
-
-pub struct Manage {
-    props: ManageLoaderProps,
-    link: ComponentLink<Self>,
-
-    ws: WebsocketTask,
-
-    session: Option<Session>,
-    quiz_data: Option<(Quiz, Vec<Round>)>,
-}
-
-impl Component for Manage {
-    type Message = Msg;
-    type Properties = ManageLoaderProps;
-
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let mut ws = WebsocketTask::create("TODO", link.callback(Msg::WsResponse));
-        ws.send(&Request::Manage { session_id: props.session_id });
-
-        Self { props, link, ws, session: None, quiz_data: None }
-    }
-
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match msg {
-            Msg::WsResponse(Response::Updated(session)) => {
-                self.session = Some(session);
-                true
-            }
-            Msg::WsResponse(_) => {
-                log::error!("unknown response");
-                false
-            }
-            Msg::Changed(diff) => {
-                self.session = Some(session.clone());
-                self.ws.send(&Request::Update { session_id: self.props.session_id, session });
-                false
-            }
+pub fn add_player(name: String, mut players: Vec<Player>) -> SessionDiff {
+    match players.iter().find(|p| p.name == name) {
+        None => {
+            players.push(Player { name, score: 0 });
+            SessionDiff { stage: None, players: Some(players) }
         }
+        Some(_) => SessionDiff::default()
     }
+}
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        match (&self.session, &self.quiz_data) {
-            (Some(session), Some((quiz, rounds))) => {
-                let onchange = self.link.callback(Msg::Changed);
-                html! {<InnerManage session={session.clone()} quiz={quiz.clone()} rounds={rounds.clone()} onchange={onchange} />}
-            }
-            _ => html! {},
+pub fn add_guess(name: String, mut players: Vec<Player>) -> SessionDiff {
+    match players.iter_mut().find(|p| p.name == name) {
+        Some(mut player) => {
+            player.score += 1;
+            SessionDiff { stage: None, players: Some(players) }
         }
+        None => SessionDiff::default()
+    }
+}
+
+#[function_component(Manage)]
+pub fn manage(props: &Props) -> Html {
+    let clone1 = props.session.players.clone();
+    let clone2 = clone1.clone();
+
+    let onadd = props.onchange.reform(move |name| add_player(name, clone1.clone()));
+    let onguess = props.onchange.reform(move |name| add_guess(name, clone2.clone()));
+    let onchange = props.onchange.reform(|stage| SessionDiff { players: None, stage: Some(stage) });
+
+    let body = match props.session.stage {
+        Stage::Initial => {
+            html! { <Initialize onchange={onadd}/> }
+        }
+        Stage::Round { round, status: Status::Playing { .. } } => {
+            html! { <Master players={props.session.players.clone()} onguess={onguess}/> }
+        }
+        Stage::Round { .. } => {
+            html! { <cbs::TitleHero title="revealing" subtitle=""/> }
+        } // TODO: don't show when revealed
+        Stage::Ranking { .. } => {
+            html! { <cbs::TitleHero title="showing scores" subtitle=""/> }
+        }
+        Stage::Finished => {
+            html! { <Rating quiz={props.quiz.clone()} />}
+        }
+    };
+
+
+    html! {
+        <Section>
+            <Container>
+                { body }
+                <Navigate stage={props.session.stage.clone()} rounds={props.rounds.len()} onchange={onchange}/>
+            </Container>
+        </Section>
     }
 }

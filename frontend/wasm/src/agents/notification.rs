@@ -1,4 +1,4 @@
-use yew_agent::{Agent, AgentLink, HandlerId, Context};
+use yew_agent::{Agent, AgentLink, Context, HandlerId};
 
 pub struct NotificationAgent {
     link: AgentLink<Self>,
@@ -11,14 +11,10 @@ impl Agent for NotificationAgent {
     type Output = ();
 
     fn create(link: AgentLink<Self>) -> Self {
-        Self{ link }
+        Self { link }
     }
 
-    fn update(&mut self, msg: Self::Message) {
+    fn update(&mut self, msg: Self::Message) {}
 
-    }
-
-    fn handle_input(&mut self, msg: Self::Input, id: HandlerId) {
-
-    }
+    fn handle_input(&mut self, msg: Self::Input, id: HandlerId) {}
 }

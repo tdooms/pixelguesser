@@ -1,23 +1,22 @@
-use pbs::prelude::*;
 use yew::prelude::*;
+use yew::utils::NeqAssign;
+
+use pbs::prelude::*;
+use pbs::properties::{Alignment, Color};
 
 use crate::graphql::{DraftRound, GuessChoices, PointChoices};
-use pbs::properties::{Alignment, Color};
-use yew::utils::NeqAssign;
 
 pub enum Msg {
     Upload(Vec<web_sys::File>),
     Answer(String),
     Points(PointChoices),
     Guesses(GuessChoices),
-    Remove,
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onchange: Callback<DraftRound>,
     pub onupload: Callback<web_sys::File>,
-    pub ondelete: Callback<()>,
 
     pub draft: DraftRound,
 }
@@ -44,11 +43,6 @@ impl Component for SideOptions {
             Msg::Upload(images) => {
                 // give error
             }
-            Msg::Remove => {
-                self.props.draft.image_local = None;
-                self.props.draft.image_url = None;
-                self.props.ondelete.emit(());
-            }
             Msg::Answer(answer) => {
                 // Convert empty string to None
                 self.props.draft.answer = Some(answer).filter(|x| !x.is_empty());
@@ -71,16 +65,13 @@ impl Component for SideOptions {
     fn view(&self) -> Html {
         let onpoints = self.link.callback(Msg::Points);
         let onguess = self.link.callback(Msg::Guesses);
-
         let onupload = self.link.callback(Msg::Upload);
-        let onremove = self.link.callback(|_| Msg::Remove);
 
         let Props { draft, .. } = &self.props;
 
-        match &draft.image_url {
-            Some(_) => html! {
-                <>
-                <div>
+        if draft.image_local.is_some() || draft.image_url.is_some() {
+            html! {
+                <div class="p-6">
                     <cbs::SimpleField label="Answer">
                         <Input oninput={self.link.callback(Msg::Answer)} />
                     </cbs::SimpleField>
@@ -91,16 +82,13 @@ impl Component for SideOptions {
                         <cbs::KvButtons<GuessChoices> value={draft.guesses} color={Color::Link} alignment={Alignment::Centered} onclick={onguess} />
                     </cbs::SimpleField>
                 </div>
-                <Button fullwidth=true color={Color::Danger} light=true onclick={onremove}>
-                    <span class="icon"> <Icon icon={"fas fa-trash"}/> </span> <span> {"remove image"} </span>
-                </Button>
-                </>
-            },
-            None => html! {
+            }
+        } else {
+            html! {
                 <cbs::Center>
                     <File boxed=true alignment={Alignment::Centered} onupload={onupload} />
                 </cbs::Center>
-            },
+            }
         }
     }
 }

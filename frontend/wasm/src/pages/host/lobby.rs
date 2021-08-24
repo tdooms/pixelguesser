@@ -1,10 +1,11 @@
+use yew::prelude::*;
+use yew::utils::NeqAssign;
+
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize, HeroSize};
-use yew::prelude::*;
+use shared::Session;
 
 use crate::graphql::Quiz;
-use shared::Session;
-use yew::utils::NeqAssign;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

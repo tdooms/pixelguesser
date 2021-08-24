@@ -1,17 +1,16 @@
+use gloo::timers::callback::Timeout;
 use yew::prelude::*;
-use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
-
 use yew::utils::NeqAssign;
+use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
+use yew_agent::{Dispatched, Dispatcher};
+
+use shared::Status;
 
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
 use crate::utils::misc::draw_pixelated;
 use crate::utils::yew::{Resizer, TypeRef};
-
-use gloo::timers::callback::Timeout;
-use shared::Status;
-use yew_agent::{Dispatched, Dispatcher};
 
 pub enum Msg {
     Loaded,

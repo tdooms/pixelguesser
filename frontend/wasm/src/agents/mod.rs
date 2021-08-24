@@ -1,3 +1,4 @@
+pub use notification::NotificationAgent;
+
 mod notification;
 
-pub use notification::NotificationAgent;

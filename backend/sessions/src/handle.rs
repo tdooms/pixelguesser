@@ -19,8 +19,10 @@ fn into_session(session_id: u64, internal: &InternalSession) -> Session {
     }
 }
 
-fn combine(internal: &mut InternalSession, mut diff: SessionDiff) {
-    internal.players.append(&mut diff.players);
+fn combine(internal: &mut InternalSession, diff: SessionDiff) {
+    if let Some(x) = diff.players {
+        internal.players = x;
+    }
     internal.stage = diff.stage.unwrap_or(internal.stage);
 }
 
@@ -36,7 +38,7 @@ fn broadcast_update(session_id: u64, internal: &InternalSession) {
 }
 
 fn maybe_insert_sender(option: &mut Option<Sender>, sender: &Sender) -> bool {
-    let ret = option.is_some();
+    let ret = option.is_none();
     *option = option.as_ref().or_else(|| Some(sender)).cloned();
     ret
 }
@@ -110,9 +112,11 @@ pub async fn handle_request(request: &[u8], state: &State, sender: &Sender) {
             }
         }
         Kind::Manage => {
+            log::info!("{:?}", internal);
             if maybe_insert_sender(&mut internal.manager, sender){
                 broadcast_update(session_id, internal)
             }
+            log::info!("{:?}", internal);
         }
     };
 }

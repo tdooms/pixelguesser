@@ -5,6 +5,8 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::components::Alerts;
+use crate::components::Kind;
+use crate::components::QuizLoader;
 use crate::pages::*;
 use crate::route::Route;
 use crate::structs::{Error, Info};
@@ -67,8 +69,8 @@ impl Component for Model {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Host { quiz_id } => html! { <Host quiz_id={*quiz_id}/> },
-        Route::Manage { session_id } => html! { <Manage session_id={*session_id}/> },
+        Route::Host { quiz_id } => html! { <QuizLoader kind={Kind::Host{ quiz_id: *quiz_id }}/> },
+        Route::Manage { session_id } => html! { <QuizLoader kind={Kind::Manage{ session_id: *session_id }}/> },
         Route::Code => html! { <Code/> },
         Route::Create => html! { <Create/> },
         Route::Overview => html! { <Overview/> },

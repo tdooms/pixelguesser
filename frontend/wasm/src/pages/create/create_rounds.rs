@@ -1,21 +1,32 @@
-use pbs::prelude::*;
-use pbs::properties::{Color, ColumnSize};
 use web_sys::Url;
 use yew::prelude::*;
 
-use super::{CenterImage, SideImages, SideOptions};
+use pbs::prelude::*;
+use pbs::properties::{Color, ColumnSize};
+use cbs::SidebarAlignment;
+
 use crate::graphql::DraftRound;
 
+use super::{CenterImage, SideImages, SideOptions};
+
 pub enum Msg {
-    Change(usize, DraftRound),
-    Upload(usize, web_sys::File),
-    Delete(usize),
-    Clicked(usize),
-    Remove,
-    Add,
+    AddRound,
+    RemoveRound,
+    ChangeRound(DraftRound),
+
+    AddImage(web_sys::File),
+    RemoveImage,
+    SelectImage(usize),
+}
+
+#[derive(Clone, Debug, Properties, PartialEq)]
+pub struct Props {
+    pub onback: Callback<()>,
+    pub ondone: Callback<()>
 }
 
 pub struct CreateRounds {
+    props: Props,
     link: ComponentLink<Self>,
     rounds: Vec<DraftRound>,
     current: usize,
@@ -23,30 +34,32 @@ pub struct CreateRounds {
 
 impl Component for CreateRounds {
     type Message = Msg;
-    type Properties = ();
+    type Properties = Props;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, current: 0, rounds: vec![DraftRound::default()] }
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        Self { props, link, current: 0, rounds: vec![DraftRound::default()] }
     }
 
     fn update(&mut self, msg: Self::Message) -> bool {
         match msg {
-            Msg::Change(index, draft) => {
-                self.rounds[index] = draft;
+            Msg::ChangeRound(draft) => {
+                self.rounds[self.current] = draft;
+                false
             }
-            Msg::Remove => {
+            Msg::RemoveRound => {
                 self.rounds.remove(self.current);
+                false
             }
-            Msg::Add => {
+            Msg::AddRound => {
                 self.current = self.rounds.len();
                 self.rounds.push(DraftRound::default());
             }
-            Msg::Delete(index) => {
-                self.rounds[index].image_local = None;
-                self.rounds[index].image_url = None;
+            Msg::RemoveImage => {
+                self.rounds[self.current].image_local = None;
+                self.rounds[self.current].image_url = None;
             }
-            Msg::Upload(index, file) => {}
-            Msg::Clicked(index) => {
+            Msg::AddImage(file) => {}
+            Msg::SelectImage(index) => {
                 self.current = index;
             }
         };
@@ -58,14 +71,13 @@ impl Component for CreateRounds {
     }
 
     fn view(&self) -> Html {
-        let current = self.current;
+        let add_round = self.link.callback(|_| Msg::AddRound);
+        let remove_round = self.link.callback(|_| Msg::RemoveRound);
+        let change_round = self.link.callback(move |draft| Msg::ChangeRound(draft));
 
-        let onchange = self.link.callback(move |draft| Msg::Change(current, draft));
-        let onremove = self.link.callback(move |_| Msg::Remove);
-        let onadd = self.link.callback(|_| Msg::Add);
-        let onclick = self.link.callback(Msg::Clicked);
-        let ondelete = self.link.callback(move |_| Msg::Delete(current));
-        let onupload = self.link.callback(move |files| Msg::Upload(current, files));
+        let add_image = self.link.callback(|file| Msg::AddImage(file));
+        let remove_image = self.link.callback(|_| Msg::RemoveImage);
+        let select_image = self.link.callback(Msg::SelectImage);
 
         let side_images: Vec<_> = self
             .rounds
@@ -75,40 +87,55 @@ impl Component for CreateRounds {
             })
             .collect();
 
-        let side_classes = "is-flex is-flex-direction-column is-justify-content-space-between";
-        let draft = self.rounds[current].clone();
+        let draft = self.rounds[self.current].clone();
 
-        let center = match (&draft.image_local, &draft.image_url) {
-            (Some(file), _) => {
-                html! { <CenterImage image_url={Url::create_object_url_with_blob(file).unwrap()} /> }
-            }
-            (_, Some(url)) => html! { <CenterImage image_url={url.clone()} /> },
-            _ => html! { {"no image"} },
+        let src = match (&draft.image_url, &draft.image_local) {
+            (Some(url), Some(_)) => Some(url.clone()), // TODO: error
+            (Some(url), _) => Some(url.clone()),
+            (_, Some(image)) => Url::create_object_url_with_blob(image).ok(),
+            (None, None) => None
         };
+
+        let center = match src {
+            Some(src) => html! { <CenterImage src={src} onremove={remove_image}/> },
+            None => html! { {"no image"} }
+        };
+
+        let left_footer = html! {
+            <Buttons extra="mt-auto px-4 py-2">
+                <Button fullwidth=true color={Color::Danger} light=true onclick={remove_round}>
+                    <Icon icon={"fas fa-trash"}/> <span> {"remove round"} </span>
+                </Button>
+                <Button fullwidth=true color={Color::Success} light=true onclick={add_round}>
+                    <Icon icon={"fas fa-plus"}/> <span> {"add round"} </span>
+                </Button>
+            </Buttons>
+        };
+
+        let right_footer = html! {
+            <Buttons extra="mt-auto px-4 py-2">
+                <Button fullwidth=true color={Color::Success} light=true onclick={self.props.ondone.clone()}>
+                    <Icon icon={"fas fa-arrow-right"}/> <span> {"done"} </span>
+                </Button>
+                <Button  fullwidth=true color={Color::Danger} light=true onclick={self.props.onback.clone()}>
+                    <Icon icon={"fas fa-arrow-left"}/> <span> {"back"} </span>
+                </Button>
+            </Buttons>
+        };
+
 
         html! {
             <Columns>
-                <cbs::Sidebar size={ColumnSize::Is2} alignment={cbs::SidebarAlignment::Left} extra={format!("p-0 {}", side_classes)} overflow=false>
-                    <SideImages images={side_images} onclick={onclick} current={self.current}/>
-                    <div>
-                        <hr/>
-                        <Buttons extra="mt-auto px-4 py-2">
-                            <Button fullwidth=true color={Color::Danger} light=true onclick={onremove}>
-                                <span class="icon"> <Icon icon={"fas fa-trash"}/> </span> <span> {"remove round"} </span>
-                            </Button>
-                            <Button  fullwidth=true color={Color::Success} light=true onclick={onadd}>
-                                <span class="icon"> <Icon icon={"fas fa-plus"}/> </span> <span> {"add round"} </span>
-                            </Button>
-                        </Buttons>
-                    </div>
+                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={left_footer}>
+                    <SideImages images={side_images} onclick={select_image} current={self.current}/>
                 </cbs::Sidebar>
 
                 <Column size={ColumnSize::Is8}>
                     { center }
                 </Column>
 
-                <cbs::Sidebar size={ColumnSize::Is2} alignment={cbs::SidebarAlignment::Right} extra={format!("p-6 {}", side_classes)}>
-                    <SideOptions draft={draft} onchange={onchange} ondelete={ondelete} onupload={onupload}/>
+                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" footer={right_footer}>
+                    <SideOptions draft={draft} onchange={change_round} onupload={add_image}/>
                 </cbs::Sidebar>
             </Columns>
         }

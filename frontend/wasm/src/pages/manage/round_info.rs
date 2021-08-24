@@ -1,6 +1,7 @@
+use yew::prelude::*;
+
 use pbs::prelude::*;
 use pbs::properties::HeroSize;
-use yew::prelude::*;
 
 use crate::graphql::Round;
 

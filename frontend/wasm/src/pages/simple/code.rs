@@ -1,14 +1,15 @@
 use gloo::timers::callback::Timeout;
-use pbs::prelude::*;
-use pbs::properties::Color;
 use yew::prelude::*;
 use yew::utils::NeqAssign;
 
+use pbs::prelude::*;
+use pbs::properties::Color;
+use shared::{Request, Response};
+
+use crate::constants::SESSION_ENDPOINT;
 use crate::route::Route;
 use crate::utils::misc::string_to_code;
 use crate::utils::yew::WebsocketTask;
-use crate::constants::SESSION_ENDPOINT;
-use shared::{Request, Response};
 
 #[derive(Debug, Clone, PartialEq)]
 enum State {
@@ -63,7 +64,7 @@ impl Component for Code {
                 res1 | res2
             }
             (Msg::Timer, Some(session_id)) => {
-                self.ws.send(&Request::Read {session_id});
+                self.ws.send(&Request::Read { session_id });
                 false
             }
             (Msg::Join, Some(session_id)) if self.state == State::Available => {
