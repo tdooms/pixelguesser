@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew::web_sys::HtmlInputElement;
 
-use crate::properties::{Color, Fixed, Loading, Size, Static};
+use crate::properties::{Color, FixedSize, Loading, Size, Static};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -37,7 +37,7 @@ pub struct Props {
 
     /// Fix the size of this component.
     #[prop_or_default]
-    pub fixed: Fixed,
+    pub fixed: FixedSize,
 
     /// Display a loading spinner within this component.
     #[prop_or_default]

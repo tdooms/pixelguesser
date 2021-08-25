@@ -7,14 +7,14 @@ use cbs::SidebarAlignment;
 
 use crate::graphql::DraftRound;
 
-use super::{CenterImage, SideImages, SideOptions};
+use super::{CenterImage, SideImages, RoundOptions, SideUpload};
 
 pub enum Msg {
     AddRound,
     RemoveRound,
     ChangeRound(DraftRound),
 
-    AddImage(web_sys::File),
+    AddImage(Vec<web_sys::File>),
     RemoveImage,
     SelectImage(usize),
 }
@@ -48,22 +48,31 @@ impl Component for CreateRounds {
             }
             Msg::RemoveRound => {
                 self.rounds.remove(self.current);
-                false
+                // TODO: I suspect the current index not always valid?
+                true
             }
             Msg::AddRound => {
                 self.current = self.rounds.len();
                 self.rounds.push(DraftRound::default());
+                true
             }
             Msg::RemoveImage => {
                 self.rounds[self.current].image_local = None;
                 self.rounds[self.current].image_url = None;
+                true
             }
-            Msg::AddImage(file) => {}
+            Msg::AddImage(files) if files.len() == 1 => {
+                false
+            }
+            Msg::AddImage(files) => {
+                // TODO: error
+                false
+            }
             Msg::SelectImage(index) => {
                 self.current = index;
+                true
             }
-        };
-        true
+        }
     }
 
     fn change(&mut self, _props: Self::Properties) -> bool {
@@ -123,6 +132,10 @@ impl Component for CreateRounds {
             </Buttons>
         };
 
+        let right_side = match draft.image_url.is_some() || draft.image_local.is_some() {
+            true => html! { <RoundOptions draft={draft} onchange={change_round} /> },
+            false => html! { <SideUpload onupload={add_image} />}
+        };
 
         html! {
             <Columns>
@@ -135,7 +148,7 @@ impl Component for CreateRounds {
                 </Column>
 
                 <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" footer={right_footer}>
-                    <SideOptions draft={draft} onchange={change_round} onupload={add_image}/>
+                    { right_side }
                 </cbs::Sidebar>
             </Columns>
         }

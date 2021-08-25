@@ -79,7 +79,7 @@ pub struct Round {
 pub struct DraftRound {
     pub points: PointChoices,
     pub guesses: GuessChoices,
-    pub answer: Option<String>,
+    pub answer: String,
     pub image_url: Option<String>,
 
     #[serde(skip)]

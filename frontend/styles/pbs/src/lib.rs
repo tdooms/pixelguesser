@@ -7,6 +7,7 @@ pub mod elements;
 pub mod form;
 pub mod layout;
 pub mod properties;
+pub mod navbar;
 
 pub mod prelude {
     pub use crate::components::*;
