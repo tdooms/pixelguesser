@@ -1,19 +1,23 @@
+
 use yew::prelude::*;
-use yew::utils::NeqAssign;
-use web_sys::Url;
 
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize};
 
 use crate::components::QuizCard;
-use crate::graphql::DraftQuiz;
 use crate::constants::PLACEHOLDER;
+use crate::graphql::{DraftQuiz, Image, create_quiz};
+use std::collections::HashMap;
+use futures::FutureExt;
 
 pub enum Msg {
     Name(String),
     Creator(String),
     Description(String),
-    Upload(Vec<web_sys::File>),
+    Image(Vec<web_sys::File>),
+
+    QuizUploaded,
+
     Cancel,
     Continue,
 }
@@ -25,52 +29,48 @@ pub struct Props {
 }
 
 pub struct CreateQuiz {
-    link: ComponentLink<Self>,
-    props: Props,
-
     draft: DraftQuiz,
+    errors: HashMap<String, String>,
 }
 
 impl Component for CreateQuiz {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, props, draft: DraftQuiz::default() }
+    fn create(_: &Context<Self>) -> Self {
+        Self { draft: DraftQuiz::default(), errors: HashMap::default() }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Name(name) => self.draft.name = name,
             Msg::Creator(creator) => self.draft.creator = creator,
             Msg::Description(description) => self.draft.description = description,
-            Msg::Upload(files) if files.len() == 1 => {
-                self.draft.image_local = Some(files[0].clone());
+            Msg::Image(files) if files.len() == 1 => {
+                self.draft.image = Image::new(&files[0]);
             }
-            Msg::Upload(files) => {
+            Msg::Image(files) => {
                 // TODO: give error
             }
-            Msg::Cancel => {
-                self.props.oncancel.emit(());
+            Msg::QuizUploaded => {
+                ctx.props().oncontinue.emit(self.draft.clone())
             }
-            Msg::Continue => self.props.oncontinue.emit(self.draft.clone()),
+            Msg::Cancel => {
+                ctx.props().oncancel.emit(());
+            }
+            Msg::Continue => {
+                let cloned = self.draft.clone();
+                ctx.link().send_future(create_quiz(cloned).map(|_| Msg::QuizUploaded))
+            },
         };
         true
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let DraftQuiz { name, creator, description, image } = &self.draft;
 
-    fn view(&self) -> Html {
-        let DraftQuiz { name, creator, description, image_url, image_local } = &self.draft;
-
-        let (src, filename) = match (image_url, image_local) {
-            (Some(_), Some(_)) => (PLACEHOLDER.to_owned(), None), // TODO: error
-            (Some(url), _) => (url.clone(), Some(url.clone())), // TODO: strip endpoint of first url,
-            (_, Some(image)) => (Url::create_object_url_with_blob(image).unwrap(), Some(image.name())),
-            (None, None) => (PLACEHOLDER.to_owned(), None)
-        };
+        let src = image.src().unwrap_or_else(|| PLACEHOLDER.to_owned());
+        let filename = image.name();
 
         let empty_default = |value: String, default: &str| -> String {
             Some(value).filter(|x| !x.is_empty()).unwrap_or_else(|| default.to_owned())
@@ -89,25 +89,25 @@ impl Component for CreateQuiz {
                 <Container>
                     <Columns>
                         <Column>
-                            <cbs::SimpleField label="Quiz Name">
-                                <Input oninput={self.link.callback(Msg::Name)} placeholder={NAME_DEF}/>
+                            <cbs::SimpleField label="Quiz Name" help={self.errors.get("name").cloned()} help_color={Color::Danger}>
+                                <Input oninput={ctx.link().callback(Msg::Name)} placeholder={NAME_DEF}/>
                             </cbs::SimpleField>
 
-                            <cbs::SimpleField label="Creator">
-                                <Input oninput={self.link.callback(Msg::Creator)} placeholder={CREATOR_DEF}/>
+                            <cbs::SimpleField label="Creator" help={self.errors.get("creator").cloned()} help_color={Color::Danger}>
+                                <Input oninput={ctx.link().callback(Msg::Creator)} placeholder={CREATOR_DEF}/>
                             </cbs::SimpleField>
 
-                            <cbs::SimpleField label="Description">
-                                <Textarea oninput={self.link.callback(Msg::Description)} placeholder={DESCRIPTION_DEF} />
+                            <cbs::SimpleField label="Description" help={self.errors.get("description").cloned()} help_color={Color::Danger}>
+                                <Textarea oninput={ctx.link().callback(Msg::Description)} placeholder={DESCRIPTION_DEF} />
                             </cbs::SimpleField>
 
-                            <cbs::SimpleField label="Image">
-                                <File fullwidth=true filename={filename} onupload={self.link.callback(Msg::Upload)}/>
+                            <cbs::SimpleField label="Image" help={self.errors.get("image").cloned()} help_color={Color::Danger}>
+                                <File fullwidth=true filename={filename} onupload={ctx.link().callback(Msg::Image)}/>
                             </cbs::SimpleField>
 
                             <Buttons>
-                                <Button color={Color::Primary} light=true onclick={self.link.callback(|_| Msg::Cancel)}> {"cancel"} </Button>
-                                <Button color={Color::Primary} onclick={self.link.callback(|_| Msg::Continue)}> {"continue"} </Button>
+                                <Button color={Color::Primary} light=true onclick={ctx.link().callback(|_| Msg::Cancel)}> {"cancel"} </Button>
+                                <Button color={Color::Primary} disabled={!self.errors.is_empty()} onclick={ctx.link().callback(|_| Msg::Continue)}> {"continue"} </Button>
                             </Buttons>
 
                         </Column>

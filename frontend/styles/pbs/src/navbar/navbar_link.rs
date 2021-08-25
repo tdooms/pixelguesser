@@ -1,15 +1,17 @@
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-struct Props {
-    children: Children
+pub struct Props<T: Routable + PartialEq + 'static> {
+    children: Children,
+    route: T
 }
 
 #[function_component(NavbarLink)]
-pub fn navbar_link(props: &Props) -> Html {
+pub fn navbar_link<T: Routable + PartialEq + 'static>(props: &Props<T>) -> Html {
     html! {
-        <div class="navbar-link">
+        <Link<T> classes={classes!("navbar-link")} route={props.route.clone()}>
             { for props.children.iter() }
-        </div>
+        </Link<T>>
     }
 }

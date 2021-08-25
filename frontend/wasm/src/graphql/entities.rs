@@ -3,6 +3,7 @@ use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
 use strum_macros::EnumIter;
+use web_sys::Url;
 
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
@@ -47,6 +48,76 @@ impl Default for GuessChoices {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum Image {
+    Url { url: String },
+
+    #[serde(skip)]
+    Local { local: web_sys::File, url: String },
+
+    #[serde(skip)]
+    None,
+}
+
+impl Default for Image {
+    fn default() -> Self {
+        Self::None
+    }
+}
+
+impl Image {
+    pub fn new(file: &web_sys::File ) -> Self {
+        Self::Local { local: file.clone(), url: Url::create_object_url_with_blob(file).unwrap() }
+    }
+
+    pub fn src(&self) -> Option<String> {
+        match self {
+            Image::Url { url } | Image::Local { url, .. }=> Some(url.clone()),
+            Image::None => None
+        }
+    }
+    pub fn name(&self) -> Option<String> {
+        match self {
+            Image::Url { url } => Some(url.clone()),
+            Image::Local { local, .. } => Some(local.name()),
+            Image::None => None
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+pub struct RoundInfo {
+    pub answer: String,
+    pub points: PointChoices,
+    pub guesses: GuessChoices,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+pub struct RoundOptions {
+    pub speed: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+pub struct DraftQuiz {
+    pub name: String,
+    pub description: String,
+    pub creator: String,
+    pub image: Image,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+pub struct DraftRound {
+    #[serde(flatten)]
+    pub info: RoundInfo,
+
+    #[serde(flatten)]
+    pub options: RoundOptions,
+
+    #[serde(flatten)]
+    pub image: Image,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Quiz {
     pub quiz_id: u64,
     pub name: String,
@@ -56,32 +127,17 @@ pub struct Quiz {
     pub image_url: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct DraftQuiz {
-    pub name: String,
-    pub description: String,
-    pub creator: String,
-    pub image_url: Option<String>,
-
-    #[serde(skip)]
-    pub image_local: Option<web_sys::File>,
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Round {
-    pub answer: String,
-    pub points: PointChoices,
-    pub guesses: GuessChoices,
-    pub image_url: String,
-}
+    pub round_id: u64,
+    pub quiz_id: u64,
+    pub index: u64,
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
-pub struct DraftRound {
-    pub points: PointChoices,
-    pub guesses: GuessChoices,
-    pub answer: String,
+    #[serde(flatten)]
+    pub info: RoundInfo,
+
+    #[serde(flatten)]
+    pub options: RoundOptions,
+
     pub image_url: Option<String>,
-
-    #[serde(skip)]
-    pub image_local: Option<web_sys::File>,
 }

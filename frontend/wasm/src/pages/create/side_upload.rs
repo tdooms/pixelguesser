@@ -11,7 +11,7 @@ pub struct Props {
 pub fn side_upload(props: &Props) -> Html {
     html! {
         <cbs::Center>
-            <File boxed=true alignment={Alignment::Centered} onupload={props.onupload} />
+            <File boxed=true alignment={Alignment::Centered} onupload={props.onupload.clone()} />
         </cbs::Center>
     }
 }

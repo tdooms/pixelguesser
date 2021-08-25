@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
-struct Props {
+pub struct Props {
     children: Children
 }
 

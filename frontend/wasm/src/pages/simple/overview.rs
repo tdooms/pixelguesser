@@ -1,12 +1,11 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 use cbs::MaybeLoading;
 use pbs::prelude::*;
 use pbs::properties::ColumnSize;
 
 use crate::components::{Navbar, QuizCard};
-use crate::constants::{IMAGE_ENDPOINT, image_url, PLACEHOLDER};
+use crate::constants::{image_url, PLACEHOLDER};
 use crate::error::Error;
 use crate::graphql::{Quiz, quizzes};
 use crate::route::Route;
@@ -19,14 +18,17 @@ impl Component for Overview {
     type Message = Result<Vec<Quiz>, Error>;
     type Properties = ();
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        link.send_future(quizzes());
+    fn create(ctx: &Context<Self>) -> Self {
+        ctx.link().send_future(quizzes());
         Self { quizzes: None }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Ok(quizzes) => self.quizzes.neq_assign(Some(quizzes)),
+            Ok(quizzes) => {
+                self.quizzes = Some(quizzes);
+                true
+            },
             Err(err) => {
                 log::error!("http error: {:?}", err);
                 false
@@ -34,11 +36,7 @@ impl Component for Overview {
         }
     }
 
-    fn change(&mut self, _: Self::Properties) -> bool {
-        false
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
             let src = quiz.image_url.as_ref().map(image_url).unwrap_or_else(|| PLACEHOLDER.to_owned());
             let route = Route::Host { quiz_id: quiz.quiz_id };

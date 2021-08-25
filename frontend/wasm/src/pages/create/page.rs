@@ -12,6 +12,7 @@ pub enum Msg {
     Back,
     Continue(DraftQuiz),
     Cancel,
+    Todo
 }
 
 enum Stage {
@@ -20,14 +21,12 @@ enum Stage {
     Confirm,
 }
 
-#[derive(Properties, Clone)]
+#[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    draft_id: Option<u64>,
+    quiz_id: Option<u64>,
 }
 
 pub struct Create {
-    props: Props,
-    link: ComponentLink<Self>,
     stage: Stage,
 }
 
@@ -35,11 +34,11 @@ impl Component for Create {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link, stage: Stage::Quiz }
+    fn create(_: &Context<Self>) -> Self {
+        Self { stage: Stage::Quiz }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Continue(quiz) => {
                 // TODO: save quiz
@@ -54,20 +53,18 @@ impl Component for Create {
                 // TODO: save stuff
             }
             Msg::Back => self.stage = Stage::Quiz,
-            Msg::Done => self.stage = Stage::Confirm
+            Msg::Done => self.stage = Stage::Confirm,
+            Msg::Todo => {}
         }
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
-    }
 
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         match self.stage {
-            Stage::Quiz => html! { <CreateQuiz oncontinue={self.link.callback(Msg::Continue)} oncancel={self.link.callback(|_| Msg::Cancel)}/> },
-            Stage::Rounds => html! { <CreateRounds ondone={self.link.callback(|_| Msg::Done)} onback={self.link.callback(|_| Msg::Back)}/> },
-            Stage::Confirm => html! { <Confirm onconfirm={self.link.callback(|_| Msg::Confirm)}/>}
+            Stage::Quiz => html! { <CreateQuiz oncontinue={ctx.link().callback(Msg::Continue)} oncancel={ctx.link().callback(|_| Msg::Cancel)}/> },
+            Stage::Rounds => html! { <CreateRounds ondone={ctx.link().callback(|_| Msg::Done)} onback={ctx.link().callback(|_| Msg::Back)}/> },
+            Stage::Confirm => html! { <Confirm onback={ctx.link().callback(|_| Msg::Todo)} onconfirm={ctx.link().callback(|_| Msg::Confirm)}/>}
         }
     }
 }

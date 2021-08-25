@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 use pbs::prelude::*;
 use pbs::properties::Size;
@@ -11,36 +10,16 @@ pub struct Props {
     pub players: Vec<Player>,
 }
 
-pub struct Master {
-    link: ComponentLink<Self>,
-    props: Props,
-}
+#[function_component(Master)]
+pub fn master(props: &Props) -> Html {
+    let view_player = |player: &Player| {
+        let cloned = player.name.clone();
+        let onclick = props.onguess.reform(move |_| cloned.clone());
 
-impl Component for Master {
-    type Message = ();
-    type Properties = Props;
+        html! { <Button outlined=true size={Size::Large} fullwidth=true onclick={onclick}> {player.name.clone()} </Button> }
+    };
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, props }
-    }
-
-    fn update(&mut self, _: Self::Message) -> bool {
-        false
-    }
-
-    fn change(&mut self, props: Self::Properties) -> bool {
-        self.props.neq_assign(props)
-    }
-
-    fn view(&self) -> Html {
-        let view_player = |player: &Player| {
-            let cloned = player.name.clone();
-            let onclick = self.props.onguess.reform(move |_| cloned.clone());
-            html! { <Button outlined=true size={Size::Large} fullwidth=true onclick={onclick}> {player.name.clone()} </Button> }
-        };
-
-        html! {
-            { for self.props.players.iter().map(view_player) }
-        }
+    html! {
+        { for props.players.iter().map(view_player) }
     }
 }

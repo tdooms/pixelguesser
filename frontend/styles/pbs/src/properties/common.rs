@@ -8,7 +8,7 @@ macro_rules! bool_prop {
             std::default::Default,
             std::marker::Copy,
         )]
-        pub struct $x(bool);
+        pub struct $x(pub bool);
 
         impl std::convert::Into<yew::Classes> for $x {
             fn into(self) -> yew::Classes {

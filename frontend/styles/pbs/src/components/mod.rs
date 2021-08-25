@@ -5,7 +5,6 @@ pub use menu::*;
 pub use message::*;
 pub use modal::*;
 pub use modal_card::*;
-pub use main::*;
 pub use pagination::*;
 pub use panel::*;
 pub use tabs::*;

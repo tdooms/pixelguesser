@@ -2,7 +2,6 @@ use futures::FutureExt;
 use js_sys::Function;
 use web_sys::window;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 use shared::{Request, Response, Session, SessionDiff};
 
@@ -30,9 +29,6 @@ pub enum Msg {
 }
 
 pub struct QuizLoader {
-    props: Props,
-    link: ComponentLink<Self>,
-
     ws: WebsocketTask,
 
     session: Option<Session>,
@@ -43,24 +39,24 @@ impl Component for QuizLoader {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         let url = format!("ws://{}/ws", SESSION_ENDPOINT);
-        let mut ws = WebsocketTask::create(url, link.callback(Msg::WsResponse));
+        let mut ws = WebsocketTask::create(url, ctx.link().callback(Msg::WsResponse));
 
 
-        match props.kind {
+        match ctx.props().kind {
             Kind::Host { quiz_id } => {
-                link.send_future(quiz(quiz_id).map(Msg::QuizLoaded));
+                ctx.link().send_future(quiz(quiz_id).map(Msg::QuizLoaded));
                 ws.send(&Request::Create { quiz_id })
             }
             Kind::Manage { session_id } => ws.send(&Request::Manage { session_id })
         }
 
-        Self { props, link, ws, session: None, data: None }
+        Self { ws, session: None, data: None }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        match (msg, self.props.kind) {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match (msg, ctx.props().kind) {
             (Msg::WsResponse(Response::Created(session)), Kind::Host { .. }) => {
                 self.ws.send(&Request::Host { session_id: session.session_id });
                 self.session = Some(session);
@@ -71,8 +67,8 @@ impl Component for QuizLoader {
                 true
             }
             (Msg::WsResponse(Response::Updated(session)), _) => {
-                if let None = self.data {
-                    self.link.send_future(quiz(session.quiz_id).map(Msg::QuizLoaded));
+                if let (None, Kind::Manage {..}) = (&self.data, ctx.props().kind) {
+                    ctx.link().send_future(quiz(session.quiz_id).map(Msg::QuizLoaded));
                 }
                 self.session = Some(session);
                 true
@@ -101,14 +97,11 @@ impl Component for QuizLoader {
         }
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
 
-    fn view(&self) -> Html {
-        let onchange = self.link.callback(Msg::Changed);
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let onchange = ctx.link().callback(Msg::Changed);
 
-        match (&self.session, &self.data, self.props.kind) {
+        match (&self.session, &self.data, ctx.props().kind) {
             (Some(session), Some((quiz, rounds)), Kind::Host { .. }) => {
                 html! {<Host session={session.clone()} quiz={quiz.clone()} rounds={rounds.clone()} onchange={onchange} />}
             }
@@ -119,7 +112,7 @@ impl Component for QuizLoader {
         }
     }
 
-    fn destroy(&mut self) {
+    fn destroy(&mut self, _: &Context<Self>) {
         if let Some(window) = window() {
             window.set_onbeforeunload(None)
         }

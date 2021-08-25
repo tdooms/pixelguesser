@@ -1,6 +1,5 @@
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew_agent::{Dispatched, Dispatcher};
 
@@ -26,9 +25,6 @@ pub struct Props {
 }
 
 pub struct Pixelate {
-    link: ComponentLink<Self>,
-    props: Props,
-
     pixels: f64,
 
     resizer: Resizer,
@@ -79,11 +75,9 @@ impl Component for Pixelate {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
-            props,
-            resizer: Resizer::new(link.callback(|_| Msg::Resize)),
-            link,
+            resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
             pixels: 4.0,
             timer: None,
             notifications: NotificationAgent::dispatcher(),
@@ -94,16 +88,16 @@ impl Component for Pixelate {
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Loaded => {
                 let _ = self.initialize();
                 let _ = self.draw();
 
-                self.link.send_message(Msg::Pixelate);
+                ctx.link().send_message(Msg::Pixelate);
             }
             Msg::Pixelate => {
-                let speed = match self.props.status {
+                let speed = match ctx.props().status {
                     Status::Playing { paused: false } => 1.002,
                     Status::Revealing => 1.07,
                     Status::Revealed | Status::Playing { paused: true } => return false,
@@ -119,11 +113,10 @@ impl Component for Pixelate {
 
                 // TODO: max pixels should be screen size instead of image size maybe?
                 if clamped_pixels == max_pixels {
-                    self.props.status = Status::Revealed;
-                    self.props.onrevealed.emit(());
+                    ctx.props().onrevealed.emit(());
                     self.timer = None;
                 } else {
-                    let cloned = self.link.clone();
+                    let cloned = ctx.link().clone();
                     self.timer = Some(Timeout::new(33, move || cloned.send_message(Msg::Pixelate)));
                 }
 
@@ -137,26 +130,27 @@ impl Component for Pixelate {
         false
     }
 
-    fn change(&mut self, props: Self::Properties) -> bool {
-        if self.props.url != props.url {
-            self.restart()
-        }
+    fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        // TODO: does this work?
+        // if self.props.url != props.url {
+        //     self.restart()
+        // }
 
-        match props.status {
+        match ctx.props().status {
             Status::Playing { paused: true } => self.timer = None,
-            Status::Playing { paused: false } => self.link.send_message(Msg::Pixelate),
+            Status::Playing { paused: false } => ctx.link().send_message(Msg::Pixelate),
             _ => {}
         };
 
-        self.props.neq_assign(props)
+        true
     }
 
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
-                <img src={format!("http://{}/{}", IMAGE_ENDPOINT, self.props.url)}
+                <img src={format!("http://{}/{}", IMAGE_ENDPOINT, ctx.props().url)}
                      style="display:none"
-                     onload={self.link.callback(|_| Msg::Loaded)}
+                     onload={ctx.link().callback(|_| Msg::Loaded)}
                      ref={self.image.clone()}/>
                 <canvas style="display:none" ref={self.offscreen.clone()}/>
 

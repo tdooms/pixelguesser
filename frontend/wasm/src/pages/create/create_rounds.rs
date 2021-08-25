@@ -1,18 +1,18 @@
-use web_sys::Url;
+
 use yew::prelude::*;
 
+use cbs::SidebarAlignment;
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize};
-use cbs::SidebarAlignment;
 
-use crate::graphql::DraftRound;
+use crate::graphql::{DraftRound, RoundInfo, Image};
 
-use super::{CenterImage, SideImages, RoundOptions, SideUpload};
+use super::{CenterImage, SideInfo, SideImages, SideUpload};
 
 pub enum Msg {
     AddRound,
     RemoveRound,
-    ChangeRound(DraftRound),
+    ChangeRoundInfo(RoundInfo),
 
     AddImage(Vec<web_sys::File>),
     RemoveImage,
@@ -22,12 +22,10 @@ pub enum Msg {
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onback: Callback<()>,
-    pub ondone: Callback<()>
+    pub ondone: Callback<()>,
 }
 
 pub struct CreateRounds {
-    props: Props,
-    link: ComponentLink<Self>,
     rounds: Vec<DraftRound>,
     current: usize,
 }
@@ -36,19 +34,19 @@ impl Component for CreateRounds {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { props, link, current: 0, rounds: vec![DraftRound::default()] }
+    fn create(ctx: &Context<Self>) -> Self {
+        Self { current: 0, rounds: vec![DraftRound::default()] }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::ChangeRound(draft) => {
-                self.rounds[self.current] = draft;
-                false
+            Msg::ChangeRoundInfo(info) => {
+                self.rounds[self.current].info = info;
+                true
             }
             Msg::RemoveRound => {
                 self.rounds.remove(self.current);
-                // TODO: I suspect the current index not always valid?
+                // TODO: I suspect the current index is not always valid?
                 true
             }
             Msg::AddRound => {
@@ -57,15 +55,15 @@ impl Component for CreateRounds {
                 true
             }
             Msg::RemoveImage => {
-                self.rounds[self.current].image_local = None;
-                self.rounds[self.current].image_url = None;
+                self.rounds[self.current].image = Image::None;
                 true
             }
             Msg::AddImage(files) if files.len() == 1 => {
-                false
+                self.rounds[self.current].image = Image::new(&files[0]);
+                true
             }
             Msg::AddImage(files) => {
-                // TODO: error
+                // TODO: give error
                 false
             }
             Msg::SelectImage(index) => {
@@ -75,39 +73,26 @@ impl Component for CreateRounds {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> bool {
-        false
-    }
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let add_round = ctx.link().callback(|_| Msg::AddRound);
+        let remove_round = ctx.link().callback(|_| Msg::RemoveRound);
+        let change_round_info = ctx.link().callback(move |draft| Msg::ChangeRoundInfo(draft));
 
-    fn view(&self) -> Html {
-        let add_round = self.link.callback(|_| Msg::AddRound);
-        let remove_round = self.link.callback(|_| Msg::RemoveRound);
-        let change_round = self.link.callback(move |draft| Msg::ChangeRound(draft));
-
-        let add_image = self.link.callback(|file| Msg::AddImage(file));
-        let remove_image = self.link.callback(|_| Msg::RemoveImage);
-        let select_image = self.link.callback(Msg::SelectImage);
+        let add_image = ctx.link().callback(|file| Msg::AddImage(file));
+        let remove_image = ctx.link().callback(|_| Msg::RemoveImage);
+        let select_image = ctx.link().callback(Msg::SelectImage);
 
         let side_images: Vec<_> = self
             .rounds
             .iter()
-            .map(|round| {
-                round.image_local.as_ref().map(|x| Url::create_object_url_with_blob(&x).unwrap())
-            })
+            .map(|round| round.image.src())
             .collect();
 
         let draft = self.rounds[self.current].clone();
 
-        let src = match (&draft.image_url, &draft.image_local) {
-            (Some(url), Some(_)) => Some(url.clone()), // TODO: error
-            (Some(url), _) => Some(url.clone()),
-            (_, Some(image)) => Url::create_object_url_with_blob(image).ok(),
-            (None, None) => None
-        };
-
-        let center = match src {
+        let center = match draft.image.src() {
             Some(src) => html! { <CenterImage src={src} onremove={remove_image}/> },
-            None => html! { {"no image"} }
+            None => html! { <cbs::Center> {"no image"} </cbs::Center> }
         };
 
         let left_footer = html! {
@@ -123,18 +108,18 @@ impl Component for CreateRounds {
 
         let right_footer = html! {
             <Buttons extra="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Success} light=true onclick={self.props.ondone.clone()}>
+                <Button fullwidth=true color={Color::Success} light=true onclick={ctx.props().ondone.clone()}>
                     <Icon icon={"fas fa-arrow-right"}/> <span> {"done"} </span>
                 </Button>
-                <Button  fullwidth=true color={Color::Danger} light=true onclick={self.props.onback.clone()}>
+                <Button  fullwidth=true color={Color::Danger} light=true onclick={ctx.props().onback.clone()}>
                     <Icon icon={"fas fa-arrow-left"}/> <span> {"back"} </span>
                 </Button>
             </Buttons>
         };
 
-        let right_side = match draft.image_url.is_some() || draft.image_local.is_some() {
-            true => html! { <RoundOptions draft={draft} onchange={change_round} /> },
-            false => html! { <SideUpload onupload={add_image} />}
+        let right_side = match draft.image.src() {
+            Some(_) => html! { <SideInfo info={draft.info} onchange={change_round_info} /> },
+            None => html! { <SideUpload onupload={add_image} />}
         };
 
         html! {

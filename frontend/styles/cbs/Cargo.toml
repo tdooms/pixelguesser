@@ -9,7 +9,7 @@ edition = "2018"
 pbs = { path = "../pbs" }
 fa = { path = "../fa" }
 
-yew = { git = "https://github.com/yewstack/yew.git" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "4e974dad9282eb765738394b8ee6c6a7d9baa2d9" }
 
 strum = "0.21"
 strum_macros = "0.21"

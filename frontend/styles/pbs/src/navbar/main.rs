@@ -4,7 +4,7 @@ use crate::properties::{Transparent, Color, Spaced, Shadow};
 // TODO: is fixed navbar possible without too much hassle?
 // https://bulma.io/documentation/components/navbar/#fixed-navbar
 #[derive(Clone, Debug, Properties, PartialEq)]
-struct Props {
+pub struct Props {
     children: Children,
     transparent: Transparent,
     spaced: Spaced,

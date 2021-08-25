@@ -37,7 +37,7 @@ pub fn host(props: &Props) -> Html {
             let stage = change_stage(session.stage);
             let onrevealed = onchange.reform(move |_| SessionDiff { stage, players: None });
 
-            let url = rounds[*round].image_url.clone();
+            let url = rounds[*round].image_url.clone().unwrap();
 
             html! { <Pixelate onrevealed={onrevealed} status={*status} url={url}/> }
         }

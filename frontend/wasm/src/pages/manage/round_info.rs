@@ -20,8 +20,8 @@ pub fn round_info(props: &Props) -> Html {
 
     let body = html! {
         <Container extra="has-text-centered">
-            <Title> {props.round.answer.clone()} </Title>
-            <Subtitle> {props.round.points} {" points"} </Subtitle>
+            <Title> {props.round.info.answer.clone()} </Title>
+            <Subtitle> {props.round.info.points} {" points"} </Subtitle>
         </Container>
     };
 

@@ -1,6 +1,5 @@
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 use pbs::prelude::*;
 use pbs::properties::Color;
@@ -29,7 +28,6 @@ pub enum Msg {
 }
 
 pub struct Code {
-    link: ComponentLink<Self>,
     ws: WebsocketTask,
     timer: Option<Timeout>,
 
@@ -41,27 +39,30 @@ impl Component for Code {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         let url = format!("ws://{}/ws", SESSION_ENDPOINT);
-        let ws = WebsocketTask::create(url, link.callback(Msg::WsResponse));
+        let ws = WebsocketTask::create(url, ctx.link().callback(Msg::WsResponse));
 
-        Self { link, ws, timer: None, current: None, state: State::None }
+        Self { ws, timer: None, current: None, state: State::None }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match (msg, self.current) {
             (Msg::Check(Some(id)), Some(current)) if id == current => {
-                self.state.neq_assign(State::Available)
+                self.state = State::Available;
+                true
             }
-            (Msg::Check(None), _) => self.state.neq_assign(State::Invalid),
+            (Msg::Check(None), _) => {
+                self.state = State::Invalid;
+                true
+            },
             (Msg::Input(string), _) => {
-                let cloned = self.link.clone();
+                let cloned = ctx.link().clone();
                 self.timer = Some(Timeout::new(200, move || cloned.send_message(Msg::Timer)));
 
-                let res1 = self.state.neq_assign(State::Invalid);
-                let res2 = self.current.neq_assign(string_to_code(&string));
-
-                res1 | res2
+                self.state = State::Invalid;
+                self.current = string_to_code(&string);
+                true
             }
             (Msg::Timer, Some(session_id)) => {
                 self.ws.send(&Request::Read { session_id });
@@ -83,14 +84,10 @@ impl Component for Code {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> bool {
-        false
-    }
-
-    fn view(&self) -> Html {
-        let oninput = self.link.callback(Msg::Input);
-        let onjoin = self.link.callback(|_| Msg::Join);
-        let oncancel = self.link.callback(|_| Msg::Cancel);
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let oninput = ctx.link().callback(Msg::Input);
+        let onjoin = ctx.link().callback(|_| Msg::Join);
+        let oncancel = ctx.link().callback(|_| Msg::Cancel);
 
         let (help, help_color, icon_right, input_color) = match self.state {
             State::Available => {

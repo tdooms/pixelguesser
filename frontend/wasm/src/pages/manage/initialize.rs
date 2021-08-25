@@ -3,7 +3,7 @@ use yew::prelude::*;
 use pbs::prelude::*;
 use pbs::properties::{Color, InputType, Size};
 
-#[derive(Clone, Properties)]
+#[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onchange: Callback<String>,
 }
@@ -14,8 +14,6 @@ pub enum Msg {
 }
 
 pub struct Initialize {
-    link: ComponentLink<Self>,
-    props: Props,
     value: String,
 }
 
@@ -23,27 +21,23 @@ impl Component for Initialize {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self { link, props, value: String::new() }
+    fn create(ctx: &Context<Self>) -> Self {
+        Self {value: String::new() }
     }
 
-    fn update(&mut self, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Submit => {
-                self.props.onchange.emit(std::mem::take(&mut self.value));
+                ctx.props().onchange.emit(std::mem::take(&mut self.value));
             }
             Msg::Value(value) => self.value = value,
         }
         true
     }
 
-    fn change(&mut self, _props: Self::Properties) -> bool {
-        false
-    }
-
-    fn view(&self) -> Html {
-        let oninput = self.link.callback(Msg::Value);
-        let onclick = self.link.callback(|_| Msg::Submit);
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let oninput = ctx.link().callback(Msg::Value);
+        let onclick = ctx.link().callback(|_| Msg::Submit);
 
         html! {
             <Field grouped=true>

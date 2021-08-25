@@ -1,5 +1,4 @@
 use yew::prelude::*;
-use yew::utils::NeqAssign;
 
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize, HeroSize};
@@ -14,53 +13,33 @@ pub struct Props {
     pub quiz: Quiz,
 }
 
-pub struct Lobby {
-    props: Props,
-}
+#[function_component(Lobby)]
+pub fn lobby(props: &Props) -> Html {
+    let Props { session, code, quiz } = &props;
 
-impl Component for Lobby {
-    type Message = ();
-    type Properties = Props;
+    let players = session.players.iter().map(|player| {
+        html! { <Column size={ColumnSize::IsNarrow}> <Box> {&player.name} </Box> </Column> }
+    });
 
-    fn create(props: Self::Properties, _: ComponentLink<Self>) -> Self {
-        Self { props }
-    }
+    let subtitle = match session.has_manager {
+        true => "quiz master present",
+        false => "no quiz master",
+    };
 
-    fn update(&mut self, _: Self::Message) -> ShouldRender {
-        false
-    }
+    let body = html! {
+        <Container extra="has-text-centered">
+            <Title> {code} </Title>
+        </Container>
+    };
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.props.neq_assign(props)
-    }
+    html! {
+        <>
+            <cbs::TitleHero title={quiz.name.clone()} subtitle={subtitle} />
+            <Hero color={Color::Primary} size={HeroSize::Medium} body={body} />
 
-    fn view(&self) -> Html {
-        let Props { session, code, quiz } = &self.props;
-
-        let players = session.players.iter().map(|player| {
-            html! { <Column size={ColumnSize::IsNarrow}> <Box> {&player.name} </Box> </Column> }
-        });
-
-        let subtitle = match session.has_manager {
-            true => "quiz master present",
-            false => "no quiz master",
-        };
-
-        let body = html! {
-            <Container extra="has-text-centered">
-                <Title> {code} </Title>
-            </Container>
-        };
-
-        html! {
-            <>
-                <cbs::TitleHero title={quiz.name.clone()} subtitle={subtitle} />
-                <Hero color={Color::Primary} size={HeroSize::Medium} body={body} />
-
-                <Columns multiline=true centered=true extra="mt-5">
-                    { for players }
-                </Columns>
-            </>
-        }
+            <Columns multiline=true centered=true extra="mt-5">
+                { for players }
+            </Columns>
+        </>
     }
 }
