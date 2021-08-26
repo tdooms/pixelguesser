@@ -4,7 +4,7 @@ use cbs::MaybeLoading;
 use pbs::prelude::*;
 use pbs::properties::ColumnSize;
 
-use crate::components::{Navbar, QuizCard};
+use crate::components::{MainNavbar, QuizCard};
 use crate::constants::{image_url, PLACEHOLDER};
 use crate::error::Error;
 use crate::graphql::{Quiz, quizzes};
@@ -28,7 +28,7 @@ impl Component for Overview {
             Ok(quizzes) => {
                 self.quizzes = Some(quizzes);
                 true
-            },
+            }
             Err(err) => {
                 log::error!("http error: {:?}", err);
                 false
@@ -58,7 +58,7 @@ impl Component for Overview {
         let view_quizzes = |quizzes: &Vec<Quiz>| {
             html! {
                 <>
-                <Navbar/>
+                <MainNavbar/>
                 <Section>
                     <Container>
                         { for quizzes.chunks(4).map(view_quiz_cards) }

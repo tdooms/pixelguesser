@@ -60,3 +60,5 @@ bool_prop!(Vertical, "is-vertical");
 bool_prop!(Dropdown, "has-dropdown");
 bool_prop!(Transparent, "is-transparent");
 bool_prop!(Shadow, "has-shadow");
+bool_prop!(TextCentered, "has-text-centered");
+bool_prop!(Mobile, "is-mobile");

@@ -16,14 +16,12 @@ pub fn rating(props: &Props) -> Html {
         <Subtitle> {props.quiz.name.clone()} </Subtitle>
     };
 
-    let body = html! {
-        <Container extra="has-text-centered">
-            <Title> {"give rating"} </Title>
-            <Subtitle> {"TODO"} </Subtitle>
-        </Container>
-    };
-
     html! {
-        <Hero size={HeroSize::Medium} header={header} body={body}/>
+        <Hero size={HeroSize::Medium} header={header}>
+            <Container extra="has-text-centered">
+                <Title> {"give rating"} </Title>
+                <Subtitle> {"TODO"} </Subtitle>
+            </Container>
+        </Hero>
     }
 }

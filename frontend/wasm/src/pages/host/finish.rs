@@ -16,12 +16,14 @@ pub struct Props {
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
     let Props { players, quiz, .. } = &props;
-    let body = html! { <Scores players={players.clone()}/> };
+    let body = html! {  };
 
     html! {
         <>
             <cbs::TitleHero color={Color::Primary} title={quiz.name.clone()} subtitle={"finished"}/>
-            <Hero body={body} color={Color::Primary} size={HeroSize::Medium}/>
+            <Hero color={Color::Primary} size={HeroSize::Medium}>
+                <Scores players={players.clone()}/>
+            </Hero>
         </>
     }
 }

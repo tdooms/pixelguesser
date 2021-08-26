@@ -25,6 +25,7 @@ pub struct Props {
 }
 
 pub struct Pixelate {
+    url: String,
     pixels: f64,
 
     resizer: Resizer,
@@ -78,6 +79,7 @@ impl Component for Pixelate {
     fn create(ctx: &Context<Self>) -> Self {
         Self {
             resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
+            url: ctx.props().url.clone(),
             pixels: 4.0,
             timer: None,
             notifications: NotificationAgent::dispatcher(),
@@ -131,10 +133,10 @@ impl Component for Pixelate {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        // TODO: does this work?
-        // if self.props.url != props.url {
-        //     self.restart()
-        // }
+        if self.url != ctx.props().url {
+            self.url = ctx.props().url.clone();
+            self.restart()
+        }
 
         match ctx.props().status {
             Status::Playing { paused: true } => self.timer = None,

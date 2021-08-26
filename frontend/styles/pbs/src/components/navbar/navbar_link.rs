@@ -4,7 +4,7 @@ use yew_router::prelude::*;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props<T: Routable + PartialEq + 'static> {
     children: Children,
-    route: T
+    route: T,
 }
 
 #[function_component(NavbarLink)]

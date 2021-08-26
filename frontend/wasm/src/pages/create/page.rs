@@ -12,7 +12,7 @@ pub enum Msg {
     Back,
     Continue(DraftQuiz),
     Cancel,
-    Todo
+    Todo,
 }
 
 enum Stage {

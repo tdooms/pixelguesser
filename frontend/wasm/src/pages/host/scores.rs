@@ -1,5 +1,6 @@
 use yew::prelude::*;
 
+use pbs::elements::Box;
 use pbs::prelude::*;
 use pbs::properties::ColumnSize;
 use shared::Player;

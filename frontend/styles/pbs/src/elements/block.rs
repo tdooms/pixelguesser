@@ -9,10 +9,8 @@ pub struct Props {
     pub extra: String,
 }
 
-/// A white box to contain other elements.
-/// [https://bulma.io/documentation/elements/box/](https://bulma.io/documentation/elements/box/)
-#[function_component(Box)]
-pub fn r#box(props: &Props) -> Html {
+#[function_component(Block)]
+pub fn block(props: &Props) -> Html {
     let classes = classes!("block", &props.extra);
     html! {
         <div class={classes}>

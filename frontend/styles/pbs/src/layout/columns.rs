@@ -1,5 +1,6 @@
-use crate::properties::{Centered, Gapless, Multiline, VCentered};
 use yew::prelude::*;
+
+use crate::properties::{Centered, Gapless, Multiline, VCentered};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

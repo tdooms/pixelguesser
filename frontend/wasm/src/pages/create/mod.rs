@@ -1,11 +1,11 @@
 use center_image::CenterImage;
+use confirm::Confirm;
 use create_quiz::CreateQuiz;
 use create_rounds::CreateRounds;
 pub use page::Create;
 use side_images::SideImages;
 use side_info::SideInfo;
 use side_upload::SideUpload;
-use confirm::Confirm;
 
 mod center_image;
 mod create_quiz;

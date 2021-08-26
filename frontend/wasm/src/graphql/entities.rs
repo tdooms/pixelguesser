@@ -66,13 +66,13 @@ impl Default for Image {
 }
 
 impl Image {
-    pub fn new(file: &web_sys::File ) -> Self {
+    pub fn new(file: &web_sys::File) -> Self {
         Self::Local { local: file.clone(), url: Url::create_object_url_with_blob(file).unwrap() }
     }
 
     pub fn src(&self) -> Option<String> {
         match self {
-            Image::Url { url } | Image::Local { url, .. }=> Some(url.clone()),
+            Image::Url { url } | Image::Local { url, .. } => Some(url.clone()),
             Image::None => None
         }
     }

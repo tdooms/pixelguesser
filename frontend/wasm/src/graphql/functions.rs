@@ -2,18 +2,21 @@ use std::fmt::Debug;
 
 use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
-use serde_json::Value;
 
 use crate::error::Error;
-use crate::graphql::{Quiz, Round, DraftRound, DraftQuiz};
+use crate::graphql::{DraftQuiz, DraftRound, Quiz, Round};
+use crate::graphql::convert::*;
+use crate::graphql::data::*;
 
 use super::keys::{GRAPHQL_API, GRAPHQL_SECRET};
-use crate::graphql::convert::SerRound;
 
-#[derive(serde::Deserialize, Debug)]
-struct GraphqlError {
-    extensions: Value,
-    message: String,
+const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
+const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image_url";
+
+pub enum Kind<'r> {
+    Query(&'r str),
+    Mutation(&'r str),
+    Subscription(&'r str),
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -21,44 +24,6 @@ struct GraphqlError {
 enum Response<T> {
     Data { data: T },
     Errors { errors: Vec<GraphqlError> },
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct AffectedRows {
-    affected_rows: u64
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct QuizzesData {
-    pub quizzes: Vec<Quiz>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct QuizData {
-    pub quizzes_by_pk: Quiz,
-    pub rounds: Vec<Round>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct SaveRoundsData {
-    pub delete_rounds: AffectedRows,
-    pub insert_rounds: AffectedRows
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct CompleteQuizData {
-    pub update_quizzes: AffectedRows,
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct CreateQuizData {
-    pub insert_quizzes_one: AffectedRows,
-}
-
-pub enum Kind<'r> {
-    Query(&'r str),
-    Mutation(&'r str),
-    Subscription(&'r str)
 }
 
 pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Error> {
@@ -86,11 +51,8 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Err
     }
 }
 
-const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
-const ROUND_FIELDS: &str = "answer points guesses image_url";
-
 pub async fn quizzes() -> Result<Vec<Quiz>, Error> {
-    let str= format!("quizzes {{ {} }}", QUIZ_FIELDS);
+    let str = format!("quizzes {{ {} }}", QUIZ_FIELDS);
 
     let data: QuizzesData = exec(Kind::Query(&str)).await?;
     Ok(data.quizzes)
@@ -109,7 +71,7 @@ pub async fn save_rounds(quiz_id: u64, rounds: &[DraftRound]) -> Result<(u64, u6
         index: index as u64,
         info: draft.info.clone(),
         options: draft.options.clone(),
-        image_url: None
+        image_url: None,
     }).collect();
 
     let objects = serde_json::to_string(&ser).unwrap();

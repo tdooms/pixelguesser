@@ -55,7 +55,7 @@ impl Component for Code {
             (Msg::Check(None), _) => {
                 self.state = State::Invalid;
                 true
-            },
+            }
             (Msg::Input(string), _) => {
                 let cloned = ctx.link().clone();
                 self.timer = Some(Timeout::new(200, move || cloned.send_message(Msg::Timer)));

@@ -31,8 +31,8 @@ pub struct Props {
 /// An HTML table component.
 ///
 /// [https://bulma.io/documentation/elements/table/](https://bulma.io/documentation/elements/table/)
-#[function_component(Image)]
-pub fn image(props: &Props) -> html {
+#[function_component(Table)]
+pub fn table(props: &Props) -> html {
     let classes = classes!(
         "table",
         &props.extra,

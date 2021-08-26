@@ -1,7 +1,8 @@
 use yew::prelude::*;
 use yew_router::components::Link;
+
 use pbs::prelude::*;
-use pbs::properties::Color;
+use pbs::properties::{Color, ImageSize};
 
 use crate::route::Route;
 
@@ -35,27 +36,18 @@ pub fn quiz_card(props: &Props) -> Html {
         },
     };
 
+    let image = html_nested! { <Image size={ImageSize::Is3by2} src={props.src.clone()} /> };
+
     html! {
-        <div class="card" style="height:100%;display:flex;flex-direction:column">
-            <div class="card-image">
-                <figure class="image is-3by2">
-                    <img src={props.src.clone()}/>
-                </figure>
-            </div>
-            <div class="card-content" style="height:100%">
-                <div class="media">
-                    <div class="media-content" style="overflow:hidden">
-                        <p class="title is-4"> { props.name.clone() } </p>
-                        <p class="subtitle is-6"> { props.creator.clone() } </p>
-                    </div>
-                </div>
-                <div class="content">
-                    { props.description.clone() }
-                </div>
-            </div>
-            <div class="card-footer">
-                { footer }
-            </div>
-        </div>
+        <Card image={image} footer={footer} fullheight=true>
+            <Media>
+                <p class="title is-4"> { props.name.clone() } </p>
+                <p class="subtitle is-6"> { props.creator.clone() } </p>
+            </Media>
+
+            <Content>
+                { props.description.clone() }
+            </Content>
+        </Card>
     }
 }

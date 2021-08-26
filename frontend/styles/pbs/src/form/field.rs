@@ -1,5 +1,6 @@
-use crate::properties::{Addons, Grouped, GroupedMultiline};
 use yew::prelude::*;
+
+use crate::properties::{Addons, Grouped, GroupedMultiline};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

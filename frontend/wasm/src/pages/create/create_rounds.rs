@@ -1,13 +1,12 @@
-
 use yew::prelude::*;
 
 use cbs::SidebarAlignment;
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize};
 
-use crate::graphql::{DraftRound, RoundInfo, Image};
+use crate::graphql::{DraftRound, Image, RoundInfo};
 
-use super::{CenterImage, SideInfo, SideImages, SideUpload};
+use super::{CenterImage, SideImages, SideInfo, SideUpload};
 
 pub enum Msg {
     AddRound,

@@ -22,7 +22,7 @@ impl Component for Initialize {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-        Self {value: String::new() }
+        Self { value: String::new() }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {

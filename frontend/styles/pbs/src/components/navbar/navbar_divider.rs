@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    children: Children
+    children: Children,
 }
 
 #[function_component(NavbarDivider)]

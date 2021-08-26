@@ -1,11 +1,12 @@
 use yew::prelude::*;
+
 use crate::properties::{Dropdown, Hoverable};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     children: Children,
     dropdown: Dropdown,
-    hoverable: Hoverable
+    hoverable: Hoverable,
 }
 
 #[function_component(NavbarItem)]

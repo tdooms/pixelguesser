@@ -1,8 +1,8 @@
 use yew::prelude::*;
+use yew::web_sys;
 use yew::web_sys::HtmlInputElement;
 
 use crate::properties::{Alignment, Boxed, Color, Fullwidth, Size};
-use yew::web_sys;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {

@@ -1,10 +1,11 @@
 use yew::prelude::*;
+
 use pbs::prelude::*;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {
     pub onconfirm: Callback<()>,
-    pub onback: Callback<()>
+    pub onback: Callback<()>,
 }
 
 #[function_component(Confirm)]

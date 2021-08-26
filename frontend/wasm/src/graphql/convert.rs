@@ -1,5 +1,6 @@
+use serde::{Deserialize, Serialize};
+
 use crate::graphql::{RoundInfo, RoundOptions};
-use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct SerRound {

@@ -1,17 +1,16 @@
-pub use breadcrumb::*;
-pub use card::*;
+pub use breadcrumb::Breadcrumb;
 pub use dropdown::*;
+pub use navbar::*;
+pub use card::*;
 pub use menu::*;
-pub use message::*;
-pub use modal::*;
-pub use modal_card::*;
-pub use pagination::*;
-pub use panel::*;
-pub use tabs::*;
+pub use message::Message;
+pub use modal::Modal;
+pub use modal_card::ModalCard;
+// pub use pagination::Pagination;
+// pub use panel::Panel;
+pub use tabs::Tabs;
 
 mod breadcrumb;
-mod card;
-mod dropdown;
 mod menu;
 mod message;
 mod modal;
@@ -19,4 +18,7 @@ mod modal_card;
 mod pagination;
 mod panel;
 mod tabs;
+mod card;
+mod navbar;
+mod dropdown;
 

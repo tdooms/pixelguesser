@@ -1,10 +1,11 @@
 use yew::prelude::*;
+
 use pbs::prelude::*;
 use pbs::properties::Alignment;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onupload: Callback<Vec<web_sys::File>>
+    pub onupload: Callback<Vec<web_sys::File>>,
 }
 
 #[function_component(SideUpload)]

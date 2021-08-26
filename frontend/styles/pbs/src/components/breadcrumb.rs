@@ -23,7 +23,7 @@ pub struct Props {
 
 /// A simple breadcrumb component to improve your navigation experience.
 /// [https://bulma.io/documentation/components/breadcrumb/](https://bulma.io/documentation/components/breadcrumb/)
-#[function_component(BreadCrumb)]
+#[function_component(Breadcrumb)]
 pub fn breadcrumb(props: &Props) -> Html {
     let classes =
         classes!("breadcrumb", props.size, props.alignment, props.separator, &props.extra);

@@ -1,5 +1,6 @@
-use crate::properties::{Color, Size};
 use yew::prelude::*;
+
+use crate::properties::{Color, Size};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -22,8 +23,8 @@ pub struct Props {
 /// A native HTML progress bar.
 ///
 /// [https://bulma.io/documentation/elements/progress/](https://bulma.io/documentation/elements/progress/)
-#[function_component(Image)]
-pub fn image(props: &Props) -> Html {
+#[function_component(Progress)]
+pub fn progress(props: &Props) -> Html {
     let classes = classes!("progress", &props.extra, props.size, props.color);
 
     let max = props.max.to_string();

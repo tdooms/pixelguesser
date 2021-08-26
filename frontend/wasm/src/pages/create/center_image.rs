@@ -9,7 +9,7 @@ pub enum Msg {
     Resume,
     Preview,
     Remove,
-    Revealed
+    Revealed,
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -19,7 +19,6 @@ pub struct Props {
 }
 
 pub struct CenterImage {
-
     preview: bool,
 }
 
@@ -44,8 +43,7 @@ impl Component for CenterImage {
 
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-
-        let pixelate_buttons = || html!{
+        let pixelate_buttons = || html! {
             <Buttons alignment={Alignment::Centered} extra="mt-5">
                 <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>
                     <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>

@@ -67,7 +67,7 @@ impl Component for QuizLoader {
                 true
             }
             (Msg::WsResponse(Response::Updated(session)), _) => {
-                if let (None, Kind::Manage {..}) = (&self.data, ctx.props().kind) {
+                if let (None, Kind::Manage { .. }) = (&self.data, ctx.props().kind) {
                     ctx.link().send_future(quiz(session.quiz_id).map(Msg::QuizLoaded));
                 }
                 self.session = Some(session);

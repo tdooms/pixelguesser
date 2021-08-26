@@ -1,5 +1,6 @@
 use yew::prelude::*;
 
+use pbs::elements::Box;
 use pbs::prelude::*;
 use pbs::properties::{Color, ColumnSize, HeroSize};
 use shared::Session;
@@ -26,16 +27,15 @@ pub fn lobby(props: &Props) -> Html {
         false => "no quiz master",
     };
 
-    let body = html! {
-        <Container extra="has-text-centered">
-            <Title> {code} </Title>
-        </Container>
-    };
-
     html! {
         <>
             <cbs::TitleHero title={quiz.name.clone()} subtitle={subtitle} />
-            <Hero color={Color::Primary} size={HeroSize::Medium} body={body} />
+
+            <Hero color={Color::Primary} size={HeroSize::Medium}>
+                <Container extra="has-text-centered">
+                    <Title> {code} </Title>
+                </Container>
+            </Hero>
 
             <Columns multiline=true centered=true extra="mt-5">
                 { for players }

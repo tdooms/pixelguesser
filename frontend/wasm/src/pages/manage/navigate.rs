@@ -21,7 +21,7 @@ impl Component for Navigate {
     type Properties = Props;
 
     fn create(_: &Context<Self>) -> Self {
-        Self {  }
+        Self {}
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {

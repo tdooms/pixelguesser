@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 
+use futures::FutureExt;
 use yew::prelude::*;
 
 use pbs::prelude::*;
@@ -6,9 +8,7 @@ use pbs::properties::{Color, ColumnSize};
 
 use crate::components::QuizCard;
 use crate::constants::PLACEHOLDER;
-use crate::graphql::{DraftQuiz, Image, create_quiz};
-use std::collections::HashMap;
-use futures::FutureExt;
+use crate::graphql::{create_quiz, DraftQuiz, Image};
 
 pub enum Msg {
     Name(String),
@@ -61,7 +61,7 @@ impl Component for CreateQuiz {
             Msg::Continue => {
                 let cloned = self.draft.clone();
                 ctx.link().send_future(create_quiz(cloned).map(|_| Msg::QuizUploaded))
-            },
+            }
         };
         true
     }

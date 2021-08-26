@@ -1,9 +1,6 @@
-
-
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
-
 
 use crate::components::Kind;
 use crate::components::QuizLoader;

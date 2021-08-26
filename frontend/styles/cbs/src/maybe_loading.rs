@@ -1,7 +1,8 @@
 use yew::prelude::*;
 
-use crate::loading::Loading;
 use pbs::properties::Color;
+
+use crate::loading::Loading;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

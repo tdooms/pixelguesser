@@ -1,10 +1,10 @@
 use std::fmt::Display;
+use std::marker::PhantomData;
 
 use yew::prelude::*;
 
 use pbs::prelude::*;
 use pbs::properties::Color;
-use std::marker::PhantomData;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct AlertsProps<T: Clone + Display + PartialEq + 'static> {
@@ -13,8 +13,8 @@ pub struct AlertsProps<T: Clone + Display + PartialEq + 'static> {
 }
 
 #[derive(Default)]
-pub struct Alerts<T: Clone + Display + PartialEq + 'static>{
-    phantom: PhantomData<T>
+pub struct Alerts<T: Clone + Display + PartialEq + 'static> {
+    phantom: PhantomData<T>,
 }
 
 impl<T: Clone + Display + PartialEq + 'static> Component for Alerts<T> {
