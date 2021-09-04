@@ -16,38 +16,30 @@ pub struct Props<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static> {
     pub size: Size,
 
     #[prop_or_default]
-    pub rounded: Rounded,
-
-    #[prop_or_default]
     pub hovered: Hovered,
 
     #[prop_or_default]
     pub focussed: Focused,
 
-    #[prop_or_default]
-    pub loading: Loading,
-
-    pub selected: T,
-
-    pub onselect: Callback<T>,
+    pub selected: Vec<T>,
 }
 
-#[function_component(Select)]
-pub fn select<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static>(
+#[function_component(MultipleSelect)]
+pub fn multiple_select<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static>(
     props: &Props<T>,
 ) -> Html {
-    let classes =
-        classes!("select", &props.extra, props.color, props.size, props.rounded, props.loading);
+    let classes = classes!("select", "is-multiple", &props.extra, props.color, props.size);
 
+    // TODO: fix vector
     let view_option = |variant: T| {
-        let selected = std::mem::discriminant(&variant) == std::mem::discriminant(&props.selected);
-        let onclick = (!selected).then(move || props.onselect.reform(move |_| variant));
-        html! { <option selected={selected} onclick={onclick}> {variant} </option> }
+        let selected = (props.selected.contains(&variant));
+
+        html! { <option selected={selected}> {variant} </option> }
     };
 
     html! {
         <div class={classes}>
-            <select class={classes!(props.hovered, props.focussed)}>
+            <select multiple={true} size={T::iter().count().to_string()} class={classes!(props.hovered, props.focussed)}>
                 { for T::iter().map(view_option) }
             </select>
         </div>

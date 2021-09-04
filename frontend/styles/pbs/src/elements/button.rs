@@ -1,8 +1,6 @@
 use yew::prelude::*;
 
-use crate::properties::{
-    Color, Disabled, Fullwidth, Hidden, Inverted, Light, Loading, Outlined, Rounded, Selected, Size,
-};
+use crate::properties::{Color, Disabled, Fullwidth, Hidden, Inverted, Light, Loading, Outlined, Rounded, Selected, Size, Hovered, Focused, Active, Static};
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -46,6 +44,18 @@ pub struct Props {
     pub color: Option<Color>,
 
     #[prop_or_default]
+    pub hovered: Hovered,
+
+    #[prop_or_default]
+    pub focussed: Focused,
+
+    #[prop_or_default]
+    pub active: Active,
+
+    #[prop_or_default]
+    pub r#static: Static,
+
+    #[prop_or_default]
     pub extra: String,
 }
 
@@ -65,6 +75,10 @@ pub fn button(props: &Props) -> Html {
         props.selected,
         props.color,
         props.size,
+        props.hovered,
+        props.focussed,
+        props.active,
+        props.r#static,
         &props.extra
     );
 

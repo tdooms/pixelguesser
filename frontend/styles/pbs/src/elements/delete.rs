@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use crate::properties::Size;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -7,6 +8,10 @@ pub struct Props {
 
     #[prop_or_default]
     pub extra: String,
+
+    #[prop_or_default]
+    pub size: Size,
+
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "button".into())]
     pub tag: String,

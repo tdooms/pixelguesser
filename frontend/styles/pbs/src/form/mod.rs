@@ -19,3 +19,4 @@ mod label;
 mod radio;
 mod select;
 mod textarea;
+mod multiple_select;

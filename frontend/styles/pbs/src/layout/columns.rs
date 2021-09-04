@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use crate::properties::{Centered, Gapless, Multiline, VCentered};
+use crate::properties::{Centered, Gapless, Multiline, VCentered, Breakpoint};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -25,6 +25,11 @@ pub struct Props {
     /// Remove the gaps between columns.
     #[prop_or_default]
     pub gapless: Gapless,
+
+    #[prop_or_default]
+    pub breakpoint: Option<Breakpoint>,
+
+    // TODO: experimental https://bulma.io/documentation/columns/gap/#breakpoint-based-column-gaps
 }
 
 /// The container for a set of responsive columns.

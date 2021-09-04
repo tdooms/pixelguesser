@@ -1,6 +1,7 @@
-use yew::prelude::*;
+use crate::properties::{Active, Color};
 use crate::utils::enclose;
-use crate::properties::{Color, Active};
+use crate::utils::enclose_with_tag;
+use yew::prelude::*;
 
 // TODO: this can only be: control, input, button, panel-icon
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -12,15 +13,14 @@ pub struct Props {
     pub extra: String,
 
     #[prop_or_default]
-    active: Active
+    pub active: Active,
 }
 
-#[function_component(Panel)]
-pub fn panel(props: &Props) -> Html {
-    let classes = classes!("panel", &props.extra, props.active);
+#[function_component(PanelBlock)]
+pub fn panel_block(props: &Props) -> Html {
+    let classes = classes!("panel-block", &props.extra, props.active);
     html! {
         <nav class={classes}>
-            {enclose_with_tag("p", "panel-heading", props.heading)}
             { for props.children.iter() }
         </nav>
     }

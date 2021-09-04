@@ -1,25 +1,27 @@
 use yew::prelude::*;
 
-use crate::properties::{Delete, Rounded, Size};
+use crate::properties::{Delete, Light, Rounded, Size};
 
+// The turn into delete button is intentionally skipped
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     #[prop_or_default]
     pub children: Children,
     #[prop_or_default]
     pub extra: String,
+
+    #[prop_or_default]
+    pub light: Light,
     /// The HTML tag to use for this component.
     #[prop_or_else(|| "span".into())]
     pub tag: String,
     /// The click handler for this component.
-    #[prop_or_else(Callback::noop)]
-    pub onclick: Callback<MouseEvent>,
+    #[prop_or_default]
+    pub onclick: Option<Callback<()>>,
     /// Make this tag rounded.
     #[prop_or_default]
     pub rounded: Rounded,
-    /// Turn this tag into a delete button.
-    #[prop_or_default]
-    pub delete: Delete,
+
     /// The size for this component.
     #[prop_or_default]
     pub size: Size,
@@ -30,10 +32,10 @@ pub struct Props {
 /// [https://bulma.io/documentation/elements/tag/](https://bulma.io/documentation/elements/tag/)
 #[function_component(Tag)]
 pub fn tag(props: &Props) -> Html {
-    let classes = classes!("tag", &props.extra, props.size, props.rounded, props.delete);
+    let classes = classes!("tag", &props.extra, props.size, props.rounded, props.light,);
 
     html! {
-        <@{ props.tag.clone() } class={classes} onclick={props.onclick.clone()}>
+        <@{ props.tag.clone() } class={classes}>
             { for props.children.iter() }
         </@>
     }

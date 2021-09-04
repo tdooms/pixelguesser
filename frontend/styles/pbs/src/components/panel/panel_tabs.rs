@@ -1,6 +1,4 @@
 use yew::prelude::*;
-use crate::utils::enclose;
-use crate::properties::Color;
 use strum::IntoEnumIterator;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -20,7 +18,7 @@ pub fn panel_tabs<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static>(p
         let onclick = props.onclick.reform(move |_| variant);
 
         html! {
-            <a color={color} onclick={onclick} class={active.then(|| "is-active")}>
+            <a onclick={onclick} class={active.then(|| "is-active")}>
                 {variant.to_string()}
             </a>
         }
@@ -29,6 +27,6 @@ pub fn panel_tabs<T: IntoEnumIterator + ToString + Copy + PartialEq + 'static>(p
     html! {
         <div class={classes!("panel-tabs", &props.extra)}>
             { for T::iter().map(button_map) }
-        </Buttons>
+        </div>
     }
 }

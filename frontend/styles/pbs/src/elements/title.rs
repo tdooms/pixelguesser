@@ -8,9 +8,6 @@ pub struct Props {
     pub children: Children,
     #[prop_or_default]
     pub extra: String,
-    /// The HTML tag to use for this component.
-    #[prop_or_else(|| "h3".into())]
-    pub tag: String,
     /// Maintain the normal spacing between titles and subtitles.
     #[prop_or_default]
     pub spaced: Spaced,
@@ -24,11 +21,12 @@ pub struct Props {
 /// [https://bulma.io/documentation/elements/title/](https://bulma.io/documentation/elements/title/)
 #[function_component(Title)]
 pub fn title(props: &Props) -> Html {
-    let classes = classes!("title", &props.extra, props.size, props.spaced);
+    let size = props.size.unwrap_or(HeaderSize::Is3);
+    let classes = classes!("title", &props.extra, size, props.spaced);
 
     html! {
-        <@{ props.tag.clone() } class={classes}>
+        <p class={classes}>
             { for props.children.iter() }
-        </@>
+        </p>
     }
 }

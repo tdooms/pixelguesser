@@ -20,6 +20,22 @@ impl Into<Classes> for Separator {
     }
 }
 
+// TODO: this can be three-quarters-mobile for example
+#[derive(Clone, Debug, Display, PartialEq, Copy)]
+#[display(fmt = "is-{}")]
+pub enum Breakpoint {
+    #[display(fmt = "mobile")]
+    Mobile,
+    #[display(fmt = "tablet")]
+    Tablet,
+    #[display(fmt = "desktop")]
+    Desktop,
+    #[display(fmt = "widescreen")]
+    Widescreen,
+    #[display(fmt = "fullhd")]
+    FullHD
+}
+
 /// The 4 allowed types for an input component.
 ///
 /// https://bulma.io/documentation/form/input/

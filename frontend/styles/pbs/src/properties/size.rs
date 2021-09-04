@@ -139,7 +139,7 @@ pub enum ContainerSize {
     #[display(fmt = "widescreen")]
     Widescreen,
     #[display(fmt = "fullhd")]
-    Fullhd,
+    FullHD,
     #[display(fmt = "max-desktop")]
     MaxDesktop,
     #[display(fmt = "max-widescreen")]
@@ -203,6 +203,18 @@ pub enum ColumnSize {
     IsOneFifth,
     #[display(fmt = "narrow")]
     IsNarrow,
+    #[display(fmt = "narrow-mobile")]
+    IsNarrowMobile,
+    #[display(fmt = "narrow-tablet")]
+    IsNarrowTablet,
+    #[display(fmt = "narrow-touch")]
+    IsNarrowTouch,
+    #[display(fmt = "narrow-desktop")]
+    IsNarrowDesktop,
+    #[display(fmt = "narrow-widescreen")]
+    IsNarrowWidescreen,
+    #[display(fmt = "narrow-fullhd")]
+    IsNarrowFullHD,
 }
 
 impl Into<Classes> for ColumnSize {
