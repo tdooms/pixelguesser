@@ -1,4 +1,2 @@
 [workspace]
-members = ["backend/shared", "backend/sessions", "backend/imager", "backend/spar",
-    "frontend/wasm", "frontend/styles/pbs", "frontend/styles/cbs", "frontend/styles/fa",
-    "tools/fa-scraper"]
+members = ["shared", "backend/sessions", "backend/imager", "backend/spar", "frontend"]

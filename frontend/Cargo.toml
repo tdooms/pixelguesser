@@ -12,10 +12,9 @@ license = "GNU GPLv3"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-shared = { path = "../../backend/shared" }
+shared = { path = "../shared" }
 
-pbs = { path = "../styles/pbs" }
-cbs = { path = "../styles/cbs" }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom"]}
 
 chrono = { version = "0.4", features = ["serde"] }
 
