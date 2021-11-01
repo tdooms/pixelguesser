@@ -1,6 +1,6 @@
 use cobul::props::{Color, ColumnSize, HeroSize};
 use cobul::*;
-use shared::Session;
+use sessions::Session;
 use yew::prelude::*;
 
 use crate::graphql::Quiz;
@@ -27,7 +27,11 @@ pub fn lobby(props: &Props) -> Html {
 
     html! {
         <>
-            <TitleHero title={quiz.name.clone()} subtitle={subtitle} />
+            <Hero>
+                <Title> {quiz.name.clone()} </Title>
+                <Subtitle> {subtitle} </Subtitle>
+            </Hero>
+
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
                 <Container extra="has-text-centered">

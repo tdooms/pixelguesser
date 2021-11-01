@@ -4,9 +4,8 @@ use std::ops::Range;
 use rand::Rng;
 use warp::ws::Message;
 
-use shared::{Error, Request, Response, Session, SessionDiff};
-
-use crate::structs::{InternalSession, Sender, State};
+use crate::internal::{InternalSession, Sender, State};
+use sessions::{Error, Request, Response, Session, SessionDiff};
 
 fn into_session(session_id: u64, internal: &InternalSession) -> Session {
     Session {
@@ -93,27 +92,29 @@ pub async fn handle_request(request: &[u8], state: &State, sender: &Sender) {
 
     let mut lock = state.lock().await;
     let internal = match lock.get_mut(&session_id) {
-        None => return send_response(sender, &Response::Error(Error::SessionDoesNotExist(session_id))),
-        Some(x) => x
+        None => {
+            return send_response(sender, &Response::Error(Error::SessionDoesNotExist(session_id)))
+        }
+        Some(x) => x,
     };
 
     match kind {
         Kind::Read => {
             let response = Response::Read(into_session(session_id, internal));
             send_response(sender, &response);
-        },
+        }
         Kind::Update(diff) => {
             combine(internal, diff);
             broadcast_update(session_id, &internal);
         }
         Kind::Host => {
-            if maybe_insert_sender(&mut internal.host, sender){
+            if maybe_insert_sender(&mut internal.host, sender) {
                 broadcast_update(session_id, internal)
             }
         }
         Kind::Manage => {
             log::info!("{:?}", internal);
-            if maybe_insert_sender(&mut internal.manager, sender){
+            if maybe_insert_sender(&mut internal.manager, sender) {
                 broadcast_update(session_id, internal)
             }
             log::info!("{:?}", internal);

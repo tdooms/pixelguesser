@@ -34,6 +34,6 @@ pub fn main_navbar() -> Html {
     };
 
     html! {
-        <Navbar brand={brand} burger=true start={start} end={end} />
+        <Navbar brand={brand} burger=true start={start} end={end} onclick={Callback::noop()}/>
     }
 }

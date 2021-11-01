@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
-use strum_macros::EnumIter;
+use strum::EnumIter;
 use web_sys::Url;
 
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
@@ -50,10 +50,15 @@ impl Default for GuessChoices {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum Image {
-    Url { url: String },
+    Url {
+        url: String,
+    },
 
     #[serde(skip)]
-    Local { local: web_sys::File, url: String },
+    Local {
+        local: web_sys::File,
+        url: String,
+    },
 
     #[serde(skip)]
     None,
@@ -73,14 +78,14 @@ impl Image {
     pub fn src(&self) -> Option<String> {
         match self {
             Image::Url { url } | Image::Local { url, .. } => Some(url.clone()),
-            Image::None => None
+            Image::None => None,
         }
     }
     pub fn name(&self) -> Option<String> {
         match self {
             Image::Url { url } => Some(url.clone()),
             Image::Local { local, .. } => Some(local.name()),
-            Image::None => None
+            Image::None => None,
         }
     }
 }

@@ -3,7 +3,7 @@ use yew::prelude::*;
 
 use cobul::props::Color;
 use cobul::*;
-use shared::{Request, Response};
+use sessions::{Request, Response};
 
 use crate::constants::SESSION_ENDPOINT;
 use crate::route::Route;

@@ -1,8 +1,8 @@
+use crate::structs::{Session, SessionDiff};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-use crate::{Session, SessionDiff};
-
-#[derive(thiserror::Error, Clone, Debug, Serialize, Deserialize)]
+#[derive(Error, Clone, Debug, Serialize, Deserialize)]
 pub enum Error {
     #[error("The session with id {0} does not exist")]
     SessionDoesNotExist(u64),

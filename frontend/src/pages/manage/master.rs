@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 use cobul::props::Size;
 use cobul::*;
-use shared::Player;
+use sessions::Player;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

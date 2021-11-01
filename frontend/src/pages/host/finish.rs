@@ -2,7 +2,7 @@ use yew::prelude::*;
 
 use cobul::props::{Color, HeroSize};
 use cobul::*;
-use shared::Player;
+use sessions::Player;
 
 use crate::graphql::Quiz;
 use crate::pages::host::Scores;
@@ -20,7 +20,11 @@ pub fn finish(props: &Props) -> Html {
 
     html! {
         <>
-            <TitleHero color={Color::Primary} title={quiz.name.clone()} subtitle={"finished"}/>
+            <Hero color={Color::Primary}>
+                <Title> {quiz.name.clone()} </Title>
+                <Subtitle> {"finished"} </Subtitle>
+            </Hero>
+
             <Hero color={Color::Primary} size={HeroSize::Medium}>
                 <Scores players={players.clone()}/>
             </Hero>

@@ -3,7 +3,7 @@ use yew::prelude::*;
 use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew_agent::{Dispatched, Dispatcher};
 
-use shared::Status;
+use sessions::Status;
 
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;

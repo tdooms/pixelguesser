@@ -1,7 +1,8 @@
 use yew::prelude::*;
 
+use cobul::props::Color;
 use cobul::*;
-use shared::{Player, Session, SessionDiff, Stage, Status};
+use sessions::{Player, Session, SessionDiff, Stage, Status};
 
 use crate::graphql::{Quiz, Round};
 
@@ -53,10 +54,10 @@ pub fn manage(props: &Props) -> Html {
             html! { <Master players={props.session.players.clone()} onguess={onguess}/> }
         }
         Stage::Round { .. } => {
-            html! { <TitleHero title="revealing" subtitle=""/> }
+            html! { <Hero color={Color::Primary}><Title> {"Revealing"} </Title> </Hero> }
         } // TODO: don't show when revealed
         Stage::Ranking { .. } => {
-            html! { <TitleHero title="showing scores" subtitle=""/> }
+            html! { <Hero color={Color::Primary}><Title> {"Scores"} </Title> </Hero> }
         }
         Stage::Finished => {
             html! { <Rating quiz={props.quiz.clone()} />}

@@ -1,3 +1,6 @@
+mod handle;
+mod internal;
+
 use std::net::SocketAddr;
 
 use clap::{AppSettings, Clap};
@@ -8,10 +11,7 @@ use warp::ws::{WebSocket, Ws};
 use warp::Filter;
 
 use crate::handle::handle_request;
-use crate::structs::State;
-
-mod structs;
-mod handle;
+use crate::internal::State;
 
 /// sessions is a server to manage pixelguesser game sessions
 #[derive(Clap)]

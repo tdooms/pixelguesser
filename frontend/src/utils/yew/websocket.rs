@@ -1,10 +1,10 @@
-use futures::{SinkExt, StreamExt};
 use futures::channel::mpsc::UnboundedSender;
+use futures::{SinkExt, StreamExt};
 use reqwasm::websocket::{Message, WebSocket};
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
 
-use shared::{Request, Response};
+use sessions::{Request, Response};
 
 pub struct WebsocketTask {
     inner: UnboundedSender<Message>,
@@ -17,9 +17,7 @@ impl WebsocketTask {
 
         let mut cloned = self.inner.clone();
 
-        spawn_local(async move {
-            cloned.send(Message::Text(str)).await.unwrap()
-        });
+        spawn_local(async move { cloned.send(Message::Text(str)).await.unwrap() });
     }
 
     pub fn create(url: impl AsRef<str>, callback: Callback<Response>) -> Self {

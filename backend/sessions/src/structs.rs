@@ -1,22 +1,26 @@
-use std::collections::HashMap;
-use std::sync::Arc;
+use crate::Stage;
+use serde::{Deserialize, Serialize};
 
-use tokio::sync::mpsc;
-use tokio::sync::Mutex;
-use warp::ws::Message;
-
-use shared::{Stage, Player};
-
-pub type Sender = mpsc::UnboundedSender<Result<Message, warp::Error>>;
-
-#[derive(Clone, Debug)]
-pub struct InternalSession {
-    pub quiz_id: u64,
-    pub host: Option<Sender>,
-    pub manager: Option<Sender>,
-
-    pub players: Vec<Player>,
-    pub stage: Stage,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Player {
+    pub name: String,
+    pub score: u64,
 }
 
-pub type State = Arc<Mutex<HashMap<u64, InternalSession>>>;
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Session {
+    pub session_id: u64,
+    pub quiz_id: u64,
+
+    pub stage: Stage,
+    pub players: Vec<Player>,
+
+    pub has_manager: bool,
+    pub has_host: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub struct SessionDiff {
+    pub stage: Option<Stage>,
+    pub players: Option<Vec<Player>>,
+}

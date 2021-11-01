@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 use cobul::*;
-use shared::{Session, SessionDiff, Stage, Status};
+use sessions::{Session, SessionDiff, Stage, Status};
 
 use crate::components::Pixelate;
 use crate::graphql::{Quiz, Round};

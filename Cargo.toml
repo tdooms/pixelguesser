@@ -1,2 +1,2 @@
 [workspace]
-members = ["shared", "backend/sessions", "backend/imager", "backend/spar", "frontend"]
+members = ["backend/sessions", "backend/imager", "backend/spar", "frontend"]

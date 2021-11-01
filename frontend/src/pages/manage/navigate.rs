@@ -3,7 +3,7 @@ use yew::prelude::*;
 
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
-use shared::{Action, Stage};
+use sessions::{Action, Stage};
 
 use crate::route::Route;
 

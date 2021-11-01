@@ -3,11 +3,11 @@ use js_sys::Function;
 use web_sys::window;
 use yew::prelude::*;
 
-use shared::{Request, Response, Session, SessionDiff};
+use sessions::{Request, Response, Session, SessionDiff};
 
 use crate::constants::SESSION_ENDPOINT;
 use crate::error::Error;
-use crate::graphql::{Quiz, quiz, Round};
+use crate::graphql::{quiz, Quiz, Round};
 use crate::pages::{Host, Manage};
 use crate::utils::yew::WebsocketTask;
 
@@ -43,13 +43,12 @@ impl Component for QuizLoader {
         let url = format!("ws://{}/ws", SESSION_ENDPOINT);
         let mut ws = WebsocketTask::create(url, ctx.link().callback(Msg::WsResponse));
 
-
         match ctx.props().kind {
             Kind::Host { quiz_id } => {
                 ctx.link().send_future(quiz(quiz_id).map(Msg::QuizLoaded));
                 ws.send(&Request::Create { quiz_id })
             }
-            Kind::Manage { session_id } => ws.send(&Request::Manage { session_id })
+            Kind::Manage { session_id } => ws.send(&Request::Manage { session_id }),
         }
 
         Self { ws, session: None, data: None }
@@ -85,9 +84,7 @@ impl Component for QuizLoader {
                 log::error!("{:?}", err);
                 false
             }
-            (Msg::Changed(SessionDiff { players: None, stage: None }), _) => {
-                false
-            }
+            (Msg::Changed(SessionDiff { players: None, stage: None }), _) => false,
             (Msg::Changed(diff), _) => {
                 if let Some(Session { session_id, .. }) = self.session {
                     self.ws.send(&Request::Update { session_id, diff });
@@ -96,7 +93,6 @@ impl Component for QuizLoader {
             }
         }
     }
-
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let onchange = ctx.link().callback(Msg::Changed);
