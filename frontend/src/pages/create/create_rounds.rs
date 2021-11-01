@@ -1,8 +1,6 @@
+use cobul::props::{Color, ColumnSize, SidebarAlignment};
+use cobul::*;
 use yew::prelude::*;
-
-use cbs::SidebarAlignment;
-use pbs::prelude::*;
-use pbs::properties::{Color, ColumnSize};
 
 use crate::graphql::{DraftRound, Image, RoundInfo};
 
@@ -81,17 +79,13 @@ impl Component for CreateRounds {
         let remove_image = ctx.link().callback(|_| Msg::RemoveImage);
         let select_image = ctx.link().callback(Msg::SelectImage);
 
-        let side_images: Vec<_> = self
-            .rounds
-            .iter()
-            .map(|round| round.image.src())
-            .collect();
+        let side_images: Vec<_> = self.rounds.iter().map(|round| round.image.src()).collect();
 
         let draft = self.rounds[self.current].clone();
 
         let center = match draft.image.src() {
             Some(src) => html! { <CenterImage src={src} onremove={remove_image}/> },
-            None => html! { <cbs::Center> {"no image"} </cbs::Center> }
+            None => html! { <Center> {"no image"} </Center> },
         };
 
         let left_footer = html! {
@@ -118,22 +112,22 @@ impl Component for CreateRounds {
 
         let right_side = match draft.image.src() {
             Some(_) => html! { <SideInfo info={draft.info} onchange={change_round_info} /> },
-            None => html! { <SideUpload onupload={add_image} />}
+            None => html! { <SideUpload onupload={add_image} />},
         };
 
         html! {
             <Columns>
-                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={left_footer}>
+                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={left_footer}>
                     <SideImages images={side_images} onclick={select_image} current={self.current}/>
-                </cbs::Sidebar>
+                </Sidebar>
 
                 <Column size={ColumnSize::Is8}>
                     { center }
                 </Column>
 
-                <cbs::Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" footer={right_footer}>
+                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" footer={right_footer}>
                     { right_side }
-                </cbs::Sidebar>
+                </Sidebar>
             </Columns>
         }
     }

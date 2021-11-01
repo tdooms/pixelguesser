@@ -1,8 +1,8 @@
 use strum::IntoEnumIterator;
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::{Alignment, Color, Size};
+use cobul::props::{Alignment, Color, Size};
+use cobul::*;
 use shared::{Action, Stage};
 
 use crate::route::Route;

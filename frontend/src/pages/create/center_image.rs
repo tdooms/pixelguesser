@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::Alignment;
+use cobul::props::Alignment;
+use cobul::*;
 
 pub enum Msg {
     Reveal,
@@ -37,29 +37,30 @@ impl Component for CenterImage {
             Msg::Resume => false,
             Msg::Preview => false,
             Msg::Remove => false,
-            Msg::Revealed => false
+            Msg::Revealed => false,
         }
     }
 
-
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let pixelate_buttons = || html! {
-            <Buttons alignment={Alignment::Centered} extra="mt-5">
-                <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>
-                    <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>
-                </Button>
-                <Button onclick={ctx.link().callback(|_| Msg::Resume)}>
-                    <Icon icon={"fas fa-play"} /> <span> {"resume"} </span>
-                </Button>
-                <Button onclick={ctx.link().callback(|_| Msg::Pause)}>
-                   <Icon icon={"fas fa-pause"} /> <span> {"pause"} </span>
-                </Button>
-            </Buttons>
+        let pixelate_buttons = || {
+            html! {
+                <Buttons alignment={Alignment::Centered} extra="mt-5">
+                    <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>
+                        <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>
+                    </Button>
+                    <Button onclick={ctx.link().callback(|_| Msg::Resume)}>
+                        <Icon icon={"fas fa-play"} /> <span> {"resume"} </span>
+                    </Button>
+                    <Button onclick={ctx.link().callback(|_| Msg::Pause)}>
+                       <Icon icon={"fas fa-pause"} /> <span> {"pause"} </span>
+                    </Button>
+                </Buttons>
+            }
         };
 
         html! {
             <>
-                <cbs::DynImage src={ctx.props().src.clone()} height=85/>
+                <DynImage src={ctx.props().src.clone()} height=85/>
                 <Buttons alignment={Alignment::Centered} extra="mt-5">
                     <Button onclick={ctx.link().callback(|_| Msg::Preview)}>
                         <span> {"preview"} </span>

@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
+use cobul::*;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {

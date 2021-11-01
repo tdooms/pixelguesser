@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::ColumnSize;
+use cobul::props::ColumnSize;
+use cobul::*;
 
 pub enum Msg {
     Clicked(usize),
@@ -18,7 +18,7 @@ pub struct Props {
 pub fn side_images(props: &Props) -> Html {
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
-            Some(src) => html! { <cbs::DynImage src={src.clone()} height=10/> },
+            Some(src) => html! { <DynImage src={src.clone()} height=10/> },
             None => html! {},
         };
 

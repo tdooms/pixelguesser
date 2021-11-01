@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
+use cobul::*;
 use shared::{Player, Session, SessionDiff, Stage, Status};
 
 use crate::graphql::{Quiz, Round};
@@ -22,7 +22,7 @@ pub fn add_player(name: String, mut players: Vec<Player>) -> SessionDiff {
             players.push(Player { name, score: 0 });
             SessionDiff { stage: None, players: Some(players) }
         }
-        Some(_) => SessionDiff::default()
+        Some(_) => SessionDiff::default(),
     }
 }
 
@@ -32,7 +32,7 @@ pub fn add_guess(name: String, mut players: Vec<Player>) -> SessionDiff {
             player.score += 1;
             SessionDiff { stage: None, players: Some(players) }
         }
-        None => SessionDiff::default()
+        None => SessionDiff::default(),
     }
 }
 
@@ -53,16 +53,15 @@ pub fn manage(props: &Props) -> Html {
             html! { <Master players={props.session.players.clone()} onguess={onguess}/> }
         }
         Stage::Round { .. } => {
-            html! { <cbs::TitleHero title="revealing" subtitle=""/> }
+            html! { <TitleHero title="revealing" subtitle=""/> }
         } // TODO: don't show when revealed
         Stage::Ranking { .. } => {
-            html! { <cbs::TitleHero title="showing scores" subtitle=""/> }
+            html! { <TitleHero title="showing scores" subtitle=""/> }
         }
         Stage::Finished => {
             html! { <Rating quiz={props.quiz.clone()} />}
         }
     };
-
 
     html! {
         <Section>

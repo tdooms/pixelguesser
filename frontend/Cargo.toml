@@ -14,7 +14,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 shared = { path = "../shared" }
 
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom"]}
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom"] }
 
 chrono = { version = "0.4", features = ["serde"] }
 

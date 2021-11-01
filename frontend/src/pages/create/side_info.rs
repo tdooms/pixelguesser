@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::{Alignment, Color};
+use cobul::props::{Alignment, Color};
+use cobul::*;
 
 use crate::graphql::{GuessChoices, PointChoices, RoundInfo};
 
@@ -16,9 +16,15 @@ pub fn side_info(props: &Props) -> Html {
     let cloned = props.info.clone();
     let changer = move |answer, guesses, points| -> RoundInfo {
         let mut new = cloned.clone();
-        if let Some(x) = answer { new.answer = x }
-        if let Some(x) = guesses { new.guesses = x }
-        if let Some(x) = points { new.points = x }
+        if let Some(x) = answer {
+            new.answer = x
+        }
+        if let Some(x) = guesses {
+            new.guesses = x
+        }
+        if let Some(x) = points {
+            new.points = x
+        }
         new
     };
 
@@ -29,15 +35,15 @@ pub fn side_info(props: &Props) -> Html {
 
     html! {
         <div class="p-6">
-            <cbs::SimpleField label="Answer">
+            <SimpleField label="Answer">
                 <Input oninput={answer} />
-            </cbs::SimpleField>
-            <cbs::SimpleField label="Points">
-                <cbs::KvButtons<PointChoices> value={props.info.points} color={Color::Link} alignment={Alignment::Centered} onclick={points} />
-            </cbs::SimpleField>
-            <cbs::SimpleField label="Guesses">
-                <cbs::KvButtons<GuessChoices> value={props.info.guesses} color={Color::Link} alignment={Alignment::Centered} onclick={guesses} />
-            </cbs::SimpleField>
+            </SimpleField>
+            <SimpleField label="Points">
+                <EnumButtons<PointChoices> value={props.info.points} color={Color::Link} alignment={Alignment::Centered} onclick={points} />
+            </SimpleField>
+            <SimpleField label="Guesses">
+                <EnumButtons<GuessChoices> value={props.info.guesses} color={Color::Link} alignment={Alignment::Centered} onclick={guesses} />
+            </SimpleField>
         </div>
     }
 }

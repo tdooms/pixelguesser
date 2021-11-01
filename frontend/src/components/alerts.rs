@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::Color;
+use cobul::props::Color;
+use cobul::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct AlertsProps<T: Clone + Display + PartialEq + 'static> {

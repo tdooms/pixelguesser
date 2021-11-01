@@ -1,13 +1,12 @@
 use yew::prelude::*;
 
-use cbs::MaybeLoading;
-use pbs::prelude::*;
-use pbs::properties::ColumnSize;
+use cobul::props::ColumnSize;
+use cobul::*;
 
 use crate::components::{MainNavbar, QuizCard};
 use crate::constants::{image_url, PLACEHOLDER};
 use crate::error::Error;
-use crate::graphql::{Quiz, quizzes};
+use crate::graphql::{quizzes, Quiz};
 use crate::route::Route;
 
 pub struct Overview {
@@ -38,7 +37,8 @@ impl Component for Overview {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let src = quiz.image_url.as_ref().map(image_url).unwrap_or_else(|| PLACEHOLDER.to_owned());
+            let src =
+                quiz.image_url.as_ref().map(image_url).unwrap_or_else(|| PLACEHOLDER.to_owned());
             let route = Route::Host { quiz_id: quiz.quiz_id };
 
             html! {
@@ -68,6 +68,9 @@ impl Component for Overview {
             }
         };
 
-        html! { <MaybeLoading html={self.quizzes.as_ref().map(view_quizzes)}/> }
+        match &self.quizzes {
+            Some(vec) => view_quizzes(vec),
+            None => html! { <Loading /> },
+        }
     }
 }

@@ -1,9 +1,7 @@
-use yew::prelude::*;
-
-use pbs::elements::Box;
-use pbs::prelude::*;
-use pbs::properties::{Color, ColumnSize, HeroSize};
+use cobul::props::{Color, ColumnSize, HeroSize};
+use cobul::*;
 use shared::Session;
+use yew::prelude::*;
 
 use crate::graphql::Quiz;
 
@@ -29,7 +27,7 @@ pub fn lobby(props: &Props) -> Html {
 
     html! {
         <>
-            <cbs::TitleHero title={quiz.name.clone()} subtitle={subtitle} />
+            <TitleHero title={quiz.name.clone()} subtitle={subtitle} />
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
                 <Container extra="has-text-centered">

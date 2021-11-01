@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::Size;
+use cobul::props::Size;
+use cobul::*;
 use shared::Player;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

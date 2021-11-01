@@ -1,8 +1,8 @@
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::Color;
+use cobul::props::Color;
+use cobul::*;
 use shared::{Request, Response};
 
 use crate::constants::SESSION_ENDPOINT;
@@ -90,23 +90,27 @@ impl Component for Code {
         let oncancel = ctx.link().callback(|_| Msg::Cancel);
 
         let (help, help_color, icon_right, input_color) = match self.state {
-            State::Available => {
-                (Some("This room is available."), Some(Color::Success), Some("fas fa-check"), Some(Color::Success))
-            }
-            State::Invalid | State::Incorrect => {
-                (Some("This room is unavailable."), Some(Color::Danger), Some("fas fa-exclamation-triangle"), Some(Color::Danger))
-            }
-            State::None => {
-                (None, None, None, None)
-            }
+            State::Available => (
+                Some("This room is available."),
+                Some(Color::Success),
+                Some("fas fa-check"),
+                Some(Color::Success),
+            ),
+            State::Invalid | State::Incorrect => (
+                Some("This room is unavailable."),
+                Some(Color::Danger),
+                Some("fas fa-exclamation-triangle"),
+                Some(Color::Danger),
+            ),
+            State::None => (None, None, None, None),
         };
 
         html! {
             <Section>
                 <Container>
-                    <cbs::SimpleField label="Session code" help={help} help_color={help_color} icon_right={icon_right}>
+                    <SimpleField label="Session code" help={help} help_color={help_color} icon_right={icon_right}>
                         <Input color={input_color} oninput={oninput} />
-                    </cbs::SimpleField>
+                    </SimpleField>
                     <Buttons>
                         <Button color={Color::Link} onclick={onjoin} disabled={self.state != State::Available}> {"Join"} </Button>
                         <Button color={Color::Link} light=true onclick={oncancel}> {"Cancel"} </Button>

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::{Color, HeroSize};
+use cobul::props::{Color, HeroSize};
+use cobul::*;
 use shared::Player;
 
 use crate::graphql::Quiz;
@@ -16,11 +16,11 @@ pub struct Props {
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
     let Props { players, quiz, .. } = &props;
-    let body = html! {  };
+    let body = html! {};
 
     html! {
         <>
-            <cbs::TitleHero color={Color::Primary} title={quiz.name.clone()} subtitle={"finished"}/>
+            <TitleHero color={Color::Primary} title={quiz.name.clone()} subtitle={"finished"}/>
             <Hero color={Color::Primary} size={HeroSize::Medium}>
                 <Scores players={players.clone()}/>
             </Hero>

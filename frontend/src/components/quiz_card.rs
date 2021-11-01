@@ -1,8 +1,8 @@
 use yew::prelude::*;
 use yew_router::components::Link;
 
-use pbs::prelude::*;
-use pbs::properties::{Color, ImageSize};
+use cobul::props::{Color, ImageSize};
+use cobul::*;
 
 use crate::route::Route;
 

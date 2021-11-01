@@ -1,8 +1,8 @@
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use pbs::prelude::*;
-use pbs::properties::Color;
+use cobul::props::Color;
+use cobul::*;
 
 use crate::route::Route;
 

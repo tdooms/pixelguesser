@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::HeroSize;
+use cobul::props::HeroSize;
+use cobul::*;
 
 use crate::graphql::Quiz;
 

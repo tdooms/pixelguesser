@@ -1,8 +1,7 @@
 use yew::prelude::*;
 
-use pbs::elements::Box;
-use pbs::prelude::*;
-use pbs::properties::ColumnSize;
+use cobul::props::ColumnSize;
+use cobul::*;
 use shared::Player;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

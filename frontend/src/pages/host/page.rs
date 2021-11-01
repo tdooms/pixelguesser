@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use pbs::prelude::*;
+use cobul::*;
 use shared::{Session, SessionDiff, Stage, Status};
 
 use crate::components::Pixelate;
@@ -20,7 +20,7 @@ pub struct Props {
 pub fn change_stage(stage: Stage) -> Option<Stage> {
     match stage {
         Stage::Round { round, .. } => Some(Stage::Round { round, status: Status::Revealed }),
-        _ => None
+        _ => None,
     }
 }
 

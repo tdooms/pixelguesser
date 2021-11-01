@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use futures::FutureExt;
 use yew::prelude::*;
 
-use pbs::prelude::*;
-use pbs::properties::{Color, ColumnSize};
+use cobul::props::{Color, ColumnSize};
+use cobul::*;
 
 use crate::components::QuizCard;
 use crate::constants::PLACEHOLDER;
@@ -52,9 +52,7 @@ impl Component for CreateQuiz {
             Msg::Image(files) => {
                 // TODO: give error
             }
-            Msg::QuizUploaded => {
-                ctx.props().oncontinue.emit(self.draft.clone())
-            }
+            Msg::QuizUploaded => ctx.props().oncontinue.emit(self.draft.clone()),
             Msg::Cancel => {
                 ctx.props().oncancel.emit(());
             }
@@ -89,21 +87,21 @@ impl Component for CreateQuiz {
                 <Container>
                     <Columns>
                         <Column>
-                            <cbs::SimpleField label="Quiz Name" help={self.errors.get("name").cloned()} help_color={Color::Danger}>
+                            <SimpleField label="Quiz Name" help={self.errors.get("name").cloned()} help_color={Color::Danger}>
                                 <Input oninput={ctx.link().callback(Msg::Name)} placeholder={NAME_DEF}/>
-                            </cbs::SimpleField>
+                            </SimpleField>
 
-                            <cbs::SimpleField label="Creator" help={self.errors.get("creator").cloned()} help_color={Color::Danger}>
+                            <SimpleField label="Creator" help={self.errors.get("creator").cloned()} help_color={Color::Danger}>
                                 <Input oninput={ctx.link().callback(Msg::Creator)} placeholder={CREATOR_DEF}/>
-                            </cbs::SimpleField>
+                            </SimpleField>
 
-                            <cbs::SimpleField label="Description" help={self.errors.get("description").cloned()} help_color={Color::Danger}>
+                            <SimpleField label="Description" help={self.errors.get("description").cloned()} help_color={Color::Danger}>
                                 <Textarea oninput={ctx.link().callback(Msg::Description)} placeholder={DESCRIPTION_DEF} />
-                            </cbs::SimpleField>
+                            </SimpleField>
 
-                            <cbs::SimpleField label="Image" help={self.errors.get("image").cloned()} help_color={Color::Danger}>
+                            <SimpleField label="Image" help={self.errors.get("image").cloned()} help_color={Color::Danger}>
                                 <File fullwidth=true filename={filename} onupload={ctx.link().callback(Msg::Image)}/>
-                            </cbs::SimpleField>
+                            </SimpleField>
 
                             <Buttons>
                                 <Button color={Color::Primary} light=true onclick={ctx.link().callback(|_| Msg::Cancel)}> {"cancel"} </Button>
