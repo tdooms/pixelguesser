@@ -7,9 +7,11 @@ description = "a wasm frontend for the pixelguesser game"
 repository = "https://github.com/Funkymaniac/pixelguesser"
 license = "GNU GPLv3"
 
-
 [lib]
 crate-type = ["cdylib", "rlib"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-O4']
 
 [dependencies]
 sessions = { path = "../backend/sessions", features = ["api"] }
@@ -36,10 +38,14 @@ serde_json = "1.0"
 wasm-bindgen = "^0.2"
 wasm-bindgen-futures = "0.4"
 
+photon-rs = { git = "https://github.com/silvia-odwyer/photon.git", default-features = false, features = ["console_error_panic_hook"] }
+#imageproc = { version = "0.22.0", default-features = false }
+#image = { version = "0.23.12", default-features = false, features = ["gif", "jpeg", "ico", "png", "pnm", "tga", "tiff", "webp", "bmp", "hdr", "dxt", "dds", "farbfeld"] }
+
 web-sys = { version = "0.3", features = ["HtmlCanvasElement", "HtmlImageElement", "CanvasRenderingContext2d", "HtmlDivElement", "Blob", "Url"] }
 js-sys = "0.3"
 
-gloo = "0.3"
+gloo = { version = "0.3", features = ["futures"] }
 base64 = "0.13"
 
 futures = "0.3"

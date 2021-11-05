@@ -10,6 +10,8 @@ pub enum Route {
     Code,
     #[at("/create")]
     Create,
+    #[at("/test")]
+    Test,
     #[at("/")]
     Overview,
     #[not_found]

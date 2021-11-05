@@ -10,7 +10,7 @@ use crate::route::Route;
 pub fn main_navbar() -> Html {
     let brand = html! {
         <Link<Route> classes={classes!("navbar-item")} route={Route::Overview}>
-            <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28"/>
+            <span>{"Pixelguesser"}</span>
         </Link<Route>>
     };
 
@@ -22,6 +22,10 @@ pub fn main_navbar() -> Html {
 
             <Link<Route> classes={classes!("button", "is-light")} route={Route::Create}>
                 <span>{"Create"}</span>
+            </Link<Route>>
+
+            <Link<Route> classes={classes!("button", "is-light")} route={Route::Test}>
+                <span>{"Test"}</span>
             </Link<Route>>
         </Buttons>
     };

@@ -1,4 +1,5 @@
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -14,12 +15,12 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 mod agents;
 mod components;
 mod constants;
+mod error;
 pub mod graphql;
 mod pages;
 mod route;
 mod structs;
 mod utils;
-mod error;
 
 pub struct Model;
 
@@ -35,7 +36,6 @@ impl Component for Model {
         false
     }
 
-
     fn view(&self, _: &Context<Self>) -> Html {
         html! {
             <main>
@@ -49,9 +49,12 @@ impl Component for Model {
 fn switch(routes: &Route) -> Html {
     match routes {
         Route::Host { quiz_id } => html! { <QuizLoader kind={Kind::Host{ quiz_id: *quiz_id }}/> },
-        Route::Manage { session_id } => html! { <QuizLoader kind={Kind::Manage{ session_id: *session_id }}/> },
+        Route::Manage { session_id } => {
+            html! { <QuizLoader kind={Kind::Manage{ session_id: *session_id }}/> }
+        }
         Route::Code => html! { <Code/> },
         Route::Create => html! { <Create/> },
+        Route::Test => html! { <Test/> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }
