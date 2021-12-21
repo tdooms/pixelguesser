@@ -1,22 +1,22 @@
-mod handle;
-mod internal;
-
 use std::net::SocketAddr;
 
-use clap::{AppSettings, Clap};
+use clap::Parser;
 use futures::StreamExt;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{WebSocket, Ws};
 use warp::Filter;
 
-use crate::handle::handle_request;
-use crate::internal::State;
+mod global;
+mod local;
+
+use crate::global::Global;
+use crate::local::Local;
+use sessions::{Error, Response, Session};
 
 /// sessions is a server to manage pixelguesser game sessions
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Sets the port to be used
     #[clap(short, long, default_value = "8000")]
@@ -27,30 +27,31 @@ struct Opts {
     address: String,
 }
 
-async fn start_socket(socket: WebSocket, state: State) {
-    log::debug!("new client connected");
+async fn start_socket(socket: WebSocket, global: Global) {
+    log::info!("client connected");
 
-    let (sender, mut receiver) = socket.split();
-    let (proxy_sender, proxy_receiver) = mpsc::unbounded_channel();
-    let proxy_receiver = UnboundedReceiverStream::new(proxy_receiver);
+    let (sink, mut stream) = socket.split();
+    let (responder, receiver) = mpsc::unbounded_channel();
+    let proxy = UnboundedReceiverStream::new(receiver);
 
-    tokio::task::spawn(proxy_receiver.forward(sender));
+    tokio::task::spawn(proxy.forward(sink));
+    let mut local = Local::new(responder);
 
-    while let Some(message) = receiver.next().await {
+    while let Some(message) = stream.next().await {
         match message {
-            Ok(message) if message.is_text() => {
-                handle_request(message.as_bytes(), &state, &proxy_sender).await
-            }
+            Ok(message) if message.is_text() => match serde_json::from_slice(&message.as_bytes()) {
+                Ok(request) => local.request(request, &global).await,
+                Err(_) => local.respond(&Response::Error(Error::FaultyRequest)),
+            },
             Ok(message) if message.is_ping() => {
-                log::debug!("pong back not implemented")
+                log::debug!("ping/pong is not implemented")
             }
             Ok(_) => log::warn!("unsupported websocket message type"),
             Err(error) => log::error!("websocket error: {}", error),
         }
     }
 
-    // TODO: use id to identify the disconnect and handle it
-
+    local.destroy(&global).await;
     log::debug!("client disconnected");
 }
 
@@ -60,13 +61,13 @@ async fn main() {
 
     let opts: Opts = Opts::parse();
 
-    let state = State::default();
-    let state = warp::any().map(move || state.clone());
+    let global = Global::default();
+    let global = warp::any().map(move || global.clone());
 
     let ws = warp::path("ws")
         .and(warp::ws())
-        .and(state)
-        .map(|ws: Ws, state: State| ws.on_upgrade(|socket| start_socket(socket, state)));
+        .and(global)
+        .map(|ws: Ws, global: Global| ws.on_upgrade(|socket| start_socket(socket, global)));
 
     let address: SocketAddr = format!("{}:{}", opts.address, opts.port).parse().unwrap();
     warp::serve(ws).run(address).await;

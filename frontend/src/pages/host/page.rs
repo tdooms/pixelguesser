@@ -1,54 +1,37 @@
+use super::Lobby;
+use crate::graphql::{Quiz, Round};
+use crate::utils::misc::code_to_string;
+use sessions::{Session, Stage};
 use yew::prelude::*;
 
-use cobul::*;
-use sessions::{Session, SessionDiff, Stage, Status};
+#[derive(PartialEq, Clone, Debug)]
+struct Props {
+    session: Session,
+    secret: u64,
 
-use crate::components::Pixelate;
-use crate::graphql::{Quiz, Round};
-use crate::pages::host::{Finish, Lobby, Scores};
-use crate::utils::misc::code_to_string;
-
-#[derive(Clone, Properties, PartialEq)]
-pub struct Props {
-    pub session: Session,
-    pub quiz: Quiz,
-    pub rounds: Vec<Round>,
-
-    pub onchange: Callback<SessionDiff>,
-}
-
-pub fn change_stage(stage: Stage) -> Option<Stage> {
-    match stage {
-        Stage::Round { round, .. } => Some(Stage::Round { round, status: Status::Revealed }),
-        _ => None,
-    }
+    quiz: Quiz,
+    rounds: Vec<Round>,
 }
 
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
-    let Props { quiz, rounds, session, onchange } = &props;
+    let Props { session, secret, quiz, rounds } = props;
 
-    match &session.stage {
-        Stage::Initial => {
-            let code = code_to_string(session.session_id).unwrap_or_default();
+    match session.stage {
+        Stage::Lobby => {
+            let code = code_to_string(secret).unwrap_or_default();
             html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
         }
-        Stage::Round { round, status } => {
-            let stage = change_stage(session.stage);
-            let onrevealed = onchange.reform(move |_| SessionDiff { stage, players: None });
-
+        Stage::Playing { round, paused } => {
             let url = rounds[*round].image_url.clone().unwrap();
-
-            html! { <Pixelate onrevealed={onrevealed} status={*status} url={url}/> }
+            html! { <Pixelate revealing=false paused=paused url={url}/> }
         }
-        Stage::Ranking { round } => {
-            html! {
-                <Section>
-                    <Container>
-                        <Scores players={session.players.clone()}/>
-                    </Container>
-                </Section>
-            }
+        Stage::Revealed { round } => {
+            let url = rounds[*round].image_url.clone().unwrap();
+            html! { <Pixelate revealing=true paused=paused url={url}/> }
+        }
+        Stage::Ranking => {
+            html! { <Scores players={session.players.clone()}> </Scores> }
         }
         Stage::Finished => {
             html! { <Finish players={session.players.clone()} quiz={quiz.clone()}/> }

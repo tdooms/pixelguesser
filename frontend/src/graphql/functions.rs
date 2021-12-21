@@ -4,11 +4,11 @@ use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 
 use crate::error::Error;
-use crate::graphql::{DraftQuiz, DraftRound, Quiz, Round};
 use crate::graphql::convert::*;
 use crate::graphql::data::*;
+use crate::graphql::{DraftQuiz, DraftRound, Quiz, Round};
 
-use super::keys::{GRAPHQL_API, GRAPHQL_SECRET};
+use crate::constants::{GRAPHQL_ENDPOINT, HASURA_SECRET};
 
 const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
 const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image_url";
@@ -33,10 +33,10 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Err
         Kind::Subscription(str) => format!("{{\"query\":\"subscription {{ {} }}\"}}", str),
     };
 
-    let response: Response<T> = Request::new(GRAPHQL_API)
+    let response: Response<T> = Request::new(GRAPHQL_ENDPOINT)
         .method(Method::POST)
         .header("content-type", "application/json")
-        .header("x-hasura-admin-secret", GRAPHQL_SECRET)
+        .header("x-hasura-admin-secret", HASURA_SECRET)
         .body(body)
         .send()
         .await?
@@ -47,7 +47,9 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Err
 
     match response {
         Response::Data { data } => Ok(data),
-        Response::Errors { errors } => Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
+        Response::Errors { errors } => {
+            Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
+        }
     }
 }
 
@@ -59,20 +61,27 @@ pub async fn quizzes() -> Result<Vec<Quiz>, Error> {
 }
 
 pub async fn quiz(quiz_id: u64) -> Result<(Quiz, Vec<Round>), Error> {
-    let str = format!("quizzes_by_pk(quiz_id: {}) {{ {} }} rounds(where: {{quiz_id: {{ _eq: {} }} }}) {{ {} }}", quiz_id, QUIZ_FIELDS, quiz_id, ROUND_FIELDS);
+    let str = format!(
+        "quizzes_by_pk(quiz_id: {}) {{ {} }} rounds(where: {{quiz_id: {{ _eq: {} }} }}) {{ {} }}",
+        quiz_id, QUIZ_FIELDS, quiz_id, ROUND_FIELDS
+    );
 
     let data: QuizData = exec(Kind::Query(&str)).await?;
     Ok((data.quizzes_by_pk, data.rounds))
 }
 
 pub async fn save_rounds(quiz_id: u64, rounds: &[DraftRound]) -> Result<(u64, u64), Error> {
-    let ser: Vec<_> = rounds.iter().enumerate().map(|(index, draft)| SerRound {
-        quiz_id,
-        index: index as u64,
-        info: draft.info.clone(),
-        options: draft.options.clone(),
-        image_url: None,
-    }).collect();
+    let ser: Vec<_> = rounds
+        .iter()
+        .enumerate()
+        .map(|(index, draft)| SerRound {
+            quiz_id,
+            index: index as u64,
+            info: draft.info.clone(),
+            options: draft.options.clone(),
+            image_url: None,
+        })
+        .collect();
 
     let objects = serde_json::to_string(&ser).unwrap();
     let str = format!("delete_rounds(where: {{ quiz_id: (_eq: {}) }} ) insert_rounds(objects: {}) {{ affected_rows }}", quiz_id, objects);

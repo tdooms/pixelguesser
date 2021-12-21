@@ -1,6 +1,6 @@
 use gloo::timers::callback::Timeout;
+use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
-use yew::web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew_agent::{Dispatched, Dispatcher};
 
 use sessions::Status;
@@ -19,9 +19,9 @@ pub enum Msg {
 
 #[derive(Debug, Clone, Properties, PartialEq)]
 pub struct Props {
-    pub onrevealed: Callback<()>,
     pub url: String,
-    pub status: Status,
+    pub revealing: bool,
+    pub paused: bool,
 }
 
 pub struct Pixelate {
@@ -66,10 +66,6 @@ impl Pixelate {
 
         draw_pixelated(self.pixels as u32, width, height, image, canvas, offscreen)
     }
-
-    pub fn restart(&mut self) {
-        self.pixels = 4.0;
-    }
 }
 
 impl Component for Pixelate {
@@ -99,31 +95,31 @@ impl Component for Pixelate {
                 ctx.link().send_message(Msg::Pixelate);
             }
             Msg::Pixelate => {
-                let speed = match ctx.props().status {
-                    Status::Playing { paused: false } => 1.002,
-                    Status::Revealing => 1.07,
-                    Status::Revealed | Status::Playing { paused: true } => return false,
+                // Calculate the maximum pixels that are useful to de-pixelate
+                let max_pixels = match self.image.get() {
+                    Ok(image) => image.height() as f64,
+                    Err(_) => 1080.0,
                 };
 
-                let max_pixels = match self.image.cast::<HtmlImageElement>() {
-                    Some(image) => image.height() as f64,
-                    None => 1080.0,
-                };
-
-                let new_pixels = self.pixels * speed;
-                let clamped_pixels = new_pixels.min(max_pixels);
-
-                // TODO: max pixels should be screen size instead of image size maybe?
-                if clamped_pixels == max_pixels {
-                    ctx.props().onrevealed.emit(());
-                    self.timer = None;
-                } else {
-                    let cloned = ctx.link().clone();
-                    self.timer = Some(Timeout::new(33, move || cloned.send_message(Msg::Pixelate)));
+                // Quick exit if already done
+                if self.pixels >= max_pixels {
+                    return false;
                 }
 
-                self.pixels = clamped_pixels;
+                // Set the speed according to the state
+                let speed = match (ctx.props().paused, ctx.props().revealing) {
+                    (_, true) => 1.07,
+                    (false, _) => 1.002,
+                    _ => return false,
+                };
+
+                // Calculate the new amount of pixels and draw it
+                self.pixels = (self.pixels * speed).min(max_pixels);
                 let _ = self.draw();
+
+                // Set the timer for the next iteration
+                let cloned = ctx.link().clone();
+                self.timer = Some(Timeout::new(33, move || cloned.send_message(Msg::Pixelate)));
             }
             Msg::Resize => {
                 let _ = self.draw();
@@ -133,16 +129,17 @@ impl Component for Pixelate {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        // If the url changes, reset the internal state
         if self.url != ctx.props().url {
             self.url = ctx.props().url.clone();
-            self.restart()
+            self.pixels = 4.0
         }
 
-        match ctx.props().status {
-            Status::Playing { paused: true } => self.timer = None,
-            Status::Playing { paused: false } => ctx.link().send_message(Msg::Pixelate),
-            _ => {}
-        };
+        // Restart and remove the timer if needed
+        match !ctx.props().paused || ctx.props().revealing {
+            true => ctx.link().send_message(Msg::Pixelate),
+            false => self.timer = None,
+        }
 
         true
     }
@@ -150,10 +147,11 @@ impl Component for Pixelate {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
-                <img src={format!("http://{}/{}", IMAGE_ENDPOINT, ctx.props().url)}
+                <img src={format!("{}/{}", IMAGE_ENDPOINT, ctx.props().url)}
                      style="display:none"
                      onload={ctx.link().callback(|_| Msg::Loaded)}
                      ref={self.image.clone()}/>
+
                 <canvas style="display:none" ref={self.offscreen.clone()}/>
 
                 <div style="height:100vh" ref={self.container.clone()}>

@@ -22,9 +22,6 @@ We will need the following functions:
     Leave
     # Leave should work for both host and manage without any extra info.
 
-    Read(secret_key) -> (session_data, action)
-    # This must not change internal state of the session
-
     Update(secret_key, action) -> (session_data, action)
     # The session should always check if an action is valid and legal
 

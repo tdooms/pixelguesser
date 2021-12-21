@@ -1,7 +1,5 @@
-mod stage;
-mod structs;
-mod ws;
+mod session;
+mod shared;
 
-pub use stage::{Action, Stage, Status};
-pub use structs::{Player, Session, SessionDiff};
-pub use ws::{Error, Request, Response};
+pub use session::{Action, Player, Session, Stage};
+pub use shared::{Error, Request, Response};

@@ -54,7 +54,7 @@ fn switch(routes: &Route) -> Html {
         }
         Route::Code => html! { <Code/> },
         Route::Create => html! { <Create/> },
-        Route::Test => html! { <Test/> },
+        Route::Test => html! { <> {"test"} </> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },
     }

@@ -1,14 +1,13 @@
 #[macro_use]
 extern crate rocket;
 
-use clap::{AppSettings, Clap};
-use rocket::{Config, Request};
+use clap::Parser;
 use rocket::fs::{FileServer, NamedFile, Options};
+use rocket::{Config, Request};
 
 /// spar (SPA-serveR) is a simple program to serve a folder for serving single page applications.
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Sets the folder to be served
     #[clap(short, long, default_value = "./static")]
@@ -25,7 +24,6 @@ struct Opts {
 
 pub struct Path(String);
 
-
 #[catch(404)]
 async fn not_found(request: &Request<'_>) -> Result<NamedFile, String> {
     // let index = request.rocket().figment().find_value("folder").unwrap();
@@ -41,11 +39,7 @@ async fn not_found(request: &Request<'_>) -> Result<NamedFile, String> {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
 
-    let config = Config {
-        port: opts.port,
-        address: opts.address.parse()?,
-        ..Default::default()
-    };
+    let config = Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
 
     rocket::custom(config)
         .mount("/", FileServer::new(&opts.folder, Options::default()))

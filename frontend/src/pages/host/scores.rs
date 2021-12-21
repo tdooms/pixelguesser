@@ -33,11 +33,15 @@ pub fn scores(props: &Props) -> Html {
     };
 
     html! {
-        <Columns centered=true>
-            <Column size={ColumnSize::IsHalf}>
-                { for sorted.first().map(view_winner) }
-                { for sorted.iter().skip(1).map(view_player) }
-           </Column>
-        </Columns>
+        <Section>
+            <Container>
+                <Columns centered=true>
+                    <Column size={ColumnSize::IsHalf}>
+                        { for sorted.first().map(view_winner) }
+                        { for sorted.iter().skip(1).map(view_player) }
+                   </Column>
+                </Columns>
+            </Container>
+        </Section>
     }
 }

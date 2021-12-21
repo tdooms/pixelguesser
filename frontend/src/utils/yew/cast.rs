@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 
 use wasm_bindgen::JsValue;
+use web_sys::Node;
 use yew::NodeRef;
-use yew::web_sys::Node;
 
 use crate::structs::Error;
 
