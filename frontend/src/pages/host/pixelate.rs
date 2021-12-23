@@ -3,8 +3,6 @@ use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
-use sessions::Status;
-
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;

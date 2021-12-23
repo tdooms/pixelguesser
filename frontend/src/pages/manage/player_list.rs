@@ -10,8 +10,8 @@ pub struct Props {
     pub players: Vec<Player>,
 }
 
-#[function_component(Master)]
-pub fn master(props: &Props) -> Html {
+#[function_component(PlayerList)]
+pub fn player_list(props: &Props) -> Html {
     let view_player = |player: &Player| {
         let cloned = player.name.clone();
         let onclick = props.onguess.reform(move |_| cloned.clone());

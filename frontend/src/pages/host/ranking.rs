@@ -9,8 +9,8 @@ pub struct Props {
     pub players: Vec<Player>,
 }
 
-#[function_component(Scores)]
-pub fn scores(props: &Props) -> Html {
+#[function_component(Ranking)]
+pub fn ranking(props: &Props) -> Html {
     let mut sorted = props.players.clone();
     sorted.sort_by_key(|player| std::cmp::Reverse(player.score));
 

@@ -13,6 +13,8 @@ pub enum Action {
     Resume,
     /// Reveals the image of the current round
     Reveal,
+    /// Increments the point of a player   
+    Guessed(String, u64),
     /// Show the current scores
     Scores,
     /// Proceed to next round

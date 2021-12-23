@@ -3,70 +3,48 @@ use yew::prelude::*;
 
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
-use sessions::{Action, Stage};
-
-use crate::route::Route;
+use sessions::{Action, Session};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<Stage>,
-    pub stage: Stage,
+    pub callback: Callback<Action>,
+    pub session: Session,
     pub rounds: usize,
 }
 
-pub struct Navigate;
+#[function_component(Navigate)]
+pub fn navigate(props: &Props) -> Html {
+    let Props { callback, session, rounds } = props;
 
-impl Component for Navigate {
-    type Message = Action;
-    type Properties = Props;
+    // button text, button icon, color, inverted
+    let button_attrs = |action: Action| match action {
+        Action::Player(_) | Action::Guessed(_, _) => None,
+        Action::Start => Some(("start", "fas fa-play", Color::Primary, false)),
+        Action::Pause => Some(("pause", "fas fa-pause", Color::Light, false)),
+        Action::Resume => Some(("resume", "fas fa-play", Color::Light, false)),
+        Action::Reveal => Some(("reveal", "fas fa-eye", Color::Danger, true)),
+        Action::Scores => Some(("scores", "fas fa-list-ol", Color::Link, true)),
+        Action::Next => Some(("next", "fas fa-forward", Color::Success, false)),
+        Action::Finish => Some(("finish", "fas fa-flag-checkered", Color::Success, true)),
+        Action::Leave => Some(("leave", "fas fa-sign-out-alt", Color::Danger, true)),
+    };
 
-    fn create(_: &Context<Self>) -> Self {
-        Self {}
-    }
+    let actions = session.actions(rounds);
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        if let Action::Leave = msg {
-            yew_router::push_route(Route::Overview);
-        }
-
-        match ctx.props().stage.perform(msg, ctx.props().rounds) {
-            Some(stage) => ctx.props().onchange.emit(stage),
-            None => log::info!("faulty transition in navigation"),
-        }
-
-        true
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let map_action_attrs = |action: Action| match action {
-            Action::Start => ("start", "fas fa-play", Color::Primary, false),
-            Action::Pause => ("pause", "fas fa-pause", Color::Light, false),
-            Action::Resume => ("resume", "fas fa-play", Color::Light, false),
-            Action::Reveal => ("reveal", "fas fa-eye", Color::Danger, true),
-            Action::Scores => ("scores", "fas fa-list-ol", Color::Link, true),
-            Action::Next => ("next", "fas fa-forward", Color::Success, false),
-            Action::Finish => ("finish", "fas fa-flag-checkered", Color::Success, true),
-            Action::Leave => ("leave", "fas fa-sign-out-alt", Color::Danger, true),
-        };
-
-        let actions = ctx.props().stage.actions(ctx.props().rounds);
-
-        let map_action = |action: Action| {
-            let (text, icon, color, light) = map_action_attrs(action);
-            let callback = ctx.link().callback(move |_| action);
-            let hidden = !actions.contains(&action);
-
-            html! {
-                <Button hidden={hidden} color={color} light={light} size={Size::Large} onclick={callback}>
-                    <Icon icon={icon}/> <span>{text}</span>
-                </Button>
-            }
-        };
+    let button_style = |action: Action| {
+        let (text, icon, color, light) = button_attrs(action)?;
+        let hidden = !actions.contains(&action);
 
         html! {
-            <Buttons alignment={Alignment::Centered} extra="mt-4">
-                { for Action::iter().map(map_action) }
-            </Buttons>
+            <Button hidden={hidden} color={color} light={light} size={Size::Large} onclick={callback.reform(|_| action)}>
+                <Icon icon={icon}/> <span>{text}</span>
+            </Button>
         }
+    };
+
+    html! {
+        <Buttons alignment={Alignment::Centered} extra="mt-4">
+            { for Action::iter().map(button_style) }
+        </Buttons>
     }
 }

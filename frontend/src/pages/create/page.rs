@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 use crate::graphql::{DraftQuiz, DraftRound};
 use crate::route::Route;
@@ -44,7 +45,7 @@ impl Component for Create {
                 // TODO: save quiz
                 self.stage = Stage::Rounds;
             }
-            Msg::Cancel => yew_router::push_route(Route::Overview),
+            Msg::Cancel => use_history().unwrap().push(Route::Overview),
             Msg::Confirm => {
                 // TODO: change drafts to real quiz
                 // TODO: leave page
@@ -59,12 +60,17 @@ impl Component for Create {
         true
     }
 
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         match self.stage {
-            Stage::Quiz => html! { <CreateQuiz oncontinue={ctx.link().callback(Msg::Continue)} oncancel={ctx.link().callback(|_| Msg::Cancel)}/> },
-            Stage::Rounds => html! { <CreateRounds ondone={ctx.link().callback(|_| Msg::Done)} onback={ctx.link().callback(|_| Msg::Back)}/> },
-            Stage::Confirm => html! { <Confirm onback={ctx.link().callback(|_| Msg::Todo)} onconfirm={ctx.link().callback(|_| Msg::Confirm)}/>}
+            Stage::Quiz => {
+                html! { <CreateQuiz oncontinue={ctx.link().callback(Msg::Continue)} oncancel={ctx.link().callback(|_| Msg::Cancel)}/> }
+            }
+            Stage::Rounds => {
+                html! { <CreateRounds ondone={ctx.link().callback(|_| Msg::Done)} onback={ctx.link().callback(|_| Msg::Back)}/> }
+            }
+            Stage::Confirm => {
+                html! { <Confirm onback={ctx.link().callback(|_| Msg::Todo)} onconfirm={ctx.link().callback(|_| Msg::Confirm)}/>}
+            }
         }
     }
 }

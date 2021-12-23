@@ -4,7 +4,7 @@ use cobul::props::ColumnSize;
 use cobul::*;
 
 use crate::components::{MainNavbar, QuizCard};
-use crate::constants::{image_url, PLACEHOLDER};
+use crate::constants::{IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
 use crate::error::Error;
 use crate::graphql::{quizzes, Quiz};
 use crate::route::Route;
@@ -37,8 +37,11 @@ impl Component for Overview {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let src =
-                quiz.image_url.as_ref().map(image_url).unwrap_or_else(|| PLACEHOLDER.to_owned());
+            let src = quiz
+                .image_url
+                .as_ref()
+                .map(|path| format!("{}/{}", IMAGE_ENDPOINT, path))
+                .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
             let route = Route::Host { quiz_id: quiz.quiz_id };
 
             html! {

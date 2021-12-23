@@ -31,7 +31,6 @@ pub enum Request {
 pub enum Response {
     Hosted(u64, Session),
     Managed(u64, Session),
-    Read(Session),
     Updated(Session),
     Error(Error),
 }

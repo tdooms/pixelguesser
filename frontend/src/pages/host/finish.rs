@@ -4,8 +4,8 @@ use cobul::props::{Color, HeroSize};
 use cobul::*;
 use sessions::Player;
 
+use super::Ranking;
 use crate::graphql::Quiz;
-use crate::pages::host::Scores;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -26,7 +26,7 @@ pub fn finish(props: &Props) -> Html {
             </Hero>
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
-                <Scores players={players.clone()}/>
+                <Ranking players={players.clone()}/>
             </Hero>
         </>
     }

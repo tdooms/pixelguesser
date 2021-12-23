@@ -7,7 +7,7 @@ use cobul::props::{Color, ColumnSize};
 use cobul::*;
 
 use crate::components::QuizCard;
-use crate::constants::PLACEHOLDER;
+use crate::constants::IMAGE_PLACEHOLDER;
 use crate::graphql::{create_quiz, DraftQuiz, Image};
 
 pub enum Msg {
@@ -67,7 +67,7 @@ impl Component for CreateQuiz {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let DraftQuiz { name, creator, description, image } = &self.draft;
 
-        let src = image.src().unwrap_or_else(|| PLACEHOLDER.to_owned());
+        let src = image.src().unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
         let filename = image.name();
 
         let empty_default = |value: String, default: &str| -> String {

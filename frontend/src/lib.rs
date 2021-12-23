@@ -1,10 +1,8 @@
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::components::Kind;
-use crate::components::QuizLoader;
+use crate::components::Loader;
 use crate::pages::*;
 use crate::route::Route;
 
@@ -48,11 +46,12 @@ impl Component for Model {
 
 fn switch(routes: &Route) -> Html {
     match routes {
-        Route::Host { quiz_id } => html! { <QuizLoader kind={Kind::Host{ quiz_id: *quiz_id }}/> },
-        Route::Manage { session_id } => {
-            html! { <QuizLoader kind={Kind::Manage{ session_id: *session_id }}/> }
+        Route::Host { quiz_id } => {
+            html! { <Loader quiz_id={quiz_id}/> }
         }
-        Route::Code => html! { <Code/> },
+        Route::Manage { quiz_id, session_id } => {
+            html! { <Loader quiz_id={quiz_id} session_id={session_id}/> }
+        }
         Route::Create => html! { <Create/> },
         Route::Test => html! { <> {"test"} </> },
         Route::Overview => html! { <Overview/> },
