@@ -43,7 +43,7 @@ photon-rs = { git = "https://github.com/silvia-odwyer/photon.git", default-featu
 web-sys = { version = "0.3", features = ["HtmlCanvasElement", "HtmlImageElement", "CanvasRenderingContext2d", "HtmlDivElement", "Blob", "Url"] }
 js-sys = "0.3"
 
-gloo = { version = "0.3", features = ["futures"] }
+gloo = { version = "0.4", features = ["futures"] }
 base64 = "0.13"
 validator = { version = "0.14", features = ["derive"] }
 

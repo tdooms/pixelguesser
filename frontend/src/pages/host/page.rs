@@ -1,25 +1,27 @@
 use super::{Finish, Lobby, Pixelate, Ranking};
 use crate::graphql::{Quiz, Round};
+use crate::route::Route;
 use crate::utils::misc::code_to_string;
 use sessions::{Session, Stage};
 use yew::prelude::*;
+use yew_router::prelude::*;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
-struct Props {
-    session: Session,
-    secret: u64,
+pub struct Props {
+    pub session: Session,
+    pub id: u64,
 
-    quiz: Quiz,
-    rounds: Vec<Round>,
+    pub quiz: Quiz,
+    pub rounds: Vec<Round>,
 }
 
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
-    let Props { session, secret, quiz, rounds } = props;
+    let Props { session, id, quiz, rounds } = props;
 
     match session.stage {
         Stage::Lobby => {
-            let code = code_to_string(secret).unwrap_or_default();
+            let code = code_to_string(*id).unwrap_or_default();
             html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
         }
         Stage::Playing { round, paused } => {
@@ -30,11 +32,15 @@ pub fn host(props: &Props) -> Html {
             let url = rounds[round].image_url.clone().unwrap();
             html! { <Pixelate revealing={true} paused={false} url={url}/> }
         }
-        Stage::Ranking { round } => {
+        Stage::Ranking { .. } => {
             html! { <Ranking players={session.players.clone()}/> }
         }
         Stage::Finished => {
             html! { <Finish players={session.players.clone()} quiz={quiz.clone()}/> }
+        }
+        Stage::Left => {
+            use_history().unwrap().push(Route::Overview);
+            html! {}
         }
     }
 }

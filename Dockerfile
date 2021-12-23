@@ -1,14 +1,15 @@
 FROM rust
 
-ENV SQLX_OFFLINE true
 WORKDIR usr/src/pixelguesser
 
-COPY api /usr/src/pixelguesser/api/
-COPY backend /usr/src/pixelguesser/backend/
-COPY .env /usr/src/pixelguesser
+COPY backend/imager /usr/src/pixelguesser/imager/
+COPY backend/sessions /usr/src/pixelguesser/sessions/
+COPY data/images /usr/scr/pixelguesser/images
 
-RUN cargo install --path ./backend
+RUN cargo install --path ./imager
+RUN cargo install --path ./sessions
 
-EXPOSE 6561
+EXPOSE 8901
+EXPOSE 8902
 
-CMD pixelguesser
+CMD imager -p 8901 --folder images && sessions -p 8902

@@ -9,22 +9,18 @@ use crate::route::Route;
 #[function_component(MainNavbar)]
 pub fn main_navbar() -> Html {
     let brand = html! {
-        <Link<Route> classes={classes!("navbar-item")} route={Route::Overview}>
+        <Link<Route> classes={classes!("navbar-item")} to={Route::Overview}>
             <span>{"Pixelguesser"}</span>
         </Link<Route>>
     };
 
     let start = html! {
         <Buttons>
-            <Link<Route> classes={classes!("button", "is-primary")} route={Route::Code}>
-                <span>{"Quizmaster"}</span>
-            </Link<Route>>
-
-            <Link<Route> classes={classes!("button", "is-light")} route={Route::Create}>
+            <Link<Route> classes={classes!("button", "is-light")} to={Route::Create}>
                 <span>{"Create"}</span>
             </Link<Route>>
 
-            <Link<Route> classes={classes!("button", "is-light")} route={Route::Test}>
+            <Link<Route> classes={classes!("button", "is-light")} to={Route::Test}>
                 <span>{"Test"}</span>
             </Link<Route>>
         </Buttons>

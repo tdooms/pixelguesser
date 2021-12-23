@@ -1,10 +1,5 @@
 /target
-/static/images
-/Cargo.lock
-/static/package.json
-/static/wasm.d.ts
-/static/wasm.js
-/static/wasm_bg.wasm
-/static/wasm_bg.wasm.d.ts
-/backend/Cargo.lock
-/wasm/Cargo.lock
+/scripts
+/frontend
+/data/static
+/backend/spar

@@ -1,5 +1,6 @@
 use gloo::timers::callback::Timeout;
-use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
+use wasm_bindgen::JsCast;
+use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
@@ -157,5 +158,19 @@ impl Component for Pixelate {
                 </div>
             </>
         }
+    }
+
+    fn destroy(&mut self, ctx: &Context<Self>) {
+        log::error!("pixelate destructor");
+        let canvas = self.canvas.get().unwrap();
+
+        let context = canvas
+            .get_context("2d")
+            .unwrap()
+            .unwrap()
+            .dyn_into::<CanvasRenderingContext2d>()
+            .unwrap();
+
+        context.clear_rect(0., 0., canvas.width() as f64, canvas.height() as f64)
     }
 }

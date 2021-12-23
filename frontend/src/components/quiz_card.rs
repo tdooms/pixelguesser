@@ -25,7 +25,7 @@ pub struct Props {
 pub fn quiz_card(props: &Props) -> Html {
     let footer = match &props.route {
         Some(route) => html! {
-            <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "has-square-top")} route={route.clone()}>
+            <Link<Route> classes={classes!("button", "is-success", "is-fullwidth", "has-square-top")} to={route.clone()}>
                 <Icon icon={"fas fa-play"}/> <span>{"Play"}</span>
             </Link<Route>>
         },

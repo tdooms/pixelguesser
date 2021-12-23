@@ -5,6 +5,7 @@ use yew_router::prelude::*;
 use crate::components::Loader;
 use crate::pages::*;
 use crate::route::Route;
+use crate::utils::misc::string_to_code;
 
 // Use `wee_alloc` as the global allocator.
 #[global_allocator]
@@ -30,15 +31,13 @@ impl Component for Model {
         Self {}
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        false
-    }
-
     fn view(&self, _: &Context<Self>) -> Html {
         html! {
             <main>
-                // <Alerts<Rc<Info>> entries={self.infos.clone()} />
-                <Router<Route> render={Router::render(switch)} />
+                <BrowserRouter>
+                    // <Alerts<Rc<Info>> entries={self.infos.clone()} />
+                    <Switch<Route> render={Switch::render(switch)} />
+                </BrowserRouter>
             </main>
         }
     }
@@ -47,9 +46,12 @@ impl Component for Model {
 fn switch(routes: &Route) -> Html {
     match routes {
         Route::Host { quiz_id } => {
-            html! { <Loader quiz_id={quiz_id}/> }
+            html! { <Loader quiz_id={*quiz_id}/> }
         }
-        Route::Manage { quiz_id, session_id } => {
+        Route::Manage { session_id } => {
+            let mut iter = session_id.split('-');
+            let quiz_id = iter.next().unwrap().parse::<u64>().unwrap();
+            let session_id = string_to_code(iter.next().unwrap()).unwrap();
             html! { <Loader quiz_id={quiz_id} session_id={session_id}/> }
         }
         Route::Create => html! { <Create/> },

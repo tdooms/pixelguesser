@@ -1,7 +1,8 @@
+use cobul::Loading;
 use futures::FutureExt;
 use yew::prelude::*;
 
-use sessions::{Request, Response, Session};
+use sessions::{Action, Request, Response, Session};
 
 use crate::constants::SESSION_ENDPOINT;
 use crate::error::Error;
@@ -16,7 +17,6 @@ pub struct Props {
     pub session_id: Option<u64>, // Having a session_id implies being a manager
 }
 
-#[derive(PartialEq, Clone, Debug)]
 pub struct Loader {
     ws: WebsocketTask,
 
@@ -27,6 +27,7 @@ pub struct Loader {
 pub enum Msg {
     Ws(Response),
     Quiz(Result<(Quiz, Vec<Round>), Error>),
+    Action(Action),
 }
 
 impl Component for Loader {
@@ -47,14 +48,17 @@ impl Component for Loader {
         Self { ws, session: None, quiz: None }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Quiz(Ok(pair)) => self.quiz = Some(pair),
+            Msg::Action(action) => {
+                self.ws.send(&Request::Update(action, self.quiz.as_ref().unwrap().1.len()))
+            }
             Msg::Ws(Response::Hosted(id, session)) => self.session = Some((id, session)),
             Msg::Ws(Response::Managed(id, session)) => self.session = Some((id, session)),
             Msg::Ws(Response::Updated(session)) => {
                 // TODO: some checks
-                self.session.unwrap().1 = session;
+                self.session.as_mut().unwrap().1 = session;
             }
             Msg::Ws(Response::Error(err)) => {
                 log::error!("{:?}", err)
@@ -67,12 +71,19 @@ impl Component for Loader {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let Props { quiz_id, session_id } = ctx.props();
+        let Loader { session, quiz, .. } = self;
+        let callback = ctx.link().callback(Msg::Action);
 
-        // TODO: do the load stuffies
-        match session_id {
-            Some(session_id) => html! { <Manage quiz_id={quiz_id} session_id={session_id} /> },
-            None => html! { <Host quiz_id={quiz_id} />},
+        match (session.clone(), quiz.clone(), ctx.props().session_id) {
+            (Some((_, session)), Some((quiz, rounds)), Some(_)) => html! {
+                <Manage session={session} quiz={quiz} rounds={rounds} callback={callback}/>
+            },
+            (Some((id, session)), Some((quiz, rounds)), None) => html! {
+                <Host session={session} id={id} quiz={quiz} rounds={rounds} />
+            },
+            _ => html! {
+                <Loading />
+            },
         }
     }
 }

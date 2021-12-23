@@ -25,16 +25,16 @@ pub enum Action {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Player {
-    name: String,
-    score: u64,
+    pub name: String,
+    pub score: u64,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Stage {
     Lobby,
-    Playing { round: u64, paused: bool },
-    Revealed { round: u64 },
-    Ranking { round: u64 },
+    Playing { round: usize, paused: bool },
+    Revealed { round: usize },
+    Ranking { round: usize },
     Finished,
     Left,
 }
@@ -53,15 +53,30 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn update(&self, action: Action, rounds: u64) -> Option<Self> {
+    pub fn update(&self, action: Action, rounds: usize) -> Option<Self> {
         let mut copy = (*self).clone();
         match (self.stage, action) {
             (Stage::Lobby, Action::Player(name)) => copy.players.push(Player { name, score: 0 }),
+            (Stage::Lobby, Action::Start) => {
+                // TODO: check if quiz is empty
+                copy.stage = Stage::Playing { round: 0, paused: false }
+            }
             (Stage::Playing { round, paused: true }, Action::Resume) => {
                 copy.stage = Stage::Playing { round, paused: false }
             }
             (Stage::Playing { round, paused: false }, Action::Pause) => {
                 copy.stage = Stage::Playing { round, paused: true }
+            }
+            (Stage::Playing { round, .. }, Action::Guessed(name, points)) => {
+                for player in &mut copy.players {
+                    if player.name == name {
+                        player.score += points
+                    }
+                }
+                copy.stage = Stage::Revealed { round }
+            }
+            (Stage::Playing { round, .. }, Action::Reveal) => {
+                copy.stage = Stage::Revealed { round }
             }
             (Stage::Revealed { round }, Action::Next) if round >= rounds - 1 => {
                 copy.stage = Stage::Finished
@@ -79,7 +94,7 @@ impl Session {
         Some(copy)
     }
 
-    pub fn actions(&self, rounds: u64) -> Vec<Action> {
+    pub fn actions(&self, rounds: usize) -> Vec<Action> {
         // This is far from the smartest ways to do this, but it's the least error prone
         Action::iter()
             .filter_map(|action| self.update(action.clone(), rounds).map(|_| action))

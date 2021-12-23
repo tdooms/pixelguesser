@@ -2,9 +2,10 @@ use std::ops::Range;
 use std::sync::{Arc, Weak};
 
 use rand::Rng;
-use sessions::{Action, Request};
 use tokio::sync::Mutex;
 use warp::ws::Message;
+
+use sessions::{Action, Request};
 
 use crate::global::{Global, Responder};
 use crate::{Error, Response, Session};
@@ -13,6 +14,13 @@ enum State {
     None,
     Host(u64),
     Manager(Responder, Weak<Mutex<Session>>),
+}
+
+enum Answer {
+    Both(Response),
+    Different { host: Response, manager: Response },
+    Back(Response),
+    None,
 }
 
 pub struct Local {
@@ -49,7 +57,7 @@ impl Local {
         self.responder.send(Ok(Message::text(str))).unwrap();
     }
 
-    async fn handle_host(&mut self, global: &Global) {
+    async fn handle_host(&mut self, global: &Global) -> Answer {
         const CHARS: u64 = 48;
         const RANGE: Range<u64> = CHARS.pow(4)..(CHARS.pow(5) - 1);
 
@@ -59,12 +67,15 @@ impl Local {
 
             if !lock.contains_key(&id) {
                 lock.insert(id, (self.responder.clone(), Arc::default()));
-                self.state = State::Host(id)
+                self.state = State::Host(id);
+
+                return Answer::Back(Response::Hosted(id, Session::default()));
             }
         }
+        Answer::Back(Response::Error(Error::UnableToCreate))
     }
 
-    async fn handle_manage(&mut self, session_id: u64, global: &Global) {
+    async fn handle_manage(&mut self, session_id: u64, global: &Global) -> Answer {
         // Get a lock on the global data to access to session
         let lock = global.hosts.lock().await;
         match lock.get(&session_id) {
@@ -72,27 +83,27 @@ impl Local {
                 // Lock the session and check if it is already manager
                 let mut lock = session.lock().await;
                 if lock.has_manager {
-                    self.respond(&Response::Error(Error::UnableToManage(session_id)));
-                    return;
+                    return Answer::Back(Response::Error(Error::UnableToManage(session_id)));
                 }
 
                 // Otherwise set the managed flag and broadcast the update
                 lock.has_manager = true;
-                let update = Response::Updated(lock.clone());
-                Local::new(responder.clone()).respond(&update);
-                self.state = State::Manager(responder.clone(), Arc::downgrade(session))
+                self.state = State::Manager(responder.clone(), Arc::downgrade(session));
+
+                let host = Response::Updated(lock.clone());
+                let manager = Response::Managed(session_id, lock.clone());
+                Answer::Different { host, manager }
             }
-            _ => self.respond(&Response::Error(Error::UnableToManage(session_id))),
+            _ => Answer::Back(Response::Error(Error::UnableToManage(session_id))),
         }
     }
 
     async fn handle_update(
         &self,
         action: Action,
-        rounds: u64,
-        host: &Responder,
+        rounds: usize,
         session: &Weak<Mutex<Session>>,
-    ) {
+    ) -> Answer {
         match session.upgrade() {
             Some(session) => {
                 let mut lock = session.lock().await;
@@ -103,17 +114,17 @@ impl Local {
                         Response::Updated(session)
                     }
                 };
-                Local::new(host.clone()).respond(&updated);
-                self.respond(&updated);
+                Answer::Both(updated)
             }
             None => {
-                log::warn!("host disconnected")
+                log::warn!("host disconnected");
+                Answer::Back(Response::Error(Error::HostDisconnected))
             }
         }
     }
 
     pub async fn request(&mut self, request: Request, global: &Global) {
-        match (request, &self.state) {
+        let answer = match (request, &self.state) {
             (Request::Host, State::None) => {
                 log::debug!("attempting to host new session");
                 self.handle_host(global).await
@@ -122,19 +133,35 @@ impl Local {
                 log::debug!("attempting to manage session");
                 self.handle_manage(session_id, global).await
             }
-            (Request::Update(action, rounds), State::Manager(host, session)) => {
+            (Request::Update(action, rounds), State::Manager(_, session)) => {
                 log::debug!("attempting to update session");
-                self.handle_update(action, rounds, host, session).await
+                self.handle_update(action, rounds, session).await
             }
             (_, State::None) => {
-                log::warn!("must first manage a session before submitting actions")
+                log::warn!("must first manage a session before submitting actions");
+                Answer::None
             }
             (_, State::Host(_)) => {
-                log::warn!("cannot submit requests as a host")
+                log::warn!("cannot submit requests as a host");
+                Answer::None
             }
             _ => {
-                log::warn!("forbidden operation")
+                log::warn!("forbidden operation");
+                Answer::None
             }
+        };
+        match (answer, &self.state) {
+            (Answer::Both(response), State::Manager(resp, _)) => {
+                self.respond(&response);
+                Local::new(resp.clone()).respond(&response)
+            }
+            (Answer::Different { host, manager }, State::Manager(resp, _)) => {
+                self.respond(&manager);
+                Local::new(resp.clone()).respond(&host)
+            }
+            (Answer::Back(response), _) => self.respond(&response),
+            (Answer::None, _) => {}
+            _ => log::warn!("wrong answer for given local state"),
         }
     }
 }

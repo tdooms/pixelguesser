@@ -13,6 +13,9 @@ pub enum Error {
     #[error("Could not join as manager in session {0}")]
     UnableToManage(u64),
 
+    #[error("The host for this session disconnected")]
+    HostDisconnected,
+
     #[error("Invalid update {0:?} on session {1:?}")]
     InvalidUpdate(Action, Session),
 
@@ -24,7 +27,7 @@ pub enum Error {
 pub enum Request {
     Host,        // amount of rounds
     Manage(u64), // session id
-    Update(Action, u64),
+    Update(Action, usize),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

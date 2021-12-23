@@ -14,15 +14,20 @@ pub struct Props {
 
 #[function_component(RoundInfo)]
 pub fn round_info(props: &Props) -> Html {
+    let points = match props.round.info.points as u64 {
+        1 => "1 point".to_owned(),
+        x => format!("{} points", x),
+    };
+
     let header = html! {
-        <Subtitle> {"round "} {props.index} {" / "} {props.rounds} </Subtitle>
+        <Subtitle> {"round "} {props.index + 1} {" / "} {props.rounds} </Subtitle>
     };
 
     html! {
         <Hero size={HeroSize::Medium} header={header}>
             <Container extra="has-text-centered">
                 <Title> {props.round.info.answer.clone()} </Title>
-                <Subtitle> {props.round.info.points} {" points"} </Subtitle>
+                <Subtitle> {points} </Subtitle>
             </Container>
         </Hero>
     }
