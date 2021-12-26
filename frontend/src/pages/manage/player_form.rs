@@ -18,7 +18,7 @@ pub enum PlayerMsg {
 #[function_component(PlayerForm)]
 pub fn player_form(props: &Form<PlayerName, PlayerMsg>) -> Html {
     let errors = props.errors();
-    let name = props.values();
+    let name = props.inner();
 
     html! {
         <Field grouped=true>
