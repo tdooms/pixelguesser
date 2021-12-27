@@ -7,7 +7,6 @@ use crate::pages::*;
 use crate::route::Route;
 use crate::utils::string_to_code;
 
-// Use `wee_alloc` as the global allocator.
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
@@ -15,7 +14,7 @@ mod agents;
 mod components;
 mod constants;
 mod error;
-pub mod graphql;
+mod graphql;
 mod pages;
 mod route;
 mod structs;
