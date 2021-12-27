@@ -9,7 +9,7 @@ use crate::error::Error;
 use crate::graphql;
 use crate::graphql::{Quiz, Round};
 use crate::pages::{Host, Manage};
-use crate::utils::yew::WebsocketTask;
+use crate::utils::WebsocketTask;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -78,8 +78,8 @@ impl Component for Loader {
             (Some((_, session)), Some((quiz, rounds)), Some(_)) => html! {
                 <Manage session={session} quiz={quiz} rounds={rounds} callback={callback}/>
             },
-            (Some((id, session)), Some((quiz, rounds)), None) => html! {
-                <Host session={session} id={id} quiz={quiz} rounds={rounds} />
+            (Some((session_id, session)), Some((quiz, rounds)), None) => html! {
+                <Host session={session} session_id={session_id} quiz={quiz} rounds={rounds} />
             },
             _ => html! {
                 <Loading />

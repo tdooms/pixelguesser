@@ -7,8 +7,8 @@ use yew_agent::{Dispatched, Dispatcher};
 use crate::agents::NotificationAgent;
 use crate::constants::IMAGE_ENDPOINT;
 use crate::structs::Error;
-use crate::utils::misc::draw_pixelated;
-use crate::utils::yew::{Resizer, TypeRef};
+use crate::utils::draw_pixelated;
+use crate::utils::{Resizer, TypeRef};
 
 pub enum Msg {
     Loaded,

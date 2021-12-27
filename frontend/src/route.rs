@@ -2,8 +2,8 @@ use yew_router::prelude::*;
 
 #[derive(Routable, PartialEq, Clone, Debug)]
 pub enum Route {
-    #[at("/manage/:session_id")]
-    Manage { session_id: String },
+    #[at("/manage/:code")]
+    Manage { code: String },
     #[at("/host/:quiz_id")]
     Host { quiz_id: u64 },
     #[at("/create")]

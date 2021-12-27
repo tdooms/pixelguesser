@@ -58,21 +58,14 @@ impl Local {
     }
 
     async fn handle_host(&mut self, global: &Global) -> Answer {
-        const CHARS: u64 = 48;
-        const RANGE: Range<u64> = CHARS.pow(4)..(CHARS.pow(5) - 1);
-
         let mut lock = global.hosts.lock().await;
-        for _ in 0..20 {
-            let id = rand::thread_rng().gen_range(RANGE.clone());
+        let id = rand::thread_rng().gen::<u32>() as u64;
+        self.state = State::Host(id);
 
-            if !lock.contains_key(&id) {
-                lock.insert(id, (self.responder.clone(), Arc::default()));
-                self.state = State::Host(id);
-
-                return Answer::Back(Response::Hosted(id, Session::default()));
-            }
+        match lock.insert(id, (self.responder.clone(), Arc::default())) {
+            None => Answer::Back(Response::Hosted(id, Session::default())),
+            Some(_) => Answer::Back(Response::Error(Error::UnableToCreate)),
         }
-        Answer::Back(Response::Error(Error::UnableToCreate))
     }
 
     async fn handle_manage(&mut self, session_id: u64, global: &Global) -> Answer {
