@@ -49,7 +49,7 @@ impl Component for CreateQuiz {
             Msg::Image(files) if files.len() == 1 => {
                 self.draft.image = Image::new(&files[0]);
             }
-            Msg::Image(files) => {
+            Msg::Image(_files) => {
                 // TODO: give error
             }
             Msg::QuizUploaded => ctx.props().oncontinue.emit(self.draft.clone()),

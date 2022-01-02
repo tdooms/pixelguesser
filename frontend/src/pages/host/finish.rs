@@ -16,7 +16,7 @@ pub struct Props {
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
     let Props { players, quiz, .. } = &props;
-    let body = html! {};
+    let _body = html! {};
 
     html! {
         <>

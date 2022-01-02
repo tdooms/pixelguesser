@@ -34,10 +34,10 @@ impl WebsocketTask {
                             log::debug!("ws response: {:?}", response);
                             callback.emit(response)
                         }
-                        Err(err) => log::error!("TODO: handle deserialize error"),
+                        Err(_err) => log::error!("TODO: handle deserialize error"),
                     },
-                    Ok(Message::Bytes(m)) => log::error!("TODO: handle deserialize bytes over ws"),
-                    Err(e) => log::error!("TODO: handle ws error"),
+                    Ok(Message::Bytes(_m)) => log::error!("TODO: handle deserialize bytes over ws"),
+                    Err(_e) => log::error!("TODO: handle ws error"),
                 }
             }
         });

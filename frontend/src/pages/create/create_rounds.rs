@@ -31,11 +31,11 @@ impl Component for CreateRounds {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self { current: 0, rounds: vec![DraftRound::default()] }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::ChangeRoundInfo(info) => {
                 self.rounds[self.current].info = info;
@@ -59,7 +59,7 @@ impl Component for CreateRounds {
                 self.rounds[self.current].image = Image::new(&files[0]);
                 true
             }
-            Msg::AddImage(files) => {
+            Msg::AddImage(_files) => {
                 // TODO: give error
                 false
             }

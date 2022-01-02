@@ -39,9 +39,9 @@ impl Component for Create {
         Self { stage: Stage::Quiz }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Continue(quiz) => {
+            Msg::Continue(_quiz) => {
                 // TODO: save quiz
                 self.stage = Stage::Rounds;
             }
@@ -50,7 +50,7 @@ impl Component for Create {
                 // TODO: change drafts to real quiz
                 // TODO: leave page
             }
-            Msg::Save(rounds) => {
+            Msg::Save(_rounds) => {
                 // TODO: save stuff
             }
             Msg::Back => self.stage = Stage::Quiz,

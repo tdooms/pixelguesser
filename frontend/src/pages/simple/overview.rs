@@ -22,7 +22,7 @@ impl Component for Overview {
         Self { quizzes: None }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Ok(quizzes) => {
                 self.quizzes = Some(quizzes);
@@ -35,7 +35,7 @@ impl Component for Overview {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
             let src = quiz
                 .image_url

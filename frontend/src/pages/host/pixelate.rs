@@ -38,8 +38,8 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(notifications: &mut Dispatcher<NotificationAgent>, result: Result<(), Error>) {
-        if let Err(err) = result {
+    fn log(_notifications: &mut Dispatcher<NotificationAgent>, result: Result<(), Error>) {
+        if let Err(_err) = result {
             // logger.send(err)
         }
     }
@@ -160,7 +160,7 @@ impl Component for Pixelate {
         }
     }
 
-    fn destroy(&mut self, ctx: &Context<Self>) {
+    fn destroy(&mut self, _ctx: &Context<Self>) {
         log::error!("pixelate destructor");
         let canvas = self.canvas.get().unwrap();
 

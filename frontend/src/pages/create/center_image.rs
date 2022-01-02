@@ -30,7 +30,7 @@ impl Component for CenterImage {
         Self { preview: false }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Reveal => false,
             Msg::Pause => false,
@@ -42,7 +42,7 @@ impl Component for CenterImage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let pixelate_buttons = || {
+        let _pixelate_buttons = || {
             html! {
                 <Buttons alignment={Alignment::Centered} extra="mt-5">
                     <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>

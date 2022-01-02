@@ -4,7 +4,9 @@ use strum::{EnumIter, IntoEnumIterator};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, EnumIter)]
 pub enum Action {
     /// Adds a new player with given name
-    Player(String),
+    AddPlayer(String),
+    /// Removes a player with given name
+    RemovePlayer(String),
     /// Starts the quiz after doing the setup
     Start,
     /// Pauses a round
@@ -19,6 +21,8 @@ pub enum Action {
     Scores,
     /// Proceed to next round
     Next,
+    /// Give a rating to the quiz
+    GiveRating(u64),
     /// Leave the session
     Leave,
 }
@@ -56,7 +60,7 @@ impl Session {
     pub fn update(&self, action: Action, rounds: usize) -> Option<Self> {
         let mut copy = (*self).clone();
         match (self.stage, action) {
-            (Stage::Lobby, Action::Player(name)) => copy.players.push(Player { name, score: 0 }),
+            (Stage::Lobby, Action::AddPlayer(name)) => copy.players.push(Player { name, score: 0 }),
             (Stage::Lobby, Action::Start) => {
                 // TODO: check if quiz is empty
                 copy.stage = Stage::Playing { round: 0, paused: false }

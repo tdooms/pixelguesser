@@ -23,7 +23,7 @@ pub fn player_form(props: &Form<PlayerName, PlayerMsg>) -> Html {
     html! {
         <Field grouped=true>
             <Control expanded=true>
-                <Input oninput={props.field(|x| &mut x.name, PlayerMsg::Change)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"}/>
+                <Input oninput={props.field(|x| &mut x.name, PlayerMsg::Change)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={name}/>
             </Control>
             <Control>
                 <Button size={Size::Large} color={Color::Info} onclick={props.callback(PlayerMsg::Submit)}>
