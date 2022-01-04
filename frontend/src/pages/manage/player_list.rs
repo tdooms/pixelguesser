@@ -3,11 +3,12 @@ use yew::prelude::*;
 use cobul::props::Size;
 use cobul::*;
 use sessions::Player;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onclick: Callback<String>,
-    pub players: Vec<Player>,
+    pub players: HashMap<String, Player>,
     pub title: String,
 }
 
@@ -15,13 +16,13 @@ pub struct Props {
 pub fn player_list(props: &Props) -> Html {
     let Props { onclick, players, title } = props;
 
-    let view_player = |player: &Player| {
-        let cloned = player.name.clone();
-        let onclick = onguess.reform(move |_| cloned.clone());
+    let view_player = |(name, _): (&String, &Player)| {
+        let cloned = name.clone();
+        let onclick = onclick.reform(move |_| cloned.clone());
 
         html! {
             <Button outlined=true size={Size::Large} fullwidth=true onclick={onclick}>
-                {player.name.clone()}
+                {name.clone()}
             </Button>
         }
     };

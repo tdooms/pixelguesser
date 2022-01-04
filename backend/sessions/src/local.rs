@@ -1,14 +1,10 @@
-use std::ops::Range;
-use std::sync::{Arc, Weak};
-
-use rand::Rng;
-use tokio::sync::Mutex;
-use warp::ws::Message;
-
-use sessions::{Action, Request};
-
 use crate::global::{Global, Responder};
 use crate::{Error, Response, Session};
+use rand::Rng;
+use sessions::{Action, Request};
+use std::sync::{Arc, Weak};
+use tokio::sync::Mutex;
+use warp::ws::Message;
 
 enum State {
     None,

@@ -9,24 +9,18 @@ pub struct PlayerName {
     pub name: String,
 }
 
-#[derive(Clone, PartialEq)]
-pub enum PlayerMsg {
-    Change(PlayerName),
-    Submit(PlayerName),
-}
-
 #[function_component(PlayerForm)]
-pub fn player_form(props: &Form<PlayerName, PlayerMsg>) -> Html {
+pub fn player_form(props: &Form<PlayerName>) -> Html {
     let errors = props.errors();
-    let name = props.inner();
+    let PlayerName { name } = props.inner();
 
     html! {
         <Field grouped=true>
             <Control expanded=true>
-                <Input oninput={props.field(|x| &mut x.name, PlayerMsg::Change)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={name}/>
+                <Input oninput={props.field(|x| &mut x.name)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={name}/>
             </Control>
             <Control>
-                <Button size={Size::Large} color={Color::Info} onclick={props.callback(PlayerMsg::Submit)}>
+                <Button size={Size::Large} color={Color::Info} onclick={props.submit()}>
                     <Icon icon="fas fa-plus"> </Icon>
                 </Button>
             </Control>

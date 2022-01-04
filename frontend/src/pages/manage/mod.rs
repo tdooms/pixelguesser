@@ -1,6 +1,6 @@
 use navigate::Navigate;
 pub use page::Manage;
-use player_form::{PlayerForm, PlayerMsg, PlayerName};
+use player_form::{PlayerForm, PlayerName};
 use player_list::PlayerList;
 use rating::Rating;
 use round_info::RoundInfo;

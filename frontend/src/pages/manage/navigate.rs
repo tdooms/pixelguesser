@@ -18,7 +18,6 @@ pub fn navigate(props: &Props) -> Html {
 
     // button text, button icon, color, inverted
     let button_attrs = |action: &Action| match action {
-        Action::AddPlayer(_) | Action::Guessed(_, _) => None,
         Action::Start => Some(("start", "fas fa-play", Color::Primary, false)),
         Action::Pause => Some(("pause", "fas fa-pause", Color::Light, false)),
         Action::Resume => Some(("resume", "fas fa-play", Color::Light, false)),
@@ -26,6 +25,7 @@ pub fn navigate(props: &Props) -> Html {
         Action::Scores => Some(("scores", "fas fa-list-ol", Color::Link, true)),
         Action::Next => Some(("next", "fas fa-forward", Color::Success, false)),
         Action::Leave => Some(("leave", "fas fa-sign-out-alt", Color::Danger, true)),
+        _ => None,
     };
 
     let actions = session.actions(*rounds);

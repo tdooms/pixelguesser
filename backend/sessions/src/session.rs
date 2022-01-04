@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use strum::{EnumIter, IntoEnumIterator};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, EnumIter)]
@@ -27,9 +28,8 @@ pub enum Action {
     Leave,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Player {
-    pub name: String,
     pub score: u64,
 }
 
@@ -52,7 +52,7 @@ impl Default for Stage {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Session {
     pub stage: Stage,
-    pub players: Vec<Player>,
+    pub players: HashMap<String, Player>,
     pub has_manager: bool,
 }
 
@@ -60,7 +60,17 @@ impl Session {
     pub fn update(&self, action: Action, rounds: usize) -> Option<Self> {
         let mut copy = (*self).clone();
         match (self.stage, action) {
-            (Stage::Lobby, Action::AddPlayer(name)) => copy.players.push(Player { name, score: 0 }),
+            (Stage::Lobby, Action::AddPlayer(name)) => {
+                // Try the name itself, if it already exists try increasingly high numbers
+                if copy.players.insert(name.clone(), Player::default()).is_some() {
+                    for i in 1..u64::MAX {
+                        let name = format!("{} #{}", name.clone(), i);
+                        if copy.players.insert(name, Player::default()).is_none() {
+                            break;
+                        }
+                    }
+                }
+            }
             (Stage::Lobby, Action::Start) => {
                 // TODO: check if quiz is empty
                 copy.stage = Stage::Playing { round: 0, paused: false }
@@ -72,10 +82,9 @@ impl Session {
                 copy.stage = Stage::Playing { round, paused: true }
             }
             (Stage::Playing { round, .. }, Action::Guessed(name, points)) => {
-                for player in &mut copy.players {
-                    if player.name == name {
-                        player.score += points
-                    }
+                match copy.players.get_mut(&name) {
+                    Some(player) => player.score += points,
+                    None => {} // TODO: give error
                 }
                 copy.stage = Stage::Revealed { round }
             }
@@ -93,6 +102,13 @@ impl Session {
                 copy.stage = Stage::Playing { round: round + 1, paused: false }
             }
             (Stage::Finished, Action::Leave) => copy.stage = Stage::Left,
+            (Stage::Lobby, Action::RemovePlayer(name)) => {
+                copy.players.remove(&name);
+                // TODO: return error on non-existent
+            }
+            (Stage::Finished, Action::GiveRating(rating)) => {
+                // TODO
+            }
             _ => return None,
         }
         Some(copy)

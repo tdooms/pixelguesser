@@ -6,10 +6,11 @@ use sessions::Player;
 
 use super::Ranking;
 use crate::graphql::Quiz;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub players: Vec<Player>,
+    pub players: HashMap<String, Player>,
     pub quiz: Quiz,
 }
 

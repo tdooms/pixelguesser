@@ -3,6 +3,7 @@ use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
 use strum::EnumIter;
+use validator::Validate;
 use web_sys::Url;
 
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
@@ -102,8 +103,9 @@ pub struct RoundOptions {
     pub speed: Option<f64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+#[derive(Validate, Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
 pub struct DraftQuiz {
+    #[validate(length(min = 1))]
     pub name: String,
     pub description: String,
     pub creator: String,
