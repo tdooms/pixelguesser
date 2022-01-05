@@ -64,8 +64,7 @@ async fn main() {
     let global = Global::default();
     let global = warp::any().map(move || global.clone());
 
-    let ws = warp::path("ws")
-        .and(warp::ws())
+    let ws = warp::ws()
         .and(global)
         .map(|ws: Ws, global: Global| ws.on_upgrade(|socket| start_socket(socket, global)));
 

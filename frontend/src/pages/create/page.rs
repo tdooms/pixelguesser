@@ -11,7 +11,7 @@ pub enum Msg {
     Done,
     Confirm,
     Back,
-    Continue(DraftQuiz),
+    Submit(DraftQuiz),
     Cancel,
     Todo,
 }
@@ -41,7 +41,7 @@ impl Component for Create {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Continue(_quiz) => {
+            Msg::Submit(_quiz) => {
                 // TODO: save quiz
                 self.stage = Stage::Rounds;
             }
@@ -61,15 +61,17 @@ impl Component for Create {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link();
+
         match self.stage {
             Stage::Quiz => {
-                html! { <CreateQuiz oncontinue={ctx.link().callback(Msg::Continue)} oncancel={ctx.link().callback(|_| Msg::Cancel)}/> }
+                html! { <CreateQuiz onsubmit={link.callback(Msg::Submit)} oncancel={link.callback(|_| Msg::Cancel)}/> }
             }
             Stage::Rounds => {
-                html! { <CreateRounds ondone={ctx.link().callback(|_| Msg::Done)} onback={ctx.link().callback(|_| Msg::Back)}/> }
+                html! { <CreateRounds ondone={link.callback(|_| Msg::Done)} onback={link.callback(|_| Msg::Back)}/> }
             }
             Stage::Confirm => {
-                html! { <Confirm onback={ctx.link().callback(|_| Msg::Todo)} onconfirm={ctx.link().callback(|_| Msg::Confirm)}/>}
+                html! { <Confirm onback={link.callback(|_| Msg::Todo)} onconfirm={link.callback(|_| Msg::Confirm)}/>}
             }
         }
     }
