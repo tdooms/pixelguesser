@@ -1,4 +1,4 @@
-use cobul::props::{Color, ColumnSize};
+use cobul::props::ColumnSize;
 use cobul::*;
 use yew::prelude::*;
 
@@ -6,6 +6,7 @@ use super::QuizForm;
 use crate::components::QuizCard;
 use crate::constants::IMAGE_PLACEHOLDER;
 use crate::graphql::DraftQuiz;
+use crate::structs::ImageData;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
@@ -19,7 +20,7 @@ pub fn quiz_form(props: &Props) -> Html {
 
     let state = use_state(|| DraftQuiz::default());
     let DraftQuiz { name, creator, description, image } = (*state).clone();
-    let src = image.src().unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
+    let src = image.as_ref().map(ImageData::src).unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
 
     html! {
         <Columns>

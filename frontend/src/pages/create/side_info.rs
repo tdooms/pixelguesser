@@ -3,18 +3,18 @@ use yew::prelude::*;
 use cobul::props::{Alignment, Color};
 use cobul::*;
 
-use crate::graphql::{GuessChoices, PointChoices, RoundInfo};
+use crate::graphql::{DraftRound, GuessChoices, PointChoices};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<RoundInfo>,
-    pub info: RoundInfo,
+    pub onchange: Callback<DraftRound>,
+    pub info: DraftRound,
 }
 
 #[function_component(SideInfo)]
 pub fn side_info(props: &Props) -> Html {
     let cloned = props.info.clone();
-    let changer = move |answer, guesses, points| -> RoundInfo {
+    let changer = move |answer, guesses, points| -> DraftRound {
         let mut new = cloned.clone();
         if let Some(x) = answer {
             new.answer = x

@@ -1,11 +1,12 @@
-use super::{exec, AffectedRows, Image, Kind, Round};
+use super::{exec, AffectedRows, Kind, Round};
 use crate::error::Error;
-use crate::graphql::images::upload_image;
-use crate::structs::Image;
+use crate::graphql::ROUND_FIELDS;
+use crate::structs::ImageData;
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
+pub const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
 
 #[derive(serde::Deserialize, Debug)]
 pub struct QuizzesData {
@@ -28,13 +29,13 @@ pub struct CreateQuizData {
     pub insert_quizzes_one: AffectedRows,
 }
 
-#[derive(Validate, Serialize, Deserialize, Debug, Default, Clone, PartialEq)]
+#[derive(Validate, Serialize, Debug, Default, Clone, PartialEq)]
 pub struct DraftQuiz {
     #[validate(length(min = 1))]
     pub name: String,
     pub description: String,
     pub creator: String,
-    pub image: Image,
+    pub image: Option<ImageData>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -42,8 +43,21 @@ pub struct Quiz {
     pub quiz_id: u64,
     pub created_at: DateTime<Utc>,
 
-    #[serde(flatten)]
-    pub quiz: DraftQuiz,
+    pub name: String,
+    pub description: String,
+    pub creator: String,
+    pub image: Option<String>,
+}
+
+impl From<Quiz> for DraftQuiz {
+    fn from(quiz: Quiz) -> Self {
+        Self {
+            name: quiz.name,
+            description: quiz.description,
+            creator: quiz.creator,
+            image: quiz.image.map(ImageData::from_url),
+        }
+    }
 }
 
 pub async fn quizzes() -> Result<Vec<Quiz>, Error> {
@@ -64,8 +78,9 @@ pub async fn quiz(quiz_id: u64) -> Result<(Quiz, Vec<Round>), Error> {
 }
 
 pub async fn create_quiz(mut draft: DraftQuiz) -> Result<u64, Error> {
-    // TODO: no more unwrap
-    draft.image = upload_image(&draft.image).unwrap();
+    if let Some(image) = &draft.image {
+        image.upload();
+    }
 
     let object = serde_json::to_string(&draft).unwrap();
     let str = format!("insert_quizzes_one(object: {{ {} }})", object);

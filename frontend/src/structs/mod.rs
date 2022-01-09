@@ -1,5 +1,5 @@
+pub use self::image::ImageData;
 pub use error::Error;
-pub use image::Image;
 pub use info::Info;
 
 mod error;

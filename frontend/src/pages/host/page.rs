@@ -25,11 +25,11 @@ pub fn host(props: &Props) -> Html {
             html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
         }
         Stage::Playing { round, paused } => {
-            let url = rounds[round].image_url.clone().unwrap();
+            let url = rounds[round].image.clone();
             html! { <Pixelate revealing={false} paused={paused} url={url}/> }
         }
         Stage::Revealed { round } => {
-            let url = rounds[round].image_url.clone().unwrap();
+            let url = rounds[round].image.clone();
             html! { <Pixelate revealing={true} paused={false} url={url}/> }
         }
         Stage::Ranking { .. } => {

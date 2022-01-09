@@ -8,4 +8,7 @@ pub enum Error {
 
     #[error("graphql error {0:?}")]
     Graphql(Vec<String>),
+
+    #[error("local image already uploaded")]
+    Reupload,
 }

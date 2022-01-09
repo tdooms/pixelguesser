@@ -14,7 +14,7 @@ pub struct Props {
 
 #[function_component(RoundInfo)]
 pub fn round_info(props: &Props) -> Html {
-    let points = match props.round.info.points as u64 {
+    let points = match props.round.points as u64 {
         1 => "1 point".to_owned(),
         x => format!("{} points", x),
     };
@@ -26,7 +26,7 @@ pub fn round_info(props: &Props) -> Html {
     html! {
         <Hero size={HeroSize::Medium} header={header}>
             <Container extra="has-text-centered">
-                <Title> {props.round.info.answer.clone()} </Title>
+                <Title> {props.round.answer.clone()} </Title>
                 <Subtitle> {points} </Subtitle>
             </Container>
         </Hero>

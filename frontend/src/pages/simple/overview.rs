@@ -38,7 +38,7 @@ impl Component for Overview {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
             let src = quiz
-                .image_url
+                .image
                 .as_ref()
                 .map(|path| format!("{}/{}", IMAGE_ENDPOINT, path))
                 .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());

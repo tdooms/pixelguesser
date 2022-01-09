@@ -49,7 +49,7 @@ pub fn manage(props: &Props) -> Html {
             }
         }
         Stage::Playing { round, paused } => {
-            let points = rounds[round].info.points as u64;
+            let points = rounds[round].points as u64;
             let onguess = props.callback.reform(move |name| Action::Guessed(name, points));
             let title = "Select the player who guessed correctly.";
 

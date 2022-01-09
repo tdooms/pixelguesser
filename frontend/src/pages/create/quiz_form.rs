@@ -1,6 +1,7 @@
 use crate::components::QuizCard;
 use crate::constants::IMAGE_PLACEHOLDER;
 use crate::graphql::DraftQuiz;
+use crate::structs::ImageData;
 use cobul::props::{Color, ColumnSize};
 use cobul::*;
 use yew::prelude::*;
@@ -29,7 +30,7 @@ pub fn quiz_form(props: &Form<DraftQuiz>) -> Html {
         </SimpleField>
 
         <SimpleField label="Image" help={errors.get("image").cloned()} help_color={Color::Danger}>
-            <File fullwidth=true filename={image.name()} onupload={Callback::noop()}/>
+            <File fullwidth=true filename={image.as_ref().map(ImageData::name)} onupload={Callback::noop()}/>
         </SimpleField>
 
         <Buttons>

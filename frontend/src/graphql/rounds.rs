@@ -1,10 +1,13 @@
-use super::{exec, AffectedRows, Image, Kind};
+use super::{exec, AffectedRows, Kind};
 use crate::error::Error;
-use crate::structs::Image;
+use crate::structs::ImageData;
+use derive_more::Display;
+use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use strum::{Display, EnumIter};
+use strum::EnumIter;
+use validator::Validate;
 
-const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image_url";
+pub const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image_url";
 
 #[derive(serde::Deserialize, Debug)]
 pub struct SaveRoundsData {
@@ -54,14 +57,14 @@ impl Default for GuessChoices {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(Validate, Serialize, Debug, Clone, Default, PartialEq)]
 pub struct DraftRound {
     #[validate(length(min = 1))]
     pub answer: String,
     pub points: PointChoices,
     pub guesses: GuessChoices,
     pub speed: Option<f64>,
-    pub image: Image,
+    pub image: Option<ImageData>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -70,14 +73,21 @@ pub struct Round {
     pub quiz_id: u64,
     pub index: u64,
 
-    #[serde(flatten)]
-    pub round: DraftRound,
+    // copied from draft
+    pub answer: String,
+    pub points: PointChoices,
+    pub guesses: GuessChoices,
+    pub speed: Option<f64>,
+    pub image: String,
 }
 
-pub async fn save_rounds(quiz_id: u64, mut rounds: Vec<DraftRound>) -> Result<(u64, u64), Error> {
-    for &mut round in rounds {}
+pub async fn save_rounds(quiz_id: u64, rounds: &[DraftRound]) -> Result<(u64, u64), Error> {
+    for round in rounds {
+        // TODO
+        round.image.as_ref().map(|x| x.upload().unwrap());
+    }
 
-    let objects = serde_json::to_string(&ser).unwrap();
+    let objects = serde_json::to_string(&rounds).unwrap();
     let str = format!("delete_rounds(where: {{ quiz_id: (_eq: {}) }} ) insert_rounds(objects: {}) {{ affected_rows }}", quiz_id, objects);
 
     let data: SaveRoundsData = exec(Kind::Mutation(&str)).await?;

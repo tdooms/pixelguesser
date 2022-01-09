@@ -3,8 +3,8 @@ use web_sys::{Event, Window};
 use yew::Callback;
 
 pub struct Dimensions {
-    width: i32,
-    height: i32,
+    pub width: i32,
+    pub height: i32,
 }
 
 impl Dimensions {

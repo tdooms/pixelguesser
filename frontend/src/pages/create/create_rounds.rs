@@ -2,14 +2,15 @@ use cobul::props::{Color, ColumnSize, SidebarAlignment};
 use cobul::*;
 use yew::prelude::*;
 
-use crate::graphql::{DraftRound, Image, RoundInfo};
+use crate::graphql::DraftRound;
+use crate::structs::ImageData;
 
 use super::{CenterImage, SideImages, SideInfo, SideUpload};
 
 pub enum Msg {
     AddRound,
     RemoveRound,
-    ChangeRoundInfo(RoundInfo),
+    ChangeRound(DraftRound),
 
     AddImage(Vec<web_sys::File>),
     RemoveImage,
@@ -37,8 +38,8 @@ impl Component for CreateRounds {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::ChangeRoundInfo(info) => {
-                self.rounds[self.current].info = info;
+            Msg::ChangeRound(round) => {
+                self.rounds[self.current] = round;
                 true
             }
             Msg::RemoveRound => {
@@ -52,11 +53,11 @@ impl Component for CreateRounds {
                 true
             }
             Msg::RemoveImage => {
-                self.rounds[self.current].image = Image::None;
+                self.rounds[self.current].image = None;
                 true
             }
             Msg::AddImage(files) if files.len() == 1 => {
-                self.rounds[self.current].image = Image::new(&files[0]);
+                self.rounds[self.current].image = ImageData::from_local(&files[0]);
                 true
             }
             Msg::AddImage(_files) => {
@@ -73,17 +74,18 @@ impl Component for CreateRounds {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let add_round = ctx.link().callback(|_| Msg::AddRound);
         let remove_round = ctx.link().callback(|_| Msg::RemoveRound);
-        let change_round_info = ctx.link().callback(move |draft| Msg::ChangeRoundInfo(draft));
+        let change_round_info = ctx.link().callback(move |draft| Msg::ChangeRound(draft));
 
         let add_image = ctx.link().callback(|file| Msg::AddImage(file));
         let remove_image = ctx.link().callback(|_| Msg::RemoveImage);
         let select_image = ctx.link().callback(Msg::SelectImage);
 
-        let side_images: Vec<_> = self.rounds.iter().map(|round| round.image.src()).collect();
+        let side_images: Vec<_> =
+            self.rounds.iter().map(|round| round.image.as_ref().map(ImageData::src)).collect();
 
         let draft = self.rounds[self.current].clone();
 
-        let center = match draft.image.src() {
+        let center = match draft.image.as_ref().map(ImageData::src) {
             Some(src) => html! { <CenterImage src={src} onremove={remove_image}/> },
             None => html! { <Center> {"no image"} </Center> },
         };
@@ -110,8 +112,8 @@ impl Component for CreateRounds {
             </Buttons>
         };
 
-        let right_side = match draft.image.src() {
-            Some(_) => html! { <SideInfo info={draft.info} onchange={change_round_info} /> },
+        let right_side = match draft.image.as_ref().map(ImageData::src) {
+            Some(_) => html! { <SideInfo info={draft.clone()} onchange={change_round_info} /> },
             None => html! { <SideUpload onupload={add_image} />},
         };
 

@@ -1,10 +1,8 @@
 use crate::constants::{GRAPHQL_ENDPOINT, HASURA_SECRET};
 use crate::error::Error;
-use crate::graphql::data::GraphqlError;
-use reqwasm::http::Method;
+use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use sessions::Request;
 use std::fmt::Debug;
 
 pub enum Kind<'r> {
@@ -54,7 +52,7 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Err
             Ok(data)
         }
         Response::Errors { errors } => {
-            log::warn!("{:?}", data);
+            log::warn!("{:?}", errors);
             Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
         }
     }

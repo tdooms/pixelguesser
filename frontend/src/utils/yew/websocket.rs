@@ -1,13 +1,15 @@
-use futures::channel::mpsc::UnboundedSender;
+use futures::channel::mpsc;
+use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
-use reqwasm::websocket::{Message, WebSocket};
+use reqwasm::websocket::futures::WebSocket;
+use reqwasm::websocket::{Message, WebSocketError};
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
 
 use sessions::{Request, Response};
 
 pub struct WebsocketTask {
-    inner: UnboundedSender<Message>,
+    responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
 }
 
 impl WebsocketTask {
@@ -15,19 +17,24 @@ impl WebsocketTask {
         log::debug!("ws request: {:?}", request);
         let str = serde_json::to_string(request).unwrap();
 
-        let mut cloned = self.inner.clone();
+        let mut cloned = self.responder.clone();
 
-        spawn_local(async move { cloned.send(Message::Text(str)).await.unwrap() });
+        spawn_local(async move { cloned.send(Ok(Message::Text(str))).await.unwrap() });
     }
 
     pub fn create(url: impl AsRef<str>, callback: Callback<Response>) -> Self {
         log::debug!("connecting to {}", url.as_ref());
         let ws = WebSocket::open(url.as_ref()).unwrap();
 
-        let (sender, mut receiver) = (ws.sender, ws.receiver);
+        let (sink, mut stream) = ws.split();
+        let (responder, receiver) = mpsc::unbounded();
 
         spawn_local(async move {
-            while let Some(m) = receiver.next().await {
+            receiver.forward(sink).await;
+        });
+
+        spawn_local(async move {
+            while let Some(m) = stream.next().await {
                 match m {
                     Ok(Message::Text(m)) => match serde_json::from_str(&m) {
                         Ok(response) => {
@@ -42,6 +49,6 @@ impl WebsocketTask {
             }
         });
 
-        Self { inner: sender }
+        Self { responder }
     }
 }
