@@ -106,7 +106,7 @@ impl Session {
                 copy.players.remove(&name);
                 // TODO: return error on non-existent
             }
-            (Stage::Finished, Action::GiveRating(rating)) => {
+            (Stage::Finished, Action::GiveRating(_rating)) => {
                 // TODO
             }
             _ => return None,
