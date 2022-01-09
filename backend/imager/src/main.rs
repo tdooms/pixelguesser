@@ -2,22 +2,34 @@
 extern crate rocket;
 
 use clap::Parser;
+use photon_rs::{native::save_image, PhotonImage};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
-use rocket::data::ToByteUnit;
 use rocket::fs::{FileServer, Options};
-use rocket::{Config, Data, State};
-use tokio::fs::File;
+use rocket::{Config, State};
 
 pub struct Path(String);
 
-#[post("/upload", format = "plain", data = "<bytes>")]
-pub async fn upload(bytes: Data<'_>, path: &State<Path>) -> std::io::Result<String> {
-    let filename = rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
+// #[post("/upload", format = "plain", data = "<bytes>")]
+// pub async fn upload(bytes: Data<'_>, path: &State<Path>) -> std::io::Result<String> {
+//     let filename = rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
+//
+//     let filepath = format!("{}/{}.jpg", path.inner().0, filename);
+//     let file = File::create(filepath).await?;
+//     bytes.open(16.mebibytes()).stream_to(file).await?;
+//
+//     Ok(filename)
+// }
 
+#[post("/upload", format = "plain", data = "<base64>")]
+pub async fn upload(base64: String, path: &State<Path>) -> std::io::Result<String> {
+    let filename = rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
     let filepath = format!("{}/{}.jpg", path.inner().0, filename);
-    let file = File::create(filepath).await?;
-    bytes.open(16.mebibytes()).stream_to(file).await?;
+
+    save_image(PhotonImage::new_from_base64(&base64), &filepath);
+
+    // let file = File::create(filepath).await?;
+    // bytes.open(16.mebibytes()).stream_to(file).await?;
 
     Ok(filename)
 }

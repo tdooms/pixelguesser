@@ -82,9 +82,11 @@ pub struct Round {
 }
 
 pub async fn save_rounds(quiz_id: u64, rounds: &[DraftRound]) -> Result<(u64, u64), Error> {
+    // TODO: parallelize
     for round in rounds {
-        // TODO
-        round.image.as_ref().map(|x| x.upload().unwrap());
+        if let Some(image) = &round.image {
+            image.upload().await?
+        }
     }
 
     let objects = serde_json::to_string(&rounds).unwrap();

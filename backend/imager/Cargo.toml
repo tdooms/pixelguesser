@@ -10,3 +10,4 @@ rocket = "0.5.0-rc.1"
 tokio = { version = "1.9", features = ["full"] }
 rand = "0.8"
 clap = { version = "3.0.0-rc.7", features = ["derive"] }
+photon-rs = "0.3"

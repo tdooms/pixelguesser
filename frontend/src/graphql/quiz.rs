@@ -77,9 +77,9 @@ pub async fn quiz(quiz_id: u64) -> Result<(Quiz, Vec<Round>), Error> {
     Ok((data.quizzes_by_pk, data.rounds))
 }
 
-pub async fn create_quiz(mut draft: DraftQuiz) -> Result<u64, Error> {
+pub async fn create_quiz(draft: DraftQuiz) -> Result<u64, Error> {
     if let Some(image) = &draft.image {
-        image.upload();
+        image.upload().await?;
     }
 
     let object = serde_json::to_string(&draft).unwrap();

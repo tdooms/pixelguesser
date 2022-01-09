@@ -48,7 +48,7 @@ pub fn manage(props: &Props) -> Html {
                 </>
             }
         }
-        Stage::Playing { round, paused } => {
+        Stage::Playing { round, paused: _ } => {
             let points = rounds[round].points as u64;
             let onguess = props.callback.reform(move |name| Action::Guessed(name, points));
             let title = "Select the player who guessed correctly.";
@@ -63,7 +63,7 @@ pub fn manage(props: &Props) -> Html {
         Stage::Revealed { round } => html! {
             <Hero color={Color::Primary}><Title> {format!("End of round {}", round)} </Title> </Hero>
         },
-        Stage::Ranking { round } => html! {
+        Stage::Ranking { round: _ } => html! {
             <Hero color={Color::Primary}><Title> {"Scores"} </Title> </Hero>
         },
         Stage::Finished => html! {

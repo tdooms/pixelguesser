@@ -1,5 +1,5 @@
 use futures::channel::mpsc;
-use futures::stream::SplitSink;
+
 use futures::{SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
 use reqwasm::websocket::{Message, WebSocketError};
@@ -30,7 +30,7 @@ impl WebsocketTask {
         let (responder, receiver) = mpsc::unbounded();
 
         spawn_local(async move {
-            receiver.forward(sink).await;
+            receiver.forward(sink).await.unwrap();
         });
 
         spawn_local(async move {

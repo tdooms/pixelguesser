@@ -1,11 +1,9 @@
-pub use auth::*;
 pub use create::*;
 pub use host::*;
 pub use manage::*;
 pub use simple::*;
 pub use test::*;
 
-mod auth;
 mod create;
 mod host;
 mod manage;

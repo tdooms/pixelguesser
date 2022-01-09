@@ -11,7 +11,7 @@ pub struct PlayerName {
 
 #[function_component(PlayerForm)]
 pub fn player_form(props: &Form<PlayerName>) -> Html {
-    let errors = props.errors();
+    let _errors = props.errors();
     let PlayerName { name } = props.inner();
 
     html! {

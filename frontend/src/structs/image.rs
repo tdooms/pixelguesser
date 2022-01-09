@@ -1,8 +1,9 @@
+use crate::constants::IMAGE_ENDPOINT;
 use crate::error::Error;
+use reqwasm::http::Request;
 use serde::{Serialize, Serializer};
-use std::borrow::Borrow;
 use std::cell::RefCell;
-use std::fmt::{Debug, Formatter, Write};
+use std::fmt::Debug;
 use web_sys::Url;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -46,18 +47,22 @@ impl ImageData {
         }
     }
 
-    pub fn upload(&self) -> Result<(), Error> {
+    pub async fn upload(&self) -> Result<(), Error> {
         match self {
-            ImageData::Local { data, url, .. } => {
-                match url.clone().take() {
-                    None => Err(Error::Reupload),
-                    Some(_) => {
-                        url.replace(Some(String::new()));
-                        // TODO
-                        Ok(())
-                    }
+            ImageData::Local { data, url, .. } => match url.clone().take() {
+                None => Err(Error::Reupload),
+                Some(_) => {
+                    let stripped = data.split(',').nth(1).unwrap();
+
+                    // TODO: how is From<Vec<u8>> not implemented for JsValue?
+                    let response =
+                        Request::post(IMAGE_ENDPOINT).body(stripped).send().await.unwrap();
+                    let filename = response.text().await.unwrap();
+
+                    url.replace(Some(filename));
+                    Ok(())
                 }
-            }
+            },
             ImageData::Url(_) => Err(Error::Reupload),
         }
     }

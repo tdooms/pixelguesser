@@ -1,8 +1,8 @@
-use crate::components::QuizCard;
-use crate::constants::IMAGE_PLACEHOLDER;
+
+
 use crate::graphql::DraftQuiz;
 use crate::structs::ImageData;
-use cobul::props::{Color, ColumnSize};
+use cobul::props::{Color};
 use cobul::*;
 use yew::prelude::*;
 
@@ -13,7 +13,7 @@ pub fn quiz_form(props: &Form<DraftQuiz>) -> Html {
     const DESCRIPTION_DEFAULT: &str = "The best quiz";
 
     let errors = props.errors();
-    let DraftQuiz { name, creator, description, image } = &props.inner;
+    let DraftQuiz { name: _, creator: _, description: _, image } = &props.inner;
 
     html! {
         <>

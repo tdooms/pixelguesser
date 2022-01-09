@@ -1,7 +1,9 @@
+use futures::FutureExt;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::graphql::{DraftQuiz, DraftRound};
+use crate::error::Error;
+use crate::graphql::{create_quiz, DraftQuiz, DraftRound};
 use crate::route::Route;
 
 use super::{Confirm, CreateQuiz, CreateRounds};
@@ -14,6 +16,7 @@ pub enum Msg {
     Submit(DraftQuiz),
     Cancel,
     Todo,
+    QuizCreated(Result<u64, Error>),
 }
 
 enum Stage {
@@ -39,10 +42,10 @@ impl Component for Create {
         Self { stage: Stage::Quiz }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Submit(_quiz) => {
-                // TODO: save quiz
+            Msg::Submit(quiz) => {
+                ctx.link().send_future(create_quiz(quiz).map(Msg::QuizCreated));
                 self.stage = Stage::Rounds;
             }
             Msg::Cancel => use_history().unwrap().push(Route::Overview),
@@ -56,6 +59,7 @@ impl Component for Create {
             Msg::Back => self.stage = Stage::Quiz,
             Msg::Done => self.stage = Stage::Confirm,
             Msg::Todo => {}
+            Msg::QuizCreated(_) => {}
         }
         true
     }

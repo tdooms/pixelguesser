@@ -3,10 +3,6 @@ use yew::prelude::*;
 use cobul::props::ColumnSize;
 use cobul::*;
 
-pub enum Msg {
-    Clicked(usize),
-}
-
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onclick: Callback<usize>,
