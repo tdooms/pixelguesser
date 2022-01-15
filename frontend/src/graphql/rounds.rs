@@ -1,5 +1,6 @@
 use super::{exec, AffectedRows, Kind};
 use crate::error::Error;
+use crate::graphql::quiz;
 use crate::structs::ImageData;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
@@ -7,7 +8,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
 use validator::Validate;
 
-pub const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image_url";
+pub const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image";
 
 #[derive(serde::Deserialize, Debug)]
 pub struct SaveRoundsData {
@@ -81,17 +82,45 @@ pub struct Round {
     pub image: String,
 }
 
-pub async fn save_rounds(quiz_id: u64, rounds: &[DraftRound]) -> Result<(u64, u64), Error> {
+impl From<Round> for DraftRound {
+    fn from(round: Round) -> Self {
+        Self {
+            answer: round.answer,
+            points: round.points,
+            guesses: round.guesses,
+            speed: round.speed,
+            image: Some(ImageData::from_url(round.image)),
+        }
+    }
+}
+
+fn serialize(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
+    let image = draft.image.as_ref().map(|x| format!(", image: \\\"{}\\\"", x)).unwrap_or_default();
+    let speed = draft.speed.as_ref().map(|x| format!(", speed: \\\"{}\\\"", x)).unwrap_or_default();
+    format!(
+        "quiz_id:\\\"{}\\\",index:\\\"{}\\\",answer:\\\"{}\\\",guesses:\\\"{}\\\",points:\\\"{}\\\"{}{}",
+        quiz_id, index, draft.answer, draft.guesses as u8, draft.points as u8, speed, image
+    )
+}
+
+pub async fn save_rounds(quiz_id: u64, rounds: Vec<DraftRound>) -> Result<(), Error> {
     // TODO: parallelize
-    for round in rounds {
+    for round in &rounds {
         if let Some(image) = &round.image {
             image.upload().await?
         }
     }
+    let serialized: Vec<_> =
+        rounds.iter().enumerate().map(|(idx, round)| serialize(quiz_id, idx, round)).collect();
 
-    let objects = serde_json::to_string(&rounds).unwrap();
-    let str = format!("delete_rounds(where: {{ quiz_id: (_eq: {}) }} ) insert_rounds(objects: {}) {{ affected_rows }}", quiz_id, objects);
+    let objects = format!("[{{ {} }}]", serialized.join("},{"));
+    let str = format!(
+        "\
+    delete_rounds(where: {{ quiz_id: {{ _eq: \\\"{}\\\" }} }} ) {{affected_rows}}\
+    insert_rounds(objects: {}) {{ affected_rows }}",
+        quiz_id, objects
+    );
 
-    let data: SaveRoundsData = exec(Kind::Mutation(&str)).await?;
-    Ok((data.delete_rounds.affected_rows, data.insert_rounds.affected_rows))
+    let _: SaveRoundsData = exec(Kind::Mutation(&str)).await?;
+    Ok(())
 }

@@ -32,9 +32,13 @@ pub struct AffectedRows {
 pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Error> {
     let body = match query {
         Kind::Query(str) => format!("{{\"query\":\"query {{ {} }}\"}}", str),
-        Kind::Mutation(str) => format!("{{\"query\":\"mutation {{ {} }}\"}}", str),
+        Kind::Mutation(str) => {
+            format!("{{\"query\":\"mutation {{ {} }}\" }}", str)
+        }
         Kind::Subscription(str) => format!("{{\"query\":\"subscription {{ {} }}\"}}", str),
     };
+
+    log::debug!("{}", body);
 
     let response: Response<T> = Request::new(GRAPHQL_ENDPOINT)
         .method(Method::POST)

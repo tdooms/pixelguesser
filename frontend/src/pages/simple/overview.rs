@@ -1,13 +1,11 @@
-use yew::prelude::*;
-
 use cobul::props::ColumnSize;
 use cobul::*;
+use yew::prelude::*;
 
 use crate::components::{MainNavbar, QuizCard};
 use crate::constants::{IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
 use crate::error::Error;
 use crate::graphql::{quizzes, Quiz};
-use crate::route::Route;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -37,16 +35,16 @@ impl Component for Overview {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         let view_quiz_card = |quiz: Quiz| {
-            let src = quiz
-                .image
+            let Quiz { name, creator, description, image, quiz_id, .. } = quiz;
+
+            let src = image
                 .as_ref()
                 .map(|path| format!("{}/{}", IMAGE_ENDPOINT, path))
                 .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
-            let route = Route::Host { quiz_id: quiz.quiz_id };
 
             html! {
                 <Column size={ColumnSize::Is3}>
-                    <QuizCard name={quiz.name} creator={quiz.creator} description={quiz.description} src={src} route={route}/>
+                    <QuizCard id={quiz_id} name={name} creator={creator} description={description} image={src}/>
                 </Column>
             }
         };

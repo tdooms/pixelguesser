@@ -8,6 +8,8 @@ pub enum Route {
     Host { quiz_id: u64 },
     #[at("/create")]
     Create,
+    #[at("/update/:quiz_id")]
+    Update { quiz_id: u64 },
     #[at("/test")]
     Test,
     #[at("/")]

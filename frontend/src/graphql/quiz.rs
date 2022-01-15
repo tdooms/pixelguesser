@@ -1,12 +1,14 @@
-use super::{exec, AffectedRows, Kind, Round};
-use crate::error::Error;
-use crate::graphql::ROUND_FIELDS;
-use crate::structs::ImageData;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-pub const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image_url";
+use crate::error::Error;
+use crate::graphql::ROUND_FIELDS;
+use crate::structs::ImageData;
+
+use super::{exec, AffectedRows, Kind, Round};
+
+pub const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image";
 
 #[derive(serde::Deserialize, Debug)]
 pub struct QuizzesData {
@@ -20,13 +22,29 @@ pub struct QuizData {
 }
 
 #[derive(serde::Deserialize, Debug)]
+pub struct QuizId {
+    quiz_id: u64,
+}
+
+#[derive(serde::Deserialize, Debug)]
 pub struct CompleteQuizData {
     pub update_quizzes: AffectedRows,
 }
 
 #[derive(serde::Deserialize, Debug)]
 pub struct CreateQuizData {
-    pub insert_quizzes_one: AffectedRows,
+    pub insert_quizzes_one: Option<QuizId>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct UpdateQuizData {
+    pub update_quizzes_one: Option<QuizId>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DeleteQuizData {
+    pub delete_quizzes_by_pk: Option<QuizId>,
+    pub delete_rounds: AffectedRows,
 }
 
 #[derive(Validate, Serialize, Debug, Default, Clone, PartialEq)]
@@ -77,14 +95,47 @@ pub async fn quiz(quiz_id: u64) -> Result<(Quiz, Vec<Round>), Error> {
     Ok((data.quizzes_by_pk, data.rounds))
 }
 
-pub async fn create_quiz(draft: DraftQuiz) -> Result<u64, Error> {
+fn serialize(draft: &DraftQuiz) -> String {
+    let image = draft.image.as_ref().map(|x| format!(", image: \\\"{}\\\"", x)).unwrap_or_default();
+    format!(
+        "name:\\\"{}\\\",description:\\\"{}\\\",creator:\\\"{}\\\"{}",
+        draft.name, draft.description, draft.creator, image
+    )
+}
+
+pub async fn insert_quiz(draft: DraftQuiz) -> Result<Option<u64>, Error> {
     if let Some(image) = &draft.image {
         image.upload().await?;
     }
 
-    let object = serde_json::to_string(&draft).unwrap();
-    let str = format!("insert_quizzes_one(object: {{ {} }})", object);
+    let object = serialize(&draft);
+    let str = format!("insert_quizzes_one(object: {{ {} }}) {{ quiz_id }}", object);
 
     let data: CreateQuizData = exec(Kind::Mutation(&str)).await?;
-    Ok(data.insert_quizzes_one.affected_rows)
+    Ok(data.insert_quizzes_one.map(|x| x.quiz_id))
+}
+
+pub async fn update_quiz(id: u64, draft: DraftQuiz) -> Result<Option<u64>, Error> {
+    if let Some(image) = &draft.image {
+        image.upload().await?;
+    }
+
+    let object = serialize(&draft);
+    let str = format!(
+        "update_quizzes_by_pk(_set: {{ {} }}, pk_columns: {{ quiz_id: \\\"{}\\\" }}) {{ quiz_id }}",
+        object, id
+    );
+    let data: UpdateQuizData = exec(Kind::Mutation(&str)).await?;
+    Ok(data.update_quizzes_one.map(|x| x.quiz_id))
+}
+
+pub async fn delete_quiz(quiz_id: u64) -> Result<Option<u64>, Error> {
+    let str = format!(
+        "delete_rounds(where: {{ quiz_id: {{ _eq: \\\"{}\\\" }} }} ) {{affected_rows}} \
+    delete_quizzes_by_pk(quiz_id: \\\"{}\\\") {{ quiz_id }}",
+        quiz_id, quiz_id
+    );
+
+    let data: DeleteQuizData = exec(Kind::Mutation(&str)).await?;
+    Ok(data.delete_quizzes_by_pk.map(|x| x.quiz_id))
 }

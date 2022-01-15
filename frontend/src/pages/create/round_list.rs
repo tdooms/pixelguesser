@@ -10,8 +10,8 @@ pub struct Props {
     pub current: usize,
 }
 
-#[function_component(SideImages)]
-pub fn side_images(props: &Props) -> Html {
+#[function_component(RoundList)]
+pub fn round_list(props: &Props) -> Html {
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
             Some(src) => html! { <DynImage src={src.clone()} height=10/> },

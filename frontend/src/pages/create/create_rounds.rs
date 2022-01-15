@@ -1,135 +1,176 @@
-use cobul::props::{Color, ColumnSize, SidebarAlignment};
+use cobul::props::ColumnSize;
 use cobul::*;
+use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
 use crate::graphql::DraftRound;
 use crate::structs::ImageData;
 
-use super::{CenterImage, SideImages, SideInfo, SideUpload};
+use super::{CenterSpace, LeftBar, RightBar, RoundInfo};
 
+#[derive(Debug)]
 pub enum Msg {
     AddRound,
     RemoveRound,
-    ChangeRound(DraftRound),
+    UpdateRound(RoundInfo),
+    SelectRound(usize),
 
-    AddImage(Vec<web_sys::File>),
+    UploadImage(Vec<web_sys::File>),
     RemoveImage,
-    SelectImage(usize),
+
+    LongTimer,
+    ShortTimer,
 }
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
+    pub rounds: Vec<DraftRound>,
     pub onback: Callback<()>,
     pub ondone: Callback<()>,
+    pub onsave: Callback<Vec<DraftRound>>,
+}
+
+enum Timer {
+    Long(Timeout),
+    Short(Timeout),
+    None,
 }
 
 pub struct CreateRounds {
-    rounds: Vec<DraftRound>,
     current: usize,
+    local: Vec<DraftRound>,
+
+    changes: u64,
+    timer: Timer,
 }
 
 impl Component for CreateRounds {
     type Message = Msg;
     type Properties = Props;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { current: 0, rounds: vec![DraftRound::default()] }
+    fn create(ctx: &Context<Self>) -> Self {
+        let local = match ctx.props().rounds.len() {
+            0 => vec![DraftRound::default()],
+            _ => ctx.props().rounds.clone(),
+        };
+        Self { current: 0, changes: 0, local, timer: Timer::None }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::ChangeRound(round) => {
-                self.rounds[self.current] = round;
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let res = match msg {
+            Msg::UpdateRound(info) => {
+                self.local[self.current].answer = info.answer;
+                self.local[self.current].points = info.points;
+                self.local[self.current].guesses = info.guesses;
                 true
             }
-            Msg::RemoveRound => {
-                self.rounds.remove(self.current);
-                // TODO: I suspect the current index is not always valid?
-                true
-            }
-            Msg::AddRound => {
-                self.current = self.rounds.len();
-                self.rounds.push(DraftRound::default());
-                true
-            }
-            Msg::RemoveImage => {
-                self.rounds[self.current].image = None;
-                true
-            }
-            Msg::AddImage(files) if files.len() == 1 => {
-                self.rounds[self.current].image = ImageData::from_local(&files[0]);
-                true
-            }
-            Msg::AddImage(_files) => {
+            Msg::RemoveRound if self.local.len() <= 1 => {
                 // TODO: give error
                 false
             }
-            Msg::SelectImage(index) => {
+            Msg::RemoveRound => {
+                self.local.remove(self.current);
+                self.current = if self.current == 0 { 0 } else { self.current - 1 };
+                true
+            }
+            Msg::AddRound => {
+                self.current = ctx.props().rounds.len();
+                self.local.push(DraftRound::default());
+                true
+            }
+            Msg::SelectRound(index) => {
                 self.current = index;
                 true
             }
+            Msg::RemoveImage => {
+                self.local[self.current].image = None;
+                true
+            }
+            Msg::UploadImage(files) if files.len() == 1 => {
+                self.local[self.current].image = ImageData::from_local(&files[0]);
+                true
+            }
+            Msg::UploadImage(_files) => {
+                // TODO: give error
+                false
+            }
+            Msg::ShortTimer => {
+                let cloned = ctx.link().clone();
+                self.timer =
+                    Timer::Long(Timeout::new(10_000, move || cloned.send_message(Msg::LongTimer)));
+
+                if self.changes > 5 {
+                    ctx.props().onsave.emit(self.local.clone());
+                    self.changes = 0
+                }
+                false
+            }
+            Msg::LongTimer => {
+                ctx.props().onsave.emit(self.local.clone());
+                self.timer = Timer::None;
+                false
+            }
+        };
+
+        // The timing works as follows: we only submit an update when
+        // - either the long timer passes
+        // - enough changes have been made
+
+        // The short timer is there to make sure quick
+        // spamming changes doesn't cause too many submits
+        if let (true, Timer::Long(_) | Timer::None) = (res, &self.timer) {
+            self.changes += 1;
+            let cloned = ctx.link().clone();
+            self.timer =
+                Timer::Short(Timeout::new(1_000, move || cloned.send_message(Msg::ShortTimer)))
         }
+
+        res
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let onback = ctx.props().onback.clone();
+
+        // Also save stuff when changes are made
+        let ondone = {
+            let changes = self.changes;
+            let onsave = ctx.props().onsave.clone();
+            let rounds = self.local.clone();
+            ctx.props().ondone.reform(move |_| {
+                if changes > 0 {
+                    onsave.emit(rounds.clone())
+                }
+            })
+        };
+
         let add_round = ctx.link().callback(|_| Msg::AddRound);
         let remove_round = ctx.link().callback(|_| Msg::RemoveRound);
-        let change_round_info = ctx.link().callback(move |draft| Msg::ChangeRound(draft));
+        let select_round = ctx.link().callback(Msg::SelectRound);
+        let update_round = ctx.link().callback(Msg::UpdateRound);
 
-        let add_image = ctx.link().callback(|file| Msg::AddImage(file));
+        let upload_image = ctx.link().callback(Msg::UploadImage);
         let remove_image = ctx.link().callback(|_| Msg::RemoveImage);
-        let select_image = ctx.link().callback(Msg::SelectImage);
 
-        let side_images: Vec<_> =
-            self.rounds.iter().map(|round| round.image.as_ref().map(ImageData::src)).collect();
+        let images: Vec<_> =
+            self.local.iter().map(|round| round.image.as_ref().map(ImageData::src)).collect();
 
-        let draft = self.rounds[self.current].clone();
+        let round = &self.local[self.current];
 
-        let center = match draft.image.as_ref().map(ImageData::src) {
-            Some(src) => html! { <CenterImage src={src} onremove={remove_image}/> },
-            None => html! { <Center> {"no image"} </Center> },
-        };
-
-        let left_footer = html! {
-            <Buttons extra="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Danger} light=true onclick={remove_round}>
-                    <Icon icon={"fas fa-trash"}/> <span> {"remove round"} </span>
-                </Button>
-                <Button fullwidth=true color={Color::Success} light=true onclick={add_round}>
-                    <Icon icon={"fas fa-plus"}/> <span> {"add round"} </span>
-                </Button>
-            </Buttons>
-        };
-
-        let right_footer = html! {
-            <Buttons extra="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Success} light=true onclick={ctx.props().ondone.clone()}>
-                    <Icon icon={"fas fa-arrow-right"}/> <span> {"done"} </span>
-                </Button>
-                <Button  fullwidth=true color={Color::Danger} light=true onclick={ctx.props().onback.clone()}>
-                    <Icon icon={"fas fa-arrow-left"}/> <span> {"back"} </span>
-                </Button>
-            </Buttons>
-        };
-
-        let right_side = match draft.image.as_ref().map(ImageData::src) {
-            Some(_) => html! { <SideInfo info={draft.clone()} onchange={change_round_info} /> },
-            None => html! { <SideUpload onupload={add_image} />},
+        let info = match round.image {
+            Some(_) => Some(round.into()),
+            None => None,
         };
 
         html! {
             <Columns>
-                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={left_footer}>
-                    <SideImages images={side_images} onclick={select_image} current={self.current}/>
-                </Sidebar>
+                <LeftBar images={images} current={self.current}
+                         onremove={remove_round} onadd={add_round} onselect={select_round}/>
 
                 <Column size={ColumnSize::Is8}>
-                    { center }
+                    <CenterSpace image={round.image.clone()} onremove={remove_image} onupload={upload_image}/>
                 </Column>
 
-                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" footer={right_footer}>
-                    { right_side }
-                </Sidebar>
+                <RightBar round={info} ondone={ondone} onback={onback} onchange={update_round}/>
             </Columns>
         }
     }

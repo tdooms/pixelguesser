@@ -5,8 +5,10 @@ use clap::Parser;
 use photon_rs::{native::save_image, PhotonImage};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
+use rocket::data::ToByteUnit;
 use rocket::fs::{FileServer, Options};
-use rocket::{Config, State};
+use rocket::{Config, Data, State};
+use rocket_cors::{Cors, CorsOptions};
 
 pub struct Path(String);
 
@@ -21,16 +23,16 @@ pub struct Path(String);
 //     Ok(filename)
 // }
 
-#[post("/upload", format = "plain", data = "<base64>")]
-pub async fn upload(base64: String, path: &State<Path>) -> std::io::Result<String> {
-    let filename = rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
-    let filepath = format!("{}/{}.jpg", path.inner().0, filename);
+#[post("/upload", data = "<data>")]
+pub async fn upload(data: Data<'_>, path: &State<Path>) -> std::io::Result<String> {
+    let random: String =
+        rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
+    let filename = format!("{}.jpg", random);
+    let filepath = format!("{}/{}", path.inner().0, filename);
+
+    let base64 = data.open(10.mebibytes()).into_string().await?;
 
     save_image(PhotonImage::new_from_base64(&base64), &filepath);
-
-    // let file = File::create(filepath).await?;
-    // bytes.open(16.mebibytes()).stream_to(file).await?;
-
     Ok(filename)
 }
 
@@ -57,10 +59,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
 
+    let cors = CorsOptions::default().to_cors()?;
+
     rocket::custom(config)
         .mount("/", FileServer::new(&opts.folder, Options::default()))
         .mount("/", routes![upload])
         .manage(Path(opts.folder))
+        .attach(cors)
         .launch()
         .await?;
 

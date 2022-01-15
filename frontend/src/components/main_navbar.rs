@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use cobul::props::Color;
+use cobul::props::{Color, TextColor};
 use cobul::*;
 
 use crate::route::Route;
@@ -10,7 +10,7 @@ use crate::route::Route;
 pub fn main_navbar() -> Html {
     let brand = html! {
         <Link<Route> classes={classes!("navbar-item")} to={Route::Overview}>
-            <span>{"Pixelguesser"}</span>
+            <span><b><i>{"Pixelguesser"}</i></b></span>
         </Link<Route>>
     };
 

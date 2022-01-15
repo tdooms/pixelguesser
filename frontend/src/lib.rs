@@ -52,6 +52,7 @@ fn switch(routes: &Route) -> Html {
             html! { <Loader quiz_id={quiz_id} session_id={session_id}/> }
         }
         Route::Create => html! { <Create/> },
+        Route::Update { quiz_id } => html! { <Create quiz_id={*quiz_id}/> },
         Route::Test => html! { <> {"test"} </> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },

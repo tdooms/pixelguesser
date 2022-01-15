@@ -11,4 +11,9 @@ pub enum Error {
 
     #[error("local image already uploaded")]
     Reupload,
+
+    #[error("file read error {0}")]
+    FileError(gloo::file::FileReadError),
 }
+
+pub type Result<T> = std::result::Result<T, Error>;
