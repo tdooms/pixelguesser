@@ -1,5 +1,4 @@
-use crate::graphql::DraftQuiz;
-use crate::structs::ImageData;
+use crate::graphql::{DraftQuiz, ImageData};
 use cobul::props::Color;
 use cobul::*;
 use yew::prelude::*;
@@ -53,8 +52,8 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <Buttons>
-            <Button color={Color::Primary} light=true onclick={form.cancel()}> {"cancel"} </Button>
-            <Button color={Color::Primary} disabled={!errors.is_empty()} onclick={form.submit()}> {"continue"} </Button>
+            <Button color={Color::Danger} light=true onclick={form.cancel()}> {"back"} </Button>
+            <Button color={Color::Primary} disabled={!errors.is_empty()} onclick={form.submit()}> {"next"} </Button>
         </Buttons>
         </>
     }

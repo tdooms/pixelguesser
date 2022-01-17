@@ -1,7 +1,6 @@
 use super::{exec, AffectedRows, Kind};
 use crate::error::Error;
-use crate::graphql::quiz;
-use crate::structs::ImageData;
+use crate::graphql::{quiz, ImageData};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -19,7 +18,7 @@ pub struct SaveRoundsData {
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
 pub enum PointChoices {
-    #[display(fmt = "none")]
+    #[display(fmt = "0")]
     None = 0,
     #[display(fmt = "1")]
     One = 1,
@@ -103,10 +102,13 @@ fn serialize(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
     )
 }
 
-pub async fn save_rounds(quiz_id: u64, rounds: Vec<DraftRound>) -> Result<(), Error> {
+pub async fn save_rounds(
+    quiz_id: u64,
+    mut rounds: Vec<DraftRound>,
+) -> Result<Vec<DraftRound>, Error> {
     // TODO: parallelize
-    for round in &rounds {
-        if let Some(image) = &round.image {
+    for round in &mut rounds {
+        if let Some(image) = &mut round.image {
             image.upload().await?
         }
     }
@@ -122,5 +124,5 @@ pub async fn save_rounds(quiz_id: u64, rounds: Vec<DraftRound>) -> Result<(), Er
     );
 
     let _: SaveRoundsData = exec(Kind::Mutation(&str)).await?;
-    Ok(())
+    Ok(rounds)
 }

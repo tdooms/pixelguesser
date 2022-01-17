@@ -21,7 +21,7 @@ pub fn player_form(props: &Form<PlayerName>) -> Html {
             </Control>
             <Control>
                 <Button size={Size::Large} color={Color::Info} onclick={props.submit()}>
-                    <Icon icon="fas fa-plus"> </Icon>
+                    <Icon icon={Icons::Plus}> </Icon>
                 </Button>
             </Control>
         </Field>

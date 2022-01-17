@@ -1,5 +1,5 @@
-use crate::structs::ImageData;
-use cobul::props::Alignment;
+use crate::graphql::ImageData;
+use cobul::props::{Alignment, Color};
 use cobul::*;
 use yew::prelude::*;
 
@@ -48,11 +48,11 @@ pub fn center_space(props: &Props) -> Html {
             <>
             <DynImage src={image.src()} height=85/>
             <Buttons alignment={Alignment::Centered} extra="mt-5">
-                <Button onclick={onpreview}>
-                    <span> {"preview"} </span>
+                <Button onclick={onremove} light=true color={Color::Danger}>
+                    <Icon icon={Icons::Trash} /> <span> {"remove image"} </span>
                 </Button>
-                <Button onclick={onremove}>
-                    <Icon icon={"fas fa-trash"} /> <span> {"remove image"} </span>
+                <Button onclick={onpreview}>
+                    <Icon icon={Icons::EyeSolid} /> <span> {"preview"} </span>
                 </Button>
             </Buttons>
             </>

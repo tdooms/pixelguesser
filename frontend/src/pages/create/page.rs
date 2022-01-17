@@ -15,7 +15,7 @@ use super::{CreateQuiz, CreateRounds, Summary};
 pub enum Msg {
     SaveRounds(Vec<DraftRound>),
 
-    RoundsSaved(Result<(), Error>),
+    RoundsSaved(Result<Vec<DraftRound>, Error>),
 
     Summary,
     Overview,
@@ -27,8 +27,8 @@ pub enum Msg {
 
     QuizLoaded(Result<(Quiz, Vec<Round>), Error>),
     QuizDeleted(Result<Option<u64>, Error>),
-    QuizUpdated(Result<Option<u64>, Error>),
-    QuizInserted(Result<Option<u64>, Error>),
+    QuizUpdated(Result<(Option<u64>, DraftQuiz), Error>),
+    QuizInserted(Result<(Option<u64>, DraftQuiz), Error>),
 }
 
 #[derive(Debug)]
@@ -67,15 +67,16 @@ impl Component for Create {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        log::info!("{:?}", msg);
         let link = ctx.link();
+
         match msg {
             Msg::SubmitQuiz(quiz) => {
-                match ctx.props().quiz_id {
-                    None => link.send_future(insert_quiz(quiz.clone()).map(Msg::QuizInserted)),
-                    Some(id) => {
+                match (ctx.props().quiz_id, self.quiz.as_ref() == Some(&quiz)) {
+                    (None, _) => link.send_future(insert_quiz(quiz.clone()).map(Msg::QuizInserted)),
+                    (Some(id), false) => {
                         link.send_future(update_quiz(id, quiz.clone()).map(Msg::QuizUpdated))
                     }
+                    (Some(id), true) => {} // Don't resubmit
                 }
 
                 self.quiz = Some(quiz);
@@ -92,17 +93,22 @@ impl Component for Create {
             Msg::QuizInserted(Err(x)) => {
                 log::info!("quiz upload {:?}", x)
             }
-            Msg::QuizInserted(Ok(option)) => self.id = option,
+            Msg::QuizInserted(Ok((option, quiz))) => {
+                self.id = option;
+                self.quiz = Some(quiz)
+            }
             Msg::Overview => ctx.link().history().unwrap().push(Route::Overview),
             Msg::Quiz => self.stage = Stage::Quiz,
             Msg::Rounds => self.stage = Stage::Rounds,
             Msg::Summary => self.stage = Stage::Summary,
             Msg::SaveRounds(rounds) => {
-                match ctx.props().quiz_id.or(self.id) {
-                    Some(id) => ctx
+                let id = ctx.props().quiz_id.or(self.id);
+                match (id, rounds == self.rounds) {
+                    (Some(id), false) => ctx
                         .link()
                         .send_future(save_rounds(id, rounds.clone()).map(Msg::RoundsSaved)),
-                    None => {} // TODO: give error
+                    (Some(id), true) => {}
+                    (None, _) => {} // TODO: give error
                 }
                 self.rounds = rounds.into_iter().map(Into::into).collect();
             }
@@ -117,8 +123,11 @@ impl Component for Create {
             Msg::QuizUpdated(x) => {
                 log::info!("quiz update {:?}", x)
             }
-            Msg::RoundsSaved(x) => {
-                log::info!("rounds save {:?}", x)
+            Msg::RoundsSaved(Ok(rounds)) => {
+                self.rounds = rounds;
+            }
+            Msg::RoundsSaved(Err(err)) => {
+                log::info!("rounds save {:?}", err)
             }
         }
         true
@@ -146,7 +155,8 @@ impl Component for Create {
                 html! { <CreateRounds rounds={rounds} ondone={ondone} onback={onback} onsave={onsave}/> }
             }
             Stage::Summary => {
-                html! { <Summary onback={link.callback(|_| Msg::Rounds)} onconfirm={link.callback(|_| Msg::Summary)}/>}
+                html! { <Summary rounds={self.rounds.clone()} quiz={self.quiz.clone().unwrap()}
+                onback={link.callback(|_| Msg::Rounds)} onfinish={link.callback(|_| Msg::Overview)}/>}
             }
         }
     }

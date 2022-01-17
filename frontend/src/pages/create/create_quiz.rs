@@ -6,8 +6,7 @@ use yew::props;
 use super::QuizForm;
 use crate::components::QuizCard;
 use crate::constants::IMAGE_PLACEHOLDER;
-use crate::graphql::DraftQuiz;
-use crate::structs::ImageData;
+use crate::graphql::{DraftQuiz, ImageData};
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {

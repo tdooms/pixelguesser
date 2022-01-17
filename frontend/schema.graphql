@@ -1,0 +1,977 @@
+schema {
+  query: query_root
+  mutation: mutation_root
+  subscription: subscription_root
+}
+
+"""whether this query should be cached (Hasura Cloud only)"""
+directive @cached(
+  """measured in seconds"""
+  ttl: Int! = 60
+
+  """refresh the cache entry"""
+  refresh: Boolean! = false
+) on QUERY
+
+"""
+Boolean expression to compare columns of type "String". All fields are combined with logical 'AND'.
+"""
+input String_comparison_exp {
+  _eq: String
+  _gt: String
+  _gte: String
+
+  """does the column match the given case-insensitive pattern"""
+  _ilike: String
+  _in: [String!]
+
+  """
+  does the column match the given POSIX regular expression, case insensitive
+  """
+  _iregex: String
+  _is_null: Boolean
+
+  """does the column match the given pattern"""
+  _like: String
+  _lt: String
+  _lte: String
+  _neq: String
+
+  """does the column NOT match the given case-insensitive pattern"""
+  _nilike: String
+  _nin: [String!]
+
+  """
+  does the column NOT match the given POSIX regular expression, case insensitive
+  """
+  _niregex: String
+
+  """does the column NOT match the given pattern"""
+  _nlike: String
+
+  """
+  does the column NOT match the given POSIX regular expression, case sensitive
+  """
+  _nregex: String
+
+  """does the column NOT match the given SQL regular expression"""
+  _nsimilar: String
+
+  """
+  does the column match the given POSIX regular expression, case sensitive
+  """
+  _regex: String
+
+  """does the column match the given SQL regular expression"""
+  _similar: String
+}
+
+scalar bigint
+
+"""
+Boolean expression to compare columns of type "bigint". All fields are combined with logical 'AND'.
+"""
+input bigint_comparison_exp {
+  _eq: bigint
+  _gt: bigint
+  _gte: bigint
+  _in: [bigint!]
+  _is_null: Boolean
+  _lt: bigint
+  _lte: bigint
+  _neq: bigint
+  _nin: [bigint!]
+}
+
+scalar float8
+
+"""
+Boolean expression to compare columns of type "float8". All fields are combined with logical 'AND'.
+"""
+input float8_comparison_exp {
+  _eq: float8
+  _gt: float8
+  _gte: float8
+  _in: [float8!]
+  _is_null: Boolean
+  _lt: float8
+  _lte: float8
+  _neq: float8
+  _nin: [float8!]
+}
+
+"""mutation root"""
+type mutation_root {
+  """
+  delete data from the table: "quizzes"
+  """
+  delete_quizzes(
+    """filter the rows which have to be deleted"""
+    where: quizzes_bool_exp!
+  ): quizzes_mutation_response
+
+  """
+  delete single row from the table: "quizzes"
+  """
+  delete_quizzes_by_pk(quiz_id: bigint!): quizzes
+
+  """
+  delete data from the table: "rounds"
+  """
+  delete_rounds(
+    """filter the rows which have to be deleted"""
+    where: rounds_bool_exp!
+  ): rounds_mutation_response
+
+  """
+  delete single row from the table: "rounds"
+  """
+  delete_rounds_by_pk(quiz_id: bigint!, round_id: bigint!): rounds
+
+  """
+  insert data into the table: "quizzes"
+  """
+  insert_quizzes(
+    """the rows to be inserted"""
+    objects: [quizzes_insert_input!]!
+
+    """on conflict condition"""
+    on_conflict: quizzes_on_conflict
+  ): quizzes_mutation_response
+
+  """
+  insert a single row into the table: "quizzes"
+  """
+  insert_quizzes_one(
+    """the row to be inserted"""
+    object: quizzes_insert_input!
+
+    """on conflict condition"""
+    on_conflict: quizzes_on_conflict
+  ): quizzes
+
+  """
+  insert data into the table: "rounds"
+  """
+  insert_rounds(
+    """the rows to be inserted"""
+    objects: [rounds_insert_input!]!
+
+    """on conflict condition"""
+    on_conflict: rounds_on_conflict
+  ): rounds_mutation_response
+
+  """
+  insert a single row into the table: "rounds"
+  """
+  insert_rounds_one(
+    """the row to be inserted"""
+    object: rounds_insert_input!
+
+    """on conflict condition"""
+    on_conflict: rounds_on_conflict
+  ): rounds
+
+  """
+  update data of the table: "quizzes"
+  """
+  update_quizzes(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: quizzes_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: quizzes_set_input
+
+    """filter the rows which have to be updated"""
+    where: quizzes_bool_exp!
+  ): quizzes_mutation_response
+
+  """
+  update single row of the table: "quizzes"
+  """
+  update_quizzes_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: quizzes_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: quizzes_set_input
+    pk_columns: quizzes_pk_columns_input!
+  ): quizzes
+
+  """
+  update data of the table: "rounds"
+  """
+  update_rounds(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: rounds_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: rounds_set_input
+
+    """filter the rows which have to be updated"""
+    where: rounds_bool_exp!
+  ): rounds_mutation_response
+
+  """
+  update single row of the table: "rounds"
+  """
+  update_rounds_by_pk(
+    """increments the numeric columns with given value of the filtered values"""
+    _inc: rounds_inc_input
+
+    """sets the columns of the filtered rows to the given values"""
+    _set: rounds_set_input
+    pk_columns: rounds_pk_columns_input!
+  ): rounds
+}
+
+"""column ordering options"""
+enum order_by {
+  """in ascending order, nulls last"""
+  asc
+
+  """in ascending order, nulls first"""
+  asc_nulls_first
+
+  """in ascending order, nulls last"""
+  asc_nulls_last
+
+  """in descending order, nulls first"""
+  desc
+
+  """in descending order, nulls first"""
+  desc_nulls_first
+
+  """in descending order, nulls last"""
+  desc_nulls_last
+}
+
+type query_root {
+  """
+  fetch data from the table: "quizzes"
+  """
+  quizzes(
+    """distinct select on columns"""
+    distinct_on: [quizzes_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [quizzes_order_by!]
+
+    """filter the rows returned"""
+    where: quizzes_bool_exp
+  ): [quizzes!]!
+
+  """
+  fetch aggregated fields from the table: "quizzes"
+  """
+  quizzes_aggregate(
+    """distinct select on columns"""
+    distinct_on: [quizzes_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [quizzes_order_by!]
+
+    """filter the rows returned"""
+    where: quizzes_bool_exp
+  ): quizzes_aggregate!
+
+  """fetch data from the table: "quizzes" using primary key columns"""
+  quizzes_by_pk(quiz_id: bigint!): quizzes
+
+  """
+  fetch data from the table: "rounds"
+  """
+  rounds(
+    """distinct select on columns"""
+    distinct_on: [rounds_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [rounds_order_by!]
+
+    """filter the rows returned"""
+    where: rounds_bool_exp
+  ): [rounds!]!
+
+  """
+  fetch aggregated fields from the table: "rounds"
+  """
+  rounds_aggregate(
+    """distinct select on columns"""
+    distinct_on: [rounds_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [rounds_order_by!]
+
+    """filter the rows returned"""
+    where: rounds_bool_exp
+  ): rounds_aggregate!
+
+  """fetch data from the table: "rounds" using primary key columns"""
+  rounds_by_pk(quiz_id: bigint!, round_id: bigint!): rounds
+}
+
+"""
+columns and relationships of "quizzes"
+"""
+type quizzes {
+  created_at: timestamptz!
+  creator: String!
+  description: String!
+  image: String
+  name: String!
+  quiz_id: bigint!
+}
+
+"""
+aggregated selection of "quizzes"
+"""
+type quizzes_aggregate {
+  aggregate: quizzes_aggregate_fields
+  nodes: [quizzes!]!
+}
+
+"""
+aggregate fields of "quizzes"
+"""
+type quizzes_aggregate_fields {
+  avg: quizzes_avg_fields
+  count(columns: [quizzes_select_column!], distinct: Boolean): Int!
+  max: quizzes_max_fields
+  min: quizzes_min_fields
+  stddev: quizzes_stddev_fields
+  stddev_pop: quizzes_stddev_pop_fields
+  stddev_samp: quizzes_stddev_samp_fields
+  sum: quizzes_sum_fields
+  var_pop: quizzes_var_pop_fields
+  var_samp: quizzes_var_samp_fields
+  variance: quizzes_variance_fields
+}
+
+"""aggregate avg on columns"""
+type quizzes_avg_fields {
+  quiz_id: Float
+}
+
+"""
+Boolean expression to filter rows from the table "quizzes". All fields are combined with a logical 'AND'.
+"""
+input quizzes_bool_exp {
+  _and: [quizzes_bool_exp!]
+  _not: quizzes_bool_exp
+  _or: [quizzes_bool_exp!]
+  created_at: timestamptz_comparison_exp
+  creator: String_comparison_exp
+  description: String_comparison_exp
+  image: String_comparison_exp
+  name: String_comparison_exp
+  quiz_id: bigint_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "quizzes"
+"""
+enum quizzes_constraint {
+  """unique or primary key constraint"""
+  quizzes_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "quizzes"
+"""
+input quizzes_inc_input {
+  quiz_id: bigint
+}
+
+"""
+input type for inserting data into table "quizzes"
+"""
+input quizzes_insert_input {
+  created_at: timestamptz
+  creator: String
+  description: String
+  image: String
+  name: String
+  quiz_id: bigint
+}
+
+"""aggregate max on columns"""
+type quizzes_max_fields {
+  created_at: timestamptz
+  creator: String
+  description: String
+  image: String
+  name: String
+  quiz_id: bigint
+}
+
+"""aggregate min on columns"""
+type quizzes_min_fields {
+  created_at: timestamptz
+  creator: String
+  description: String
+  image: String
+  name: String
+  quiz_id: bigint
+}
+
+"""
+response of any mutation on the table "quizzes"
+"""
+type quizzes_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [quizzes!]!
+}
+
+"""
+on conflict condition type for table "quizzes"
+"""
+input quizzes_on_conflict {
+  constraint: quizzes_constraint!
+  update_columns: [quizzes_update_column!]! = []
+  where: quizzes_bool_exp
+}
+
+"""Ordering options when selecting data from "quizzes"."""
+input quizzes_order_by {
+  created_at: order_by
+  creator: order_by
+  description: order_by
+  image: order_by
+  name: order_by
+  quiz_id: order_by
+}
+
+"""primary key columns input for table: quizzes"""
+input quizzes_pk_columns_input {
+  quiz_id: bigint!
+}
+
+"""
+select columns of table "quizzes"
+"""
+enum quizzes_select_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  creator
+
+  """column name"""
+  description
+
+  """column name"""
+  image
+
+  """column name"""
+  name
+
+  """column name"""
+  quiz_id
+}
+
+"""
+input type for updating data in table "quizzes"
+"""
+input quizzes_set_input {
+  created_at: timestamptz
+  creator: String
+  description: String
+  image: String
+  name: String
+  quiz_id: bigint
+}
+
+"""aggregate stddev on columns"""
+type quizzes_stddev_fields {
+  quiz_id: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type quizzes_stddev_pop_fields {
+  quiz_id: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type quizzes_stddev_samp_fields {
+  quiz_id: Float
+}
+
+"""aggregate sum on columns"""
+type quizzes_sum_fields {
+  quiz_id: bigint
+}
+
+"""
+update columns of table "quizzes"
+"""
+enum quizzes_update_column {
+  """column name"""
+  created_at
+
+  """column name"""
+  creator
+
+  """column name"""
+  description
+
+  """column name"""
+  image
+
+  """column name"""
+  name
+
+  """column name"""
+  quiz_id
+}
+
+"""aggregate var_pop on columns"""
+type quizzes_var_pop_fields {
+  quiz_id: Float
+}
+
+"""aggregate var_samp on columns"""
+type quizzes_var_samp_fields {
+  quiz_id: Float
+}
+
+"""aggregate variance on columns"""
+type quizzes_variance_fields {
+  quiz_id: Float
+}
+
+"""
+columns and relationships of "rounds"
+"""
+type rounds {
+  answer: String!
+  guesses: bigint!
+  image: String!
+  index: bigint!
+  points: bigint!
+  quiz_id: bigint!
+  round_id: bigint!
+  speed: float8
+}
+
+"""
+aggregated selection of "rounds"
+"""
+type rounds_aggregate {
+  aggregate: rounds_aggregate_fields
+  nodes: [rounds!]!
+}
+
+"""
+aggregate fields of "rounds"
+"""
+type rounds_aggregate_fields {
+  avg: rounds_avg_fields
+  count(columns: [rounds_select_column!], distinct: Boolean): Int!
+  max: rounds_max_fields
+  min: rounds_min_fields
+  stddev: rounds_stddev_fields
+  stddev_pop: rounds_stddev_pop_fields
+  stddev_samp: rounds_stddev_samp_fields
+  sum: rounds_sum_fields
+  var_pop: rounds_var_pop_fields
+  var_samp: rounds_var_samp_fields
+  variance: rounds_variance_fields
+}
+
+"""aggregate avg on columns"""
+type rounds_avg_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""
+Boolean expression to filter rows from the table "rounds". All fields are combined with a logical 'AND'.
+"""
+input rounds_bool_exp {
+  _and: [rounds_bool_exp!]
+  _not: rounds_bool_exp
+  _or: [rounds_bool_exp!]
+  answer: String_comparison_exp
+  guesses: bigint_comparison_exp
+  image: String_comparison_exp
+  index: bigint_comparison_exp
+  points: bigint_comparison_exp
+  quiz_id: bigint_comparison_exp
+  round_id: bigint_comparison_exp
+  speed: float8_comparison_exp
+}
+
+"""
+unique or primary key constraints on table "rounds"
+"""
+enum rounds_constraint {
+  """unique or primary key constraint"""
+  rounds_pkey
+}
+
+"""
+input type for incrementing numeric columns in table "rounds"
+"""
+input rounds_inc_input {
+  guesses: bigint
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""
+input type for inserting data into table "rounds"
+"""
+input rounds_insert_input {
+  answer: String
+  guesses: bigint
+  image: String
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""aggregate max on columns"""
+type rounds_max_fields {
+  answer: String
+  guesses: bigint
+  image: String
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""aggregate min on columns"""
+type rounds_min_fields {
+  answer: String
+  guesses: bigint
+  image: String
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""
+response of any mutation on the table "rounds"
+"""
+type rounds_mutation_response {
+  """number of rows affected by the mutation"""
+  affected_rows: Int!
+
+  """data from the rows affected by the mutation"""
+  returning: [rounds!]!
+}
+
+"""
+on conflict condition type for table "rounds"
+"""
+input rounds_on_conflict {
+  constraint: rounds_constraint!
+  update_columns: [rounds_update_column!]! = []
+  where: rounds_bool_exp
+}
+
+"""Ordering options when selecting data from "rounds"."""
+input rounds_order_by {
+  answer: order_by
+  guesses: order_by
+  image: order_by
+  index: order_by
+  points: order_by
+  quiz_id: order_by
+  round_id: order_by
+  speed: order_by
+}
+
+"""primary key columns input for table: rounds"""
+input rounds_pk_columns_input {
+  quiz_id: bigint!
+  round_id: bigint!
+}
+
+"""
+select columns of table "rounds"
+"""
+enum rounds_select_column {
+  """column name"""
+  answer
+
+  """column name"""
+  guesses
+
+  """column name"""
+  image
+
+  """column name"""
+  index
+
+  """column name"""
+  points
+
+  """column name"""
+  quiz_id
+
+  """column name"""
+  round_id
+
+  """column name"""
+  speed
+}
+
+"""
+input type for updating data in table "rounds"
+"""
+input rounds_set_input {
+  answer: String
+  guesses: bigint
+  image: String
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""aggregate stddev on columns"""
+type rounds_stddev_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""aggregate stddev_pop on columns"""
+type rounds_stddev_pop_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""aggregate stddev_samp on columns"""
+type rounds_stddev_samp_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""aggregate sum on columns"""
+type rounds_sum_fields {
+  guesses: bigint
+  index: bigint
+  points: bigint
+  quiz_id: bigint
+  round_id: bigint
+  speed: float8
+}
+
+"""
+update columns of table "rounds"
+"""
+enum rounds_update_column {
+  """column name"""
+  answer
+
+  """column name"""
+  guesses
+
+  """column name"""
+  image
+
+  """column name"""
+  index
+
+  """column name"""
+  points
+
+  """column name"""
+  quiz_id
+
+  """column name"""
+  round_id
+
+  """column name"""
+  speed
+}
+
+"""aggregate var_pop on columns"""
+type rounds_var_pop_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""aggregate var_samp on columns"""
+type rounds_var_samp_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+"""aggregate variance on columns"""
+type rounds_variance_fields {
+  guesses: Float
+  index: Float
+  points: Float
+  quiz_id: Float
+  round_id: Float
+  speed: Float
+}
+
+type subscription_root {
+  """
+  fetch data from the table: "quizzes"
+  """
+  quizzes(
+    """distinct select on columns"""
+    distinct_on: [quizzes_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [quizzes_order_by!]
+
+    """filter the rows returned"""
+    where: quizzes_bool_exp
+  ): [quizzes!]!
+
+  """
+  fetch aggregated fields from the table: "quizzes"
+  """
+  quizzes_aggregate(
+    """distinct select on columns"""
+    distinct_on: [quizzes_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [quizzes_order_by!]
+
+    """filter the rows returned"""
+    where: quizzes_bool_exp
+  ): quizzes_aggregate!
+
+  """fetch data from the table: "quizzes" using primary key columns"""
+  quizzes_by_pk(quiz_id: bigint!): quizzes
+
+  """
+  fetch data from the table: "rounds"
+  """
+  rounds(
+    """distinct select on columns"""
+    distinct_on: [rounds_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [rounds_order_by!]
+
+    """filter the rows returned"""
+    where: rounds_bool_exp
+  ): [rounds!]!
+
+  """
+  fetch aggregated fields from the table: "rounds"
+  """
+  rounds_aggregate(
+    """distinct select on columns"""
+    distinct_on: [rounds_select_column!]
+
+    """limit the number of rows returned"""
+    limit: Int
+
+    """skip the first n rows. Use only with order_by"""
+    offset: Int
+
+    """sort the rows by one or more columns"""
+    order_by: [rounds_order_by!]
+
+    """filter the rows returned"""
+    where: rounds_bool_exp
+  ): rounds_aggregate!
+
+  """fetch data from the table: "rounds" using primary key columns"""
+  rounds_by_pk(quiz_id: bigint!, round_id: bigint!): rounds
+}
+
+scalar timestamptz
+
+"""
+Boolean expression to compare columns of type "timestamptz". All fields are combined with logical 'AND'.
+"""
+input timestamptz_comparison_exp {
+  _eq: timestamptz
+  _gt: timestamptz
+  _gte: timestamptz
+  _in: [timestamptz!]
+  _is_null: Boolean
+  _lt: timestamptz
+  _lte: timestamptz
+  _neq: timestamptz
+  _nin: [timestamptz!]
+}
+

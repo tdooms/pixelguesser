@@ -17,16 +17,17 @@ wasm-opt = ['-O4']
 sessions = { path = "../backend/sessions", features = ["api"] }
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms"] }
 
-chrono = { version = "0.4", features = ["serde"] }
+
 strum = { version = "0.21", features = ["derive"] }
 derive_more = "0.99.16"
-serde_repr = "0.1"
 
 log = "0.4"
 wasm-logger = "0.2"
 wee_alloc = "0.4"
 
+chrono = { version = "0.4", features = ["serde"] }
 thiserror = "1.0"
+cynic = "1.0"
 
 yew = "0.19.3"
 yew-router = "0.16"
@@ -34,6 +35,7 @@ yew-agent = "0.1"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_repr = "0.1"
 
 wasm-bindgen = "^0.2"
 wasm-bindgen-futures = "0.4"

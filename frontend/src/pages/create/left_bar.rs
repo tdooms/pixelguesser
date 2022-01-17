@@ -18,12 +18,12 @@ pub fn left_bar(props: &Props) -> Html {
     let Props { images, current, onremove, onadd, onselect } = &props;
 
     let footer = html! {
-        <Buttons extra="mt-auto px-4 py-2">
+        <Buttons extra="mt-auto px-4 my-2">
             <Button fullwidth=true color={Color::Success} light=true onclick={onadd}>
-                <Icon icon={"fas fa-plus"}/> <span> {"add round"} </span>
+                <Icon icon={Icons::Plus}/> <span> {"add round"} </span>
             </Button>
             <Button fullwidth=true color={Color::Danger} light=true onclick={onremove}>
-                <Icon icon={"fas fa-trash"}/> <span> {"remove round"} </span>
+                <Icon icon={Icons::Trash}/> <span> {"delete round"} </span>
             </Button>
         </Buttons>
     };

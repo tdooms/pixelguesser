@@ -4,9 +4,8 @@ use validator::Validate;
 
 use crate::error::Error;
 use crate::graphql::ROUND_FIELDS;
-use crate::structs::ImageData;
 
-use super::{exec, AffectedRows, Kind, Round};
+use super::{exec, AffectedRows, ImageData, Kind, Round};
 
 pub const QUIZ_FIELDS: &str = "quiz_id name description creator created_at image";
 
@@ -103,8 +102,8 @@ fn serialize(draft: &DraftQuiz) -> String {
     )
 }
 
-pub async fn insert_quiz(draft: DraftQuiz) -> Result<Option<u64>, Error> {
-    if let Some(image) = &draft.image {
+pub async fn insert_quiz(mut draft: DraftQuiz) -> Result<(Option<u64>, DraftQuiz), Error> {
+    if let Some(image) = &mut draft.image {
         image.upload().await?;
     }
 
@@ -112,11 +111,11 @@ pub async fn insert_quiz(draft: DraftQuiz) -> Result<Option<u64>, Error> {
     let str = format!("insert_quizzes_one(object: {{ {} }}) {{ quiz_id }}", object);
 
     let data: CreateQuizData = exec(Kind::Mutation(&str)).await?;
-    Ok(data.insert_quizzes_one.map(|x| x.quiz_id))
+    Ok((data.insert_quizzes_one.map(|x| x.quiz_id), draft))
 }
 
-pub async fn update_quiz(id: u64, draft: DraftQuiz) -> Result<Option<u64>, Error> {
-    if let Some(image) = &draft.image {
+pub async fn update_quiz(id: u64, mut draft: DraftQuiz) -> Result<(Option<u64>, DraftQuiz), Error> {
+    if let Some(image) = &mut draft.image {
         image.upload().await?;
     }
 
@@ -126,7 +125,7 @@ pub async fn update_quiz(id: u64, draft: DraftQuiz) -> Result<Option<u64>, Error
         object, id
     );
     let data: UpdateQuizData = exec(Kind::Mutation(&str)).await?;
-    Ok(data.update_quizzes_one.map(|x| x.quiz_id))
+    Ok((data.update_quizzes_one.map(|x| x.quiz_id), draft))
 }
 
 pub async fn delete_quiz(quiz_id: u64) -> Result<Option<u64>, Error> {

@@ -3,8 +3,7 @@ use cobul::*;
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
-use crate::graphql::DraftRound;
-use crate::structs::ImageData;
+use crate::graphql::{DraftRound, ImageData};
 
 use super::{CenterSpace, LeftBar, RightBar, RoundInfo};
 
@@ -74,7 +73,7 @@ impl Component for CreateRounds {
                 true
             }
             Msg::AddRound => {
-                self.current = ctx.props().rounds.len();
+                self.current = self.local.len();
                 self.local.push(DraftRound::default());
                 true
             }

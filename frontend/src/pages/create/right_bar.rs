@@ -18,11 +18,11 @@ pub fn right_bar(props: &Props) -> Html {
 
     let footer = html! {
         <Buttons extra="mt-auto px-4 py-2">
-            <Button fullwidth=true color={Color::Success} light=true onclick={ondone}>
-                <Icon icon={"fas fa-arrow-right"}/> <span> {"done"} </span>
+            <Button fullwidth=true color={Color::Primary} onclick={ondone}>
+                <Icon icon={Icons::ArrowRight}/> <span> {"next"} </span>
             </Button>
             <Button  fullwidth=true color={Color::Danger} light=true onclick={onback}>
-                <Icon icon={"fas fa-arrow-left"}/> <span> {"back"} </span>
+                <Icon icon={Icons::ArrowLeft}/> <span> {"back"} </span>
             </Button>
         </Buttons>
     };

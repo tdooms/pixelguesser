@@ -1,19 +1,42 @@
 use std::cell::RefCell;
 use std::fmt::{Debug, Display, Formatter};
+use std::sync::{Arc, Mutex};
 
+use cynic::{impl_scalar, DecodeError, Scalar};
 use gloo::file::futures::read_as_data_url;
 use gloo::file::Blob;
 use reqwasm::http::Request;
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use web_sys::Url;
 
 use crate::constants::IMAGE_ENDPOINT;
 use crate::error::Error;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub enum ImageData {
-    Local { file: web_sys::File, src: String, url: RefCell<Option<String>> },
+    Local { file: web_sys::File, src: String, url: Option<String> },
     Url(String),
+}
+
+impl PartialEq for ImageData {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ImageData::Local { src: x, .. }, ImageData::Local { src: y, .. }) => x.eq(y),
+            (ImageData::Url(x), ImageData::Url(y)) => x.eq(y),
+            (ImageData::Local { .. }, ImageData::Url(_)) => true,
+            (ImageData::Url(_), ImageData::Local { .. }) => false,
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ImageData {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let url = String::deserialize(deserializer)?;
+        Ok(Self::Url(url))
+    }
 }
 
 impl Serialize for ImageData {
@@ -22,7 +45,7 @@ impl Serialize for ImageData {
         S: Serializer,
     {
         match self {
-            ImageData::Local { url, .. } => match url.borrow().as_ref() {
+            ImageData::Local { url, .. } => match url {
                 Some(url) => serializer.serialize_str(&url),
                 None => unimplemented!("howto return value"),
             },
@@ -34,7 +57,7 @@ impl Serialize for ImageData {
 impl Display for ImageData {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ImageData::Local { url, .. } => match url.borrow().as_ref() {
+            ImageData::Local { url, .. } => match url {
                 Some(url) => f.write_str(&url),
                 None => Ok(()),
             },
@@ -46,7 +69,7 @@ impl Display for ImageData {
 impl ImageData {
     pub fn from_local(file: &web_sys::File) -> Option<Self> {
         let src = Url::create_object_url_with_blob(&file).ok().unwrap_or_default();
-        Some(Self::Local { src, file: file.clone(), url: RefCell::default() })
+        Some(Self::Local { src, file: file.clone(), url: None })
     }
 
     pub fn from_url(url: String) -> Self {
@@ -60,27 +83,25 @@ impl ImageData {
         }
     }
 
-    pub async fn upload(&self) -> Result<(), Error> {
+    pub async fn upload(&mut self) -> Result<(), Error> {
         match self {
             ImageData::Local { file, url, .. } => match url.clone().take() {
                 None => {
-                    let data = read_as_data_url(&Blob::from(file.clone())).await.unwrap();
+                    let blob = Blob::from(file.clone());
+                    let data = read_as_data_url(&blob).await.unwrap();
                     let stripped = data.split(',').nth(1).unwrap();
 
                     // TODO: how is From<Vec<u8>> not implemented for JsValue?
-                    let response = Request::post(&format!("{}/upload", IMAGE_ENDPOINT))
-                        .body(stripped)
-                        .send()
-                        .await
-                        .unwrap();
-                    let filename = response.text().await.unwrap();
+                    let endpoint = format!("{}/upload", IMAGE_ENDPOINT);
+                    let response = Request::post(&endpoint).body(stripped).send().await.unwrap();
 
-                    url.replace(Some(filename));
+                    let filename = response.text().await.unwrap();
+                    *url = Some(filename);
                     Ok(())
                 }
-                Some(_) => Err(Error::Reupload),
+                Some(_) => Ok(()),
             },
-            ImageData::Url(_) => Err(Error::Reupload),
+            ImageData::Url(_) => Ok(()),
         }
     }
 

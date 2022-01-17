@@ -34,8 +34,8 @@ impl Component for Overview {
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
-        let view_quiz_card = |quiz: Quiz| {
-            let Quiz { name, creator, description, image, quiz_id, .. } = quiz;
+        let view_quiz_card = |quiz: &Quiz| {
+            let Quiz { name, creator, description, image, quiz_id, .. } = quiz.clone();
 
             let src = image
                 .as_ref()
@@ -48,13 +48,26 @@ impl Component for Overview {
                 </Column>
             }
         };
-        let view_quiz_cards = |chunk: &[Quiz]| {
-            html! {
-                <Columns>
-                    { for chunk.iter().cloned().map(view_quiz_card) }
-                </Columns>
-            }
-        };
+        // let view_quiz_cards = |chunk: &[Quiz]| {
+        //     html! {
+        //         <Columns>
+        //             { for chunk.iter().cloned().map(view_quiz_card) }
+        //         </Columns>
+        //     }
+        // };
+        //
+        // let view_quizzes = |quizzes: &Vec<Quiz>| {
+        //     html! {
+        //         <>
+        //         <MainNavbar/>
+        //         <Section>
+        //             <Container>
+        //                 { for quizzes.chunks(4).map(view_quiz_cards) }
+        //             </Container>
+        //         </Section>
+        //         </>
+        //     }
+        // };
 
         let view_quizzes = |quizzes: &Vec<Quiz>| {
             html! {
@@ -62,7 +75,9 @@ impl Component for Overview {
                 <MainNavbar/>
                 <Section>
                     <Container>
-                        { for quizzes.chunks(4).map(view_quiz_cards) }
+                    <Columns multiline=true>
+                        { for quizzes.iter().map(view_quiz_card) }
+                    </Columns>
                     </Container>
                 </Section>
                 </>
