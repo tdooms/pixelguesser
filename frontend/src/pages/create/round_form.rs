@@ -1,5 +1,5 @@
 use crate::graphql::{DraftRound, GuessChoices, PointChoices};
-use cobul::props::{Alignment, Color};
+use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use validator::Validate;
 use yew::prelude::*;
@@ -29,11 +29,13 @@ pub fn round_form(props: &Form<RoundInfo>) -> Html {
         </SimpleField>
 
         <SimpleField label="Points" help={errors.get("points").cloned()}>
-            <EnumButtons<PointChoices> onclick={props.field(|x| &mut x.points)} value={*points} color={Color::Link} alignment={Alignment::Centered} />
+            <EnumButtons<PointChoices> onclick={props.field(|x| &mut x.points)} value={*points}
+            color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
 
         <SimpleField label="Guesses" help={errors.get("guesses").cloned()}>
-            <EnumButtons<GuessChoices> onclick={props.field(|x| &mut x.guesses)} value={*guesses} color={Color::Link} alignment={Alignment::Centered} />
+            <EnumButtons<GuessChoices> onclick={props.field(|x| &mut x.guesses)} value={*guesses}
+            color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
         </div>
     }

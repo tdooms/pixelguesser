@@ -1,16 +1,11 @@
-use std::cell::RefCell;
-use std::fmt::{Debug, Display, Formatter};
-use std::sync::{Arc, Mutex};
-
-use cynic::{impl_scalar, DecodeError, Scalar};
 use gloo::file::futures::read_as_data_url;
 use gloo::file::Blob;
 use reqwasm::http::Request;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{Debug, Display, Formatter};
 use web_sys::Url;
 
-use crate::constants::IMAGE_ENDPOINT;
-use crate::error::Error;
+use crate::shared::{Error, IMAGE_ENDPOINT};
 
 #[derive(Clone, Debug)]
 pub enum ImageData {

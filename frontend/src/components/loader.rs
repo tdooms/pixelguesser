@@ -2,13 +2,12 @@ use cobul::Loading;
 use futures::FutureExt;
 use yew::prelude::*;
 
+use crate::graphql;
 use sessions::{Action, Request, Response, Session};
 
-use crate::constants::SESSION_ENDPOINT;
-use crate::error::Error;
-use crate::graphql;
 use crate::graphql::{Quiz, Round};
 use crate::pages::{Host, Manage};
+use crate::shared::{Error, SESSION_ENDPOINT};
 use crate::utils::WebsocketTask;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]

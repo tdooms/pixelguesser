@@ -5,7 +5,7 @@ use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
 use crate::agents::NotificationAgent;
-use crate::constants::IMAGE_ENDPOINT;
+use crate::shared::IMAGE_ENDPOINT;
 use crate::structs::Error;
 use crate::utils::draw_pixelated;
 use crate::utils::{Resizer, TypeRef};

@@ -162,14 +162,14 @@ impl Component for CreateRounds {
 
         html! {
             <Columns>
-                <LeftBar images={images} current={self.current}
+                <LeftBar images={images} current={self.current} size={ColumnSize::Is2}
                          onremove={remove_round} onadd={add_round} onselect={select_round}/>
 
                 <Column size={ColumnSize::Is8}>
                     <CenterSpace image={round.image.clone()} onremove={remove_image} onupload={upload_image}/>
                 </Column>
 
-                <RightBar round={info} ondone={ondone} onback={onback} onchange={update_round}/>
+                <RightBar round={info} size={ColumnSize::Is2} ondone={ondone} onback={onback} onchange={update_round}/>
             </Columns>
         }
     }

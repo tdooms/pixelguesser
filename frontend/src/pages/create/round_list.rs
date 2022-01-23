@@ -30,7 +30,7 @@ pub fn round_list(props: &Props) -> Html {
     };
 
     html! {
-        <div class="p-4" style="overflow-y:auto">
+        <div class="p-4" style="scrollbar-width:thin;overflow-y:auto">
             { for props.images.iter().enumerate().map(map_view) }
         </div>
     }

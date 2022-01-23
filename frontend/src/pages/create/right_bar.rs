@@ -7,6 +7,7 @@ use yew::prelude::*;
 pub struct Props {
     pub round: Option<RoundInfo>,
     pub onchange: Callback<RoundInfo>,
+    pub size: ColumnSize,
 
     pub ondone: Callback<()>,
     pub onback: Callback<()>,
@@ -14,7 +15,7 @@ pub struct Props {
 
 #[function_component(RightBar)]
 pub fn right_bar(props: &Props) -> Html {
-    let Props { round, onchange, ondone, onback } = &props;
+    let Props { round, onchange, ondone, onback, size } = &props;
 
     let footer = html! {
         <Buttons extra="mt-auto px-4 py-2">
@@ -33,7 +34,7 @@ pub fn right_bar(props: &Props) -> Html {
     };
 
     html! {
-        <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} extra="p-0" overflow=false footer={footer}>
+        <Sidebar size={size.clone()} alignment={SidebarAlignment::Right} extra="p-0" overflow=false footer={footer}>
             { form }
         </Sidebar>
     }

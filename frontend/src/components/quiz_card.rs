@@ -3,7 +3,7 @@ use cobul::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::route::Route;
+use crate::shared::Route;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {

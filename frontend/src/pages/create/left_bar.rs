@@ -7,6 +7,7 @@ use yew::prelude::*;
 pub struct Props {
     pub images: Vec<Option<String>>,
     pub current: usize,
+    pub size: ColumnSize,
 
     pub onremove: Callback<()>,
     pub onadd: Callback<()>,
@@ -15,7 +16,7 @@ pub struct Props {
 
 #[function_component(LeftBar)]
 pub fn left_bar(props: &Props) -> Html {
-    let Props { images, current, onremove, onadd, onselect } = &props;
+    let Props { images, current, onremove, onadd, onselect, size } = &props;
 
     let footer = html! {
         <Buttons extra="mt-auto px-4 my-2">
@@ -29,7 +30,7 @@ pub fn left_bar(props: &Props) -> Html {
     };
 
     html! {
-        <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={footer}>
+        <Sidebar size={size.clone()} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={footer}>
             <RoundList images={images.clone()} onclick={onselect} current={*current}/>
         </Sidebar>
     }

@@ -1,6 +1,6 @@
 use super::{exec, AffectedRows, Kind};
-use crate::error::Error;
 use crate::graphql::{quiz, ImageData};
+use crate::shared::Error;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};

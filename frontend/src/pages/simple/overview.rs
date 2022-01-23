@@ -1,35 +1,49 @@
 use cobul::props::ColumnSize;
-use cobul::*;
+use cobul::{Column, Columns, Container, Loading, Section};
+use futures::prelude::*;
 use yew::prelude::*;
+use yew_agent::{Bridge, Bridged};
+use yew_router::prelude::{History, RouterScopeExt};
 
 use crate::components::{MainNavbar, QuizCard};
-use crate::constants::{IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
-use crate::error::Error;
 use crate::graphql::{quizzes, Quiz};
+use crate::shared::{Error, IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
+use crate::{Route, User, UserAgent};
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
+    agent: Box<dyn Bridge<UserAgent>>,
+}
+
+pub enum Msg {
+    Quizzes(Result<Vec<Quiz>, Error>),
+    User(User),
 }
 
 impl Component for Overview {
-    type Message = Result<Vec<Quiz>, Error>;
+    type Message = Msg;
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        ctx.link().send_future(quizzes());
-        Self { quizzes: None }
+        ctx.link().send_future(quizzes().map(Msg::Quizzes));
+        Self { quizzes: None, agent: UserAgent::bridge(ctx.link().callback(Msg::User)) }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Ok(quizzes) => {
+            Msg::Quizzes(Ok(quizzes)) => {
                 self.quizzes = Some(quizzes);
                 true
             }
-            Err(err) => {
+            Msg::Quizzes(Err(err)) => {
                 log::error!("http error: {:?}", err);
                 false
             }
+            Msg::User(User::User(_)) => {
+                ctx.link().history().unwrap().replace(Route::Overview);
+                false
+            }
+            Msg::User(_) => false,
         }
     }
 
@@ -48,26 +62,6 @@ impl Component for Overview {
                 </Column>
             }
         };
-        // let view_quiz_cards = |chunk: &[Quiz]| {
-        //     html! {
-        //         <Columns>
-        //             { for chunk.iter().cloned().map(view_quiz_card) }
-        //         </Columns>
-        //     }
-        // };
-        //
-        // let view_quizzes = |quizzes: &Vec<Quiz>| {
-        //     html! {
-        //         <>
-        //         <MainNavbar/>
-        //         <Section>
-        //             <Container>
-        //                 { for quizzes.chunks(4).map(view_quiz_cards) }
-        //             </Container>
-        //         </Section>
-        //         </>
-        //     }
-        // };
 
         let view_quizzes = |quizzes: &Vec<Quiz>| {
             html! {

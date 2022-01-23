@@ -4,8 +4,8 @@ use qrcode::QrCode;
 use sessions::Session;
 use yew::prelude::*;
 
-use crate::constants::SELF_ENDPOINT;
 use crate::graphql::Quiz;
+use crate::shared::SELF_ENDPOINT;
 use image::Rgba;
 use photon_rs::PhotonImage;
 

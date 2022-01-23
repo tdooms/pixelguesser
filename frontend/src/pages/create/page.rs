@@ -3,11 +3,8 @@ use futures::FutureExt;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::error::Error;
-use crate::graphql::{
-    delete_quiz, insert_quiz, quiz, save_rounds, update_quiz, DraftQuiz, DraftRound, Quiz, Round,
-};
-use crate::route::Route;
+use crate::graphql::*;
+use crate::shared::{Error, Route};
 
 use super::{CreateQuiz, CreateRounds, Summary};
 

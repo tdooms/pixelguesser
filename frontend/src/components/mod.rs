@@ -1,10 +1,13 @@
 pub use alerts::Alerts;
+pub use authentication::Authentication;
 pub use loader::Loader;
-pub use main_navbar::MainNavbar;
+pub use navbar::MainNavbar;
+pub use pixelate::Pixelate;
 pub use quiz_card::QuizCard;
 
 mod alerts;
+mod authentication;
 mod loader;
-mod main_navbar;
-pub mod pixelate;
+mod navbar;
+mod pixelate;
 mod quiz_card;

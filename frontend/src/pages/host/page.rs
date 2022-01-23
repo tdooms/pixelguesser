@@ -1,6 +1,7 @@
-use super::{Finish, Lobby, Pixelate, Ranking};
+use super::{Finish, Lobby, Ranking};
+use crate::components::Pixelate;
 use crate::graphql::{Quiz, Round};
-use crate::route::Route;
+use crate::shared::Route;
 use crate::utils::code_to_string;
 use sessions::{Session, Stage};
 use yew::prelude::*;

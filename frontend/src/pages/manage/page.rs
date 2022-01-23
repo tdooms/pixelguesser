@@ -3,7 +3,7 @@ use cobul::*;
 use yew::prelude::*;
 
 use crate::graphql::{Quiz, Round};
-use crate::route::Route;
+use crate::shared::Route;
 use sessions::{Action, Session, Stage};
 use yew_router::prelude::*;
 

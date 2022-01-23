@@ -1,10 +1,12 @@
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
+use yew_agent::{Bridge, Bridged, Dispatched, Dispatcher};
 use yew_router::prelude::*;
 
+use crate::agents::UserAgent;
 use crate::components::Loader;
 use crate::pages::*;
-use crate::route::Route;
+use crate::shared::{Route, User};
 use crate::utils::string_to_code;
 
 #[global_allocator]
@@ -12,22 +14,22 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 mod agents;
 mod components;
-mod constants;
-mod error;
 mod graphql;
 mod pages;
-mod route;
+mod shared;
 mod structs;
 mod utils;
 
-pub struct Model;
+pub struct Model {
+    _user_agent: Dispatcher<UserAgent>,
+}
 
 impl Component for Model {
-    type Message = ();
+    type Message = User;
     type Properties = ();
 
     fn create(_: &Context<Self>) -> Self {
-        Self {}
+        Self { _user_agent: UserAgent::dispatcher() }
     }
 
     fn view(&self, _: &Context<Self>) -> Html {

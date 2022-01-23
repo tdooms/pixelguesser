@@ -1,4 +1,3 @@
-use crate::components::pixelate::Pixelate;
 use finish::Finish;
 use lobby::Lobby;
 pub use page::Host;

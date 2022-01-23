@@ -2,8 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::error::Error;
 use crate::graphql::ROUND_FIELDS;
+use crate::shared::Error;
 
 use super::{exec, AffectedRows, ImageData, Kind, Round};
 

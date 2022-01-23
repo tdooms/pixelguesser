@@ -1,5 +1,4 @@
-use crate::constants::{GRAPHQL_ENDPOINT, HASURA_SECRET};
-use crate::error::Error;
+use crate::shared::{Error, GRAPHQL_ENDPOINT, HASURA_SECRET};
 use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
