@@ -4,9 +4,8 @@ use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlI
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
-use crate::agents::NotificationAgent;
-use crate::shared::IMAGE_ENDPOINT;
-use crate::structs::Error;
+use crate::agents::ErrorAgent;
+use crate::shared::{Error, IMAGE_ENDPOINT};
 use crate::utils::draw_pixelated;
 use crate::utils::{Resizer, TypeRef};
 
@@ -29,7 +28,7 @@ pub struct Pixelate {
 
     resizer: Resizer,
     timer: Option<Timeout>,
-    notifications: Dispatcher<NotificationAgent>,
+    errors: Dispatcher<ErrorAgent>,
 
     canvas: TypeRef<HtmlCanvasElement>,
     image: TypeRef<HtmlImageElement>,
@@ -38,7 +37,7 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(_notifications: &mut Dispatcher<NotificationAgent>, result: Result<(), Error>) {
+    fn log(_errors: &mut Dispatcher<ErrorAgent>, result: Result<(), Error>) {
         if let Err(_err) = result {
             // logger.send(err)
         }
@@ -77,7 +76,7 @@ impl Component for Pixelate {
             url: ctx.props().url.clone(),
             pixels: 4.0,
             timer: None,
-            notifications: NotificationAgent::dispatcher(),
+            errors: ErrorAgent::dispatcher(),
             canvas: Default::default(),
             image: Default::default(),
             offscreen: Default::default(),

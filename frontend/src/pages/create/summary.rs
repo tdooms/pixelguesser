@@ -31,11 +31,11 @@ pub fn summary(props: &Props) -> Html {
         <Container>
 
         <Hero color={Color::Primary}>
-            <Title> {quiz.name.clone()} </Title>
+            <Title> {quiz.title.clone()} </Title>
             <Subtitle> {quiz.description.clone()} </Subtitle>
         </Hero>
 
-        <Box extra="mt-5">
+        <Box class="mt-5">
         <Columns multiline=true>
             { for rounds.iter().map(round_mapper) }
         </Columns>

@@ -1,13 +1,16 @@
+use cobul::props::Color;
+use cobul::Notification;
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
-use yew_agent::{Bridge, Bridged, Dispatched, Dispatcher};
+use yew_agent::{Bridge, Bridged};
 use yew_router::prelude::*;
 
-use crate::agents::UserAgent;
+use crate::agents::{ErrorAgent, UserAgent};
 use crate::components::Loader;
 use crate::pages::*;
-use crate::shared::{Route, User};
+use crate::shared::{Error, Route, User};
 use crate::utils::string_to_code;
+use std::rc::Rc;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -17,27 +20,70 @@ mod components;
 mod graphql;
 mod pages;
 mod shared;
-mod structs;
 mod utils;
 
 pub struct Model {
-    _user_agent: Dispatcher<UserAgent>,
+    _user_agent: Box<dyn Bridge<UserAgent>>,
+    _error_agent: Box<dyn Bridge<ErrorAgent>>,
+
+    user: Option<User>,
+    error: Option<Rc<Error>>,
+}
+
+pub enum Msg {
+    User(Option<User>),
+    Error(Rc<Error>),
+    Remove,
 }
 
 impl Component for Model {
-    type Message = User;
+    type Message = Msg;
     type Properties = ();
 
-    fn create(_: &Context<Self>) -> Self {
-        Self { _user_agent: UserAgent::dispatcher() }
+    fn create(ctx: &Context<Self>) -> Self {
+        Self {
+            _user_agent: UserAgent::bridge(ctx.link().callback(Msg::User)),
+            _error_agent: ErrorAgent::bridge(ctx.link().callback(Msg::Error)),
+            user: None,
+            error: None,
+        }
     }
 
-    fn view(&self, _: &Context<Self>) -> Html {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::User(user) => self.user = user,
+            Msg::Error(error) => self.error = Some(error),
+            Msg::Remove => self.error = None,
+        }
+        true
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let inner = match self.user.clone() {
+            Some(user) => html! {
+                <ContextProvider<User> context={user}>
+                    <Switch<Route> render={Switch::render(switch)} />
+                </ContextProvider<User>>
+            },
+            None => html! {
+                <Switch<Route> render={Switch::render(switch)} />
+            },
+        };
+
+        let notification = match &self.error {
+            None => html! {},
+            Some(error) => html! {
+                <Notification color={Color::Danger} light=true onclick={ctx.link().callback(|_| Msg::Remove)}>
+                    { format!("{}", error.clone()) }
+                </Notification>
+            },
+        };
+
         html! {
             <main>
                 <BrowserRouter>
-                    // <Alerts<Rc<Info>> entries={self.infos.clone()} />
-                    <Switch<Route> render={Switch::render(switch)} />
+                    { notification }
+                    { inner }
                 </BrowserRouter>
             </main>
         }

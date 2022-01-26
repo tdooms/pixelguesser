@@ -7,7 +7,7 @@ use sessions::{Action, Request, Response, Session};
 
 use crate::graphql::{Quiz, Round};
 use crate::pages::{Host, Manage};
-use crate::shared::{Error, SESSION_ENDPOINT};
+use crate::shared::{Error, User, SESSION_ENDPOINT};
 use crate::utils::WebsocketTask;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
@@ -41,7 +41,8 @@ impl Component for Loader {
             None => Request::Host,
         };
 
-        ctx.link().send_future(graphql::quiz(ctx.props().quiz_id).map(Msg::Quiz));
+        let user = ctx.link().context::<User>(Callback::noop()).map(|(user, _)| user);
+        ctx.link().send_future(graphql::quiz(user, ctx.props().quiz_id).map(Msg::Quiz));
         ws.send(&request);
 
         Self { ws, session: None, quiz: None }

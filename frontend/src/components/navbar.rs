@@ -1,8 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use super::Authentication;
-use cobul::props::{Color, TextColor};
+use super::Profile;
 use cobul::*;
 
 use crate::shared::Route;
@@ -15,7 +14,7 @@ pub fn main_navbar() -> Html {
         </Link<Route>>
     };
 
-    let end = html! { <Authentication/> };
+    let end = html! { <Profile/> };
 
     html! {
         <Navbar brand={brand} burger=true end={end} onclick={Callback::noop()}/>

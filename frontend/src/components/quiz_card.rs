@@ -3,6 +3,7 @@ use cobul::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
+use crate::graphql::Creator;
 use crate::shared::Route;
 
 #[derive(Properties, Clone, PartialEq)]
@@ -12,16 +13,16 @@ pub struct Props {
 
     pub image: String,
 
-    pub name: String,
-
-    pub creator: String,
+    pub title: String,
 
     pub description: String,
+
+    pub creator: Creator,
 }
 
 #[function_component(QuizCard)]
 pub fn quiz_card(props: &Props) -> Html {
-    let Props { id, image, name, creator, description } = props;
+    let Props { id, image, title, description, creator } = props;
     let history = use_history().unwrap();
 
     let onclick = match *id {
@@ -35,7 +36,7 @@ pub fn quiz_card(props: &Props) -> Html {
     };
 
     let footer = html! {
-        <Button color={Color::Success} fullwidth=true extra={extra} onclick={onclick}>
+        <Button color={Color::Success} fullwidth=true class={extra} onclick={onclick}>
             <Icon icon={Icons::Play}/> <span>{"Play"}</span>
         </Button>
     };
@@ -55,8 +56,8 @@ pub fn quiz_card(props: &Props) -> Html {
     html! {
         <Card image={image} footer={footer} fullheight=true>
             <Media right={id.map(right).unwrap_or_default()}>
-                <p class="title is-4"> { name.clone() } </p>
-                <p class="subtitle is-6"> { creator.clone() } </p>
+                <p class="title is-4"> { title.clone() } </p>
+                <p class="subtitle is-6"> { creator.name.clone() } </p>
             </Media>
 
             <Content>

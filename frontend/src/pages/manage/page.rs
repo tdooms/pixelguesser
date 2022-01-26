@@ -61,7 +61,7 @@ pub fn manage(props: &Props) -> Html {
             }
         }
         Stage::Revealed { round } => html! {
-            <Hero color={Color::Primary}><Title> {format!("End of round {}", round)} </Title> </Hero>
+            <Hero color={Color::Primary}><Title> {format!("End of round {}", round + 1)} </Title> </Hero>
         },
         Stage::Ranking { round: _ } => html! {
             <Hero color={Color::Primary}><Title> {"Scores"} </Title> </Hero>

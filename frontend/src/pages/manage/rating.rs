@@ -13,12 +13,12 @@ pub struct Props {
 #[function_component(Rating)]
 pub fn rating(props: &Props) -> Html {
     let header = html! {
-        <Subtitle> {props.quiz.name.clone()} </Subtitle>
+        <Subtitle> {props.quiz.title.clone()} </Subtitle>
     };
 
     html! {
         <Hero size={HeroSize::Medium} header={header}>
-            <Container extra="has-text-centered">
+            <Container class="has-text-centered">
                 <Title> {"give rating"} </Title>
                 <Subtitle> {"TODO"} </Subtitle>
             </Container>

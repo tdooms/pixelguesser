@@ -1,4 +1,4 @@
-use crate::shared::{Error, GRAPHQL_ENDPOINT, HASURA_SECRET};
+use crate::shared::{Error, User, GRAPHQL_ENDPOINT};
 use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
@@ -28,7 +28,10 @@ pub struct AffectedRows {
     pub affected_rows: u64,
 }
 
-pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Error> {
+pub async fn exec<T: DeserializeOwned + Debug>(
+    user: Option<User>,
+    query: Kind<'_>,
+) -> Result<T, Error> {
     let body = match query {
         Kind::Query(str) => format!("{{\"query\":\"query {{ {} }}\"}}", str),
         Kind::Mutation(str) => {
@@ -39,15 +42,16 @@ pub async fn exec<T: DeserializeOwned + Debug>(query: Kind<'_>) -> Result<T, Err
 
     log::debug!("{}", body);
 
-    let response: Response<T> = Request::new(GRAPHQL_ENDPOINT)
+    let builder = Request::new(GRAPHQL_ENDPOINT)
         .method(Method::POST)
-        .header("content-type", "application/json")
-        .header("x-hasura-admin-secret", HASURA_SECRET)
-        .body(body)
-        .send()
-        .await?
-        .json()
-        .await?;
+        .header("content-type", "application/json");
+
+    let builder = match &user {
+        Some(user) => builder.header("authorization", &user.token),
+        None => builder,
+    };
+
+    let response: Response<T> = builder.body(body).send().await?.json().await?;
 
     match response {
         Response::Data { data } => {

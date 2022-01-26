@@ -43,7 +43,7 @@ pub fn navigate(props: &Props) -> Html {
     };
 
     html! {
-        <Buttons alignment={Alignment::Centered} extra="mt-4">
+        <Buttons alignment={Alignment::Centered} class="mt-4">
             { for Action::iter().filter_map(button_style) }
         </Buttons>
     }

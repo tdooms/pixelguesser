@@ -1,13 +1,13 @@
 use super::{exec, AffectedRows, Kind};
-use crate::graphql::{quiz, ImageData};
-use crate::shared::Error;
+use crate::graphql::ImageData;
+use crate::shared::{Error, User};
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
 use validator::Validate;
 
-pub const ROUND_FIELDS: &str = "round_id quiz_id index answer points guesses speed image";
+pub const ROUND_FIELDS: &str = "quiz_id index answer points guesses speed image";
 
 #[derive(serde::Deserialize, Debug)]
 pub struct SaveRoundsData {
@@ -69,7 +69,6 @@ pub struct DraftRound {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Round {
-    pub round_id: u64,
     pub quiz_id: u64,
     pub index: u64,
 
@@ -103,6 +102,7 @@ fn serialize(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
 }
 
 pub async fn save_rounds(
+    user: Option<User>,
     quiz_id: u64,
     mut rounds: Vec<DraftRound>,
 ) -> Result<Vec<DraftRound>, Error> {
@@ -123,6 +123,6 @@ pub async fn save_rounds(
         quiz_id, objects
     );
 
-    let _: SaveRoundsData = exec(Kind::Mutation(&str)).await?;
+    let _: SaveRoundsData = exec(user, Kind::Mutation(&str)).await?;
     Ok(rounds)
 }

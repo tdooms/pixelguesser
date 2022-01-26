@@ -1,11 +1,10 @@
 use std::marker::PhantomData;
 use std::ops::Deref;
 
+use crate::shared::Error;
 use wasm_bindgen::JsValue;
 use web_sys::Node;
 use yew::NodeRef;
-
-use crate::structs::Error;
 
 pub struct TypeRef<T: AsRef<Node> + From<JsValue>> {
     node: NodeRef,

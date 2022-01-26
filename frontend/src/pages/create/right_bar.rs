@@ -18,7 +18,7 @@ pub fn right_bar(props: &Props) -> Html {
     let Props { round, onchange, ondone, onback, size } = &props;
 
     let footer = html! {
-        <Buttons extra="mt-auto px-4 py-2">
+        <Buttons class="mt-auto px-4 py-2">
             <Button fullwidth=true color={Color::Primary} onclick={ondone}>
                 <Icon icon={Icons::ArrowRight}/> <span> {"next"} </span>
             </Button>
@@ -34,7 +34,7 @@ pub fn right_bar(props: &Props) -> Html {
     };
 
     html! {
-        <Sidebar size={size.clone()} alignment={SidebarAlignment::Right} extra="p-0" overflow=false footer={footer}>
+        <Sidebar size={size.clone()} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
             { form }
         </Sidebar>
     }

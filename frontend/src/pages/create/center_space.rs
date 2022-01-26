@@ -29,7 +29,7 @@ pub fn center_space(props: &Props) -> Html {
 
     // let _pixelate_buttons = || {
     //     html! {
-    //         <Buttons alignment={Alignment::Centered} extra="mt-5">
+    //         <Buttons alignment={Alignment::Centered} class="mt-5">
     //             <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>
     //                 <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>
     //             </Button>
@@ -47,7 +47,7 @@ pub fn center_space(props: &Props) -> Html {
         Some(image) => html! {
             <>
             <DynImage src={image.src()} height=85/>
-            <Buttons alignment={Alignment::Centered} extra="mt-5">
+            <Buttons alignment={Alignment::Centered} class="mt-5">
                 <Button onclick={onremove} light=true color={Color::Danger}>
                     <Icon icon={Icons::Trash} /> <span> {"remove image"} </span>
                 </Button>

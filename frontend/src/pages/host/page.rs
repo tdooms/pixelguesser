@@ -22,7 +22,7 @@ pub fn host(props: &Props) -> Html {
 
     match session.stage {
         Stage::Lobby => {
-            let code = code_to_string(*session_id, quiz.quiz_id).unwrap_or_default();
+            let code = code_to_string(*session_id, quiz.id).unwrap_or_default();
             html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
         }
         Stage::Playing { round, paused } => {

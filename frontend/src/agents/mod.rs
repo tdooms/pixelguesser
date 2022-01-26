@@ -1,5 +1,5 @@
-pub use notification::NotificationAgent;
-pub use user::{UserAgent, UserInput};
+pub use auth::{UserAgent, UserInput};
+pub use error::ErrorAgent;
 
-mod notification;
-mod user;
+mod auth;
+mod error;

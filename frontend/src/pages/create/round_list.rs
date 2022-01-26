@@ -23,8 +23,8 @@ pub fn round_list(props: &Props) -> Html {
 
         html! {
             <div class={classes!("columns", grey)} onclick={onclick}>
-                <Column size={ColumnSize::IsNarrow} extra={"m-2 p-2"}> <p> {index} </p> </Column>
-                <Column extra="p-1"> {image} </Column>
+                <Column size={ColumnSize::IsNarrow} class={"m-2 p-2"}> <p> {index} </p> </Column>
+                <Column class="p-1"> {image} </Column>
             </div>
         }
     };

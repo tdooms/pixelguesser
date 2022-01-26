@@ -19,7 +19,7 @@ pub fn left_bar(props: &Props) -> Html {
     let Props { images, current, onremove, onadd, onselect, size } = &props;
 
     let footer = html! {
-        <Buttons extra="mt-auto px-4 my-2">
+        <Buttons class="mt-auto px-4 my-2">
             <Button fullwidth=true color={Color::Success} light=true onclick={onadd}>
                 <Icon icon={Icons::Plus}/> <span> {"add round"} </span>
             </Button>
@@ -30,7 +30,7 @@ pub fn left_bar(props: &Props) -> Html {
     };
 
     html! {
-        <Sidebar size={size.clone()} alignment={SidebarAlignment::Left} extra="p-0" overflow=false footer={footer}>
+        <Sidebar size={size.clone()} alignment={SidebarAlignment::Left} class="p-0" overflow=false footer={footer}>
             <RoundList images={images.clone()} onclick={onselect} current={*current}/>
         </Sidebar>
     }

@@ -25,16 +25,16 @@ pub fn round_form(props: &Form<RoundInfo>) -> Html {
     html! {
         <div class="p-4">
         <SimpleField label="Answer" help={errors.get("answer").cloned()}>
-            <Input oninput={props.field(|x| &mut x.answer)} value={answer.clone()}/>
+            <Input oninput={props.onfield(|x| &mut x.answer)} value={answer.clone()}/>
         </SimpleField>
 
         <SimpleField label="Points" help={errors.get("points").cloned()}>
-            <EnumButtons<PointChoices> onclick={props.field(|x| &mut x.points)} value={*points}
+            <EnumButtons<PointChoices> onclick={props.onfield(|x| &mut x.points)} value={*points}
             color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
 
         <SimpleField label="Guesses" help={errors.get("guesses").cloned()}>
-            <EnumButtons<GuessChoices> onclick={props.field(|x| &mut x.guesses)} value={*guesses}
+            <EnumButtons<GuessChoices> onclick={props.onfield(|x| &mut x.guesses)} value={*guesses}
             color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
         </div>

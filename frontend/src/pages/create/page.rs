@@ -4,7 +4,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::graphql::*;
-use crate::shared::{Error, Route};
+use crate::shared::{Error, Route, User};
 
 use super::{CreateQuiz, CreateRounds, Summary};
 
@@ -56,7 +56,8 @@ impl Component for Create {
         let stage = match ctx.props().quiz_id {
             None => Stage::Quiz,
             Some(id) => {
-                ctx.link().send_future(quiz(id).map(Msg::QuizLoaded));
+                let user = ctx.link().context::<User>(Callback::noop()).map(|(user, _)| user);
+                ctx.link().send_future(quiz(user, id).map(Msg::QuizLoaded));
                 Stage::Load
             }
         };
@@ -66,12 +67,16 @@ impl Component for Create {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let link = ctx.link();
 
+        let user = ctx.link().context::<User>(Callback::noop()).map(|(user, _)| user);
+
         match msg {
             Msg::SubmitQuiz(quiz) => {
                 match (ctx.props().quiz_id, self.quiz.as_ref() == Some(&quiz)) {
-                    (None, _) => link.send_future(insert_quiz(quiz.clone()).map(Msg::QuizInserted)),
+                    (None, _) => {
+                        link.send_future(insert_quiz(user, quiz.clone()).map(Msg::QuizInserted))
+                    }
                     (Some(id), false) => {
-                        link.send_future(update_quiz(id, quiz.clone()).map(Msg::QuizUpdated))
+                        link.send_future(update_quiz(user, id, quiz.clone()).map(Msg::QuizUpdated))
                     }
                     (Some(id), true) => {} // Don't resubmit
                 }
@@ -103,7 +108,7 @@ impl Component for Create {
                 match (id, rounds == self.rounds) {
                     (Some(id), false) => ctx
                         .link()
-                        .send_future(save_rounds(id, rounds.clone()).map(Msg::RoundsSaved)),
+                        .send_future(save_rounds(user, id, rounds.clone()).map(Msg::RoundsSaved)),
                     (Some(id), true) => {}
                     (None, _) => {} // TODO: give error
                 }
@@ -112,7 +117,7 @@ impl Component for Create {
 
             Msg::DeleteQuiz => {
                 match ctx.props().quiz_id {
-                    Some(id) => ctx.link().send_future(delete_quiz(id).map(Msg::QuizDeleted)),
+                    Some(id) => ctx.link().send_future(delete_quiz(user, id).map(Msg::QuizDeleted)),
                     None => {} // TODO: error
                 }
             }

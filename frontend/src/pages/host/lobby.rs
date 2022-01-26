@@ -48,18 +48,18 @@ pub fn lobby(props: &Props) -> Html {
     html! {
         <>
             <Hero>
-                <Title> {quiz.name.clone()} </Title>
+                <Title> {quiz.title.clone()} </Title>
                 <Subtitle> {subtitle} </Subtitle>
             </Hero>
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
-                <Container extra="has-text-centered">
+                <Container class="has-text-centered">
                     <img src={(*image).clone()} />
                     <Title> {code} </Title>
                 </Container>
             </Hero>
 
-            <Columns multiline=true centered=true extra="mt-5">
+            <Columns multiline=true centered=true class="mt-5">
                 { for players }
             </Columns>
         </>

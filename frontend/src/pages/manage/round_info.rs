@@ -25,7 +25,7 @@ pub fn round_info(props: &Props) -> Html {
 
     html! {
         <Hero size={HeroSize::Medium} header={header}>
-            <Container extra="has-text-centered">
+            <Container class="has-text-centered">
                 <Title> {props.round.answer.clone()} </Title>
                 <Subtitle> {points} </Subtitle>
             </Container>
