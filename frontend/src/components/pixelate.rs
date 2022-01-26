@@ -20,6 +20,7 @@ pub struct Props {
     pub url: String,
     pub revealing: bool,
     pub paused: bool,
+    pub onrevealed: Callback<()>,
 }
 
 pub struct Pixelate {
@@ -101,6 +102,7 @@ impl Component for Pixelate {
 
                 // Quick exit if already done
                 if self.pixels >= max_pixels {
+                    ctx.props().onrevealed.emit(());
                     return false;
                 }
 

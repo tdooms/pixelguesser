@@ -1,4 +1,4 @@
-use super::{Finish, Lobby, Ranking};
+use super::{Finish, Lobby, RoundComponent};
 use crate::components::Pixelate;
 use crate::graphql::{Quiz, Round};
 use crate::shared::Route;
@@ -25,16 +25,12 @@ pub fn host(props: &Props) -> Html {
             let code = code_to_string(*session_id, quiz.id).unwrap_or_default();
             html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
         }
-        Stage::Playing { round, paused } => {
+        Stage::Playing { round, paused, revealed } => {
             let url = rounds[round].image.clone();
-            html! { <Pixelate revealing={false} paused={paused} url={url}/> }
-        }
-        Stage::Revealed { round } => {
-            let url = rounds[round].image.clone();
-            html! { <Pixelate revealing={true} paused={false} url={url}/> }
-        }
-        Stage::Ranking { .. } => {
-            html! { <Ranking players={session.players.clone()}/> }
+            let players = session.players.clone();
+            let rounds = rounds.len();
+
+            html! { <RoundComponent {round} {rounds} {revealed} {paused} {url} {players}/> }
         }
         Stage::Finished => {
             html! { <Finish players={session.players.clone()} quiz={quiz.clone()}/> }

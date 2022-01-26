@@ -139,6 +139,7 @@ impl Local {
                 Answer::None
             }
         };
+
         match (answer, &self.state) {
             (Answer::Both(response), State::Manager(resp, _)) => {
                 self.respond(&response);

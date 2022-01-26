@@ -18,13 +18,12 @@ pub fn navigate(props: &Props) -> Html {
 
     // button text, button icon, color, inverted
     let button_attrs = |action: &Action| match action {
-        Action::Start => Some(("start", "fas fa-play", Color::Primary, false)),
-        Action::Pause => Some(("pause", "fas fa-pause", Color::Light, false)),
-        Action::Resume => Some(("resume", "fas fa-play", Color::Light, false)),
-        Action::Reveal => Some(("reveal", "fas fa-eye", Color::Danger, true)),
-        Action::Scores => Some(("scores", "fas fa-list-ol", Color::Link, true)),
-        Action::Next => Some(("next", "fas fa-forward", Color::Success, false)),
-        Action::Leave => Some(("leave", "fas fa-sign-out-alt", Color::Danger, true)),
+        Action::StartQuiz => Some(("start", "fas fa-play", Color::Primary, false)),
+        Action::PauseRound => Some(("pause", "fas fa-pause", Color::Light, false)),
+        Action::ResumeRound => Some(("resume", "fas fa-play", Color::Light, false)),
+        Action::RevealRound => Some(("reveal", "fas fa-eye", Color::Danger, true)),
+        Action::NextRound => Some(("next", "fas fa-forward", Color::Success, false)),
+        Action::LeaveQuiz => Some(("leave", "fas fa-sign-out-alt", Color::Danger, true)),
         _ => None,
     };
 

@@ -48,9 +48,9 @@ pub fn manage(props: &Props) -> Html {
                 </>
             }
         }
-        Stage::Playing { round, paused: _ } => {
-            let points = rounds[round].points as u64;
-            let onguess = props.callback.reform(move |name| Action::Guessed(name, points));
+        Stage::Playing { round, paused: _, revealed: false } => {
+            let points = rounds[round].points as i64;
+            let onguess = props.callback.reform(move |name| Action::CorrectGuess(name, points));
             let title = "Select the player who guessed correctly.";
 
             html! {
@@ -60,11 +60,8 @@ pub fn manage(props: &Props) -> Html {
                 </>
             }
         }
-        Stage::Revealed { round } => html! {
+        Stage::Playing { round, paused: _, revealed: true } => html! {
             <Hero color={Color::Primary}><Title> {format!("End of round {}", round + 1)} </Title> </Hero>
-        },
-        Stage::Ranking { round: _ } => html! {
-            <Hero color={Color::Primary}><Title> {"Scores"} </Title> </Hero>
         },
         Stage::Finished => html! {
             <Rating quiz={props.quiz.clone()} />
