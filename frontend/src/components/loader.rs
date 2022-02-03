@@ -1,17 +1,19 @@
+use std::rc::Rc;
+
 use cobul::Loading;
 use futures::FutureExt;
-use std::rc::Rc;
+use reqwasm::websocket::WebSocketError;
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 use yew_router::prelude::{History, RouterScopeExt};
 
-use crate::{graphql, Auth, ErrorAgent, Route};
 use sessions::{Action, Request, Response, Session};
 
 use crate::graphql::FullQuiz;
 use crate::pages::{Host, Manage};
 use crate::shared::{Error, SESSION_ENDPOINT};
 use crate::utils::WebsocketTask;
+use crate::{graphql, Auth, ErrorAgent, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -29,6 +31,7 @@ pub struct Loader {
 
 pub enum Msg {
     Ws(Result<Response, sessions::Error>),
+    Error(WebSocketError),
     Quiz(Result<FullQuiz, Error>),
     Action(Action),
 }
@@ -38,7 +41,11 @@ impl Component for Loader {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let mut ws = WebsocketTask::create(SESSION_ENDPOINT, ctx.link().callback(Msg::Ws));
+        let mut ws = WebsocketTask::create(
+            SESSION_ENDPOINT,
+            ctx.link().callback(Msg::Ws),
+            ctx.link().callback(Msg::Error),
+        );
 
         let request = match ctx.props().session_id {
             Some(session_id) => Request::Manage(session_id),
@@ -66,6 +73,14 @@ impl Component for Loader {
             Msg::Ws(Err(err)) => {
                 self.errors.send(Error::Session(err));
                 ctx.link().history().unwrap().push(Route::Overview)
+            }
+            Msg::Error(WebSocketError::ConnectionClose(ev)) => {
+                log::warn!("{:?}", ev);
+                self.errors.send(Error::WebSocket("connection closed".to_owned()));
+                ctx.link().history().unwrap().push(Route::Overview)
+            }
+            Msg::Error(err) => {
+                self.errors.send(Error::WebSocket("websocket error".to_owned()));
             }
             Msg::Quiz(Err(err)) => {
                 log::error!("{:?}", err);

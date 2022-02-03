@@ -31,7 +31,33 @@ impl<Req: Serialize + Debug, Res: 'static + DeserializeOwned + Debug> WebsocketT
         spawn_local(async move { cloned.send(Ok(Message::Text(str))).await.unwrap() });
     }
 
-    pub fn create(url: impl AsRef<str>, callback: Callback<Res>) -> Self {
+    fn handle(
+        result: Result<Message, WebSocketError>,
+        callback: &Callback<Res>,
+        onerror: &Callback<WebSocketError>,
+    ) {
+        match result {
+            Ok(Message::Text(m)) => match serde_json::from_str(&m) {
+                Ok(response) => {
+                    log::debug!("ws response: {:?}", response);
+                    callback.emit(response)
+                }
+                Err(err) => log::error!("deserialize error: {:?}", err),
+            },
+            Ok(Message::Bytes(_)) => {
+                log::warn!("deserializing bytes over ws not supported")
+            }
+            Err(err) => {
+                onerror.emit(err);
+            }
+        }
+    }
+
+    pub fn create(
+        url: impl AsRef<str>,
+        callback: Callback<Res>,
+        onerror: Callback<WebSocketError>,
+    ) -> Self {
         let mut errors = ErrorAgent::dispatcher();
 
         log::debug!("connecting to {}", url.as_ref());
@@ -43,36 +69,18 @@ impl<Req: Serialize + Debug, Res: 'static + DeserializeOwned + Debug> WebsocketT
         let (cancel_send, mut cancel_recv) = oneshot::channel();
 
         spawn_local(async move {
-            select! {
-                _ = receiver.forward(sink) => {log::debug!("receiver done")},
-                _ = cancel_recv => {log::debug!("sender dropped")}
-            }
+            receiver.forward(sink).await;
+            log::debug!("should be dropped (5)")
         });
 
         spawn_local(async move {
-            while let Some(m) = stream.next().await {
-                match m {
-                    Ok(Message::Text(m)) => match serde_json::from_str(&m) {
-                        Ok(response) => {
-                            log::debug!("ws response: {:?}", response);
-                            callback.emit(response)
-                        }
-                        Err(err) => log::error!("deserialize error: {:?}", err),
-                    },
-                    Ok(Message::Bytes(_)) => {
-                        log::warn!("deserializing bytes over ws not supported")
-                    }
-                    Err(WebSocketError::ConnectionError) => {
-                        errors.send(Error::WebSocket("connection error".to_owned()))
-                    }
-                    Err(WebSocketError::ConnectionClose(_)) => errors
-                        .send(Error::WebSocket("connection closed / cannot connect".to_owned())),
-                    Err(WebSocketError::MessageSendError(_)) => {
-                        errors.send(Error::WebSocket("send error".to_owned()))
-                    }
-                    Err(_) => unreachable!(),
-                }
+            while let Some(m) = select! {
+                message = stream.next().await => message,
+                _ = cancel_recv => return
+            } {
+                Self::handle(m, &callback, &onerror)
             }
+            log::debug!("should be dropped (6)")
         });
 
         Self {

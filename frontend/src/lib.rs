@@ -75,7 +75,7 @@ impl Component for Model {
         let notification = match &self.error {
             None => html! {},
             Some(error) => html! {
-                <div style="position:absolute; top:30px; left:30px; z-index: 10">
+                <div style="position:absolute; top:55px; left:30px; z-index: 10">
                     <Notification color={Color::Danger} light=true onclick={ctx.link().callback(|_| Msg::Remove)}>
                         { format!("{}", error.clone()) }
                     </Notification>
