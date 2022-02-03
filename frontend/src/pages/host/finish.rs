@@ -2,22 +2,28 @@ use yew::prelude::*;
 
 use cobul::props::{Color, HeroSize};
 use cobul::*;
-use sessions::Player;
+use sessions::Session;
 
 use super::Ranking;
-use crate::graphql::Quiz;
-use std::collections::HashMap;
+use crate::graphql::FullQuiz;
+use crate::Route;
+use std::rc::Rc;
+use yew_router::prelude::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub players: HashMap<String, Player>,
-    pub quiz: Quiz,
+    pub session: Rc<Session>,
+    pub quiz: Rc<FullQuiz>,
 }
 
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
-    let Props { players, quiz, .. } = &props;
-    let _body = html! {};
+    let Props { session, quiz } = &props;
+
+    let onleave = {
+        let history = use_history().unwrap().clone();
+        Callback::from(move |_| history.push(Route::Overview))
+    };
 
     html! {
         <>
@@ -27,8 +33,12 @@ pub fn finish(props: &Props) -> Html {
             </Hero>
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
-                <Ranking players={players.clone()}/>
+                <Ranking {session} />
             </Hero>
+
+            <Button color={Color::Primary} light=true onclick={onleave}>
+                <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
+            </Button>
         </>
     }
 }

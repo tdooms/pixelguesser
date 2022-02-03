@@ -1,14 +1,17 @@
 use gloo::timers::callback::Timeout;
-use wasm_bindgen::JsCast;
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
+use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
 use crate::agents::ErrorAgent;
+use crate::consts::{
+    PIXELATE_PLAY_SPEED, PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
+};
 use crate::shared::{Error, IMAGE_ENDPOINT};
-use crate::utils::draw_pixelated;
+use crate::utils::{draw_pixelated, set_timer};
 use crate::utils::{Resizer, TypeRef};
 
+#[derive(Debug)]
 pub enum Msg {
     Loaded,
     Pixelate,
@@ -24,10 +27,11 @@ pub struct Props {
 }
 
 pub struct Pixelate {
-    url: String,
+    old: Props,
     pixels: f64,
 
-    resizer: Resizer,
+    _resizer: Resizer,
+
     timer: Option<Timeout>,
     errors: Dispatcher<ErrorAgent>,
 
@@ -38,12 +42,6 @@ pub struct Pixelate {
 }
 
 impl Pixelate {
-    fn log(_errors: &mut Dispatcher<ErrorAgent>, result: Result<(), Error>) {
-        if let Err(_err) = result {
-            // logger.send(err)
-        }
-    }
-
     fn initialize(&self) -> Result<(), Error> {
         let image = self.image.get()?;
         let offscreen = self.offscreen.get()?;
@@ -65,6 +63,35 @@ impl Pixelate {
 
         draw_pixelated(self.pixels as u32, width, height, image, canvas, offscreen)
     }
+
+    fn pixelate(&mut self, ctx: &Context<Self>) -> Result<(), Error> {
+        let Props { revealing, paused, onrevealed, .. } = ctx.props();
+        self.timer = None;
+
+        // Calculate the maximum pixels that are useful to de-pixelate
+        let max_pixels = self.image.get().map(|x| x.height() as f64).unwrap_or(1080.0);
+
+        // Quick exit if already done
+        if self.pixels >= max_pixels {
+            onrevealed.emit(());
+            return Ok(());
+        }
+
+        // Set the speed according to the state
+        let speed = match (paused, revealing) {
+            (_, true) => PIXELATE_REVEAL_SPEED,
+            (false, _) => PIXELATE_PLAY_SPEED,
+            _ => return Ok(()),
+        };
+
+        // Calculate the new amount of pixels and draw it
+        self.pixels = (self.pixels * speed).min(max_pixels);
+        self.draw()?;
+
+        // Set the timer for the next iteration
+        self.timer = Some(set_timer(ctx.link(), PIXELATE_REFRESH_TIME, Msg::Pixelate));
+        Ok(())
+    }
 }
 
 impl Component for Pixelate {
@@ -73,9 +100,9 @@ impl Component for Pixelate {
 
     fn create(ctx: &Context<Self>) -> Self {
         Self {
-            resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
-            url: ctx.props().url.clone(),
-            pixels: 4.0,
+            _resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
+            old: ctx.props().clone(),
+            pixels: PIXELATE_START_PIXELS,
             timer: None,
             errors: ErrorAgent::dispatcher(),
             canvas: Default::default(),
@@ -88,41 +115,28 @@ impl Component for Pixelate {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Loaded => {
-                let _ = self.initialize();
-                let _ = self.draw();
+                // Initialize and draw each time at the start to avoid graphical glitches
+                if let Err(err) = self.initialize() {
+                    self.errors.send(err)
+                };
+                if let Err(err) = self.draw() {
+                    self.errors.send(err)
+                };
 
-                ctx.link().send_message(Msg::Pixelate);
+                // Start pixelating
+                ctx.link().send_message(Msg::Pixelate)
             }
             Msg::Pixelate => {
-                // Calculate the maximum pixels that are useful to de-pixelate
-                let max_pixels = match self.image.get() {
-                    Ok(image) => image.height() as f64,
-                    Err(_) => 1080.0,
-                };
-
-                // Quick exit if already done
-                if self.pixels >= max_pixels {
-                    ctx.props().onrevealed.emit(());
-                    return false;
+                // Pixelate loop
+                if let Err(err) = self.pixelate(ctx) {
+                    self.errors.send(err)
                 }
-
-                // Set the speed according to the state
-                let speed = match (ctx.props().paused, ctx.props().revealing) {
-                    (_, true) => 1.07,
-                    (false, _) => 1.002,
-                    _ => return false,
-                };
-
-                // Calculate the new amount of pixels and draw it
-                self.pixels = (self.pixels * speed).min(max_pixels);
-                let _ = self.draw();
-
-                // Set the timer for the next iteration
-                let cloned = ctx.link().clone();
-                self.timer = Some(Timeout::new(33, move || cloned.send_message(Msg::Pixelate)));
             }
             Msg::Resize => {
-                let _ = self.draw();
+                // Redraw on resize to reduce stutter
+                if let Err(err) = self.draw() {
+                    self.errors.send(err)
+                }
             }
         }
         false
@@ -130,17 +144,18 @@ impl Component for Pixelate {
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
         // If the url changes, reset the internal state
-        if self.url != ctx.props().url {
-            self.url = ctx.props().url.clone();
-            self.pixels = 4.0
+        if self.old.url != ctx.props().url {
+            self.pixels = PIXELATE_START_PIXELS
         }
 
-        // Restart and remove the timer if needed
-        match !ctx.props().paused || ctx.props().revealing {
-            true => ctx.link().send_message(Msg::Pixelate),
-            false => self.timer = None,
+        // Check if we need to start re-pixelating
+        let pause_change = self.old.paused != ctx.props().paused;
+        let reveal_change = self.old.revealing != ctx.props().revealing;
+        if let (None, true) = (&self.timer, pause_change || reveal_change) {
+            ctx.link().send_message(Msg::Pixelate)
         }
 
+        self.old = ctx.props().clone();
         true
     }
 
@@ -159,19 +174,5 @@ impl Component for Pixelate {
                 </div>
             </>
         }
-    }
-
-    fn destroy(&mut self, _ctx: &Context<Self>) {
-        log::error!("pixelate destructor");
-        let canvas = self.canvas.get().unwrap();
-
-        let context = canvas
-            .get_context("2d")
-            .unwrap()
-            .unwrap()
-            .dyn_into::<CanvasRenderingContext2d>()
-            .unwrap();
-
-        context.clear_rect(0., 0., canvas.width() as f64, canvas.height() as f64)
     }
 }

@@ -1,18 +1,17 @@
 use yew::prelude::*;
 
-use cobul::props::ColumnSize;
 use cobul::*;
-use sessions::Player;
-use std::collections::HashMap;
+use sessions::{Player, Session};
+use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub players: HashMap<String, Player>,
+    pub session: Rc<Session>,
 }
 
 #[function_component(Ranking)]
 pub fn ranking(props: &Props) -> Html {
-    let mut sorted: Vec<_> = props.players.iter().collect();
+    let mut sorted: Vec<_> = props.session.players.iter().collect();
     sorted.sort_by_key(|(_, player)| std::cmp::Reverse(player.score));
 
     let view_player = |player: &(&String, &Player)| {
@@ -34,15 +33,13 @@ pub fn ranking(props: &Props) -> Html {
     };
 
     html! {
-        <Section>
-            <Container>
-                <Columns centered=true>
-                    <Column size={ColumnSize::IsHalf}>
-                        { for sorted.first().map(view_winner) }
-                        { for sorted.iter().skip(1).map(view_player) }
-                   </Column>
-                </Columns>
-            </Container>
+        <Section class="is-fullheight">
+            <div class="columns is-centered is-desktop" style="height:100vh">
+                <div class="column is-half">
+                    { for sorted.first().map(view_winner) }
+                    { for sorted.iter().skip(1).map(view_player) }
+                </div>
+            </div>
         </Section>
     }
 }

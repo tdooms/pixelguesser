@@ -5,16 +5,22 @@ use yew::prelude::*;
 
 #[derive(Default, Debug, Clone, PartialEq, Validate)]
 pub struct PlayerName {
-    #[validate(length(min = 1))]
     pub name: String,
 }
 
 #[function_component(PlayerForm)]
 pub fn player_form(props: &Form<PlayerName>) -> Html {
-    let _errors = props.errors();
     let PlayerName { name } = props.inner();
 
+    let cloned = props.onsubmit();
+    let onkeypress = Callback::from(move |e: KeyboardEvent| {
+        if e.key() == "Enter" {
+            cloned.emit(())
+        }
+    });
+
     html! {
+        <div {onkeypress}>
         <Field grouped=true>
             <Control expanded=true>
                 <Input oninput={props.onfield(|x| &mut x.name)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} value={name}/>
@@ -25,5 +31,6 @@ pub fn player_form(props: &Form<PlayerName>) -> Html {
                 </Button>
             </Control>
         </Field>
+        </div>
     }
 }

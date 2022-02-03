@@ -42,8 +42,12 @@ pub fn summary(props: &Props) -> Html {
         </Box>
 
         <Buttons>
-            <Button color={Color::Danger} light=true onclick={props.onback.clone()}> {"back"} </Button>
-            <Button color={Color::Primary} onclick={props.onfinish.clone()}> {"finish"} </Button>
+            <Button color={Color::Info} outlined=true onclick={onback.clone()}>
+                <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Rounds"} </span>
+            </Button>
+            <Button color={Color::Primary} onclick={onfinish.clone()}>
+                <span> {"Submit"} </span>
+            </Button>
         </Buttons>
         </Container>
         </Section>

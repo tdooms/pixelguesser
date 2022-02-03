@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use strum::IntoEnumIterator;
 use yew::prelude::*;
 
@@ -8,7 +9,7 @@ use sessions::{Action, Session};
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub callback: Callback<Action>,
-    pub session: Session,
+    pub session: Rc<Session>,
     pub rounds: usize,
 }
 
@@ -23,7 +24,6 @@ pub fn navigate(props: &Props) -> Html {
         Action::ResumeRound => Some(("resume", "fas fa-play", Color::Light, false)),
         Action::RevealRound => Some(("reveal", "fas fa-eye", Color::Danger, true)),
         Action::NextRound => Some(("next", "fas fa-forward", Color::Success, false)),
-        Action::LeaveQuiz => Some(("leave", "fas fa-sign-out-alt", Color::Danger, true)),
         _ => None,
     };
 

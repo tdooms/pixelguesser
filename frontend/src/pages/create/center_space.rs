@@ -1,7 +1,8 @@
-use crate::graphql::ImageData;
-use cobul::props::{Alignment, Color};
+use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use yew::prelude::*;
+
+use crate::graphql::ImageData;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -11,10 +12,11 @@ pub struct Props {
     pub onremove: Callback<()>,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct State {
     previewing: bool,
     revealing: bool,
+    hovering: bool,
 }
 
 #[function_component(CenterSpace)]
@@ -24,36 +26,42 @@ pub fn center_space(props: &Props) -> Html {
 
     let onpreview = {
         let cloned = state.clone();
-        Callback::from(move |_| cloned.set(State { previewing: true, revealing: true }))
+        Callback::from(move |_| {
+            cloned.set(State { previewing: true, revealing: true, hovering: false })
+        })
     };
 
-    // let _pixelate_buttons = || {
-    //     html! {
-    //         <Buttons alignment={Alignment::Centered} class="mt-5">
-    //             <Button onclick={ctx.link().callback(|_| Msg::Reveal)}>
-    //                 <Icon icon={"fas fa-eye"} /> <span> {"reveal"} </span>
-    //             </Button>
-    //             <Button onclick={ctx.link().callback(|_| Msg::Resume)}>
-    //                 <Icon icon={"fas fa-play"} /> <span> {"resume"} </span>
-    //             </Button>
-    //             <Button onclick={ctx.link().callback(|_| Msg::Pause)}>
-    //                <Icon icon={"fas fa-pause"} /> <span> {"pause"} </span>
-    //             </Button>
-    //         </Buttons>
-    //     }
-    // };
+    let onhover = |hovering| {
+        let cloned = state.clone();
+        Callback::from(move |_| cloned.set(State { hovering, ..*cloned }))
+    };
+
+    let buttons = html! {
+        <Button onclick={onpreview}>
+            <Icon icon={Icons::EyeSolid} /> <span> {"preview"} </span>
+        </Button>
+    };
+
+    let center = |image: &ImageData| match state.hovering {
+        true => html! {
+            <div>
+                <DynImage src={image.src()} height=85 class="is-blurred"/>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);">
+                    <Button color={Color::Danger} size={Size::Large} onclick={onremove}>{"remove"}</Button>
+                </div>
+            </div>
+        },
+        false => html! { <DynImage src={image.src()} height=85 class=""/> },
+    };
 
     match &image {
         Some(image) => html! {
             <>
-            <DynImage src={image.src()} height=85/>
+            <div onmouseenter={onhover(true)} onmouseleave={onhover(false)}>
+                { center(image) }
+            </div>
             <Buttons alignment={Alignment::Centered} class="mt-5">
-                <Button onclick={onremove} light=true color={Color::Danger}>
-                    <Icon icon={Icons::Trash} /> <span> {"remove image"} </span>
-                </Button>
-                <Button onclick={onpreview}>
-                    <Icon icon={Icons::EyeSolid} /> <span> {"preview"} </span>
-                </Button>
+                { buttons }
             </Buttons>
             </>
         },

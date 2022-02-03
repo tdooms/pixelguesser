@@ -1,3 +1,4 @@
+use crate::Auth;
 use cobul::props::ColumnSize;
 use cobul::*;
 use yew::prelude::*;
@@ -6,7 +7,7 @@ use yew::props;
 use super::QuizForm;
 use crate::components::QuizCard;
 use crate::graphql::{Creator, DraftQuiz, ImageData};
-use crate::shared::{User, IMAGE_PLACEHOLDER};
+use crate::shared::IMAGE_PLACEHOLDER;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
@@ -22,10 +23,13 @@ pub fn quiz_form(props: &Props) -> Html {
     let Props { onsubmit, oncancel, ondelete, quiz } = &props;
     let state = use_state(move || quiz.clone().unwrap_or_default());
 
-    let DraftQuiz { title, public, explanation, description, image } = (*state).clone();
+    let DraftQuiz { title, public, description, image, .. } = (*state).clone();
     let image = image.as_ref().map(ImageData::src).unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
 
-    let creator: Creator = use_context::<User>().unwrap().into();
+    let creator: Creator = match use_context::<Auth>().unwrap() {
+        Auth::User(user) => user.into(),
+        Auth::Loading | Auth::Anonymous => return html! { "not allowed" },
+    };
 
     let onchange = {
         let cloned = state.clone();
@@ -47,8 +51,9 @@ pub fn quiz_form(props: &Props) -> Html {
                 <Column>
                     <QuizForm form={form} editing={quiz.is_some()}/>
                 </Column>
+                <Column size={ColumnSize::Is1} />
                 <Column size={ColumnSize::Is4}>
-                    <QuizCard {title} {description} {image} {creator}/>
+                    <QuizCard {title} {description} {image} {creator} {public}/>
                 </Column>
             </Columns>
         </Container>

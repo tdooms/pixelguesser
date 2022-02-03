@@ -7,12 +7,10 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use warp::ws::{WebSocket, Ws};
 use warp::Filter;
 
-mod global;
-mod local;
+mod state;
 
-use crate::global::Global;
-use crate::local::Local;
-use sessions::{Error, Response, Session};
+use crate::state::{Connection, Global};
+use sessions::{Error, Session};
 
 /// sessions is a server to manage pixelguesser game sessions
 #[derive(Parser)]
@@ -35,24 +33,22 @@ async fn start_socket(socket: WebSocket, global: Global) {
     let proxy = UnboundedReceiverStream::new(receiver);
 
     tokio::task::spawn(proxy.forward(sink));
-    let mut local = Local::new(responder);
+
+    let mut connection = Connection { global, responder, local: None };
 
     while let Some(message) = stream.next().await {
         match message {
             Ok(message) if message.is_text() => match serde_json::from_slice(&message.as_bytes()) {
-                Ok(request) => local.request(request, &global).await,
-                Err(_) => local.respond(&Response::Error(Error::FaultyRequest)),
+                Ok(request) => connection.request(request).await,
+                Err(_) => connection.respond(&Err(Error::FaultyRequest)).await,
             },
-            Ok(message) if message.is_ping() => {
-                log::debug!("ping/pong is not implemented")
-            }
+            Ok(message) if message.is_ping() => log::debug!("ping/pong is not implemented"),
             Ok(_) => log::warn!("unsupported websocket message type"),
             Err(error) => log::error!("websocket error: {}", error),
         }
     }
 
-    local.destroy(&global).await;
-    log::debug!("client disconnected");
+    log::info!("client disconnected {:?}", connection.local.as_ref().map(|x| x.id));
 }
 
 #[tokio::main]

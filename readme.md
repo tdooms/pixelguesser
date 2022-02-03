@@ -16,22 +16,26 @@ grows more detailed over time.
 # TODO
 - Overview 
   - Make quizzes searchable by name and description. (low)
-  - Editable icon only shows if user has privileges. (high)
+  - ~~Editable icon only shows if user has privileges. (high)~~
   - Favourite quizzes and quiz sharing quizzes. (low)
 - Host
-  - Show the explanation (high)
-  - Show the points/guesses before every round (high)
-  - Show score by default after every round (high)
+  - ~~Show the explanation (high)~~
+  - ~~Show the points/guesses before every round (high)~~
+  - ~~Show score by default after every round (high)~~
+  - Show error with back arrow on connection failure (medium)
+  - ~~Show warning when trying to leave the page (high)~~
+  - Show warning also when back is pressed (medium)
   - Streak bonus (medium)
 - Manage
   - Edit points interface, in case of erroneous input (medium)
-- Create 
+  - Also need to access the quiz when not owner and not public (high)
+- Create
   - Test properly (high)
   - Queries should be deterministic aka order by (medium)
   - Proper forms and public checkbox (high)
   - More options than pixelate (medium)
 - Auth
-  - Keep logged in (medium)
+  - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
   - Style the login interface (medium)
   - Interface to change nickname and other profile stuff (high)

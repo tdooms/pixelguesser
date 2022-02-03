@@ -19,12 +19,8 @@ pub fn round_info(props: &Props) -> Html {
         x => format!("{} points", x),
     };
 
-    let header = html! {
-        <Subtitle> {"round "} {props.index + 1} {" / "} {props.rounds} </Subtitle>
-    };
-
     html! {
-        <Hero size={HeroSize::Medium} header={header}>
+        <Hero size={HeroSize::Medium}>
             <Container class="has-text-centered">
                 <Title> {props.round.answer.clone()} </Title>
                 <Subtitle> {points} </Subtitle>

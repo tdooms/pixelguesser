@@ -1,8 +1,9 @@
 use cobul::props::Color;
 use cobul::*;
+use std::rc::Rc;
 use yew::prelude::*;
 
-use crate::graphql::{Quiz, Round};
+use crate::graphql::FullQuiz;
 use crate::shared::Route;
 use sessions::{Action, Session, Stage};
 use yew_router::prelude::*;
@@ -11,16 +12,15 @@ use super::{Navigate, PlayerForm, PlayerList, PlayerName, Rating, RoundInfo};
 
 #[derive(Clone, Properties, PartialEq)]
 pub struct Props {
-    pub session: Session,
-    pub quiz: Quiz,
-    pub rounds: Vec<Round>,
+    pub session: Rc<Session>,
+    pub quiz: Rc<FullQuiz>,
 
     pub callback: Callback<Action>,
 }
 
 #[function_component(Manage)]
 pub fn manage(props: &Props) -> Html {
-    let Props { session, quiz: _, rounds, callback } = props;
+    let Props { session, quiz, callback } = props;
 
     let state = use_state(|| PlayerName::default());
 
@@ -35,6 +35,10 @@ pub fn manage(props: &Props) -> Html {
             Action::AddPlayer(player.name)
         })
     };
+    let onleave = {
+        let history = use_history().unwrap().clone();
+        Callback::from(move |_| history.push(Route::Overview))
+    };
 
     let body = match props.session.stage {
         Stage::Lobby => {
@@ -43,40 +47,48 @@ pub fn manage(props: &Props) -> Html {
 
             html! {
                 <>
-                    <PlayerForm inner={(*state).clone()} onchange={onchange} onsubmit={onsubmit}/>
-                    <PlayerList title={title} players={session.players.clone()} onclick={onremove}/>
+                <PlayerForm inner={(*state).clone()} onchange={onchange} onsubmit={onsubmit}/>
+                <Block/>
+                <PlayerList title={title} {session} onclick={onremove}/>
+                <Navigate {session} rounds={quiz.rounds.len()} {callback}/>
                 </>
             }
         }
-        Stage::Playing { round, paused: _, revealed: false } => {
-            let points = rounds[round].points as i64;
-            let onguess = props.callback.reform(move |name| Action::CorrectGuess(name, points));
+        Stage::Playing { round, paused: _, revealing: false } => {
+            let points = quiz.rounds[round].points as i64;
+            let onguess = callback.reform(move |name| Action::CorrectGuess(name, points));
             let title = "Select the player who guessed correctly.";
 
             html! {
                 <>
-                    <RoundInfo index={round} rounds={rounds.len()} round={rounds[round].clone()}/>
-                    <PlayerList title={title} players={session.players.clone()} onclick={onguess}/>
+                <RoundInfo index={round} rounds={quiz.rounds.len()} round={quiz.rounds[round].clone()}/>
+                <PlayerList title={title} {session} onclick={onguess}/>
+                <Navigate session={session.clone()} rounds={quiz.rounds.len()} {callback}/>
                 </>
             }
         }
-        Stage::Playing { round, paused: _, revealed: true } => html! {
-            <Hero color={Color::Primary}><Title> {format!("End of round {}", round + 1)} </Title> </Hero>
+        Stage::Playing { round, paused: _, revealing: true } => html! {
+            <>
+            <Hero color={Color::Primary}>
+                <Title> {format!("End of round {}", round + 1)} </Title>
+            </Hero>
+            <Navigate session={session.clone()} rounds={quiz.rounds.len()} {callback}/>
+            </>
         },
         Stage::Finished => html! {
-            <Rating quiz={props.quiz.clone()} />
+            <>
+            <Rating {quiz} />
+            <Button color={Color::Primary} light=true onclick={onleave}>
+                <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
+            </Button>
+            </>
         },
-        Stage::Left => {
-            use_history().unwrap().push(Route::Overview);
-            html! {}
-        }
     };
 
     html! {
         <Section>
             <Container>
                 { body }
-                <Navigate session={props.session.clone()} rounds={props.rounds.len()} callback={callback}/>
             </Container>
         </Section>
     }

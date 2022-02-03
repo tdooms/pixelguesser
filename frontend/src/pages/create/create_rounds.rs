@@ -1,16 +1,20 @@
-use cobul::props::ColumnSize;
-use cobul::*;
+use cobul::props::{Color, ColumnSize, SidebarAlignment};
+use cobul::{Button, Buttons, Column, Columns, Icon, Icons, Sidebar};
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
+use yew_agent::{Bridge, Bridged};
 
+use crate::consts::{CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
 use crate::graphql::{DraftRound, ImageData};
+use crate::utils::set_timer;
+use crate::{Error, ErrorAgent};
 
-use super::{CenterSpace, LeftBar, RightBar, RoundInfo};
+use super::{CenterSpace, RoundForm, RoundInfo, RoundList};
 
 #[derive(Debug)]
 pub enum Msg {
     AddRound,
-    RemoveRound,
+    DeleteRound,
     UpdateRound(RoundInfo),
     SelectRound(usize),
 
@@ -39,6 +43,8 @@ pub struct CreateRounds {
     current: usize,
     local: Vec<DraftRound>,
 
+    errors: Box<dyn Bridge<ErrorAgent>>,
+
     changes: u64,
     timer: Timer,
 }
@@ -52,7 +58,9 @@ impl Component for CreateRounds {
             0 => vec![DraftRound::default()],
             _ => ctx.props().rounds.clone(),
         };
-        Self { current: 0, changes: 0, local, timer: Timer::None }
+
+        let errors = ErrorAgent::bridge(Callback::noop());
+        Self { current: 0, changes: 0, local, timer: Timer::None, errors }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -63,11 +71,11 @@ impl Component for CreateRounds {
                 self.local[self.current].guesses = info.guesses;
                 true
             }
-            Msg::RemoveRound if self.local.len() <= 1 => {
-                // TODO: give error
+            Msg::DeleteRound if self.local.len() <= 1 => {
+                self.errors.send(Error::DeleteOnlyRound);
                 false
             }
-            Msg::RemoveRound => {
+            Msg::DeleteRound => {
                 self.local.remove(self.current);
                 self.current = if self.current == 0 { 0 } else { self.current - 1 };
                 true
@@ -90,13 +98,13 @@ impl Component for CreateRounds {
                 true
             }
             Msg::UploadImage(_files) => {
-                // TODO: give error
+                self.errors.send(Error::MultipleFiles);
                 false
             }
             Msg::ShortTimer => {
-                let cloned = ctx.link().clone();
+                log::error!("short timer");
                 self.timer =
-                    Timer::Long(Timeout::new(10_000, move || cloned.send_message(Msg::LongTimer)));
+                    Timer::Long(set_timer(ctx.link(), CREATE_LONG_SAVE_TIME, Msg::LongTimer));
 
                 if self.changes > 5 {
                     ctx.props().onsave.emit(self.local.clone());
@@ -105,36 +113,30 @@ impl Component for CreateRounds {
                 false
             }
             Msg::LongTimer => {
+                log::error!("long timer");
                 ctx.props().onsave.emit(self.local.clone());
                 self.timer = Timer::None;
                 false
             }
         };
 
-        // The timing works as follows: we only submit an update when
-        // - either the long timer passes
-        // - enough changes have been made
-
-        // The short timer is there to make sure quick
-        // spamming changes doesn't cause too many submits
         if let (true, Timer::Long(_) | Timer::None) = (res, &self.timer) {
             self.changes += 1;
-            let cloned = ctx.link().clone();
+            log::error!("changes {}", self.changes);
             self.timer =
-                Timer::Short(Timeout::new(1_000, move || cloned.send_message(Msg::ShortTimer)))
+                Timer::Short(set_timer(ctx.link(), CREATE_SHORT_SAVE_TIME, Msg::ShortTimer));
         }
 
         res
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onback = ctx.props().onback.clone();
-
         // Also save stuff when changes are made
         let ondone = {
             let changes = self.changes;
             let onsave = ctx.props().onsave.clone();
             let rounds = self.local.clone();
+
             ctx.props().ondone.reform(move |_| {
                 if changes > 0 {
                     onsave.emit(rounds.clone())
@@ -142,34 +144,58 @@ impl Component for CreateRounds {
             })
         };
 
-        let add_round = ctx.link().callback(|_| Msg::AddRound);
-        let remove_round = ctx.link().callback(|_| Msg::RemoveRound);
-        let select_round = ctx.link().callback(Msg::SelectRound);
-        let update_round = ctx.link().callback(Msg::UpdateRound);
-
-        let upload_image = ctx.link().callback(Msg::UploadImage);
-        let remove_image = ctx.link().callback(|_| Msg::RemoveImage);
-
-        let images: Vec<_> =
-            self.local.iter().map(|round| round.image.as_ref().map(ImageData::src)).collect();
-
         let round = &self.local[self.current];
 
-        let info = match round.image {
-            Some(_) => Some(round.into()),
-            None => None,
+        let left = {
+            let images: Vec<_> =
+                self.local.iter().map(|x| x.image.as_ref().map(ImageData::src)).collect();
+
+            let onadd = ctx.link().callback(|_| Msg::AddRound);
+            let ondelete = ctx.link().callback(|_| Msg::DeleteRound);
+            let onselect = ctx.link().callback(Msg::SelectRound);
+
+            html! {
+                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} class="p-0" overflow=true>
+                    <RoundList {images} {onselect} {ondelete} {onadd} current={self.current}/>
+                </Sidebar>
+            }
+        };
+
+        let center = {
+            let onupload = ctx.link().callback(Msg::UploadImage);
+            let onremove = ctx.link().callback(|_| Msg::RemoveImage);
+
+            html! { <CenterSpace image={round.image.clone()} {onremove} {onupload}/>}
+        };
+
+        let right = {
+            let onback = ctx.props().onback.clone();
+            let onchange = ctx.link().callback(Msg::UpdateRound);
+            let round: RoundInfo = round.into();
+
+            let footer = html! {
+                <Buttons class="mt-auto px-4 py-2">
+                    <Button fullwidth=true color={Color::Primary} onclick={ondone} light=true>
+                        <Icon icon={Icons::ArrowRight}/> <span> {"Overview"} </span>
+                    </Button>
+                    <Button  fullwidth=true color={Color::Info} outlined=true onclick={onback}>
+                        <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Quiz"} </span>
+                    </Button>
+                </Buttons>
+            };
+
+            html! {
+                <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
+                    <RoundForm inner={round.clone()} onchange={onchange} />
+                </Sidebar>
+            }
         };
 
         html! {
             <Columns>
-                <LeftBar images={images} current={self.current} size={ColumnSize::Is2}
-                         onremove={remove_round} onadd={add_round} onselect={select_round}/>
-
-                <Column size={ColumnSize::Is8}>
-                    <CenterSpace image={round.image.clone()} onremove={remove_image} onupload={upload_image}/>
-                </Column>
-
-                <RightBar round={info} size={ColumnSize::Is2} ondone={ondone} onback={onback} onchange={update_round}/>
+                {left}
+                <Column size={ColumnSize::Is8}> {center} </Column>
+                {right}
             </Columns>
         }
     }

@@ -1,6 +1,7 @@
 use super::{exec, AffectedRows, Kind};
 use crate::graphql::ImageData;
-use crate::shared::{Error, User};
+use crate::shared::Error;
+use crate::Auth;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -102,7 +103,7 @@ fn serialize(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
 }
 
 pub async fn save_rounds(
-    user: Option<User>,
+    auth: Auth,
     quiz_id: u64,
     mut rounds: Vec<DraftRound>,
 ) -> Result<Vec<DraftRound>, Error> {
@@ -123,6 +124,6 @@ pub async fn save_rounds(
         quiz_id, objects
     );
 
-    let _: SaveRoundsData = exec(user, Kind::Mutation(&str)).await?;
+    let _: SaveRoundsData = exec(auth, Kind::Mutation(&str)).await?;
     Ok(rounds)
 }

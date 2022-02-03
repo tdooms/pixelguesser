@@ -1,5 +1,5 @@
 use crate::shared::Error;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::rc::Rc;
 use yew_agent::{Agent, AgentLink, Context, HandlerId};
 

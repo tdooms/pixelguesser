@@ -1,13 +1,16 @@
 use cobul::Loading;
 use futures::FutureExt;
+use std::rc::Rc;
 use yew::prelude::*;
+use yew_agent::{Dispatched, Dispatcher};
+use yew_router::prelude::{History, RouterScopeExt};
 
-use crate::graphql;
+use crate::{graphql, Auth, ErrorAgent, Route};
 use sessions::{Action, Request, Response, Session};
 
-use crate::graphql::{Quiz, Round};
+use crate::graphql::FullQuiz;
 use crate::pages::{Host, Manage};
-use crate::shared::{Error, User, SESSION_ENDPOINT};
+use crate::shared::{Error, SESSION_ENDPOINT};
 use crate::utils::WebsocketTask;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
@@ -17,15 +20,16 @@ pub struct Props {
 }
 
 pub struct Loader {
-    ws: WebsocketTask,
+    ws: WebsocketTask<Request, Result<Response, sessions::Error>>,
+    errors: Dispatcher<ErrorAgent>,
 
-    session: Option<(u64, Session)>,
-    quiz: Option<(Quiz, Vec<Round>)>,
+    session: Option<(u64, Rc<Session>)>,
+    quiz: Option<Rc<FullQuiz>>,
 }
 
 pub enum Msg {
-    Ws(Response),
-    Quiz(Result<(Quiz, Vec<Round>), Error>),
+    Ws(Result<Response, sessions::Error>),
+    Quiz(Result<FullQuiz, Error>),
     Action(Action),
 }
 
@@ -41,30 +45,32 @@ impl Component for Loader {
             None => Request::Host,
         };
 
-        let user = ctx.link().context::<User>(Callback::noop()).map(|(user, _)| user);
-        ctx.link().send_future(graphql::quiz(user, ctx.props().quiz_id).map(Msg::Quiz));
+        let (auth, _) = ctx.link().context::<Auth>(Callback::noop()).unwrap();
+        ctx.link().send_future(graphql::quiz(auth, ctx.props().quiz_id).map(Msg::Quiz));
         ws.send(&request);
 
-        Self { ws, session: None, quiz: None }
+        let errors = ErrorAgent::dispatcher();
+        Self { ws, errors, session: None, quiz: None }
     }
 
-    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Quiz(Ok(pair)) => self.quiz = Some(pair),
+            Msg::Quiz(Ok(quiz)) => self.quiz = Some(Rc::new(quiz)),
             Msg::Action(action) => {
-                self.ws.send(&Request::Update(action, self.quiz.as_ref().unwrap().1.len()))
+                self.ws.send(&Request::Update(action, self.quiz.as_ref().unwrap().rounds.len()))
             }
-            Msg::Ws(Response::Hosted(id, session)) => self.session = Some((id, session)),
-            Msg::Ws(Response::Managed(id, session)) => self.session = Some((id, session)),
-            Msg::Ws(Response::Updated(session)) => {
-                // TODO: some checks
-                self.session.as_mut().unwrap().1 = session;
+            Msg::Ws(Ok(Response { id, managed, session })) => {
+                // TODO: check if session with other id exists
+                self.session = Some((id, Rc::new(session)));
             }
-            Msg::Ws(Response::Error(err)) => {
-                log::error!("{:?}", err)
+            Msg::Ws(Err(err)) => {
+                self.errors.send(Error::Session(err));
+                ctx.link().history().unwrap().push(Route::Overview)
             }
             Msg::Quiz(Err(err)) => {
-                log::error!("{:?}", err)
+                log::error!("{:?}", err);
+                self.errors.send(err);
+                ctx.link().history().unwrap().push(Route::Overview)
             }
         }
         true
@@ -75,11 +81,11 @@ impl Component for Loader {
         let callback = ctx.link().callback(Msg::Action);
 
         match (session.clone(), quiz.clone(), ctx.props().session_id) {
-            (Some((_, session)), Some((quiz, rounds)), Some(_)) => html! {
-                <Manage session={session} quiz={quiz} rounds={rounds} callback={callback}/>
+            (Some((_, session)), Some(quiz), Some(_)) => html! {
+                <Manage {session} {quiz} {callback}/>
             },
-            (Some((session_id, session)), Some((quiz, rounds)), None) => html! {
-                <Host session={session} session_id={session_id} quiz={quiz} rounds={rounds} />
+            (Some((session_id, session)), Some(quiz), None) => html! {
+                <Host {session} {session_id} {quiz} />
             },
             _ => html! {
                 <Loading />

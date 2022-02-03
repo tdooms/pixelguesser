@@ -1,19 +1,17 @@
 use cobul::props::{Color, ImageSize};
 use cobul::*;
 use yew::*;
-use yew_agent::{use_bridge, UseBridgeHandle};
+use yew_agent::use_bridge;
 use yew_router::prelude::*;
 
 use crate::agents::{UserAgent, UserInput};
-use crate::shared::User;
+use crate::shared::Auth;
 use crate::Route;
 
 #[function_component(Profile)]
 pub fn profile() -> Html {
     let state = use_state(|| false);
-    let bridge: UseBridgeHandle<UserAgent> = use_bridge(|_| ());
-
-    let user = use_context::<User>();
+    let bridge = use_bridge::<UserAgent, _>(|_| ());
 
     let onclick = {
         let cloned = state.clone();
@@ -32,39 +30,28 @@ pub fn profile() -> Html {
     let history = use_history().unwrap();
     let oncreate = Callback::from(move |_| history.push(Route::Create));
 
-    let anonymous = move || {
-        html! {
-            <Buttons class="mx-2">
-                <Button color={Color::Primary} onclick={onsignup}> <strong>{"Sign up"}</strong></Button>
-                <Button light={true} onclick={onlogin}> {"Log in"} </Button>
-            </Buttons>
-        }
-    };
+    let trigger = |picture| html! {<Image rounded=true src={picture} size={ImageSize::Is48x48}/>};
 
-    log::info!("{}", *state);
-
-    let known = move |user: &User| {
-        let trigger = html! {
-            <Image rounded=true src={user.picture.clone()} size={ImageSize::Is48x48}/>
-        };
-
-        html! {
+    match use_context::<Auth>().unwrap() {
+        Auth::User(user) => html! {
             <>
                 <Button color={Color::Primary} class="m-2" onclick={oncreate}>
                     <span>{"Create quiz"}</span>
                 </Button>
 
-                <Dropdown class="m-1 mr-2" {trigger} {onclick} active={*state} right=true>
+                <Dropdown class="m-1 mr-2" trigger={trigger(user.picture.clone())} {onclick} active={*state} right=true>
                     <DropdownItem> {"Profile"} </DropdownItem>
                     <DropdownDivider/>
                     <DropdownItem onclick={onlogout}> {"Log out"} </DropdownItem>
                 </Dropdown>
             </>
-        }
-    };
-
-    match user {
-        Some(user) => known(&user),
-        None => anonymous(),
+        },
+        Auth::Anonymous => html! {
+            <Buttons class="mx-2">
+                <Button color={Color::Primary} onclick={onsignup}> <strong>{"Sign up"}</strong></Button>
+                <Button light={true} onclick={onlogin}> {"Log in"} </Button>
+            </Buttons>
+        },
+        Auth::Loading => html! {},
     }
 }

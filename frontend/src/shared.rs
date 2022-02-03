@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use yew_router::prelude::*;
 
 pub static SELF_ENDPOINT: &str = include_str!("keys/self-endpoint.in");
@@ -29,20 +30,23 @@ pub enum Route {
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("request error {0}")]
+    #[error("Request error: {0}")]
     Request(#[from] reqwasm::Error),
 
-    #[error("websocket error {0}")]
+    #[error("Session error {0}")]
+    Session(#[from] sessions::Error),
+
+    #[error("Connection error: {0}")]
     WebSocket(String),
 
-    #[error("graphql error {0:?}")]
+    #[error("GraphQL error: {0:?}")]
     Graphql(Vec<String>),
 
-    #[error("local image already uploaded")]
-    Reupload,
-
-    #[error("file read error {0}")]
+    #[error("File read error: {0}")]
     FileRead(gloo::file::FileReadError),
+
+    #[error("Local image already uploaded")]
+    Reupload,
 
     #[error("Could not cast to the specified html element")]
     InvalidCast,
@@ -52,9 +56,27 @@ pub enum Error {
 
     #[error("Encountered an error while drawing on a canvas")]
     DrawError,
+
+    #[error("Cannot select multiple files as image")]
+    MultipleFiles,
+
+    #[error("Quiz must have at least one round")]
+    DeleteOnlyRound,
+
+    #[error("Rounds are not linked to any quiz")]
+    UnlinkedRounds,
+
+    #[error("Cannot delete a quiz that is still being created")]
+    DeleteUncommittedQuiz,
+
+    #[error("No quiz with given id")]
+    QuizNotFound,
+
+    #[error("Must be authenticated to perform this action")]
+    NotAuthenticated,
 }
 
-pub type Result<T> = std::result::Result<T, Error>;
+// pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(serde::Deserialize, Clone, Debug, PartialEq)]
 pub struct User {
@@ -66,4 +88,21 @@ pub struct User {
     pub email_verified: bool,
     pub sub: String,
     pub token: String,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Auth {
+    Loading,
+    Anonymous,
+    User(User),
+}
+
+impl Display for Auth {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Self::User(user) => f.write_fmt(format_args!("User({})", &user.name)),
+            Self::Anonymous => f.write_str("Anonymous"),
+            Self::Loading => f.write_str("Loading"),
+        }
+    }
 }

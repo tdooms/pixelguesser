@@ -19,6 +19,9 @@ pub enum Error {
     #[error("Invalid update {0:?} on session {1:?}")]
     InvalidUpdate(Action, Session),
 
+    #[error("You are not allowed to perform this operation")]
+    IllegalRequest,
+
     #[error("Could not parse request")]
     FaultyRequest,
 }
@@ -31,9 +34,8 @@ pub enum Request {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Response {
-    Hosted(u64, Session),
-    Managed(u64, Session),
-    Updated(Session),
-    Error(Error),
+pub struct Response {
+    pub id: u64,
+    pub managed: bool,
+    pub session: Session,
 }

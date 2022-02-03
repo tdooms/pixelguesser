@@ -1,43 +1,52 @@
-use super::{Finish, Lobby, RoundComponent};
-use crate::components::Pixelate;
-use crate::graphql::{Quiz, Round};
-use crate::shared::Route;
+use super::{Finish, Lobby, RoundPlay};
+use crate::graphql::FullQuiz;
 use crate::utils::code_to_string;
+use js_sys::Function;
 use sessions::{Session, Stage};
+use std::rc::Rc;
+use web_sys::window;
 use yew::prelude::*;
-use yew_router::prelude::*;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
-    pub session: Session,
     pub session_id: u64,
-
-    pub quiz: Quiz,
-    pub rounds: Vec<Round>,
+    pub session: Rc<Session>,
+    pub quiz: Rc<FullQuiz>,
 }
 
-#[function_component(Host)]
-pub fn host(props: &Props) -> Html {
-    let Props { session, session_id, quiz, rounds } = props;
+pub struct Host;
 
-    match session.stage {
-        Stage::Lobby => {
-            let code = code_to_string(*session_id, quiz.id).unwrap_or_default();
-            html! { <Lobby code={code.clone()} session={session.clone()} quiz={quiz.clone()}/> }
-        }
-        Stage::Playing { round, paused, revealed } => {
-            let url = rounds[round].image.clone();
-            let players = session.players.clone();
-            let rounds = rounds.len();
+impl Component for Host {
+    type Message = ();
+    type Properties = Props;
 
-            html! { <RoundComponent {round} {rounds} {revealed} {paused} {url} {players}/> }
+    fn create(_: &Context<Self>) -> Self {
+        if let Some(window) = window() {
+            window.set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")))
         }
-        Stage::Finished => {
-            html! { <Finish players={session.players.clone()} quiz={quiz.clone()}/> }
+        Self {}
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let Props { session_id, session, quiz } = ctx.props().clone();
+
+        match session.stage {
+            Stage::Lobby => {
+                let code = code_to_string(session_id, quiz.id).unwrap_or_default();
+                html! { <Lobby {code} {session} {quiz}/> }
+            }
+            Stage::Playing { round, paused, revealing } => {
+                html! { <RoundPlay index={round} {quiz} {session} {paused} {revealing}/> }
+            }
+            Stage::Finished => {
+                html! { <Finish {session} {quiz}/> }
+            }
         }
-        Stage::Left => {
-            use_history().unwrap().push(Route::Overview);
-            html! {}
+    }
+
+    fn destroy(&mut self, _: &Context<Self>) {
+        if let Some(window) = window() {
+            window.set_onbeforeunload(None)
         }
     }
 }

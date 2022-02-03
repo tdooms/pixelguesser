@@ -1,10 +1,12 @@
 use std::collections::HashSet;
+
+use futures::FutureExt;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use yew_agent::{Agent, AgentLink, Context, HandlerId};
 
-use crate::shared::{User, AUTH0_CLIENT_ID, AUTH0_DOMAIN};
-use futures::FutureExt;
-use wasm_bindgen::prelude::*;
+use crate::shared::{AUTH0_CLIENT_ID, AUTH0_DOMAIN};
+use crate::Auth;
 
 #[wasm_bindgen]
 extern "C" {
@@ -39,19 +41,19 @@ pub enum Msg {
 
 pub struct UserAgent {
     link: AgentLink<Self>,
-    user: Option<User>,
+    auth: Auth,
     subscribers: HashSet<HandlerId>,
 }
 
 impl UserAgent {
-    fn set(&mut self, user: Option<User>) {
-        log::info!("change of user: {:?}", user);
+    fn set(&mut self, auth: Auth) {
+        log::debug!("change of user: {}", auth);
 
         for id in &self.subscribers {
-            self.link.respond(*id, user.clone())
+            self.link.respond(*id, auth.clone())
         }
 
-        self.user = user;
+        self.auth = auth;
     }
 }
 
@@ -59,29 +61,30 @@ impl Agent for UserAgent {
     type Reach = Context<Self>;
     type Message = Msg;
     type Input = UserInput;
-    type Output = Option<User>;
+    type Output = Auth;
 
     fn create(link: AgentLink<Self>) -> Self {
         let (domain, client_id) = (AUTH0_DOMAIN.to_owned(), AUTH0_CLIENT_ID.to_owned());
         link.send_future(init_auth(domain, client_id).map(Msg::Initialized));
 
-        Self { link, user: None, subscribers: HashSet::default() }
+        Self { link, auth: Auth::Loading, subscribers: HashSet::default() }
     }
 
     fn update(&mut self, msg: Self::Message) {
         match msg {
-            Msg::SignupRedirect(x) => log::info!("{:?}", x),
-            Msg::LoginRedirect(x) => log::info!("{:?}", x),
+            Msg::SignupRedirect(Ok(())) | Msg::LoginRedirect(Ok(())) => (),
             Msg::Initialized(Ok(user)) if user.is_undefined() => {
-                self.set(None);
+                self.set(Auth::Anonymous);
             }
-            Msg::Initialized(Ok(auth)) => {
-                match serde_wasm_bindgen::from_value(auth) {
-                    Ok(auth) => self.set(auth),
+            Msg::Initialized(Ok(user)) => {
+                match serde_wasm_bindgen::from_value(user) {
+                    Ok(user) => self.set(Auth::User(user)),
                     Err(error) => log::error!("User deserialization failed: {}", error),
                 };
             }
-            Msg::Initialized(Err(err)) => {
+            Msg::Initialized(Err(err))
+            | Msg::SignupRedirect(Err(err))
+            | Msg::LoginRedirect(Err(err)) => {
                 log::error!("user error {:?}", err)
             }
         }
@@ -89,7 +92,7 @@ impl Agent for UserAgent {
 
     fn connected(&mut self, id: HandlerId) {
         self.subscribers.insert(id);
-        self.link.respond(id, self.user.clone());
+        self.link.respond(id, self.auth.clone());
     }
 
     fn handle_input(&mut self, input: Self::Input, _: HandlerId) {
@@ -100,7 +103,7 @@ impl Agent for UserAgent {
             UserInput::Login => self.link.send_future(redirect_to_login().map(Msg::LoginRedirect)),
             UserInput::Logout => match logout() {
                 Err(error) => log::error!("logout error {:?}", error),
-                Ok(_) => self.set(None),
+                Ok(_) => self.set(Auth::Anonymous),
             },
         };
     }

@@ -1,36 +1,52 @@
-use futures::channel::mpsc;
+use std::fmt::Debug;
+use std::marker::PhantomData;
 
-use futures::{SinkExt, StreamExt};
+use futures::channel::mpsc;
+use futures::channel::oneshot;
+use futures::{select, SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
 use reqwasm::websocket::{Message, WebSocketError};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
+use yew_agent::Dispatched;
 
-use sessions::{Request, Response};
+use crate::{Error, ErrorAgent};
 
-pub struct WebsocketTask {
+pub struct WebsocketTask<Req: Serialize + Debug, Res: 'static + DeserializeOwned + Debug> {
     responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
+    cancel: oneshot::Sender<()>,
+    req: PhantomData<Req>,
+    res: PhantomData<Res>,
 }
 
-impl WebsocketTask {
-    pub fn send(&mut self, request: &Request) {
+impl<Req: Serialize + Debug, Res: 'static + DeserializeOwned + Debug> WebsocketTask<Req, Res> {
+    pub fn send(&mut self, request: &Req) {
         log::debug!("ws request: {:?}", request);
-        let str = serde_json::to_string(request).unwrap();
 
+        let str = serde_json::to_string(request).unwrap();
         let mut cloned = self.responder.clone();
 
         spawn_local(async move { cloned.send(Ok(Message::Text(str))).await.unwrap() });
     }
 
-    pub fn create(url: impl AsRef<str>, callback: Callback<Response>) -> Self {
+    pub fn create(url: impl AsRef<str>, callback: Callback<Res>) -> Self {
+        let mut errors = ErrorAgent::dispatcher();
+
         log::debug!("connecting to {}", url.as_ref());
         let ws = WebSocket::open(url.as_ref()).unwrap();
 
         let (sink, mut stream) = ws.split();
         let (responder, receiver) = mpsc::unbounded();
 
+        let (cancel_send, mut cancel_recv) = oneshot::channel();
+
         spawn_local(async move {
-            receiver.forward(sink).await.unwrap();
+            select! {
+                _ = receiver.forward(sink) => {log::debug!("receiver done")},
+                _ = cancel_recv => {log::debug!("sender dropped")}
+            }
         });
 
         spawn_local(async move {
@@ -41,14 +57,29 @@ impl WebsocketTask {
                             log::debug!("ws response: {:?}", response);
                             callback.emit(response)
                         }
-                        Err(_err) => log::error!("TODO: handle deserialize error"),
+                        Err(err) => log::error!("deserialize error: {:?}", err),
                     },
-                    Ok(Message::Bytes(_m)) => log::error!("TODO: handle deserialize bytes over ws"),
-                    Err(_e) => log::error!("TODO: handle ws error"),
+                    Ok(Message::Bytes(_)) => {
+                        log::warn!("deserializing bytes over ws not supported")
+                    }
+                    Err(WebSocketError::ConnectionError) => {
+                        errors.send(Error::WebSocket("connection error".to_owned()))
+                    }
+                    Err(WebSocketError::ConnectionClose(_)) => errors
+                        .send(Error::WebSocket("connection closed / cannot connect".to_owned())),
+                    Err(WebSocketError::MessageSendError(_)) => {
+                        errors.send(Error::WebSocket("send error".to_owned()))
+                    }
+                    Err(_) => unreachable!(),
                 }
             }
         });
 
-        Self { responder }
+        Self {
+            responder,
+            req: PhantomData::default(),
+            res: PhantomData::default(),
+            cancel: cancel_send,
+        }
     }
 }

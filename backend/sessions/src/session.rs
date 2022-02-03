@@ -22,10 +22,6 @@ pub enum Action {
     CorrectGuess(String, i64),
     /// Proceed to next round
     NextRound,
-    /// Give a rating to the quiz
-    GiveRating(u64),
-    /// Leave the session
-    LeaveQuiz,
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -36,9 +32,8 @@ pub struct Player {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub enum Stage {
     Lobby,
-    Playing { round: usize, paused: bool, revealed: bool },
+    Playing { round: usize, paused: bool, revealing: bool },
     Finished,
-    Left,
 }
 
 impl Default for Stage {
@@ -51,7 +46,6 @@ impl Default for Stage {
 pub struct Session {
     pub stage: Stage,
     pub players: HashMap<String, Player>,
-    pub has_manager: bool,
 }
 
 impl Session {
@@ -74,56 +68,48 @@ impl Session {
                 // This always succeeds
                 copy.insert_player(name)
             }
-            (Stage::Lobby, Action::LeaveQuiz) if rounds == 0 => {
-                // Instantly leave when there are no rounds
-                copy.stage = Stage::Left
-            }
             (Stage::Lobby, Action::StartQuiz) if rounds == 0 => {
                 // Cannot start quiz if no rounds
-                return None;
+                copy.stage = Stage::Finished;
             }
             (Stage::Lobby, Action::StartQuiz) => {
                 // Start at round 0 on start
-                copy.stage = Stage::Playing { round: 0, paused: false, revealed: false }
+                copy.stage = Stage::Playing { round: 0, paused: false, revealing: false }
             }
-            (Stage::Playing { round, paused: true, revealed: false }, Action::ResumeRound) => {
+            (Stage::Playing { round, paused: true, revealing: false }, Action::ResumeRound) => {
                 // Resume action if paused and not revealed
-                copy.stage = Stage::Playing { round, paused: false, revealed: false }
+                copy.stage = Stage::Playing { round, paused: false, revealing: false }
             }
-            (Stage::Playing { round, paused: false, revealed: false }, Action::PauseRound) => {
+            (Stage::Playing { round, paused: false, revealing: false }, Action::PauseRound) => {
                 // Pause action if paused and not revealed
-                copy.stage = Stage::Playing { round, paused: true, revealed: false }
+                copy.stage = Stage::Playing { round, paused: true, revealing: false }
             }
             (Stage::Playing { round, .. }, Action::CorrectGuess(name, points)) => {
                 // Grant score and start revealing on correct guess
                 if let Some(player) = copy.players.get_mut(&name) {
                     player.score += points;
                 }
-                copy.stage = Stage::Playing { round, revealed: true, paused: false }
+                copy.stage = Stage::Playing { round, revealing: true, paused: false }
             }
-            (Stage::Playing { round, revealed: false, .. }, Action::RevealRound) => {
+            (Stage::Playing { round, revealing: false, .. }, Action::RevealRound) => {
                 // Reveal without granting anyone points
-                copy.stage = Stage::Playing { round, revealed: true, paused: false }
+                copy.stage = Stage::Playing { round, revealing: true, paused: false }
             }
-            (Stage::Playing { round, revealed: true, .. }, Action::NextRound)
+            (Stage::Playing { round, revealing: true, .. }, Action::NextRound)
                 if round >= rounds - 1 =>
             {
                 // Finish action if quiz is done
                 copy.stage = Stage::Finished
             }
-            (Stage::Playing { round, revealed: true, .. }, Action::NextRound) => {
+            (Stage::Playing { round, revealing: true, .. }, Action::NextRound) => {
                 // Next round action if quiz is not done
-                copy.stage = Stage::Playing { round: round + 1, paused: false, revealed: false }
+                copy.stage = Stage::Playing { round: round + 1, paused: false, revealing: false }
             }
             (Stage::Playing { .. }, Action::UpdateScore(name, points)) => {
                 // Update score without changing anything else
                 if let Some(player) = copy.players.get_mut(&name) {
                     player.score += points;
                 }
-            }
-            (Stage::Finished, Action::LeaveQuiz) => {
-                // Simply leave session when done
-                copy.stage = Stage::Left
             }
             (Stage::Lobby, Action::RemovePlayer(name)) => {
                 // Remove player, no errors on non-existent
