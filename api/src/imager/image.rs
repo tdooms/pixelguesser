@@ -8,7 +8,7 @@ use web_sys::Url;
 use crate::shared::{Error, IMAGE_ENDPOINT};
 
 #[derive(Clone, Debug)]
-pub enum ImageData {
+pub enum Image {
     Local { file: web_sys::File, src: String, url: Option<String> },
     Url(String),
 }
@@ -78,7 +78,7 @@ impl ImageData {
         }
     }
 
-    pub async fn upload(&mut self) -> Result<(), Error> {
+    pub async fn upload(&mut self) -> Result<String, ()> {
         match self {
             ImageData::Local { file, url, .. } => match url.clone().take() {
                 None => {
@@ -92,11 +92,15 @@ impl ImageData {
 
                     let filename = response.text().await.unwrap();
                     *url = Some(filename);
-                    Ok(())
+
+                    // Return the new url to be submitted for change
+                    Ok(filename)
                 }
-                Some(_) => Ok(()),
+                // this means already sent
+                Some(_) => Err(()),
             },
-            ImageData::Url(_) => Ok(()),
+            // This means there is no data to send as it hasn't changed
+            ImageData::Url(_) => Err(()),
         }
     }
 
