@@ -1,3 +1,4 @@
+mod code;
 mod session;
 mod shared;
 

@@ -14,6 +14,7 @@ grows more detailed over time.
 **generate frontend:** build --target web --dev --out-name wasm --out-dir ../data/static
 
 # TODO
+- Use Code struct in sessions for type security
 - Overview 
   - Make quizzes searchable by name and description. (low)
   - ~~Editable icon only shows if user has privileges. (high)~~

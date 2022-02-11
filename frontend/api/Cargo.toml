@@ -1,0 +1,24 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+keys = { path = "../keys" }
+sessions = { path = "../../backend/sessions" }
+
+thiserror = "1.0"
+cynic = { version = "*" }
+chrono = { version = "*", features = ["serde"] }
+serde_repr = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+
+web-sys = { version = "*", features = ["Url"] }
+gloo = { version = "0.5", features = ["futures"] }
+reqwasm = "0.4.0"
+
+validator = { version = "0.14", features = ["derive"] }
+derive_more = "0.99.16"
+strum = { version = "0.21", features = ["derive"] }
