@@ -1,3 +1,6 @@
+mod loader;
+mod overview;
+
 use cobul::props::Color;
 use cobul::{Loading, Notification};
 use wasm_bindgen::prelude::*;

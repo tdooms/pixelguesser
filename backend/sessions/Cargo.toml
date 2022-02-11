@@ -7,6 +7,7 @@ edition = "2021"
 server = ["pretty_env_logger", "log", "warp", "tokio", "serde_json", "futures", "tokio-stream", "clap", "rand"]
 api = []
 full = ["api", "server"]
+default = ["full"]
 
 [dependencies]
 pretty_env_logger = { version = "0.4", optional = true }

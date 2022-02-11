@@ -1,4 +1,4 @@
-use crate::shared::Error;
+use shared::Error;
 use std::collections::HashSet;
 use std::rc::Rc;
 use yew_agent::{Agent, AgentLink, Context, HandlerId};

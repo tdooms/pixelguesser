@@ -6,3 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+yew-router = "0.16"
+thiserror = "1.0"
+
+sessions = { path = "../../backend/sessions" }
+api = { path = "../api" }

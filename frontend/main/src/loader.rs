@@ -21,7 +21,9 @@ use keys::SESSION_ENDPOINT;
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
     pub quiz_id: u64,
-    pub session_id: Option<u64>, // Having a session_id implies being a manager
+
+    // Having a session_id implies being a manager
+    pub session_id: Option<u64>,
 }
 
 pub struct Loader {

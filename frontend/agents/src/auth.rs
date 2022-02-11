@@ -1,12 +1,32 @@
 use std::collections::HashSet;
 
+use derive_more::Display;
 use futures::FutureExt;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use yew_agent::{Agent, AgentLink, Context, HandlerId};
 
-use crate::Auth;
 use keys::{AUTH0_CLIENT_ID, AUTH0_DOMAIN};
+use shared::Auth;
+
+#[derive(Clone, Debug, PartialEq, Display)]
+pub enum Auth {
+    #[display(fmt = "Loading")]
+    Loading,
+    #[display(fmt = "Anonymous")]
+    Anonymous,
+    #[display(fmt = "User {}", _0)]
+    User(User),
+}
+
+impl From<Auth> for Option<User> {
+    fn from(auth: Auth) -> Self {
+        match auth {
+            Auth::Loading | Auth::Anonymous => None,
+            Auth::User(user) => Some(user),
+        }
+    }
+}
 
 #[wasm_bindgen]
 extern "C" {

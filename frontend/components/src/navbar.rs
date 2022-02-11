@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use super::Profile;
+use crate::profile::Profile;
 use cobul::*;
 
 use crate::shared::Route;

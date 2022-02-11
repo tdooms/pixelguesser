@@ -1,8 +1,6 @@
 use std::fmt::Debug;
-use std::marker::PhantomData;
 
-use futures::channel::mpsc;
-use futures::channel::oneshot;
+use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
 use reqwasm::websocket::{Message, WebSocketError};
@@ -13,6 +11,7 @@ use yew::Callback;
 use yew_agent::Dispatched;
 
 use crate::{Error, ErrorAgent};
+use cynic::serde_json;
 use sessions::Request;
 
 pub struct WebsocketTask {
@@ -82,11 +81,6 @@ impl WebsocketTask {
             log::debug!("should be dropped (6)")
         });
 
-        Self {
-            responder,
-            req: PhantomData::default(),
-            res: PhantomData::default(),
-            cancel: cancel_send,
-        }
+        Self { responder, cancel: cancel_send }
     }
 }

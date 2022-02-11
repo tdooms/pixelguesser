@@ -1,5 +1,3 @@
-use api::User;
-use derive_more::Display;
 use yew_router::prelude::*;
 
 pub const HOST_ROUND_START_TIME: u32 = 5_000;
@@ -70,22 +68,3 @@ pub enum Error {
 }
 
 // pub type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Clone, Debug, PartialEq, Display)]
-pub enum Auth {
-    #[display(fmt = "Loading")]
-    Loading,
-    #[display(fmt = "Anonymous")]
-    Anonymous,
-    #[display(fmt = "User {}", _0)]
-    User(User),
-}
-
-impl From<Auth> for Option<User> {
-    fn from(auth: Auth) -> Self {
-        match auth {
-            Auth::Loading | Auth::Anonymous => None,
-            Auth::User(user) => Some(user),
-        }
-    }
-}

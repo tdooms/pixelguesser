@@ -4,8 +4,11 @@ mod lobby;
 mod play;
 mod ranking;
 
-use super::{Finish, Lobby, RoundPlay};
-use api::{code_to_string, FullQuiz};
+use crate::finish::Finish;
+use crate::play::Play;
+use crate::ranking::Ranking;
+
+use api::FullQuiz;
 use js_sys::Function;
 use sessions::{Session, Stage};
 use std::rc::Rc;

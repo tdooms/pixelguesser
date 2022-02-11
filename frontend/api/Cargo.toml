@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 keys = { path = "../keys" }
-sessions = { path = "../../backend/sessions" }
+sessions = { path = "../../backend/sessions", features = ["api"], default-features = false }
+
+wasm-logger = "*"
 
 thiserror = "1.0"
 cynic = { version = "*" }
@@ -17,6 +19,8 @@ serde = { version = "1.0", features = ["derive"] }
 
 web-sys = { version = "*", features = ["Url"] }
 gloo = { version = "0.5", features = ["futures"] }
+wasm-bindgen-futures = "*"
+futures = "*"
 reqwasm = "0.4.0"
 
 validator = { version = "0.14", features = ["derive"] }
