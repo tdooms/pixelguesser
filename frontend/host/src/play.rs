@@ -1,16 +1,16 @@
 use std::rc::Rc;
 
-use gloo::timers::callback::Timeout;
 use yew::*;
 
-use sessions::Session;
+use api::{FullQuiz, Session};
 
-use crate::components::Pixelate;
-use crate::consts::{HOST_AFTER_REVEALED_TIME, HOST_ROUND_START_TIME};
-use crate::utils::set_timer;
+use ::utils::set_timer;
+use components::Pixelate;
+use shared::{HOST_AFTER_REVEALED_TIME, HOST_ROUND_START_TIME};
 
-use super::{Ranking, RoundInfo};
-use api::FullQuiz;
+use crate::info::Info;
+use crate::ranking::Ranking;
+use gloo::timers::callback::Timeout;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {
@@ -62,10 +62,7 @@ impl Component for Play {
             (Msg::Timer, Stage::Info) => self.stage = Stage::Play,
             (Msg::Timer, Stage::Show) => self.stage = Stage::Scores,
             (Msg::Revealed, Stage::Play) => {
-                let link = ctx.link().clone();
-                let callback = move || link.send_message(Msg::Timer);
-
-                self.timer = Some(Timeout::new(HOST_AFTER_REVEALED_TIME, callback));
+                self.timer = Some(set_timer(ctx.link(), HOST_AFTER_REVEALED_TIME, Msg::Timer));
                 self.stage = Stage::Show;
             }
             _ => return false,
@@ -90,7 +87,7 @@ impl Component for Play {
 
         match self.stage {
             Stage::Info => html! {
-                <RoundInfo {index} rounds={quiz.rounds.len()} round={quiz.rounds[index].clone()}/>
+                <Info {index} rounds={quiz.rounds.len()} round={quiz.rounds[index].clone()}/>
             },
             Stage::Scores => html! {
                 <Ranking {session} />

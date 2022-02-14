@@ -5,12 +5,12 @@ mod play;
 mod ranking;
 
 use crate::finish::Finish;
+use crate::lobby::Lobby;
 use crate::play::Play;
 use crate::ranking::Ranking;
 
-use api::FullQuiz;
+use api::{Code, FullQuiz, Session, Stage};
 use js_sys::Function;
-use sessions::{Session, Stage};
 use std::rc::Rc;
 use web_sys::window;
 use yew::prelude::*;
@@ -22,8 +22,6 @@ pub struct Props {
     pub quiz: Rc<FullQuiz>,
 }
 
-pub struct Host;
-
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
     use_effect(move || {
@@ -32,15 +30,15 @@ pub fn host(props: &Props) -> Html {
         || window().unwrap().set_onbeforeunload(None)
     });
 
-    let Props { session_id, session, quiz } = ctx.props().clone();
+    let Props { session_id, session, quiz } = props.clone();
 
     match session.stage {
         Stage::Lobby => {
-            let code = code_to_string(session_id, quiz.id).unwrap_or_default();
+            let code = Code { session_id, quiz_id: quiz.id }.to_string();
             html! { <Lobby {code} {session} {quiz}/> }
         }
         Stage::Playing { round, paused, revealing } => {
-            html! { <RoundPlay index={round} {quiz} {session} {paused} {revealing}/> }
+            html! { <Play index={round} {quiz} {session} {paused} {revealing}/> }
         }
         Stage::Finished => {
             html! { <Finish {session} {quiz}/> }

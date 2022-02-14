@@ -1,2 +1,2 @@
-pub use image::Image;
+pub use image::{Image, Resolution};
 mod image;

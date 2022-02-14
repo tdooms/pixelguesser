@@ -9,9 +9,15 @@ edition = "2021"
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms"] }
 yew = "0.19"
 yew-agent = "0.1"
+yew-router = "0.16"
 log = "0.4"
-
+futures = "0.3"
+gloo = "*"
 agents = { path = "../agents" }
 api = { path = "../api" }
 keys = { path = "../keys" }
 components = { path = "../components" }
+shared = { path = "../shared" }
+utils = { path = "../utils" }
+validator = { version = "*", features = ["derive"] }
+web-sys = { version = "0.3", features = ["File"] }

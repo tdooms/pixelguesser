@@ -2,13 +2,12 @@ use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 
-use crate::agents::ErrorAgent;
-use crate::consts::{
-    PIXELATE_PLAY_SPEED, PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
-};
-use crate::shared::Error;
-use crate::utils::{draw_pixelated, set_timer, Resizer, TypeRef};
+use agents::ErrorAgent;
 use gloo::timers::callback::Timeout;
+use shared::{
+    Error, PIXELATE_PLAY_SPEED, PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
+};
+use utils::{draw_pixelated, set_timer, Resizer, TypeRef};
 
 #[derive(Debug)]
 pub enum Msg {

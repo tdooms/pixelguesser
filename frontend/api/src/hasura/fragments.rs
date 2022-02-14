@@ -7,7 +7,7 @@ use crate::hasura::quiz::*;
 
 impl_scalar!(u64, schema::Bigint);
 impl_scalar!(DateTime<Utc>, schema::Timestamptz);
-impl_scalar!(GqlQuiz, schema::QuizzesSetInput);
+impl_scalar!(DraftQuiz, schema::QuizzesSetInput);
 
 #[derive(cynic::InputObject, Debug)]
 #[cynic(
@@ -23,7 +23,7 @@ struct QuizzesPkColumnsInput {
 #[derive(cynic::FragmentArguments, Debug)]
 struct UpdateQuizArgs {
     quiz_id: QuizzesPkColumnsInput,
-    draft: Option<GqlQuiz>,
+    draft: Option<DraftQuiz>,
 }
 
 #[derive(cynic::FragmentArguments, Debug)]

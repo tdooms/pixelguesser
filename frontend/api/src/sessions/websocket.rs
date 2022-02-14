@@ -8,11 +8,10 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
-use yew_agent::Dispatched;
 
-use crate::{Error, ErrorAgent};
+use crate::Error;
 use cynic::serde_json;
-use sessions::Request;
+use sessions::{Request, Response};
 
 pub struct WebsocketTask {
     responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
@@ -31,7 +30,7 @@ impl WebsocketTask {
 
     fn handle(
         result: Result<Message, WebSocketError>,
-        callback: &Callback<Res>,
+        callback: &Callback<Result<Response, sessions::Error>>,
         onerror: &Callback<WebSocketError>,
     ) {
         match result {
@@ -53,18 +52,18 @@ impl WebsocketTask {
 
     pub fn create(
         url: impl AsRef<str>,
-        callback: Callback<Res>,
+        callback: Callback<Result<Response, sessions::Error>>,
         onerror: Callback<WebSocketError>,
     ) -> Self {
-        let mut errors = ErrorAgent::dispatcher();
-
         log::debug!("connecting to {}", url.as_ref());
         let ws = WebSocket::open(url.as_ref()).unwrap();
 
-        let (sink, mut stream) = ws.split();
+        let (sink, stream) = ws.split();
         let (responder, receiver) = mpsc::unbounded();
 
         let (cancel_send, mut cancel_recv) = oneshot::channel();
+
+        let mut stream = stream.fuse();
 
         spawn_local(async move {
             receiver.forward(sink).await;
@@ -73,7 +72,7 @@ impl WebsocketTask {
 
         spawn_local(async move {
             while let Some(m) = select! {
-                message = stream.next().await => message,
+                message = stream.next() => message,
                 _ = cancel_recv => return
             } {
                 Self::handle(m, &callback, &onerror)

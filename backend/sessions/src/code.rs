@@ -5,8 +5,8 @@ use std::str::FromStr;
 static CHARS: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
 
 pub struct Code {
-    session_id: u64,
-    quiz_id: u64,
+    pub session_id: u64,
+    pub quiz_id: u64,
 }
 
 impl FromStr for Code {

@@ -9,5 +9,4 @@ edition = "2021"
 yew-router = "0.16"
 thiserror = "1.0"
 
-sessions = { path = "../../backend/sessions" }
 api = { path = "../api" }

@@ -1,11 +1,10 @@
 use cobul::props::{Color, ColumnSize, HeaderSize, HeroSize};
 use cobul::*;
 use qrcode::QrCode;
-use sessions::Session;
 use std::rc::Rc;
 use yew::prelude::*;
 
-use api::FullQuiz;
+use api::{FullQuiz, Session};
 use image::Rgba;
 use keys::SELF_ENDPOINT;
 use photon_rs::PhotonImage;

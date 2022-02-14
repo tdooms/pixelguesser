@@ -33,9 +33,6 @@ pub enum Error {
     #[error("Api error {0}")]
     Api(#[from] api::Error),
 
-    #[error("Session error {0}")]
-    Session(#[from] sessions::Error),
-
     #[error("Connection error: {0}")]
     WebSocket(String),
 

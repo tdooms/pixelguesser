@@ -4,7 +4,7 @@ use yew_router::prelude::Link;
 use crate::profile::Profile;
 use cobul::*;
 
-use crate::shared::Route;
+use shared::Route;
 
 #[function_component(MainNavbar)]
 pub fn main_navbar() -> Html {

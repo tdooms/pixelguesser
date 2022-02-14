@@ -6,3 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+gloo = "*"
+yew = "0.19"
+web-sys = { version = "0.3", features = ["CanvasRenderingContext2d"] }
+shared = { path = "../shared" }
+wasm-bindgen = "*"
+wasm-bindgen-futures = "*"

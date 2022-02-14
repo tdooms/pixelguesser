@@ -7,8 +7,13 @@ edition = "2021"
 
 [dependencies]
 shared = { path = "../shared" }
-
+utils = { path = "../utils" }
+agents = { path = "../agents" }
+web-sys = { versin = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
 yew = "0.19"
+api = { path = "../api" }
 yew-router = "0.16"
+yew-agent = "0.1"
 
 cobul = { git = "https://github.com/tdooms/cobul.git" }
+gloo = "*"

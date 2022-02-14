@@ -10,4 +10,7 @@ pub enum Error {
 
     #[error("Encode error {0}")]
     Encode(#[from] cynic::serde_json::Error),
+
+    #[error("Session error {0}")]
+    Session(#[from] sessions::Error),
 }

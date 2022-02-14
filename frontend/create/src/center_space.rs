@@ -1,3 +1,4 @@
+use api::Resolution;
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use yew::prelude::*;
@@ -43,13 +44,13 @@ pub fn center_space(props: &Props) -> Html {
     let center = |image: &api::Image| match state.hovering {
         true => html! {
             <div>
-                <DynImage src={image.src()} height=85 class="is-blurred"/>
+                <DynImage src={image.src(Resolution::FullHd)} height=85 class="is-blurred"/>
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);">
                     <Button color={Color::Danger} size={Size::Large} onclick={onremove}>{"remove"}</Button>
                 </div>
             </div>
         },
-        false => html! { <DynImage src={image.src()} height=85 class=""/> },
+        false => html! { <DynImage src={image.src(Resolution::FullHd)} height=85 class=""/> },
     };
 
     match &image {

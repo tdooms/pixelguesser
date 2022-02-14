@@ -165,7 +165,7 @@ impl Drop for Connection {
                     let response: Result<_, Error> =
                         Ok(Response { id: local.id, managed: false, session });
                     let msg = Message::text(serde_json::to_string(&response).unwrap());
-                    lock.host.send(Ok(msg));
+                    lock.host.send(Ok(msg)).unwrap();
                 }
                 _ => {}
             }

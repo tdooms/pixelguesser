@@ -6,8 +6,8 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use yew_agent::{Agent, AgentLink, Context, HandlerId};
 
+use api::User;
 use keys::{AUTH0_CLIENT_ID, AUTH0_DOMAIN};
-use shared::Auth;
 
 #[derive(Clone, Debug, PartialEq, Display)]
 pub enum Auth {
@@ -15,7 +15,7 @@ pub enum Auth {
     Loading,
     #[display(fmt = "Anonymous")]
     Anonymous,
-    #[display(fmt = "User {}", _0)]
+    #[display(fmt = "User {:?}", _0)]
     User(User),
 }
 

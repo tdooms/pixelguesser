@@ -1,15 +1,18 @@
 use cobul::props::{Color, ColumnSize, SidebarAlignment};
 use cobul::{Button, Buttons, Column, Columns, Icon, Icons, Sidebar};
+use futures::FutureExt;
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 use yew_agent::{Bridge, Bridged};
 
-use crate::consts::{CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
-use crate::utils::set_timer;
-use crate::{Error, ErrorAgent};
-use api::DraftRound;
+use agents::ErrorAgent;
+use api::{DraftRound, Image, Resolution};
+use shared::{Error, CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
+use utils::set_timer;
 
-use super::{CenterSpace, RoundForm, RoundInfo, RoundList};
+use crate::center_space::CenterSpace;
+use crate::round_form::{RoundForm, RoundInfo};
+use crate::round_list::RoundList;
 
 #[derive(Debug)]
 pub enum Msg {
@@ -20,6 +23,8 @@ pub enum Msg {
 
     UploadImage(Vec<web_sys::File>),
     RemoveImage,
+
+    UploadedImage(Image),
 
     LongTimer,
     ShortTimer,
@@ -93,9 +98,15 @@ impl Component for CreateRounds {
                 self.local[self.current].image = None;
                 true
             }
-            Msg::UploadImage(files) if files.len() == 1 => {
-                self.local[self.current].image = api::Image::from_local(&files[0]);
+            Msg::UploadedImage(image) => {
+                // TODO: If self.current changes during the async fn, this will be wrong
+                self.local[self.current].image = Some(image);
                 true
+            }
+            Msg::UploadImage(files) if files.len() == 1 => {
+                ctx.link()
+                    .send_future(api::Image::from_local(files[0].clone()).map(Msg::UploadedImage));
+                false
             }
             Msg::UploadImage(_files) => {
                 self.errors.send(Error::MultipleFiles);
@@ -147,8 +158,11 @@ impl Component for CreateRounds {
         let round = &self.local[self.current];
 
         let left = {
-            let images: Vec<_> =
-                self.local.iter().map(|x| x.image.as_ref().map(api::Image::src)).collect();
+            let images: Vec<_> = self
+                .local
+                .iter()
+                .map(|x| x.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
+                .collect();
 
             let onadd = ctx.link().callback(|_| Msg::AddRound);
             let ondelete = ctx.link().callback(|_| Msg::DeleteRound);

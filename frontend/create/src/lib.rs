@@ -6,6 +6,10 @@ mod round_form;
 mod round_list;
 mod summary;
 
+use crate::create_quiz::CreateQuiz;
+use crate::create_rounds::CreateRounds;
+use crate::summary::Summary;
+
 use std::ops::Deref;
 
 use cobul::Loading;
@@ -14,8 +18,8 @@ use yew::prelude::*;
 use yew_agent::{Dispatched, Dispatcher};
 use yew_router::prelude::*;
 
-use crate::shared::{Error, Route};
-use crate::{Auth, ErrorAgent};
+use agents::{Auth, ErrorAgent};
+use shared::{Error, Route};
 
 use api::{DraftQuiz, DraftRound, FullQuiz, Quiz};
 
@@ -111,7 +115,7 @@ impl Component for Create {
                 self.id = Some(quiz.id);
                 self.quiz = Some(quiz.into())
             }
-            Msg::DeleteQuiz => match ctx.props().quiz_id {
+            Msg::DeleteQuiz => match ctx.props().id {
                 Some(id) => {
                     link.send_future(api::delete_quiz(auth.into(), id).map(Msg::QuizDeleted))
                 }

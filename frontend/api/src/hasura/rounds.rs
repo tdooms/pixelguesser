@@ -47,7 +47,7 @@ impl Default for GuessChoices {
     }
 }
 
-#[derive(Validate, Serialize, Debug, Clone, Default, PartialEq)]
+#[derive(Validate, Debug, Clone, Default, PartialEq)]
 pub struct DraftRound {
     #[validate(length(min = 1))]
     pub answer: String,

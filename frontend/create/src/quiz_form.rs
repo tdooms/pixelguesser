@@ -1,7 +1,8 @@
-use crate::{Error, ErrorAgent};
+use agents::{AuthAgent, ErrorAgent};
 use api::DraftQuiz;
 use cobul::props::Color;
 use cobul::*;
+use shared::Error;
 use yew::prelude::*;
 use yew_agent::use_bridge;
 

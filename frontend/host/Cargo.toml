@@ -7,8 +7,18 @@ edition = "2021"
 
 [dependencies]
 api = { path = "../api" }
-#sessions = { path = "../../backend/sessions", features = ["api"], default-features = false }
+shared = { path = "../shared" }
+cobul = { git = "https://github.com/tdooms/cobul.git" }
+keys = { path = "../keys" }
+utils = { path = "../utils" }
+components = { path = "../components" }
+
+yew-router = "0.16"
+gloo = "*"
 
 web-sys = "0.3"
 js-sys = "0.3"
 yew = "0.19"
+qrcode = "0.12"
+image = "0.23"
+photon-rs = "0.3"

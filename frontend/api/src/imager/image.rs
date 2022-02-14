@@ -1,7 +1,13 @@
+use cynic::serde::de::Error;
+use cynic::serde::{Deserializer, Serializer};
+use cynic::{DecodeError, Scalar};
 use derive_more::Display;
 use gloo::file::futures::read_as_data_url;
 use keys::IMAGE_ENDPOINT;
 use reqwasm::http::Request;
+use serde::de::{DeserializeOwned, Visitor};
+use serde::{Deserialize, Serialize};
+use std::fmt::Formatter;
 
 #[derive(Display)]
 pub enum Resolution {
@@ -15,19 +21,67 @@ pub enum Resolution {
     Max,
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum ImageData {
     Local(String),
     Url(String),
     Both(String, String),
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct Image {
     data: ImageData,
     name: String,
 }
 
+impl Serialize for Image {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match &self.data {
+            ImageData::Local(_) => unimplemented!(),
+            ImageData::Url(url) | ImageData::Both(url, _) => serializer.serialize_str(url),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Image {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let url = deserializer.deserialize_str(StrVisitor)?;
+        Ok(Self { data: ImageData::Url(url), name: "".to_string() })
+    }
+}
+
+struct StrVisitor;
+impl<'de> Visitor<'de> for StrVisitor {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
+        Ok(v.to_owned())
+    }
+}
+
+impl Scalar<String> for Image {
+    type Deserialize = Image;
+
+    fn from_deserialize(x: Self::Deserialize) -> Result<Self, DecodeError> {
+        Ok(x)
+    }
+}
+
 impl Image {
-    pub async fn from_local(file: &web_sys::File) -> Self {
+    pub async fn from_local(file: web_sys::File) -> Self {
         let blob = gloo::file::Blob::from(file.clone());
         let data = read_as_data_url(&blob).await.unwrap();
 

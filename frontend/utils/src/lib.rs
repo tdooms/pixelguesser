@@ -1,8 +1,10 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
+mod cast;
+mod pixelate;
+mod resize;
+mod timer;
+mod use_async;
+
+pub use cast::TypeRef;
+pub use pixelate::draw_pixelated;
+pub use resize::{Dimensions, Resizer};
+pub use timer::set_timer;

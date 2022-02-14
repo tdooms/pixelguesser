@@ -1,12 +1,12 @@
-use crate::Auth;
+use agents::Auth;
 use cobul::props::ColumnSize;
 use cobul::*;
 use yew::prelude::*;
 use yew::props;
 
-use super::QuizForm;
-use crate::components::QuizCard;
-use api::{Creator, DraftQuiz};
+use crate::quiz_form::QuizForm;
+use api::{Creator, DraftQuiz, Resolution};
+use components::QuizCard;
 use keys::IMAGE_PLACEHOLDER;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
@@ -24,7 +24,10 @@ pub fn quiz_form(props: &Props) -> Html {
     let state = use_state(move || quiz.clone().unwrap_or_default());
 
     let DraftQuiz { title, public, description, image, .. } = (*state).clone();
-    let image = image.as_ref().map(api::Image::src).unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
+    let image = image
+        .as_ref()
+        .map(|x| x.src(Resolution::Card))
+        .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
 
     let creator: Creator = match use_context::<Auth>().unwrap() {
         Auth::User(user) => user.into(),

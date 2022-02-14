@@ -4,14 +4,13 @@ use yew::*;
 use yew_agent::use_bridge;
 use yew_router::prelude::*;
 
-use crate::agents::{UserAgent, UserInput};
-use crate::shared::Auth;
-use crate::Route;
+use agents::{Auth, AuthAgent, UserInput};
+use shared::Route;
 
 #[function_component(Profile)]
 pub fn profile() -> Html {
     let state = use_state(|| false);
-    let bridge = use_bridge::<UserAgent, _>(|_| ());
+    let bridge = use_bridge::<AuthAgent, _>(|_| ());
 
     let onclick = {
         let cloned = state.clone();

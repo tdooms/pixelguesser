@@ -2,11 +2,10 @@ use yew::prelude::*;
 
 use cobul::props::{Color, HeroSize};
 use cobul::*;
-use sessions::Session;
 
 use super::Ranking;
-use crate::Route;
-use api::FullQuiz;
+use api::{FullQuiz, Session};
+use shared::Route;
 use std::rc::Rc;
 use yew_router::prelude::*;
 

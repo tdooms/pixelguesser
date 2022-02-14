@@ -1,11 +1,11 @@
-use crate::Auth;
+use agents::Auth;
 use api::Creator;
 use cobul::props::{Color, ImageSize};
 use cobul::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::shared::Route;
+use shared::Route;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
