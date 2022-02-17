@@ -1,10 +1,12 @@
-use agents::{AuthAgent, ErrorAgent};
-use api::DraftQuiz;
 use cobul::props::Color;
 use cobul::*;
-use shared::Error;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_agent::use_bridge;
+
+use agents::{AuthAgent, ErrorAgent};
+use api::DraftQuiz;
+use shared::Error;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -17,6 +19,7 @@ pub fn quiz_form(props: &Props) -> Html {
     const TITLE_DEFAULT: &str = "Cities";
     const EXPLANATION_DEFAULT: &str = "Guess quickly";
     const DESCRIPTION_DEFAULT: &str = "The best quiz";
+    const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
 
     let Props { form, editing } = &props;
     let DraftQuiz { title, explanation, public, description, image, .. } = &form.inner;
@@ -27,15 +30,21 @@ pub fn quiz_form(props: &Props) -> Html {
     let filename = image.as_ref().map(api::Image::name);
     let fullwidth = filename.as_ref().is_some();
 
-    let onupload = form.onchange(move |x, f: Vec<web_sys::File>| match f.len() {
-        1 => x.image = api::Image::from_local(&f[0]),
-        _ => bridge.send(Error::MultipleFiles),
+    let onuploaded = form.onfield(|x| &mut x.image);
+
+    let onupload = Callback::from(move |files: Vec<web_sys::File>| {
+        let callback = onuploaded.clone();
+        match files.len() {
+            1 => spawn_local(async move {
+                let image = api::Image::from_local(files[0].clone()).await;
+                callback.emit(Some(image))
+            }),
+            _ => bridge.send(Error::MultipleFiles),
+        }
     });
 
     let left = html! {<Title> {"Overview"} </Title>};
     let right = || html! {<Button color={Color::Danger} onclick={form.onreset()}> {"Delete Quiz"} </Button>};
-
-    let explanation_help = "Players will see this when they start the quiz.";
 
     html! {
         <>
@@ -49,7 +58,7 @@ pub fn quiz_form(props: &Props) -> Html {
             <Input oninput={form.onfield(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION_DEFAULT} />
         </SimpleField>
 
-        <SimpleField label="Explanation" help={explanation_help}>
+        <SimpleField label="Explanation" help={EXPLANATION_HELP}>
             <Input oninput={form.onfield(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION_DEFAULT}/>
         </SimpleField>
 

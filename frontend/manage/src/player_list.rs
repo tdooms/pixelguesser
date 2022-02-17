@@ -1,8 +1,8 @@
 use yew::prelude::*;
 
+use api::{Player, Session};
 use cobul::props::Size;
 use cobul::*;
-use sessions::{Player, Session};
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

@@ -11,7 +11,10 @@ use keys::IMAGE_PLACEHOLDER;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
-    pub quiz: Option<DraftQuiz>,
+    pub quiz: DraftQuiz,
+
+    #[prop_or_default]
+    pub editing: bool,
 
     pub onsubmit: Callback<DraftQuiz>,
     pub oncancel: Callback<()>,
@@ -20,8 +23,8 @@ pub struct Props {
 
 #[function_component(CreateQuiz)]
 pub fn quiz_form(props: &Props) -> Html {
-    let Props { onsubmit, oncancel, ondelete, quiz } = &props;
-    let state = use_state(move || quiz.clone().unwrap_or_default());
+    let Props { onsubmit, oncancel, ondelete, quiz, editing } = &props;
+    let state = use_state(move || quiz.clone());
 
     let DraftQuiz { title, public, description, image, .. } = (*state).clone();
     let image = image
@@ -52,7 +55,7 @@ pub fn quiz_form(props: &Props) -> Html {
         <Container>
             <Columns>
                 <Column>
-                    <QuizForm form={form} editing={quiz.is_some()}/>
+                    <QuizForm {form} editing={*editing}/>
                 </Column>
                 <Column size={ColumnSize::Is1} />
                 <Column size={ColumnSize::Is4}>

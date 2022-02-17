@@ -9,13 +9,13 @@ pub struct Props {
     pub quiz: DraftQuiz,
     pub rounds: Vec<DraftRound>,
 
-    pub onfinish: Callback<()>,
+    pub ondone: Callback<()>,
     pub onback: Callback<()>,
 }
 
 #[function_component(Summary)]
 pub fn summary(props: &Props) -> Html {
-    let Props { quiz, rounds, onfinish, onback } = &props;
+    let Props { quiz, rounds, ondone: onfinish, onback } = &props;
 
     let round_mapper = |round: &DraftRound| {
         html! {

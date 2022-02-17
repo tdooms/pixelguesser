@@ -13,12 +13,12 @@ use photon_rs::PhotonImage;
 pub struct Props {
     pub code: String,
     pub session: Rc<Session>,
-    pub quiz: Rc<FullQuiz>,
+    pub full: Rc<FullQuiz>,
 }
 
 #[function_component(Lobby)]
 pub fn lobby(props: &Props) -> Html {
-    let Props { session, code, quiz } = &props;
+    let Props { session, code, full } = &props;
     let url = format!("{}/manage/{}", SELF_ENDPOINT, code);
 
     let generate = || {
@@ -45,8 +45,8 @@ pub fn lobby(props: &Props) -> Html {
     html! {
         <>
             <Hero>
-                <Title size={HeaderSize::Is1}> {quiz.title.clone()} </Title>
-                <Subtitle size={HeaderSize::Is4}> {quiz.explanation.clone()} </Subtitle>
+                <Title size={HeaderSize::Is1}> {full.quiz.title.clone()} </Title>
+                <Subtitle size={HeaderSize::Is4}> {full.quiz.explanation.clone()} </Subtitle>
             </Hero>
 
             <Hero color={Color::Primary} size={HeroSize::Small}>

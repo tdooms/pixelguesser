@@ -9,8 +9,14 @@ pub enum Error {
     Decode(#[from] DecodeError),
 
     #[error("Encode error {0}")]
-    Encode(#[from] cynic::serde_json::Error),
+    Serde(#[from] cynic::serde_json::Error),
 
     #[error("Session error {0}")]
     Session(#[from] sessions::Error),
+
+    #[error("Connection closed")]
+    WsClosed,
+
+    #[error("Connection error")]
+    WsError,
 }

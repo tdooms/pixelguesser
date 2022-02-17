@@ -2,9 +2,9 @@ use std::rc::Rc;
 use strum::IntoEnumIterator;
 use yew::prelude::*;
 
+use api::{Action, Session};
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
-use sessions::{Action, Session};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

@@ -1,5 +1,5 @@
-mod loader;
-mod overview;
+use std::rc::Rc;
+use std::str::FromStr;
 
 use cobul::props::Color;
 use cobul::{Loading, Notification};
@@ -8,12 +8,16 @@ use yew::prelude::*;
 use yew_agent::{Bridge, Bridged};
 use yew_router::prelude::*;
 
-use crate::agents::{ErrorAgent, UserAgent};
-use crate::components::Loader;
-use crate::pages::*;
-use crate::shared::{Auth, Error, Route};
-use api::string_to_code;
-use std::rc::Rc;
+use agents::{Auth, AuthAgent, ErrorAgent};
+use api::Code;
+use create::Create;
+use shared::{Error, Route};
+
+use crate::loader::Loader;
+use crate::overview::Overview;
+
+mod loader;
+mod overview;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
@@ -39,7 +43,7 @@ impl Component for Model {
 
     fn create(ctx: &Context<Self>) -> Self {
         Self {
-            _user_agent: UserAgent::bridge(ctx.link().callback(Msg::Auth)),
+            _user_agent: AuthAgent::bridge(ctx.link().callback(Msg::Auth)),
             _error_agent: ErrorAgent::bridge(ctx.link().callback(Msg::Error)),
             auth: Auth::Loading,
             error: None,
@@ -51,7 +55,7 @@ impl Component for Model {
             Msg::Auth(auth) => self.auth = auth,
             Msg::Error(error) => {
                 match &*error {
-                    Error::Session(_) => ctx.link().history().unwrap().push(Route::Overview),
+                    Error::Api(_) => ctx.link().history().unwrap().push(Route::Overview),
                     _ => {}
                 }
                 self.error = Some(error);
@@ -97,11 +101,11 @@ fn switch(routes: &Route) -> Html {
             html! { <Loader quiz_id={*quiz_id}/> }
         }
         Route::Manage { code } => {
-            let (session_id, quiz_id) = string_to_code(code).unwrap();
-            html! { <Loader quiz_id={quiz_id} session_id={session_id}/> }
+            let Code { session_id, quiz_id } = Code::from_str(code).unwrap();
+            html! { <Loader {quiz_id} {session_id}/> }
         }
         Route::Create => html! { <Create/> },
-        Route::Update { quiz_id } => html! { <Create quiz_id={*quiz_id}/> },
+        Route::Update { quiz_id } => html! { <Create id={*quiz_id}/> },
         Route::Test => html! { <> {"test"} </> },
         Route::Overview => html! { <Overview/> },
         Route::NotFound => html! { <Overview/> },

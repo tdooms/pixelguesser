@@ -24,7 +24,8 @@ pub enum Msg {
     UploadImage(Vec<web_sys::File>),
     RemoveImage,
 
-    UploadedImage(Image),
+    UploadedImage(Image, usize),
+    Save,
 
     LongTimer,
     ShortTimer,
@@ -98,14 +99,15 @@ impl Component for CreateRounds {
                 self.local[self.current].image = None;
                 true
             }
-            Msg::UploadedImage(image) => {
-                // TODO: If self.current changes during the async fn, this will be wrong
-                self.local[self.current].image = Some(image);
+            Msg::UploadedImage(image, index) => {
+                self.local[index].image = Some(image);
                 true
             }
             Msg::UploadImage(files) if files.len() == 1 => {
-                ctx.link()
-                    .send_future(api::Image::from_local(files[0].clone()).map(Msg::UploadedImage));
+                let fut = api::Image::from_local(files[0].clone());
+                let current = self.current;
+                let mapper = move |image| Msg::UploadedImage(image, current);
+                ctx.link().send_future(fut.map(mapper));
                 false
             }
             Msg::UploadImage(_files) => {
@@ -129,6 +131,11 @@ impl Component for CreateRounds {
                 self.timer = Timer::None;
                 false
             }
+            Msg::Save if self.changes > 0 => {
+                ctx.props().onsave.emit(self.local.clone());
+                false
+            }
+            Msg::Save => false,
         };
 
         if let (true, Timer::Long(_) | Timer::None) = (res, &self.timer) {
@@ -142,19 +149,6 @@ impl Component for CreateRounds {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // Also save stuff when changes are made
-        let ondone = {
-            let changes = self.changes;
-            let onsave = ctx.props().onsave.clone();
-            let rounds = self.local.clone();
-
-            ctx.props().ondone.reform(move |_| {
-                if changes > 0 {
-                    onsave.emit(rounds.clone())
-                }
-            })
-        };
-
         let round = &self.local[self.current];
 
         let left = {
@@ -185,6 +179,7 @@ impl Component for CreateRounds {
         let right = {
             let onback = ctx.props().onback.clone();
             let onchange = ctx.link().callback(Msg::UpdateRound);
+            let ondone = ctx.link().callback(|_| Msg::Save);
             let round: RoundInfo = round.into();
 
             let footer = html! {
@@ -192,7 +187,7 @@ impl Component for CreateRounds {
                     <Button fullwidth=true color={Color::Primary} onclick={ondone} light=true>
                         <Icon icon={Icons::ArrowRight}/> <span> {"Overview"} </span>
                     </Button>
-                    <Button  fullwidth=true color={Color::Info} outlined=true onclick={onback}>
+                    <Button fullwidth=true color={Color::Info} outlined=true onclick={onback}>
                         <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Quiz"} </span>
                     </Button>
                 </Buttons>

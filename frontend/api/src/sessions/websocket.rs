@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use cynic::serde_json;
 use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
@@ -9,9 +10,9 @@ use serde::Serialize;
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
 
-use crate::Error;
-use cynic::serde_json;
 use sessions::{Request, Response};
+
+use crate::Error;
 
 pub struct WebsocketTask {
     responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
@@ -30,30 +31,30 @@ impl WebsocketTask {
 
     fn handle(
         result: Result<Message, WebSocketError>,
-        callback: &Callback<Result<Response, sessions::Error>>,
-        onerror: &Callback<WebSocketError>,
+        callback: &Callback<Result<Response, Error>>,
+        onerror: &Callback<Error>,
     ) {
         match result {
             Ok(Message::Text(m)) => match serde_json::from_str(&m) {
                 Ok(response) => {
                     log::debug!("ws response: {:?}", response);
-                    callback.emit(response)
+                    callback.emit(Ok(response))
                 }
-                Err(err) => log::error!("deserialize error: {:?}", err),
+                Err(err) => callback.emit(Err(Error::Serde(err))),
             },
             Ok(Message::Bytes(_)) => {
                 log::warn!("deserializing bytes over ws not supported")
             }
-            Err(err) => {
-                onerror.emit(err);
+            Err(Web) => {
+                onerror.emit(Error::WsError);
             }
         }
     }
 
     pub fn create(
         url: impl AsRef<str>,
-        callback: Callback<Result<Response, sessions::Error>>,
-        onerror: Callback<WebSocketError>,
+        callback: Callback<Result<Response, Error>>,
+        onerror: Callback<Error>,
     ) -> Self {
         log::debug!("connecting to {}", url.as_ref());
         let ws = WebSocket::open(url.as_ref()).unwrap();
@@ -77,7 +78,7 @@ impl WebsocketTask {
             } {
                 Self::handle(m, &callback, &onerror)
             }
-            log::debug!("should be dropped (6)")
+            log::debug!("should be dropped (6)");
         });
 
         Self { responder, cancel: cancel_send }

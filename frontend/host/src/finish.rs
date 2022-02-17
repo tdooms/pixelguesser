@@ -12,12 +12,12 @@ use yew_router::prelude::*;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub session: Rc<Session>,
-    pub quiz: Rc<FullQuiz>,
+    pub full: Rc<FullQuiz>,
 }
 
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
-    let Props { session, quiz } = &props;
+    let Props { session, full } = &props;
 
     let onleave = {
         let history = use_history().unwrap().clone();
@@ -27,7 +27,7 @@ pub fn finish(props: &Props) -> Html {
     html! {
         <>
             <Hero color={Color::Primary}>
-                <Title> {quiz.title.clone()} </Title>
+                <Title> {full.quiz.title.clone()} </Title>
                 <Subtitle> {"finished"} </Subtitle>
             </Hero>
 

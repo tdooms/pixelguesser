@@ -7,9 +7,9 @@ use rand::Rng;
 use rocket::data::ToByteUnit;
 use rocket::fs::{FileServer, Options};
 use rocket::http::Status;
-use rocket::response::{Debug, Responder};
+use rocket::response::Responder;
 use rocket::{response, Config, Data, Request, State};
-use rocket_cors::{Cors, CorsOptions};
+use rocket_cors::CorsOptions;
 
 pub struct Path(String);
 

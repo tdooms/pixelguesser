@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 yew-router = "0.16"
+yew = "0.19"
 thiserror = "1.0"
 
 api = { path = "../api" }

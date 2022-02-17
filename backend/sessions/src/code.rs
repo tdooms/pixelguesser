@@ -4,6 +4,7 @@ use std::str::FromStr;
 // !! MUST be sorted by ascii values
 static CHARS: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Code {
     pub session_id: u64,
     pub quiz_id: u64,

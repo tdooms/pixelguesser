@@ -16,7 +16,7 @@ use gloo::timers::callback::Timeout;
 pub struct Props {
     pub index: usize,
 
-    pub quiz: Rc<FullQuiz>,
+    pub full: Rc<FullQuiz>,
     pub session: Rc<Session>,
 
     pub paused: bool,
@@ -81,13 +81,13 @@ impl Component for Play {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let Props { index, quiz, session, paused, revealing } = ctx.props().clone();
+        let Props { index, full, session, paused, revealing } = ctx.props().clone();
         let onrevealed = ctx.link().callback(|_| Msg::Revealed);
-        let url = quiz.rounds[index].image.clone();
+        let url = full.rounds[index].image.clone();
 
         match self.stage {
             Stage::Info => html! {
-                <Info {index} rounds={quiz.rounds.len()} round={quiz.rounds[index].clone()}/>
+                <Info {index} rounds={full.rounds.len()} round={full.rounds[index].clone()}/>
             },
             Stage::Scores => html! {
                 <Ranking {session} />

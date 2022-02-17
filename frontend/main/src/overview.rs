@@ -4,11 +4,11 @@ use futures::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::{History, RouterScopeExt};
 
-use crate::components::{MainNavbar, QuizCard};
-use crate::shared::Error;
 use crate::{Auth, Route};
 use api::{quizzes, Quiz};
+use components::{MainNavbar, QuizCard};
 use keys::{IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
+use shared::Error;
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,
@@ -16,7 +16,7 @@ pub struct Overview {
 
 #[derive(Debug)]
 pub enum Msg {
-    Quizzes(Result<Vec<Quiz>, Error>),
+    Quizzes(Result<Vec<Quiz>, api::Error>),
 }
 
 impl Component for Overview {
@@ -26,7 +26,7 @@ impl Component for Overview {
     fn create(ctx: &Context<Self>) -> Self {
         let (auth, _) = ctx.link().context::<Auth>(Callback::noop()).unwrap();
 
-        ctx.link().send_future(quizzes(auth).map(Msg::Quizzes));
+        ctx.link().send_future(quizzes(auth.into()).map(Msg::Quizzes));
         Self { quizzes: None }
     }
 
