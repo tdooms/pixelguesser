@@ -3,7 +3,7 @@ use std::rc::Rc;
 use cobul::Loading;
 use futures::FutureExt;
 use yew::prelude::*;
-use yew::prelude::*;
+
 use yew_agent::{Dispatched, Dispatcher};
 use yew_router::prelude::{History, RouterScopeExt};
 
@@ -11,7 +11,7 @@ use host::Host;
 use manage::Manage;
 
 use agents::{Auth, ErrorAgent};
-use api::{Action, Code, FullQuiz, Request, Response, Session, WebsocketTask};
+use api::{Action, FullQuiz, Request, Response, Session, WebsocketTask};
 use keys::SESSION_ENDPOINT;
 use shared::{Error, Route};
 
@@ -69,7 +69,7 @@ impl Component for Loader {
             Msg::Action(action) => {
                 self.ws.send(&Request::Update(action, self.full.as_ref().unwrap().rounds.len()))
             }
-            Msg::Ws(Ok(Response { id, managed, session })) => {
+            Msg::Ws(Ok(Response { id, managed: _, session })) => {
                 // TODO: check if session with other id exists
                 self.session = Some((id, Rc::new(session)));
             }

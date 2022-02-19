@@ -4,7 +4,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_agent::use_bridge;
 
-use agents::{AuthAgent, ErrorAgent};
+use agents::{ErrorAgent};
 use api::DraftQuiz;
 use shared::Error;
 
@@ -22,7 +22,7 @@ pub fn quiz_form(props: &Props) -> Html {
     const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
 
     let Props { form, editing } = &props;
-    let DraftQuiz { title, explanation, public, description, image, .. } = &form.inner;
+    let DraftQuiz { title, explanation, public: _, description, image, .. } = &form.inner;
 
     let bridge = use_bridge::<ErrorAgent, _>(|_| ());
 

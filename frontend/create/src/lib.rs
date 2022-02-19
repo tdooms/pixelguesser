@@ -151,7 +151,7 @@ use cobul::Loading;
 use futures::FutureExt;
 use shared::Route;
 use utils::use_default_async_state;
-use wasm_bindgen_futures::spawn_local;
+
 use yew::prelude::*;
 use yew_agent::use_bridge;
 use yew_router::history::History;
@@ -171,7 +171,7 @@ pub fn create(props: &Props) -> Html {
 
     let state = use_default_async_state(State::new(props.id, user, onerror).map(|x| Some(x)));
 
-    let stage = state.as_ref().map(State::stage);
+    let _stage = state.as_ref().map(State::stage);
 
     let show_state = |state: &State| match state.stage() {
         Stage::Quiz => {

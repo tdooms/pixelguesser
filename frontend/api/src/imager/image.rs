@@ -5,7 +5,7 @@ use derive_more::Display;
 use gloo::file::futures::read_as_data_url;
 use keys::IMAGE_ENDPOINT;
 use reqwasm::http::Request;
-use serde::de::{DeserializeOwned, Visitor};
+use serde::de::{Visitor};
 use serde::{Deserialize, Serialize};
 use std::fmt::Formatter;
 

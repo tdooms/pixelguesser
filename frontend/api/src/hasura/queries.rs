@@ -1,60 +1,67 @@
-use crate::error::Error;
-use crate::{DraftQuiz, DraftRound, FullQuiz, Quiz, User};
-use cynic::QueryFragment;
-use cynic::{serde_json, MutationBuilder, QueryBuilder};
-use keys::GRAPHQL_ENDPOINT;
+use cynic::{serde_json, GraphQlResponse, MutationBuilder, QueryBuilder};
 use reqwasm::http::{Method, Request};
+use std::future::Future;
+use std::pin::Pin;
 
-async fn base<'a, Req: 'a + QueryBuilder<'a>, Res>(
+use keys::GRAPHQL_ENDPOINT;
+
+use crate::error::Error;
+use crate::hasura::schema::Quizzes;
+use crate::{DraftQuiz, DraftRound, FullQuiz, Quiz, User};
+
+fn base<'a, Req: 'a + QueryBuilder<'a>>(
     args: Req::Arguments,
     user: Option<User>,
-) -> Result<(), Error> {
-    // Serialize the request into graphql json
-    let operation = Req::build(args);
-    let body = serde_json::to_string(&operation)?;
+) -> Pin<Box<dyn Future<Output = Result<Req::ResponseData, Error>> + 'a>> {
+    let fut = async move {
+        // Serialize the request into graphql json
+        let operation = Req::build(args);
+        let body = serde_json::to_string(&operation)?;
 
-    // Start building the request with the correct headers
-    let builder = Request::new(GRAPHQL_ENDPOINT)
-        .method(Method::POST)
-        .header("content-type", "application/json");
+        // Start building the request with the correct headers
+        let builder = Request::new(GRAPHQL_ENDPOINT)
+            .method(Method::POST)
+            .header("content-type", "application/json");
 
-    // Add authentication when available
-    let builder = match &user {
-        Some(user) => builder.header("authorization", &user.token),
-        None => builder,
+        // Add authentication when available
+        let builder = match &user {
+            Some(user) => builder.header("authorization", &user.token),
+            None => builder,
+        };
+
+        // send request, await response and decode
+        let response = builder.body(body).send().await?;
+        operation.decode_response(response.json().await?)?.data.ok_or(Error::Empty)
     };
 
-    // send request, await response and decode
-    let response = builder.body(body).send().await?;
-    let result = operation.decode_response(response.json().await?)?;
-
-    Ok(())
+    Box::pin(fut)
 }
 
 pub async fn quizzes(user: Option<User>) -> Result<Vec<Quiz>, Error> {
+    // Ok(base::<Quizzes>((), user).await?.quizzes)
+    Err(Error::Empty)
+}
+
+pub async fn create_quiz(_user: Option<User>, _quiz: DraftQuiz) -> Result<Quiz, Error> {
     todo!()
 }
 
-pub async fn create_quiz(user: Option<User>, quiz: DraftQuiz) -> Result<Quiz, Error> {
+pub async fn update_quiz(_user: Option<User>, _id: u64, _quiz: DraftQuiz) -> Result<Quiz, Error> {
     todo!()
 }
 
-pub async fn update_quiz(user: Option<User>, id: u64, quiz: DraftQuiz) -> Result<Quiz, Error> {
+pub async fn delete_quiz(_user: Option<User>, _id: u64) -> Result<(), Error> {
     todo!()
 }
 
-pub async fn delete_quiz(user: Option<User>, id: u64) -> Result<(), Error> {
-    todo!()
-}
-
-pub async fn full_quiz(user: Option<User>, id: u64) -> Result<FullQuiz, Error> {
+pub async fn full_quiz(_user: Option<User>, _id: u64) -> Result<FullQuiz, Error> {
     todo!()
 }
 
 pub async fn save_rounds(
-    user: Option<User>,
-    id: u64,
-    rounds: Vec<DraftRound>,
+    _user: Option<User>,
+    _id: u64,
+    _rounds: Vec<DraftRound>,
 ) -> Result<(), Error> {
     todo!()
 }

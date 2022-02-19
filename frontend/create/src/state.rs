@@ -1,5 +1,5 @@
 use std::borrow::{Borrow, BorrowMut};
-use std::cell::{Ref, RefCell};
+use std::cell::{RefCell};
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -101,7 +101,7 @@ impl State {
     }
 
     pub fn onstage(&self, stage: Stage) -> Callback<()> {
-        let mut cloned = Rc::clone(&self.inner);
+        let cloned = Rc::clone(&self.inner);
         Callback::from(move |_| (*cloned).borrow_mut().stage = stage)
     }
 
@@ -122,8 +122,8 @@ impl State {
     }
 
     pub fn ondelete(&self) -> Callback<()> {
-        let mut cloned = Rc::clone(&self.inner);
-        Callback::from(move |rounds| {
+        let cloned = Rc::clone(&self.inner);
+        Callback::from(move |_rounds| {
             let inner = cloned.clone();
             spawn_local(async move { inner.deref().borrow_mut().delete().await })
         })

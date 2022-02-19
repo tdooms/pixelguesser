@@ -1,7 +1,7 @@
 use super::schema;
 use crate::hasura::creator::Creator;
-use crate::imager::{Image, Resolution};
-use crate::{DraftRound, Round};
+use crate::imager::Image;
+
 use chrono::{DateTime, Utc};
 use cynic::{FragmentArguments, QueryFragment};
 use serde::{Deserialize, Serialize};

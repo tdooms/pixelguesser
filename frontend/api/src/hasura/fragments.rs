@@ -1,7 +1,7 @@
 use super::schema;
-use crate::Image;
+
 use chrono::{DateTime, Utc};
-use cynic::{impl_scalar, serde_json, DecodeError, FragmentArguments, MutationBuilder, Scalar};
+use cynic::{impl_scalar};
 
 use crate::hasura::quiz::*;
 

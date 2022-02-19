@@ -8,7 +8,7 @@ use crate::{Auth, Route};
 use api::{quizzes, Quiz};
 use components::{MainNavbar, QuizCard};
 use keys::{IMAGE_ENDPOINT, IMAGE_PLACEHOLDER};
-use shared::Error;
+
 
 pub struct Overview {
     quizzes: Option<Vec<Quiz>>,

@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use api::{Action, FullQuiz, Session, Stage};
-use cobul::props::Color;
+use cobul::props::{Alignment, Color};
 use cobul::*;
 use shared::Route;
 use yew::prelude::*;
@@ -87,9 +87,11 @@ pub fn manage(props: &Props) -> Html {
         Stage::Finished => html! {
             <>
             <Rating {full} />
-            <Button color={Color::Primary} light=true onclick={onleave}>
-                <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
-            </Button>
+            <Buttons alignment={Alignment::Centered}>
+                <Button color={Color::Primary} light=true onclick={onleave}>
+                    <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
+                </Button>
+            </Buttons>
             </>
         },
     };

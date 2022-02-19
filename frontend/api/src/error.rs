@@ -19,4 +19,7 @@ pub enum Error {
 
     #[error("Connection error")]
     WsError,
+
+    #[error("Empty Graphql response")]
+    Empty,
 }
