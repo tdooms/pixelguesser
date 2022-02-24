@@ -599,13 +599,13 @@ input quizzes_insert_input {
   created_at: timestamptz
   creator: users_obj_rel_insert_input
   creator_id: String
-  description: String
-  explanation: String
+  description: String!
+  explanation: String!
   id: bigint
   image: String
-  public: Boolean
+  public: Boolean!
   rounds: rounds_arr_rel_insert_input
-  title: String
+  title: String!
 }
 
 """aggregate max on columns"""

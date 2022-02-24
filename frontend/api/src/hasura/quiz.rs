@@ -3,7 +3,7 @@ use crate::hasura::creator::Creator;
 use crate::imager::Image;
 
 use chrono::{DateTime, Utc};
-use cynic::{FragmentArguments, QueryFragment};
+use cynic::{FragmentArguments, InputObject, QueryFragment};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -22,7 +22,8 @@ pub struct Quiz {
     pub creator: Creator,
 }
 
-#[derive(FragmentArguments, Validate, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(QueryFragment, Validate, Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cynic(schema_path = "schema.gql", query_module = "schema", graphql_type = "quizzes")]
 pub struct DraftQuiz {
     pub public: bool,
 

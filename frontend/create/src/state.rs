@@ -1,5 +1,5 @@
 use std::borrow::{Borrow, BorrowMut};
-use std::cell::{RefCell};
+use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -55,7 +55,7 @@ impl Inner {
         };
 
         if let Some(new) = new.emit(&callback) {
-            self.full.quiz = new.into();
+            self.full.quiz = new.unwrap().into();
         }
     }
 

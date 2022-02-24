@@ -1,7 +1,7 @@
 use super::schema;
 
 use chrono::{DateTime, Utc};
-use cynic::{impl_scalar};
+use cynic::impl_scalar;
 
 use crate::hasura::quiz::*;
 
@@ -16,19 +16,24 @@ impl_scalar!(DraftQuiz, schema::QuizzesSetInput);
     graphql_type = "quizzes_pk_columns_input",
     rename_all = "snake_case"
 )]
-struct QuizzesPkColumnsInput {
-    id: u64,
+pub struct QuizzesPkColumnsInput {
+    pub id: u64,
 }
 
 #[derive(cynic::FragmentArguments, Debug)]
-struct UpdateQuizArgs {
-    quiz_id: QuizzesPkColumnsInput,
-    draft: Option<DraftQuiz>,
+pub struct UpdateQuizArgs {
+    pub quiz_id: QuizzesPkColumnsInput,
+    pub draft: Option<DraftQuiz>, // TODO: remove option
 }
 
 #[derive(cynic::FragmentArguments, Debug)]
-struct DeleteQuizArgs {
-    quiz_id: u64,
+pub struct DeleteQuizArgs {
+    pub quiz_id: u64,
+}
+
+#[derive(cynic::FragmentArguments, Debug)]
+pub struct InsertQuizzesOneArgs {
+    pub draft: DraftQuiz,
 }
 
 #[derive(cynic::QueryFragment, serde::Deserialize, Debug, Clone, PartialEq)]
@@ -39,8 +44,8 @@ pub struct QuizId {
 
 #[derive(cynic::QueryFragment, Debug)]
 #[cynic(schema_path = "schema.gql", schema_module = "schema", graphql_type = "query_root")]
-struct Quizzes {
-    quizzes: Vec<Quiz>,
+pub struct Quizzes {
+    pub quizzes: Vec<Quiz>,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
@@ -50,9 +55,9 @@ struct Quizzes {
     graphql_type = "mutation_root",
     argument_struct = "DeleteQuizArgs"
 )]
-struct DeleteQuizzesByPk {
+pub struct DeleteQuizzesByPk {
     #[arguments(id = & args.quiz_id)]
-    delete_quizzes_by_pk: Option<QuizId>,
+    pub delete_quizzes_by_pk: Option<QuizId>,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
@@ -62,7 +67,19 @@ struct DeleteQuizzesByPk {
     graphql_type = "mutation_root",
     argument_struct = "UpdateQuizArgs"
 )]
-struct UpdateQuizzesByPk {
+pub struct UpdateQuizzesByPk {
     #[arguments(pk_columns = &args.quiz_id, _set = &args.draft)]
-    update_quizzes_by_pk: Option<QuizId>,
+    pub update_quizzes_by_pk: Option<Quiz>,
 }
+
+// #[derive(cynic::QueryFragment, Debug)]
+// #[cynic(
+//     schema_path = "schema.gql",
+//     schema_module = "schema",
+//     graphql_type = "mutation_root",
+//     argument_struct = "InsertQuizzesOneArgs"
+// )]
+// pub struct InsertQuizzesOne {
+//     #[arguments(object = &args.draft)]
+//     pub insert_quizzes_one: Option<QuizId>,
+// }
