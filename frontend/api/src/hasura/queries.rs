@@ -1,4 +1,4 @@
-use cynic::{serde_json, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};
+use cynic::{serde_json, MutationBuilder, Operation, QueryBuilder};
 use reqwasm::http::{Method, Request};
 use std::future::Future;
 use std::pin::Pin;
@@ -7,7 +7,7 @@ use keys::GRAPHQL_ENDPOINT;
 
 use crate::error::Error;
 use crate::{
-    DraftQuiz, DraftRound, FullQuiz, InsertQuizzesOneArgs, Quiz, QuizId, Quizzes,
+    DraftQuiz, DraftRound, FullQuiz, InsertQuizzesOne, InsertQuizzesOneArgs, Quiz, Quizzes,
     QuizzesPkColumnsInput, UpdateQuizArgs, UpdateQuizzesByPk, User,
 };
 
@@ -52,8 +52,10 @@ pub async fn quizzes(user: Option<User>) -> Result<Vec<Quiz>, Error> {
 }
 
 pub async fn create_quiz(user: Option<User>, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
-    // Ok(mutation::<InsertQuizzesOne>(InsertQuizzesOneArgs { draft }, user).await?.insert_quizzes_one)
-    Err(Error::Empty)
+    Ok(mutation::<InsertQuizzesOne>(InsertQuizzesOneArgs { draft: draft.into() }, user)
+        .await?
+        .insert_quizzes_one)
+    // Err(Error::Empty)
 }
 
 pub async fn update_quiz(
@@ -61,7 +63,7 @@ pub async fn update_quiz(
     id: u64,
     draft: DraftQuiz,
 ) -> Result<Option<Quiz>, Error> {
-    let args = UpdateQuizArgs { quiz_id: QuizzesPkColumnsInput { id }, draft: Some(draft) };
+    let args = UpdateQuizArgs { quiz_id: QuizzesPkColumnsInput { id }, draft: Some(draft.into()) };
     Ok(mutation::<UpdateQuizzesByPk>(args, user).await?.update_quizzes_by_pk)
 }
 

@@ -7,7 +7,7 @@ use crate::hasura::quiz::*;
 
 impl_scalar!(u64, schema::Bigint);
 impl_scalar!(DateTime<Utc>, schema::Timestamptz);
-impl_scalar!(DraftQuiz, schema::QuizzesSetInput);
+impl_scalar!(GqlDraftQuiz, schema::QuizzesSetInput);
 
 #[derive(cynic::InputObject, Debug)]
 #[cynic(
@@ -23,7 +23,7 @@ pub struct QuizzesPkColumnsInput {
 #[derive(cynic::FragmentArguments, Debug)]
 pub struct UpdateQuizArgs {
     pub quiz_id: QuizzesPkColumnsInput,
-    pub draft: Option<DraftQuiz>, // TODO: remove option
+    pub draft: Option<GqlDraftQuiz>, // TODO: remove option
 }
 
 #[derive(cynic::FragmentArguments, Debug)]
@@ -33,11 +33,11 @@ pub struct DeleteQuizArgs {
 
 #[derive(cynic::FragmentArguments, Debug)]
 pub struct InsertQuizzesOneArgs {
-    pub draft: DraftQuiz,
+    pub draft: GqlDraftQuiz,
 }
 
 #[derive(cynic::QueryFragment, serde::Deserialize, Debug, Clone, PartialEq)]
-#[cynic(schema_path = "schema.gql", query_module = "schema", graphql_type = "Quizzes")]
+#[cynic(schema_path = "schema.gql", query_module = "schema", graphql_type = "quizzes")]
 pub struct QuizId {
     pub id: u64,
 }
@@ -57,7 +57,7 @@ pub struct Quizzes {
 )]
 pub struct DeleteQuizzesByPk {
     #[arguments(id = & args.quiz_id)]
-    pub delete_quizzes_by_pk: Option<QuizId>,
+    pub delete_quizzes_by_pk: Option<Quiz>,
 }
 
 #[derive(cynic::QueryFragment, Debug)]
@@ -72,14 +72,14 @@ pub struct UpdateQuizzesByPk {
     pub update_quizzes_by_pk: Option<Quiz>,
 }
 
-// #[derive(cynic::QueryFragment, Debug)]
-// #[cynic(
-//     schema_path = "schema.gql",
-//     schema_module = "schema",
-//     graphql_type = "mutation_root",
-//     argument_struct = "InsertQuizzesOneArgs"
-// )]
-// pub struct InsertQuizzesOne {
-//     #[arguments(object = &args.draft)]
-//     pub insert_quizzes_one: Option<QuizId>,
-// }
+#[derive(cynic::QueryFragment, Debug)]
+#[cynic(
+    schema_path = "schema.gql",
+    schema_module = "schema",
+    graphql_type = "mutation_root",
+    argument_struct = "InsertQuizzesOneArgs"
+)]
+pub struct InsertQuizzesOne {
+    #[arguments(object = &args.draft)]
+    pub insert_quizzes_one: Option<Quiz>,
+}

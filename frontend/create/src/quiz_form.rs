@@ -1,10 +1,11 @@
 use cobul::props::Color;
 use cobul::*;
-use wasm_bindgen_futures::spawn_local;
+use futures::FutureExt;
+use utils::use_async_callback;
 use yew::prelude::*;
 use yew_agent::use_bridge;
 
-use agents::{ErrorAgent};
+use agents::ErrorAgent;
 use api::DraftQuiz;
 use shared::Error;
 
@@ -35,10 +36,14 @@ pub fn quiz_form(props: &Props) -> Html {
     let onupload = Callback::from(move |files: Vec<web_sys::File>| {
         let callback = onuploaded.clone();
         match files.len() {
-            1 => spawn_local(async move {
-                let image = api::Image::from_local(files[0].clone()).await;
-                callback.emit(Some(image))
-            }),
+            // 1 => spawn_local(async move {
+            //     let image = api::Image::from_local(files[0].clone()).await;
+            //     callback.emit(Some(image))
+            // }),
+            1 => use_async_callback(
+                api::Image::from_local(files[0].clone()).map(Option::Some),
+                callback,
+            ),
             _ => bridge.send(Error::MultipleFiles),
         }
     });
@@ -67,7 +72,6 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <Buttons>
-
             <Button color={Color::Info} outlined=true onclick={form.oncancel()}>
                 <Icon icon={Icons::ArrowLeft}/> <span> {"Back"} </span>
             </Button>

@@ -1,9 +1,7 @@
-use std::borrow::{Borrow, BorrowMut};
 use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::Rc;
 
-use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
 
 use api::{
@@ -11,6 +9,7 @@ use api::{
     FullDraftQuiz, User,
 };
 use shared::{EmitError, Error};
+use utils::use_async_callback;
 
 #[derive(Clone, Copy)]
 pub enum Stage {
@@ -109,7 +108,8 @@ impl State {
         let cloned = Rc::clone(&self.inner);
         Callback::from(move |quiz| {
             let inner = cloned.clone();
-            spawn_local(async move { inner.deref().borrow_mut().set_quiz(quiz).await })
+            let fut = async move { inner.deref().borrow_mut().set_quiz(quiz).await };
+            use_async_callback(fut, Callback::noop())
         })
     }
 
@@ -117,7 +117,8 @@ impl State {
         let cloned = Rc::clone(&self.inner);
         Callback::from(move |rounds| {
             let inner = cloned.clone();
-            spawn_local(async move { inner.deref().borrow_mut().set_rounds(rounds).await })
+            let fut = async move { inner.deref().borrow_mut().set_rounds(rounds).await };
+            use_async_callback(fut, Callback::noop())
         })
     }
 
@@ -125,7 +126,8 @@ impl State {
         let cloned = Rc::clone(&self.inner);
         Callback::from(move |_rounds| {
             let inner = cloned.clone();
-            spawn_local(async move { inner.deref().borrow_mut().delete().await })
+            let fut = async move { inner.deref().borrow_mut().delete().await };
+            use_async_callback(fut, Callback::noop())
         })
     }
 }

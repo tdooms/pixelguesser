@@ -1,11 +1,8 @@
-
-
 use cynic::serde_json;
 use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
 use reqwasm::websocket::{Message, WebSocketError};
-
 
 use wasm_bindgen_futures::spawn_local;
 use yew::Callback;
@@ -45,7 +42,7 @@ impl WebsocketTask {
             Ok(Message::Bytes(_)) => {
                 log::warn!("deserializing bytes over ws not supported")
             }
-            Err(_Web) => {
+            Err(_web) => {
                 onerror.emit(Error::WsError);
             }
         }
@@ -67,7 +64,7 @@ impl WebsocketTask {
         let mut stream = stream.fuse();
 
         spawn_local(async move {
-            receiver.forward(sink).await;
+            receiver.forward(sink).await.unwrap();
             log::debug!("should be dropped (5)")
         });
 

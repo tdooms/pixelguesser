@@ -1,11 +1,11 @@
+use cynic::impl_scalar;
 use cynic::serde::de::Error;
 use cynic::serde::{Deserializer, Serializer};
-use cynic::{DecodeError, Scalar};
 use derive_more::Display;
 use gloo::file::futures::read_as_data_url;
 use keys::IMAGE_ENDPOINT;
 use reqwasm::http::Request;
-use serde::de::{Visitor};
+use serde::de::Visitor;
 use serde::{Deserialize, Serialize};
 use std::fmt::Formatter;
 
@@ -72,13 +72,7 @@ impl<'de> Visitor<'de> for StrVisitor {
     }
 }
 
-impl Scalar<String> for Image {
-    type Deserialize = Image;
-
-    fn from_deserialize(x: Self::Deserialize) -> Result<Self, DecodeError> {
-        Ok(x)
-    }
-}
+impl_scalar!(String, Image);
 
 impl Image {
     pub async fn from_local(file: web_sys::File) -> Self {

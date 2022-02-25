@@ -8,4 +8,4 @@ pub use cast::TypeRef;
 pub use pixelate::draw_pixelated;
 pub use resize::{Dimensions, Resizer};
 pub use timer::set_timer;
-pub use use_async::use_default_async_state;
+pub use use_async::*;
