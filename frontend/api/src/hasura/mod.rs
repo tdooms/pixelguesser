@@ -11,7 +11,3 @@ mod full;
 mod queries;
 mod quiz;
 mod rounds;
-
-mod schema {
-    cynic::use_schema!("schema.gql");
-}

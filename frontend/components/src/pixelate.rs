@@ -1,19 +1,19 @@
+use gloo::timers::callback::Timeout;
 use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
-use yew_agent::{Dispatched, Dispatcher};
 
-use agents::ErrorAgent;
-use gloo::timers::callback::Timeout;
+use api::IMAGE_ENDPOINT;
 use shared::{
-    Error, PIXELATE_PLAY_SPEED, PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
+    draw_pixelated, set_timer, EmitError, Error, Resizer, TypeRef, PIXELATE_PLAY_SPEED,
+    PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
 };
-use utils::{draw_pixelated, set_timer, Resizer, TypeRef};
 
 #[derive(Debug)]
 pub enum Msg {
     Loaded,
     Pixelate,
     Resize,
+    CouldNotLoad,
 }
 
 #[derive(Debug, Clone, Properties, PartialEq)]
@@ -31,7 +31,6 @@ pub struct Pixelate {
     _resizer: Resizer,
 
     timer: Option<Timeout>,
-    errors: Dispatcher<ErrorAgent>,
 
     canvas: TypeRef<HtmlCanvasElement>,
     image: TypeRef<HtmlImageElement>,
@@ -97,12 +96,12 @@ impl Component for Pixelate {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
+        log::info!("pixelate create");
         Self {
             _resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
             old: ctx.props().clone(),
             pixels: PIXELATE_START_PIXELS,
             timer: None,
-            errors: ErrorAgent::dispatcher(),
             canvas: Default::default(),
             image: Default::default(),
             offscreen: Default::default(),
@@ -111,31 +110,26 @@ impl Component for Pixelate {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let (errors, _) = ctx.link().context(Callback::noop()).unwrap();
+
         match msg {
             Msg::Loaded => {
                 // Initialize and draw each time at the start to avoid graphical glitches
-                if let Err(err) = self.initialize() {
-                    self.errors.send(err)
-                };
-                if let Err(err) = self.draw() {
-                    self.errors.send(err)
-                };
+                self.initialize().emit(&errors);
+                self.draw().emit(&errors);
 
                 // Start pixelating
                 ctx.link().send_message(Msg::Pixelate)
             }
             Msg::Pixelate => {
                 // Pixelate loop
-                if let Err(err) = self.pixelate(ctx) {
-                    self.errors.send(err)
-                }
+                self.pixelate(ctx).emit(&errors);
             }
             Msg::Resize => {
                 // Redraw on resize to reduce stutter
-                if let Err(err) = self.draw() {
-                    self.errors.send(err)
-                }
+                self.draw().emit(&errors);
             }
+            Msg::CouldNotLoad => errors.emit(Error::ImageCouldNotLoad),
         }
         false
     }
@@ -160,10 +154,11 @@ impl Component for Pixelate {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <>
-                <img src={ctx.props().url.clone()}
-                     style="display:none"
-                     onload={ctx.link().callback(|_| Msg::Loaded)}
-                     ref={self.image.clone()}/>
+                <img style="display:none"
+                    src={format!("{}/{}", IMAGE_ENDPOINT, ctx.props().url)}
+                    onload={ctx.link().callback(|_| Msg::Loaded)}
+                    onerror={ctx.link().callback(|_| Msg::CouldNotLoad)}
+                    ref={self.image.clone()} />
 
                 <canvas style="display:none" ref={self.offscreen.clone()}/>
 

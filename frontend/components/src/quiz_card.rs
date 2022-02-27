@@ -1,7 +1,7 @@
-use agents::Auth;
 use api::Creator;
 use cobul::props::{Color, ImageSize};
 use cobul::*;
+use shared::Auth;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -26,10 +26,13 @@ pub struct Props {
 #[function_component(QuizCard)]
 pub fn quiz_card(props: &Props) -> Html {
     let Props { id, image, title, description, creator, .. } = props;
-    let history = use_history().unwrap();
+    let navigator = use_navigator().unwrap();
 
     let onclick = match *id {
-        Some(quiz_id) => Callback::from(move |_| history.push(Route::Host { quiz_id })),
+        Some(quiz_id) => {
+            let cloned = navigator.clone();
+            Callback::from(move |_| cloned.push(Route::Host { quiz_id }))
+        }
         None => Callback::noop(),
     };
 
@@ -44,11 +47,9 @@ pub fn quiz_card(props: &Props) -> Html {
         </Button>
     };
 
-    let right = match (*id, use_context::<Auth>().unwrap()) {
-        (Some(quiz_id), Auth::User(user)) if user.sub == creator.id => {
-            let history = use_history().unwrap();
-            let onclick = Callback::from(move |_| history.push(Route::Update { quiz_id }));
-
+    let right = match (*id, use_context::<Auth>().unwrap().user()) {
+        (Some(quiz_id), Ok(user)) if user.sub == creator.id => {
+            let onclick = Callback::from(move |_| navigator.push(Route::Update { quiz_id }));
             html! { <Button {onclick} color={Color::White}> <Icon icon={Icons::EditRegular}/> </Button> }
         }
         _ => html! {},

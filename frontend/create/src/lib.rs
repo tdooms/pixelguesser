@@ -132,30 +132,25 @@
 //     }
 // }
 
-mod center_space;
-mod create_quiz;
-mod create_rounds;
 mod quiz_form;
+mod quiz_page;
+mod round_edit;
 mod round_form;
 mod round_list;
-mod state;
+mod round_page;
+mod round_preview;
 mod summary;
 
-use crate::create_quiz::CreateQuiz;
-use crate::create_rounds::CreateRounds;
-use crate::state::{Stage, State};
+use crate::quiz_page::QuizPage;
+use crate::round_edit::RoundEdit;
 use crate::summary::Summary;
 
-use agents::{Auth, ErrorAgent};
 use cobul::Loading;
 use futures::FutureExt;
-use shared::Route;
-use utils::use_default_async_state;
+use shared::{use_create_state, Auth, CreateStage, CreateState, Errors, Route};
 
 use yew::prelude::*;
-use yew_agent::use_bridge;
-use yew_router::history::History;
-use yew_router::hooks::use_history;
+use yew_router::hooks::use_navigator;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -163,43 +158,39 @@ pub struct Props {
 }
 
 #[function_component(Create)]
-pub fn create(props: &Props) -> Html {
-    let user = use_context::<Auth>().unwrap().into();
-    let bridge = use_bridge::<ErrorAgent, _>(|_| ());
+pub fn create(props: &Props) -> HtmlResult {
+    let user = use_context::<Auth>().unwrap().user();
+    let errors = use_context::<Errors>().unwrap();
+    let navigator = use_navigator().unwrap();
+    let state = use_create_state(user.ok(), props.id)?;
 
-    let onerror = Callback::from(move |error| bridge.send(error));
-
-    let state = use_default_async_state(State::new(props.id, user, onerror).map(|x| Some(x)));
-
-    let _stage = state.as_ref().map(State::stage);
-
-    let show_state = |state: &State| match state.stage() {
-        Stage::Quiz => {
+    let show_state = |state: &CreateState| match state.stage() {
+        CreateStage::Quiz => {
             let onsubmit = state.onsetquiz();
-            let oncancel = Callback::from(|_| use_history().unwrap().push(Route::Overview));
+            let oncancel = Callback::from(|_| navigator.push(Route::Overview));
             let ondelete = state.ondelete();
             let quiz = state.quiz();
 
             html! { <CreateQuiz {quiz} {onsubmit} {oncancel} {ondelete}/> }
         }
-        Stage::Rounds => {
+        CreateStage::Rounds => {
             let onsave = state.onsetrounds();
-            let ondone = state.onstage(Stage::Summary);
-            let onback = state.onstage(Stage::Quiz);
+            let ondone = state.onstage(CreateStage::Summary);
+            let onback = state.onstage(CreateStage::Quiz);
             let rounds = state.rounds();
 
             html! { <CreateRounds {rounds} {onsave} {ondone} {onback}/> }
         }
-        Stage::Summary => {
-            let ondone = Callback::from(|_| use_history().unwrap().push(Route::Overview));
-            let onback = state.onstage(Stage::Quiz);
+        CreateStage::Summary => {
+            let ondone = Callback::from(|_| navigator.push(Route::Overview));
+            let onback = state.onstage(CreateStage::Quiz);
             let (quiz, rounds) = (state.quiz(), state.rounds());
 
             html! { <Summary {quiz} {rounds} {ondone} {onback}/> }
         }
     };
 
-    match &*state {
+    match &state {
         None => html! { <Loading /> },
         Some(state) => show_state(state),
     }

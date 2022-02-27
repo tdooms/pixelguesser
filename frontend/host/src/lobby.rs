@@ -4,9 +4,8 @@ use qrcode::QrCode;
 use std::rc::Rc;
 use yew::prelude::*;
 
-use api::{FullQuiz, Session};
+use api::{FullQuiz, Session, SELF_ENDPOINT};
 use image::Rgba;
-use keys::SELF_ENDPOINT;
 use photon_rs::PhotonImage;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

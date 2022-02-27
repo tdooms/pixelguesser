@@ -1,0 +1,128 @@
+/*remove scrollbar*/
+:root {
+    scrollbar-width: none !important
+}
+
+html {
+    height: 100% !important;
+}
+
+body {
+    min-height: 100% !important;
+}
+
+main {
+    min-height: 100vh !important;
+}
+
+.is-blurred {
+    filter: blur(5px)
+}
+
+/*slider css*/
+.slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: hsl(217, 71%, 53%);
+    cursor: pointer;
+    border: 0
+}
+
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: hsl(217, 71%, 53%);
+    cursor: pointer;
+    border: 0
+}
+
+/*toggle css*/
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.toggle {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.toggle:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .toggle {
+    background-color: hsl(217, 71%, 53%);
+}
+
+input:focus + .toggle {
+    box-shadow: 0 0 1px hsl(217, 71%, 53%);
+}
+
+input:checked + .toggle:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.toggle {
+    border-radius: 34px;
+}
+
+.toggle:before {
+    border-radius: 50%;
+}
+
+/* Square top corners */
+.has-square-top {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+.has-no-pointer {
+    cursor: unset;
+}

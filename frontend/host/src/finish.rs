@@ -18,11 +18,9 @@ pub struct Props {
 #[function_component(Finish)]
 pub fn finish(props: &Props) -> Html {
     let Props { session, full } = &props;
+    let navigator = use_navigator().unwrap().clone();
 
-    let onleave = {
-        let history = use_history().unwrap().clone();
-        Callback::from(move |_| history.push(Route::Overview))
-    };
+    let onleave = { Callback::from(move |_| navigator.push(Route::Overview)) };
 
     html! {
         <>

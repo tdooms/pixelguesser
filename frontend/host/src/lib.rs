@@ -24,11 +24,13 @@ pub struct Props {
 
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
-    use_effect(move || {
-        window().unwrap().set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")));
-
-        || window().unwrap().set_onbeforeunload(None)
-    });
+    use_effect_with_deps(
+        move |_| {
+            window().unwrap().set_onbeforeunload(Some(&Function::new_with_args("", "return 'no'")));
+            || window().unwrap().set_onbeforeunload(None)
+        },
+        (),
+    );
 
     let Props { session_id, session, full } = props.clone();
 

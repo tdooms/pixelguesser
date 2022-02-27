@@ -1,7 +1,7 @@
 use std::marker::PhantomData;
 use std::ops::Deref;
 
-use shared::Error;
+use crate::Error;
 use wasm_bindgen::JsValue;
 use web_sys::Node;
 use yew::NodeRef;

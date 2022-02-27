@@ -6,19 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms"] }
-yew = "0.19"
-yew-agent = "0.1"
-yew-router = "0.16"
-log = "0.4"
-futures = "0.3"
-gloo = "*"
-agents = { path = "../agents" }
 api = { path = "../api" }
-keys = { path = "../keys" }
 components = { path = "../components" }
 shared = { path = "../shared" }
-utils = { path = "../utils" }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms"] }
+
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+
+gloo = "0.5"
+log = "0.4"
+futures = "0.3"
 validator = { version = "*", features = ["derive"] }
 web-sys = { version = "0.3", features = ["File"] }
 wasm-bindgen-futures = "0.4"

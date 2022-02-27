@@ -1,5 +1,4 @@
 [workspace]
-members = ["backend/sessions", "backend/imager", "backend/spar",
-    "frontend/agents", "frontend/components", "frontend/create",
-    "frontend/host", "frontend/api", "frontend/keys",
-    "frontend/main", "frontend/manage", "frontend/shared", "frontend/utils"]
+members = ["backend/sessions", "backend/imager", "frontend/components",
+    "frontend/create", "frontend/host", "frontend/api",
+    "frontend/main", "frontend/manage", "frontend/shared"]

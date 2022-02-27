@@ -1,85 +1,49 @@
-use super::schema;
+use crate::{Quiz, Round};
 
-use chrono::{DateTime, Utc};
-use cynic::impl_scalar;
+pub const QUIZ_FIELDS: &str =
+    "id public title description explanation image created_at creator {id name}";
 
-use crate::hasura::quiz::*;
+pub const ROUND_FIELDS: &str = "quiz_id index answer points guesses speed image";
 
-impl_scalar!(u64, schema::Bigint);
-impl_scalar!(DateTime<Utc>, schema::Timestamptz);
-impl_scalar!(GqlDraftQuiz, schema::QuizzesSetInput);
-
-#[derive(cynic::InputObject, Debug)]
-#[cynic(
-    schema_path = "schema.gql",
-    schema_module = "schema",
-    graphql_type = "quizzes_pk_columns_input",
-    rename_all = "snake_case"
-)]
-pub struct QuizzesPkColumnsInput {
-    pub id: u64,
+#[derive(serde::Deserialize, Debug)]
+pub struct AffectedRows {
+    pub affected_rows: u64,
 }
 
-#[derive(cynic::FragmentArguments, Debug)]
-pub struct UpdateQuizArgs {
-    pub quiz_id: QuizzesPkColumnsInput,
-    pub draft: Option<GqlDraftQuiz>, // TODO: remove option
-}
-
-#[derive(cynic::FragmentArguments, Debug)]
-pub struct DeleteQuizArgs {
-    pub quiz_id: u64,
-}
-
-#[derive(cynic::FragmentArguments, Debug)]
-pub struct InsertQuizzesOneArgs {
-    pub draft: GqlDraftQuiz,
-}
-
-#[derive(cynic::QueryFragment, serde::Deserialize, Debug, Clone, PartialEq)]
-#[cynic(schema_path = "schema.gql", query_module = "schema", graphql_type = "quizzes")]
-pub struct QuizId {
-    pub id: u64,
-}
-
-#[derive(cynic::QueryFragment, Debug)]
-#[cynic(schema_path = "schema.gql", schema_module = "schema", graphql_type = "query_root")]
-pub struct Quizzes {
+#[derive(serde::Deserialize, Debug)]
+pub struct QuizzesData {
     pub quizzes: Vec<Quiz>,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
-#[cynic(
-    schema_path = "schema.gql",
-    schema_module = "schema",
-    graphql_type = "mutation_root",
-    argument_struct = "DeleteQuizArgs"
-)]
-pub struct DeleteQuizzesByPk {
-    #[arguments(id = & args.quiz_id)]
-    pub delete_quizzes_by_pk: Option<Quiz>,
+#[derive(serde::Deserialize, Debug)]
+pub struct QuizData {
+    pub quizzes_by_pk: Quiz,
+    pub rounds: Vec<Round>,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
-#[cynic(
-    schema_path = "schema.gql",
-    schema_module = "schema",
-    graphql_type = "mutation_root",
-    argument_struct = "UpdateQuizArgs"
-)]
-pub struct UpdateQuizzesByPk {
-    #[arguments(pk_columns = &args.quiz_id, _set = &args.draft)]
-    pub update_quizzes_by_pk: Option<Quiz>,
+#[derive(serde::Deserialize, Debug)]
+pub struct CompleteQuizData {
+    pub update_quizzes: AffectedRows,
 }
 
-#[derive(cynic::QueryFragment, Debug)]
-#[cynic(
-    schema_path = "schema.gql",
-    schema_module = "schema",
-    graphql_type = "mutation_root",
-    argument_struct = "InsertQuizzesOneArgs"
-)]
-pub struct InsertQuizzesOne {
-    #[arguments(object = &args.draft)]
+#[derive(serde::Deserialize, Debug)]
+pub struct CreateQuizData {
     pub insert_quizzes_one: Option<Quiz>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct UpdateQuizData {
+    pub update_quizzes_one: Option<Quiz>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DeleteQuizData {
+    pub delete_quizzes_by_pk: Option<Quiz>,
+    pub delete_rounds: AffectedRows,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct SaveRoundsData {
+    pub delete_rounds: AffectedRows,
+    pub insert_rounds: AffectedRows,
 }

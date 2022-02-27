@@ -1,4 +1,3 @@
-use cynic::serde_json;
 use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use reqwasm::websocket::futures::WebSocket;
@@ -32,13 +31,15 @@ impl WebsocketTask {
         onerror: &Callback<Error>,
     ) {
         match result {
-            Ok(Message::Text(m)) => match serde_json::from_str(&m) {
-                Ok(response) => {
-                    log::debug!("ws response: {:?}", response);
-                    callback.emit(Ok(response))
+            Ok(Message::Text(m)) => {
+                match serde_json::from_str::<Result<Response, sessions::Error>>(&m) {
+                    Ok(response) => {
+                        log::debug!("ws response: {:?}", response);
+                        callback.emit(response.map_err(Error::Session))
+                    }
+                    Err(err) => callback.emit(Err(Error::Serde(err))),
                 }
-                Err(err) => callback.emit(Err(Error::Serde(err))),
-            },
+            }
             Ok(Message::Bytes(_)) => {
                 log::warn!("deserializing bytes over ws not supported")
             }

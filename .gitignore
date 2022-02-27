@@ -1,8 +1,6 @@
 /target
 /data
-/frontend/keys
 
 *.lock
 
-/.env
 /.idea

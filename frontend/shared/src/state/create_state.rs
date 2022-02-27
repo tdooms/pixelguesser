@@ -4,15 +4,15 @@ use std::rc::Rc;
 
 use yew::Callback;
 
+use crate::{async_callback, EmitError, Error};
 use api::{
     create_quiz, delete_quiz, full_quiz, save_rounds, update_quiz, DraftQuiz, DraftRound,
     FullDraftQuiz, User,
 };
-use shared::{EmitError, Error};
-use utils::use_async_callback;
+use std::borrow::BorrowMut;
 
 #[derive(Clone, Copy)]
-pub enum Stage {
+pub enum CreateStage {
     Quiz,
     Rounds,
     Summary,
@@ -21,13 +21,14 @@ pub enum Stage {
 struct Inner {
     id: Option<u64>,
     full: FullDraftQuiz,
-    stage: Stage,
+    stage: CreateStage,
 
     user: Option<User>,
     onerror: Callback<Error>,
 }
 
-pub struct State {
+#[derive(Clone)]
+pub struct CreateState {
     inner: Rc<RefCell<Inner>>,
 }
 
@@ -41,7 +42,7 @@ impl Inner {
             None => None,
         };
 
-        let stage = Stage::Quiz;
+        let stage = CreateStage::Quiz;
         Self { user, onerror, full: full.unwrap_or_default(), id, stage }
     }
 
@@ -82,8 +83,8 @@ impl Inner {
     }
 }
 
-impl State {
-    pub async fn new(id: Option<u64>, user: Option<User>, onerror: Callback<Error>) -> Self {
+impl CreateState {
+    pub async fn new(user: Option<User>, id: Option<u64>, onerror: Callback<Error>) -> Self {
         Self { inner: Rc::new(RefCell::new(Inner::new(id, user, onerror).await)) }
     }
 
@@ -95,11 +96,11 @@ impl State {
         (*self.inner).borrow().full.quiz.clone()
     }
 
-    pub fn stage(&self) -> Stage {
+    pub fn stage(&self) -> CreateStage {
         (*self.inner).borrow().stage
     }
 
-    pub fn onstage(&self, stage: Stage) -> Callback<()> {
+    pub fn onstage(&self, stage: CreateStage) -> Callback<()> {
         let cloned = Rc::clone(&self.inner);
         Callback::from(move |_| (*cloned).borrow_mut().stage = stage)
     }
@@ -109,7 +110,7 @@ impl State {
         Callback::from(move |quiz| {
             let inner = cloned.clone();
             let fut = async move { inner.deref().borrow_mut().set_quiz(quiz).await };
-            use_async_callback(fut, Callback::noop())
+            async_callback(fut, Callback::noop())
         })
     }
 
@@ -118,16 +119,16 @@ impl State {
         Callback::from(move |rounds| {
             let inner = cloned.clone();
             let fut = async move { inner.deref().borrow_mut().set_rounds(rounds).await };
-            use_async_callback(fut, Callback::noop())
+            async_callback(fut, Callback::noop())
         })
     }
 
     pub fn ondelete(&self) -> Callback<()> {
         let cloned = Rc::clone(&self.inner);
-        Callback::from(move |_rounds| {
+        Callback::from(move |_| {
             let inner = cloned.clone();
             let fut = async move { inner.deref().borrow_mut().delete().await };
-            use_async_callback(fut, Callback::noop())
+            async_callback(fut, Callback::noop())
         })
     }
 }

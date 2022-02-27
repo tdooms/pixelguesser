@@ -10,10 +10,8 @@ use yew_router::prelude::{History, RouterScopeExt};
 use host::Host;
 use manage::Manage;
 
-use agents::{Auth, ErrorAgent};
-use api::{Action, FullQuiz, Request, Response, Session, WebsocketTask};
-use keys::SESSION_ENDPOINT;
-use shared::{Error, Route};
+use api::{Action, FullQuiz, Request, Response, Session, WebsocketTask, SESSION_ENDPOINT};
+use shared::{Auth, Error, ErrorAgent, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {

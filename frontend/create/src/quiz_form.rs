@@ -1,13 +1,16 @@
 use cobul::props::Color;
 use cobul::*;
 use futures::FutureExt;
-use utils::use_async_callback;
 use yew::prelude::*;
 use yew_agent::use_bridge;
 
-use agents::ErrorAgent;
 use api::DraftQuiz;
-use shared::Error;
+use shared::{async_callback, Error, Errors};
+
+const TITLE_DEFAULT: &str = "Cities";
+const EXPLANATION_DEFAULT: &str = "Guess quickly";
+const DESCRIPTION_DEFAULT: &str = "The best quiz";
+const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -17,34 +20,23 @@ pub struct Props {
 
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
-    const TITLE_DEFAULT: &str = "Cities";
-    const EXPLANATION_DEFAULT: &str = "Guess quickly";
-    const DESCRIPTION_DEFAULT: &str = "The best quiz";
-    const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
-
     let Props { form, editing } = &props;
     let DraftQuiz { title, explanation, public: _, description, image, .. } = &form.inner;
 
-    let bridge = use_bridge::<ErrorAgent, _>(|_| ());
-
-    let errors = form.errors();
+    let error_map = form.errors();
     let filename = image.as_ref().map(api::Image::name);
     let fullwidth = filename.as_ref().is_some();
+
+    let errors = use_context::<Errors>().unwrap();
 
     let onuploaded = form.onfield(|x| &mut x.image);
 
     let onupload = Callback::from(move |files: Vec<web_sys::File>| {
-        let callback = onuploaded.clone();
-        match files.len() {
-            // 1 => spawn_local(async move {
-            //     let image = api::Image::from_local(files[0].clone()).await;
-            //     callback.emit(Some(image))
-            // }),
-            1 => use_async_callback(
-                api::Image::from_local(files[0].clone()).map(Option::Some),
-                callback,
-            ),
-            _ => bridge.send(Error::MultipleFiles),
+        if let 1 = files.len() {
+            let fut = api::Image::from_local(files[0].clone());
+            async_callback(fut.map(Option::Some), onuploaded.clone())
+        } else {
+            errors.emit(Error::MultipleFiles)
         }
     });
 

@@ -3,15 +3,13 @@ use std::str::FromStr;
 
 use cobul::props::Color;
 use cobul::{Loading, Notification};
-use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_agent::{Bridge, Bridged};
 use yew_router::prelude::*;
 
-use agents::{Auth, AuthAgent, ErrorAgent};
-use api::Code;
+use api::{Code, User, AUTH0_CLIENT_ID, AUTH0_DOMAIN};
 use create::Create;
-use shared::{Error, Route};
+use shared::{Auth, Error, Route};
 
 use crate::loader::Loader;
 use crate::overview::Overview;
@@ -23,44 +21,28 @@ mod overview;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 pub struct Model {
-    _user_agent: Box<dyn Bridge<AuthAgent>>,
-    _error_agent: Box<dyn Bridge<ErrorAgent>>,
-
     auth: Auth,
     error: Option<Rc<Error>>,
 }
 
 #[derive(Debug)]
 pub enum Msg {
-    Auth(Auth),
-    Error(Rc<Error>),
-    Remove,
+    AddError(Rc<Error>),
+    RemoveError,
 }
 
 impl Component for Model {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            _user_agent: AuthAgent::bridge(ctx.link().callback(Msg::Auth)),
-            _error_agent: ErrorAgent::bridge(ctx.link().callback(Msg::Error)),
-            auth: Auth::Loading,
-            error: None,
-        }
+    fn create(_: &Context<Self>) -> Self {
+        Self { auth: Auth::default(), error: None }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Auth(auth) => self.auth = auth,
-            Msg::Error(error) => {
-                match &*error {
-                    Error::Api(_) => ctx.link().history().unwrap().push(Route::Overview),
-                    _ => {}
-                }
-                self.error = Some(error);
-            }
-            Msg::Remove => self.error = None,
+            Msg::AddError(error) => self.error = Some(error),
+            Msg::RemoveError => self.error = None,
         }
         true
     }
@@ -86,9 +68,11 @@ impl Component for Model {
             <main>
                 <BrowserRouter>
                     { notification }
+                    <ContextProvider<Errors> context={ctx.link().callback(Msg::AddError)}
                     <ContextProvider<Auth> context={self.auth.clone()}>
                         { inner }
                     </ContextProvider<Auth>>
+                    </ContextProvider<Errors>>
                 </BrowserRouter>
             </main>
         }
@@ -112,9 +96,7 @@ fn switch(routes: &Route) -> Html {
     }
 }
 
-#[wasm_bindgen]
-pub fn run_app() -> Result<(), JsValue> {
+pub fn main() {
     wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
     yew::start_app::<Model>();
-    Ok(())
 }

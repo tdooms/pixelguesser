@@ -45,8 +45,8 @@ pub fn manage(props: &Props) -> Html {
         })
     };
     let onleave = {
-        let history = use_history().unwrap().clone();
-        Callback::from(move |_| history.push(Route::Overview))
+        let navigator = use_navigator().unwrap().clone();
+        Callback::from(move |_| navigator.push(Route::Overview))
     };
 
     let body = match props.session.stage {

@@ -7,29 +7,21 @@ description = "a wasm frontend for the pixelguesser game"
 repository = "https://github.com/Funkymaniac/pixelguesser"
 license = "GNU GPLv3"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-O4']
-
 [dependencies]
-agents = { path = "../agents" }
 create = { path = "../create" }
 host = { path = "../host" }
 manage = { path = "../manage" }
 api = { path = "../api" }
 shared = { path = "../shared" }
-keys = { path = "../keys" }
-utils = { path = "../utils" }
 components = { path = "../components" }
+cobul = { git = "https://github.com/tdooms/cobul.git" }
+
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
 
 futures = "0.3"
 wasm-logger = "0.2"
 log = "0.4"
 wee_alloc = "*"
-cobul = { git = "https://github.com/tdooms/cobul.git" }
-yew = "0.19"
-yew-agent = "0.1"
-yew-router = "0.16"
-wasm-bindgen = "0.2"
+

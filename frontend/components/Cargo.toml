@@ -7,13 +7,13 @@ edition = "2021"
 
 [dependencies]
 shared = { path = "../shared" }
-utils = { path = "../utils" }
-agents = { path = "../agents" }
-web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
-yew = "0.19"
 api = { path = "../api" }
-yew-router = "0.16"
-yew-agent = "0.1"
-
 cobul = { git = "https://github.com/tdooms/cobul.git" }
-gloo = "*"
+
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
+
+web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
+log = "*"
+gloo = "0.5"

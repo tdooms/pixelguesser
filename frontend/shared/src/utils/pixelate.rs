@@ -1,4 +1,4 @@
-use shared::Error;
+use crate::Error;
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
 

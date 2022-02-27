@@ -4,8 +4,8 @@ use yew::*;
 
 use api::{FullQuiz, Session};
 
-use ::utils::set_timer;
 use components::Pixelate;
+use shared::set_timer;
 use shared::{HOST_AFTER_REVEALED_TIME, HOST_ROUND_START_TIME};
 
 use crate::info::Info;

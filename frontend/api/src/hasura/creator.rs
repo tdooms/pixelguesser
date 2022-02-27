@@ -1,10 +1,7 @@
-use super::schema;
 use crate::auth0::User;
-use cynic::QueryFragment;
 use serde::Deserialize;
 
-#[derive(QueryFragment, Deserialize, Debug, Clone, PartialEq)]
-#[cynic(schema_path = "schema.gql", query_module = "schema", graphql_type = "users")]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Creator {
     pub id: String,
     pub name: String,

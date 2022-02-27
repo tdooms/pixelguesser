@@ -6,24 +6,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-keys = { path = "../keys" }
 sessions = { path = "../../backend/sessions", features = ["api"], default-features = false }
 
-log = "*"
+yew = { git = "https://github.com/yewstack/yew.git", rev = "36058d455ce8d068416527836a9aa18afa7b7dee" }
 
+serde_json = "*"
+dotenv_codegen = "0.15"
+log = "*"
 thiserror = "1.0"
-cynic = { version = "*" }
 chrono = { version = "*", features = ["serde"] }
 serde_repr = "0.1"
 serde = { version = "1.0", features = ["derive"] }
-
 web-sys = { version = "*", features = ["Url"] }
 gloo = { version = "0.5", features = ["futures"] }
 wasm-bindgen-futures = "*"
 futures = "0.3"
 reqwasm = "0.4.0"
-
 validator = { version = "0.14", features = ["derive"] }
 derive_more = "0.99.16"
 strum = { version = "0.21", features = ["derive"] }
-yew = "0.19"

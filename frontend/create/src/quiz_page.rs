@@ -1,13 +1,12 @@
-use agents::Auth;
 use cobul::props::ColumnSize;
 use cobul::*;
+use shared::Auth;
 use yew::prelude::*;
 use yew::props;
 
 use crate::quiz_form::QuizForm;
-use api::{Creator, DraftQuiz, Resolution};
+use api::{Creator, DraftQuiz, Resolution, IMAGE_PLACEHOLDER};
 use components::QuizCard;
-use keys::IMAGE_PLACEHOLDER;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
@@ -21,8 +20,8 @@ pub struct Props {
     pub ondelete: Callback<()>,
 }
 
-#[function_component(CreateQuiz)]
-pub fn quiz_form(props: &Props) -> Html {
+#[function_component(QuizPage)]
+pub fn quiz_page(props: &Props) -> Html {
     let Props { onsubmit, oncancel, ondelete, quiz, editing } = &props;
     let state = use_state(move || quiz.clone());
 
@@ -32,9 +31,9 @@ pub fn quiz_form(props: &Props) -> Html {
         .map(|x| x.src(Resolution::Card))
         .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
 
-    let creator: Creator = match use_context::<Auth>().unwrap() {
-        Auth::User(user) => user.into(),
-        Auth::Loading | Auth::Anonymous => return html! { "not allowed" },
+    let creator: Creator = match use_context::<Auth>().unwrap().user() {
+        Ok(user) => user.into(),
+        Err(_) => return html! { "not allowed" },
     };
 
     let onchange = {
