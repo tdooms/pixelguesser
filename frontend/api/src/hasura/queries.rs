@@ -41,7 +41,7 @@ pub async fn exec<T: DeserializeOwned + Debug>(
         Kind::Subscription(str) => format!("{{\"query\":\"subscription {{ {} }}\"}}", str),
     };
 
-    log::debug!("{}", body);
+    log::debug!("request {}", body);
 
     let builder = Request::new(GRAPHQL_ENDPOINT)
         .method(Method::POST)
@@ -52,15 +52,13 @@ pub async fn exec<T: DeserializeOwned + Debug>(
         None => builder,
     };
 
-    let response: Response<T> = builder.body(body).send().await?.json().await?;
+    let response = builder.body(body).send().await?.text().await?;
 
-    match response {
-        Response::Data { data } => {
-            log::info!("{:?}", data);
-            Ok(data)
-        }
+    log::debug!("response {}", response);
+
+    match serde_json::from_str(&response)? {
+        Response::Data { data } => Ok(data),
         Response::Errors { errors } => {
-            log::warn!("{:?}", errors);
             Err(Error::Graphql(errors.into_iter().map(|x| x.message).collect()))
         }
     }
@@ -81,7 +79,7 @@ fn serialize_round(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
     )
 }
 
-fn serialize_quiz(draft: &DraftQuiz) -> String {
+fn serialize_quiz(user: &User, draft: &DraftQuiz) -> String {
     let image = draft
         .image
         .as_ref()
@@ -89,8 +87,8 @@ fn serialize_quiz(draft: &DraftQuiz) -> String {
         .unwrap_or_default();
 
     format!(
-        "title:\\\"{}\\\",description:\\\"{}\\\",explanation:\\\"{}\\\"{}",
-        draft.title, draft.description, draft.explanation, image
+        "title:\\\"{}\\\",description:\\\"{}\\\",creator_id:\\\"{}\\\",explanation:\\\"{}\\\"{}",
+        draft.title, draft.description, user.sub, draft.explanation, image
     )
 }
 
@@ -112,7 +110,7 @@ pub async fn full_quiz(user: Option<User>, quiz_id: u64) -> Result<FullQuiz, Err
 }
 
 pub async fn create_quiz(user: Option<User>, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
-    let object = serialize_quiz(&draft);
+    let object = serialize_quiz(user.as_ref().ok_or(Error::NotLoggedIn)?, &draft);
     let str = format!("insert_quizzes_one(object: {{ {} }}) {{ id }}", object);
 
     let data: CreateQuizData = exec(user, Kind::Mutation(&str)).await?;
@@ -124,7 +122,7 @@ pub async fn update_quiz(
     id: u64,
     draft: DraftQuiz,
 ) -> Result<Option<Quiz>, Error> {
-    let object = serialize_quiz(&draft);
+    let object = serialize_quiz(user.as_ref().ok_or(Error::NotLoggedIn)?, &draft);
 
     let str = format!(
         "update_quizzes_by_pk(_set: {{ {} }}, pk_columns: {{ id: \\\"{}\\\" }}) {{ {} }}",
@@ -135,20 +133,20 @@ pub async fn update_quiz(
     Ok(data.update_quizzes_one)
 }
 
-pub async fn delete_quiz(user: Option<User>, quiz_id: u64) -> Result<Option<Quiz>, Error> {
+pub async fn delete_quiz(user: User, quiz_id: u64) -> Result<Option<Quiz>, Error> {
     let rounds = format!(
-        "delete_rounds(where: {{ id: {{ _eq: \\\"{}\\\" }} }} ) {{affected_rows}}",
+        "delete_rounds(where: {{ quiz_id: {{ _eq: \\\"{}\\\" }} }} ) {{affected_rows}}",
         quiz_id
     );
     let quiz = format!("delete_quizzes_by_pk(id: \\\"{}\\\") {{ {} }}", quiz_id, QUIZ_FIELDS);
     let str = format!("{rounds} {quiz}");
 
-    let data: DeleteQuizData = exec(user, Kind::Mutation(&str)).await?;
+    let data: DeleteQuizData = exec(Some(user), Kind::Mutation(&str)).await?;
     Ok(data.delete_quizzes_by_pk)
 }
 
 pub async fn save_rounds(
-    user: Option<User>,
+    user: User,
     quiz_id: u64,
     rounds: Vec<DraftRound>,
 ) -> Result<Vec<DraftRound>, Error> {
@@ -166,6 +164,6 @@ pub async fn save_rounds(
         quiz_id, objects
     );
 
-    let _: SaveRoundsData = exec(user, Kind::Mutation(&str)).await?;
+    let _: SaveRoundsData = exec(Some(user), Kind::Mutation(&str)).await?;
     Ok(rounds)
 }

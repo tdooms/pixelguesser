@@ -11,8 +11,6 @@ use components::QuizCard;
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
     pub quiz: DraftQuiz,
-
-    #[prop_or_default]
     pub editing: bool,
 
     pub onsubmit: Callback<DraftQuiz>,

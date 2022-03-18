@@ -85,6 +85,7 @@ impl Image {
     pub async fn upload(&mut self) {
         if let ImageData::Local(local) = &self.data {
             let endpoint = format!("{}/upload", IMAGE_ENDPOINT);
+            log::warn!("{}", endpoint);
             let response = Request::post(&endpoint).body(local.clone()).send().await.unwrap();
 
             let filename = response.text().await.unwrap();
@@ -99,7 +100,7 @@ impl Image {
     pub fn src(&self, resolution: Resolution) -> String {
         match &self.data {
             ImageData::Local(src) | ImageData::Both(src, _) => src.clone(),
-            ImageData::Url(url) => format!("{}?{}", url, resolution),
+            ImageData::Url(url) => format!("{}/{}?{}", IMAGE_ENDPOINT, url, resolution),
         }
     }
 }

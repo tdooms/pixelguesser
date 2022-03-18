@@ -6,38 +6,82 @@ use futures::FutureExt;
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
 
-use api::{DraftRound, Image, Resolution};
+use api::{DraftQuiz, DraftRound, Image, Resolution};
 use shared::{reduce_callback, set_timer, Error, CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
 
+use crate::round_edit::RoundEdit;
 use crate::round_form::{RoundForm, RoundInfo};
 use crate::round_list::RoundList;
-use crate::round_preview::CenterSpace;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub rounds: Vec<DraftRound>,
     pub onback: Callback<()>,
     pub ondone: Callback<()>,
-    pub onsave: Callback<(u64, DraftRound)>,
+    pub onsave: Callback<Vec<DraftRound>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct State {
+    rounds: Vec<DraftRound>,
+    current: usize,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self { rounds: vec![DraftRound::default()], current: 0 }
+    }
+}
+
+pub enum Action {
+    Delete,
+    Add,
+    Select(usize),
+    Move,
+}
+
+impl Reducible for State {
+    type Action = Action;
+
+    fn reduce(mut self: Rc<Self>, action: Self::Action) -> Rc<Self> {
+        let new = Rc::make_mut(&mut self);
+        match action {
+            Action::Delete => {
+                new.rounds.remove(new.current);
+                new.current = new.current.min(new.rounds.len() - 1);
+            }
+            Action::Add => {
+                new.current = new.rounds.len();
+                new.rounds.push(DraftRound::default());
+            }
+            Action::Select(index) => new.current = index,
+            Action::Move => {}
+        }
+        Rc::clone(&self)
+    }
 }
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
-    let local = use_state(|| None);
-    let current = use_state(|| 0_usize);
+    let Props { rounds, onback, ondone, onsave } = props.clone();
 
-    let save = Callback::from(|| {});
+    let state = use_reducer(State::default);
+
+    let onedit = {
+        let rounds = state.rounds.clone();
+        Callback::from(move |_| onsave.emit(rounds.clone()))
+    };
 
     let left = {
         let images: Vec<_> = state
-            .local
+            .rounds
             .iter()
             .map(|x| x.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
             .collect();
 
-        let onadd = reduce_callback(&state, |_| Action::AddRound);
-        let ondelete = reduce_callback(&state, |_| Action::DeleteRound);
-        let onselect = reduce_callback(&state, Action::SelectRound);
+        let onadd = reduce_callback(&state, |_| Action::Add);
+        let ondelete = reduce_callback(&state, |_| Action::Delete);
+        let onselect = reduce_callback(&state, Action::Select);
 
         html! {
             <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} class="p-0" overflow=true>
@@ -46,41 +90,15 @@ pub fn round_page(props: &Props) -> Html {
         }
     };
 
-    let center = {
-        let onupload = reduce_callback(&state, Action::UploadImage);
-        let onremove = reduce_callback(&state, |_| Action::RemoveImage);
-
-        html! { <CenterSpace image={round.image.clone()} {onremove} {onupload}/>}
-    };
-
-    let right = {
-        let onback = ctx.props().onback.clone();
-        let onchange = reduce_callback(&state, Action::UpdateRound);
-        let onchange = reduce_callback(&state, |_| Action::Save);
-        let round: RoundInfo = round.into();
-
-        let footer = html! {
-            <Buttons class="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Primary} onclick={ondone} light=true>
-                    <Icon icon={Icons::ArrowRight}/> <span> {"Overview"} </span>
-                </Button>
-                <Button fullwidth=true color={Color::Info} outlined=true onclick={onback}>
-                    <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Quiz"} </span>
-                </Button>
-            </Buttons>
-        };
-        html! {
-            <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
-                <RoundForm inner={round.clone()} onchange={onchange} />
-            </Sidebar>
-        }
+    let edit = {
+        let draft = state.rounds[state.current].clone();
+        html! {<RoundEdit {onback} {ondone} {draft} {onedit} />}
     };
 
     html! {
         <Columns>
             {left}
-            <Column size={ColumnSize::Is8}> {center} </Column>
-            {right}
+            {edit}
         </Columns>
     }
 }

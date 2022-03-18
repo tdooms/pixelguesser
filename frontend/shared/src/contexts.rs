@@ -1,7 +1,6 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use futures::Future;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::spawn_local;
@@ -34,17 +33,18 @@ pub type Errors = Callback<Error>;
 #[derive(Clone, PartialEq)]
 pub struct Auth {
     pub user: Rc<RefCell<Result<User, bool>>>,
-}
-
-impl Default for Auth {
-    fn default() -> Self {
-        let user = Rc::new(RefCell::new(Err(true)));
-
-        Self { user }
-    }
+    pub callback: Callback<Result<User, bool>>,
 }
 
 impl Auth {
+    pub fn new(callback: Callback<Result<User, bool>>) -> Self {
+        let user = Rc::new(RefCell::new(Err(true)));
+
+        let res = Self { user, callback };
+        res.init();
+        res
+    }
+
     async fn init_inner() -> Result<Option<User>, Error> {
         let (domain, client_id) = (AUTH0_DOMAIN.to_owned(), AUTH0_CLIENT_ID.to_owned());
         let js_user = init_auth(domain, client_id)
@@ -59,34 +59,39 @@ impl Auth {
     }
 
     fn init(&self) {
-        let clone = self.user.clone();
+        let clone = self.clone();
 
         spawn_local(async move {
-            match Self::init_inner().await {
-                Ok(Some(user)) => *clone.borrow_mut() = Ok(user),
-                Ok(None) => *clone.borrow_mut() = Err(false),
-                Err(err) => log::error!("authentication init error: {:?}", err),
-            }
+            let user = match Self::init_inner().await {
+                Ok(Some(user)) => Ok(user),
+                Ok(None) => Err(false),
+                Err(err) => {
+                    log::error!("authentication init error: {:?}", err);
+                    Err(true)
+                }
+            };
+            *clone.user.borrow_mut() = user.clone();
+            clone.callback.emit(user)
         })
     }
 
     pub fn login(&self) -> Callback<()> {
         Callback::from(|_| {
-            spawn_local(async move {
-                redirect_to_login();
+            spawn_local(async {
+                let _ = redirect_to_login().await;
             })
         })
     }
     pub fn signup(&self) -> Callback<()> {
         Callback::from(|_| {
-            spawn_local(async move {
-                redirect_to_signup();
+            spawn_local(async {
+                let _ = redirect_to_signup().await;
             })
         })
     }
     pub fn logout(&self) -> Callback<()> {
         Callback::from(|_| {
-            logout();
+            let _ = logout();
         })
     }
     pub fn user(&self) -> Result<User, bool> {

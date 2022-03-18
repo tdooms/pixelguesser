@@ -33,13 +33,11 @@ pub fn ranking(props: &Props) -> Html {
     };
 
     html! {
-        <Section class="is-fullheight">
-            <div class="columns is-centered is-desktop" style="height:100vh">
-                <div class="column is-half">
-                    { for sorted.first().map(view_winner) }
-                    { for sorted.iter().skip(1).map(view_player) }
-                </div>
+        <div class="columns is-centered is-desktop">
+            <div class="column is-half">
+                { for sorted.first().map(view_winner) }
+                { for sorted.iter().skip(1).map(view_player) }
             </div>
-        </Section>
+        </div>
     }
 }

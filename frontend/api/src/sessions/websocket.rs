@@ -32,11 +32,9 @@ impl WebsocketTask {
     ) {
         match result {
             Ok(Message::Text(m)) => {
+                log::debug!("ws response: {:?}", m);
                 match serde_json::from_str::<Result<Response, sessions::Error>>(&m) {
-                    Ok(response) => {
-                        log::debug!("ws response: {:?}", response);
-                        callback.emit(response.map_err(Error::Session))
-                    }
+                    Ok(response) => callback.emit(response.map_err(Error::Session)),
                     Err(err) => callback.emit(Err(Error::Serde(err))),
                 }
             }

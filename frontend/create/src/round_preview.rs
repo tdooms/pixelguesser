@@ -1,13 +1,16 @@
-use api::Resolution;
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
+use shared::async_callback;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
+
+use api::Resolution;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub image: Option<api::Image>,
 
-    pub onupload: Callback<Vec<web_sys::File>>,
+    pub onupload: Callback<api::Image>,
     pub onremove: Callback<()>,
 }
 
@@ -18,9 +21,9 @@ struct State {
     hovering: bool,
 }
 
-#[function_component(CenterSpace)]
-pub fn center_space(props: &Props) -> Html {
-    let Props { image, onupload, onremove } = props;
+#[function_component(RoundPreview)]
+pub fn round_preview(props: &Props) -> Html {
+    let Props { image, onupload, onremove } = props.clone();
     let state = use_state(|| State::default());
 
     let onpreview = {
@@ -53,6 +56,10 @@ pub fn center_space(props: &Props) -> Html {
         false => html! { <DynImage src={image.src(Resolution::FullHd)} height=85 class=""/> },
     };
 
+    let onenter = Callback::from(move |files: Vec<web_sys::File>| {
+        async_callback(api::Image::from_local(files[0].clone()), onupload.clone())
+    });
+
     match &image {
         Some(image) => html! {
             <>
@@ -66,7 +73,7 @@ pub fn center_space(props: &Props) -> Html {
         },
         None => html! {
             <Center>
-                <File boxed=true alignment={Alignment::Centered} onupload={onupload} />
+                <File boxed=true alignment={Alignment::Centered} onupload={onenter} />
             </Center>
         },
     }

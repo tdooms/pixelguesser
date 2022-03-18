@@ -1,17 +1,15 @@
 use std::rc::Rc;
 
 use cobul::Loading;
-use futures::FutureExt;
 use yew::prelude::*;
 
-use yew_agent::{Dispatched, Dispatcher};
-use yew_router::prelude::{History, RouterScopeExt};
+use yew_router::prelude::RouterScopeExt;
 
 use host::Host;
 use manage::Manage;
 
 use api::{Action, FullQuiz, Request, Response, Session, WebsocketTask, SESSION_ENDPOINT};
-use shared::{Auth, Error, ErrorAgent, Route};
+use shared::{async_callback, Auth, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -22,8 +20,6 @@ pub struct Props {
 
 pub struct Loader {
     ws: WebsocketTask,
-    errors: Dispatcher<ErrorAgent>,
-
     session: Option<(u64, Rc<Session>)>,
     full: Option<Rc<FullQuiz>>,
 }
@@ -54,14 +50,14 @@ impl Component for Loader {
         };
 
         let (auth, _) = ctx.link().context::<Auth>(Callback::noop()).unwrap();
-        ctx.link().send_future(api::full_quiz(auth.into(), quiz_id).map(Msg::Quiz));
+        async_callback(api::full_quiz(auth.user().ok(), quiz_id), ctx.link().callback(Msg::Quiz));
         ws.send(&request);
 
-        let errors = ErrorAgent::dispatcher();
-        Self { ws, errors, session: None, full: None }
+        Self { ws, session: None, full: None }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        let (errors, _) = ctx.link().context::<Errors>(Callback::noop()).unwrap();
         match msg {
             Msg::Quiz(Ok(full)) => self.full = Some(Rc::new(full)),
             Msg::Action(action) => {
@@ -72,15 +68,15 @@ impl Component for Loader {
                 self.session = Some((id, Rc::new(session)));
             }
             Msg::Ws(Err(err)) => {
-                self.errors.send(Error::Api(err));
-                ctx.link().history().unwrap().push(Route::Overview)
+                errors.emit(Error::Api(err));
+                ctx.link().navigator().unwrap().push(Route::Overview)
             }
             Msg::Error(err) => {
-                self.errors.send(Error::Api(err));
+                errors.emit(Error::Api(err));
             }
             Msg::Quiz(Err(err)) => {
-                self.errors.send(Error::Api(err));
-                ctx.link().history().unwrap().push(Route::Overview)
+                errors.emit(Error::Api(err));
+                ctx.link().navigator().unwrap().push(Route::Overview)
             }
         }
         true

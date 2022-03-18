@@ -155,7 +155,7 @@ impl Component for Pixelate {
         html! {
             <>
                 <img style="display:none"
-                    src={format!("{}/{}", IMAGE_ENDPOINT, ctx.props().url)}
+                    src={format!("{IMAGE_ENDPOINT}/{}", ctx.props().url)}
                     onload={ctx.link().callback(|_| Msg::Loaded)}
                     onerror={ctx.link().callback(|_| Msg::CouldNotLoad)}
                     ref={self.image.clone()} />

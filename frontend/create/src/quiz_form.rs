@@ -2,7 +2,6 @@ use cobul::props::Color;
 use cobul::*;
 use futures::FutureExt;
 use yew::prelude::*;
-use yew_agent::use_bridge;
 
 use api::DraftQuiz;
 use shared::{async_callback, Error, Errors};
@@ -21,7 +20,7 @@ pub struct Props {
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
     let Props { form, editing } = &props;
-    let DraftQuiz { title, explanation, public: _, description, image, .. } = &form.inner;
+    let DraftQuiz { title, explanation, description, image, .. } = &form.inner;
 
     let error_map = form.errors();
     let filename = image.as_ref().map(api::Image::name);
@@ -45,13 +44,13 @@ pub fn quiz_form(props: &Props) -> Html {
 
     html! {
         <>
-        <Level left={left} right={editing.then(right)} />
+        <Level {left} right={editing.then(right)} />
 
-        <SimpleField label="Quiz Title" help={errors.get("title").cloned()} help_color={Color::Danger}>
+        <SimpleField label="Quiz Title" help={error_map.get("title").cloned()} help_color={Color::Danger}>
             <Input oninput={form.onfield(|x| &mut x.title)} value={title.clone()} placeholder={TITLE_DEFAULT}/>
         </SimpleField>
 
-        <SimpleField label="Description" help={errors.get("description").cloned()} help_color={Color::Danger}>
+        <SimpleField label="Description" help={error_map.get("description").cloned()} help_color={Color::Danger}>
             <Input oninput={form.onfield(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION_DEFAULT} />
         </SimpleField>
 
@@ -59,15 +58,15 @@ pub fn quiz_form(props: &Props) -> Html {
             <Input oninput={form.onfield(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION_DEFAULT}/>
         </SimpleField>
 
-        <SimpleField label="Image" help={errors.get("image").cloned()} help_color={Color::Danger}>
-            <File fullwidth={fullwidth} filename={filename} onupload={onupload}/>
+        <SimpleField label="Image" help={error_map.get("image").cloned()} help_color={Color::Danger}>
+            <File {fullwidth} {filename} {onupload}/>
         </SimpleField>
 
         <Buttons>
             <Button color={Color::Info} outlined=true onclick={form.oncancel()}>
                 <Icon icon={Icons::ArrowLeft}/> <span> {"Back"} </span>
             </Button>
-            <Button color={Color::Primary} light=true disabled={!errors.is_empty()} onclick={form.onsubmit()}>
+            <Button color={Color::Primary} light=true disabled={!error_map.is_empty()} onclick={form.onsubmit()}>
                 <Icon icon={Icons::ArrowRight}/> <span> {"Edit Rounds"} </span>
             </Button>
         </Buttons>

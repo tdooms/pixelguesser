@@ -20,4 +20,7 @@ pub enum Error {
 
     #[error("Empty Graphql response")]
     Empty,
+
+    #[error("Not logged in")]
+    NotLoggedIn,
 }

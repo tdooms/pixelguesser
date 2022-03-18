@@ -1,16 +1,13 @@
-use std::rc::Rc;
-
 use cobul::props::{Color, ColumnSize, SidebarAlignment};
-use cobul::{Button, Buttons, Column, Columns, Icon, Icons, Sidebar};
-use futures::FutureExt;
-use gloo::timers::callback::Timeout;
+use cobul::{Button, Buttons, Column, Icon, Icons, Sidebar};
+
 use yew::prelude::*;
 
-use api::{DraftRound, Image, Resolution};
-use shared::{reduce_callback, set_timer, Error, CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
+use api::DraftRound;
+use shared::Error;
 
 use crate::round_form::{RoundForm, RoundInfo};
-use crate::round_preview::CenterSpace;
+use crate::round_preview::RoundPreview;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -22,25 +19,27 @@ pub struct Props {
 
 #[function_component(RoundEdit)]
 pub fn round_edit(props: &Props) -> Html {
+    let Props { draft, onback, ondone, onedit } = props.clone();
+
     let center = {
-        let draft = props.ctx().draft;
-        let upload = move |image| DraftRound { image: Some(image), ..draft };
-        let remove = move |image| DraftRound { image: None, ..draft };
+        let clone = draft.clone();
+        let upload = move |image| DraftRound { image: Some(image), ..clone.clone() };
 
-        let onremove = props.onedit.reform(upload);
-        let onupload = props.onedit.reform(remove);
+        let clone = draft.clone();
+        let remove = move |_| DraftRound { image: None, ..clone.clone() };
 
-        html! { <CenterSpace image={draft.image.clone()} {onremove} {onupload}/>}
+        let onremove = onedit.reform(remove);
+        let onupload = onedit.reform(upload);
+
+        html! { <RoundPreview image={draft.image.clone()} {onremove} {onupload}/>}
     };
 
     let right = {
-        let draft = props.ctx().draft;
+        let clone = draft.clone();
         let edit = move |info| {
             let RoundInfo { answer, points, guesses } = info;
-            DraftRound { answer, points, guesses, ..draft }
+            DraftRound { answer, points, guesses, ..clone.clone() }
         };
-
-        let Props { onback, ondone, onedit, draft } = props.clone();
 
         let footer = html! {
             <Buttons class="mt-auto px-4 py-2">
@@ -52,9 +51,12 @@ pub fn round_edit(props: &Props) -> Html {
                 </Button>
             </Buttons>
         };
+
+        let inner: RoundInfo = (&draft).into();
+
         html! {
             <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
-                <RoundForm inner={draft.into()} onchange={onedit.reform(edit)} />
+                <RoundForm {inner} onchange={onedit.reform(edit)} />
             </Sidebar>
         }
     };

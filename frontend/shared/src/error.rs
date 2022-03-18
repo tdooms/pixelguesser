@@ -1,5 +1,3 @@
-use wasm_bindgen::JsValue;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Api error {0}")]
