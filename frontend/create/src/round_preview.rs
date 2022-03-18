@@ -23,15 +23,15 @@ struct State {
 
 #[function_component(RoundPreview)]
 pub fn round_preview(props: &Props) -> Html {
-    let Props { image, onupload, onremove } = props;
+    let Props { ref image, onupload, onremove } = props.clone();
     let state = use_state(|| State::default());
 
     let onpreview = callback!(state; move |_| state.set(State{previewing: true, ..*state}));
     let onhover = |hovering| callback!(state; move |_| state.set(State{hovering, ..*state}));
 
     let onupload = {
-        Callback::from(|files: Vec<web_sys::File>| {
-            async_callback(Image::from_local(files[0]), onupload.clone());
+        Callback::from(move |files: Vec<web_sys::File>| {
+            async_callback(Image::from_local(files[0].clone()), onupload.clone());
         })
     };
 

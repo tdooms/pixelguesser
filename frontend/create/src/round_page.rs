@@ -1,15 +1,11 @@
-use std::rc::Rc;
-
-use cobul::props::{Color, ColumnSize, SidebarAlignment};
 use cobul::use_value_state;
-use cobul::{Button, Buttons, Column, Columns, Icon, Icons, Sidebar};
+use cobul::Columns;
 use futures::FutureExt;
-use gloo::timers::callback::Timeout;
+use shared::callback;
 use yew::prelude::*;
-use yew_router::hooks::use_navigator;
 
 use api::{DraftRound, Image, Resolution};
-use shared::{reduce_callback, set_timer, Error, CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
+use shared::{set_timer, Error};
 
 use crate::round_edit::RoundEdit;
 use crate::round_form::{RoundForm, RoundInfo};
@@ -24,7 +20,7 @@ pub struct Props {
     pub onsave: Callback<Vec<DraftRound>>,
 }
 
-enum Action {
+pub enum Action {
     Add,
     Delete,
     Remove,
@@ -34,7 +30,8 @@ enum Action {
 }
 
 pub fn change(
-    (state, current): (UseStateHandle<Vec<DraftRound>>, UseStateHandle<usize>),
+    state: UseStateHandle<Vec<DraftRound>>,
+    current: UseStateHandle<usize>,
     action: Action,
 ) {
     let mut new = (*state).clone();
@@ -62,16 +59,15 @@ pub fn round_page(props: &Props) -> Html {
     let local = use_value_state(&props.rounds);
     let current = use_state(|| 0_usize);
 
-    let cloner = || (local.clone(), current.clone());
-
     let list = {
-        let onselect = Callback::from(|idx| change(cloner(), Action::Select(idx)));
-        let onadd = Callback::from(|_| change(cloner(), Action::Add));
-        let ondelete = Callback::from(|_| change(cloner(), Action::Delete));
+        let onselect = callback!(local, current; move |idx| change(local.clone(), current.clone(), Action::Select(idx)));
+        let onadd =
+            callback!(local, current; move |_| change(local.clone(), current.clone(), Action::Add));
+        let ondelete = callback!(local, current; move |_| change(local.clone(), current.clone(), Action::Delete));
 
         let images: Vec<_> = local
             .iter()
-            .map(|round| round.image.map(|img| img.src(Resolution::Thumbnail)))
+            .map(|round| round.image.as_ref().map(|img| img.src(Resolution::Thumbnail)))
             .collect();
 
         let current = *current;
@@ -81,7 +77,7 @@ pub fn round_page(props: &Props) -> Html {
 
     let edit = {
         let draft = local[*current].clone();
-        let onedit = Callback::from(|round| change(cloner(), Action::Edit(round)));
+        let onedit = callback!(local, current; move |round| change(local.clone(), current.clone(), Action::Edit(round)));
 
         html! {<RoundEdit {draft} {onback} {ondone} {onedit}/>}
     };

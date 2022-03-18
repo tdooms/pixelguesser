@@ -8,7 +8,6 @@ use shared::{Auth, Errors, Route};
 #[function_component(Profile)]
 pub fn profile() -> Html {
     let state = use_state(|| false);
-    let errors = use_context::<Errors>();
     let navigator = use_navigator().unwrap();
     let auth = use_context::<Auth>().unwrap();
 

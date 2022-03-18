@@ -1,11 +1,8 @@
 use cobul::props::Color;
 use cobul::*;
-use futures::FutureExt;
 use yew::prelude::*;
-use yew_agent::use_bridge;
 
 use api::DraftQuiz;
-use shared::{async_callback, Error, Errors};
 
 const TITLE_DEFAULT: &str = "Cities";
 const EXPLANATION_DEFAULT: &str = "Guess quickly";
@@ -18,7 +15,6 @@ pub struct Props {
     pub onsubmit: Callback<DraftQuiz>,
     pub onchange: Callback<DraftQuiz>,
     pub onback: Callback<()>,
-    pub ondelete: Callback<()>,
 }
 
 async fn make_image(mut quiz: DraftQuiz, files: Vec<web_sys::File>) -> DraftQuiz {
@@ -28,7 +24,7 @@ async fn make_image(mut quiz: DraftQuiz, files: Vec<web_sys::File>) -> DraftQuiz
 
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
-    let Props { quiz, onsubmit, onback, onchange, ondelete } = props.clone();
+    let Props { quiz, onsubmit, onback, onchange } = props.clone();
     let actions = Actions::new().submit(onsubmit).change(onchange);
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
     let DraftQuiz { title, explanation, public: _, description, image, .. } = quiz;
@@ -36,19 +32,8 @@ pub fn quiz_form(props: &Props) -> Html {
     let filename = image.as_ref().map(api::Image::name);
     let fullwidth = filename.as_ref().is_some();
 
-    let left = html! {<Title> {"Overview"} </Title>};
-
-    let right = match &props.quiz {
-        Some(_) => {
-            html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete Quiz"} </Button>}
-        }
-        None => html! {},
-    };
-
     html! {
         <>
-        <Level {left} {right} />
-
         <SimpleField label="Quiz Title" help={form.error("title")} help_color={Color::Danger}>
             <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE_DEFAULT}/>
         </SimpleField>

@@ -3,7 +3,6 @@ use cobul::{Button, Buttons, Column, Icon, Icons, Sidebar};
 use yew::prelude::*;
 
 use api::DraftRound;
-use shared::{set_timer, Error};
 
 use crate::round_form::{RoundForm, RoundInfo};
 use crate::round_preview::RoundPreview;
@@ -22,21 +21,21 @@ pub fn round_edit(props: &Props) -> Html {
 
     let center = {
         let clone = draft.clone();
-        let onupload = onedit.reform(move |image| DraftRound { image: Some(image), ..clone });
+        let onupload =
+            onedit.reform(move |image| DraftRound { image: Some(image), ..clone.clone() });
 
         let clone = draft.clone();
-        let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone });
+        let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone.clone() });
 
         html! { <RoundPreview image={draft.image.clone()} {onremove} {onupload}/>}
     };
 
     let right = {
+        let clone = draft.clone();
         let edit = move |info| {
             let RoundInfo { answer, points, guesses } = info;
-            DraftRound { answer, points, guesses, ..draft.clone() }
+            DraftRound { answer, points, guesses, ..clone.clone() }
         };
-
-        let Props { onback, ondone, onedit, draft } = props.clone();
 
         let info: RoundInfo = draft.into();
         let footer = html! {
