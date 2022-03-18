@@ -8,7 +8,7 @@ use yew::prelude::*;
 use yew_router::prelude::*;
 
 use crate::navigate::Navigate;
-use crate::player_form::{PlayerForm, PlayerName};
+use crate::player_form::PlayerForm;
 use crate::player_list::PlayerList;
 use crate::rating::Rating;
 use crate::round_info::RoundInfo;
@@ -31,19 +31,7 @@ pub struct Props {
 pub fn manage(props: &Props) -> Html {
     let Props { session, full, callback } = props;
 
-    let state = use_state(|| PlayerName::default());
-
-    let onchange = {
-        let state = state.clone();
-        Callback::from(move |player| state.set(player))
-    };
-    let onsubmit = {
-        let state = state.clone();
-        callback.reform(move |player: PlayerName| {
-            state.set(PlayerName::default());
-            Action::AddPlayer(player.name)
-        })
-    };
+    let onsubmit = callback.reform(Action::AddPlayer);
     let onleave = {
         let navigator = use_navigator().unwrap().clone();
         Callback::from(move |_| navigator.push(Route::Overview))
@@ -56,7 +44,7 @@ pub fn manage(props: &Props) -> Html {
 
             html! {
                 <>
-                <PlayerForm inner={(*state).clone()} onchange={onchange} onsubmit={onsubmit}/>
+                <PlayerForm {onsubmit}/>
                 <Block/>
                 <PlayerList title={title} {session} onclick={onremove}/>
                 <Navigate {session} rounds={full.rounds.len()} {callback}/>

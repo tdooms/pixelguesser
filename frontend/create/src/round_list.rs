@@ -7,7 +7,7 @@ use cobul::*;
 pub struct Props {
     pub onselect: Callback<usize>,
     pub onadd: Callback<()>,
-    pub ondelete: Callback<usize>,
+    pub ondelete: Callback<()>,
 
     pub images: Vec<Option<String>>,
     pub current: usize,
@@ -24,8 +24,9 @@ pub fn round_list(props: &Props) -> Html {
         };
 
         let grey = (index == *current).then(|| "has-background-white-ter");
+
         let onselect = onselect.reform(move |_| index);
-        let ondelete = ondelete.reform(move |_| index);
+        let ondelete = ondelete.reform(move |_| ());
 
         html! {
             <div class={classes!("columns", grey)} onclick={onselect}>

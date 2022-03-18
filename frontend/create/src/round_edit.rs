@@ -1,10 +1,9 @@
 use cobul::props::{Color, ColumnSize, SidebarAlignment};
 use cobul::{Button, Buttons, Column, Icon, Icons, Sidebar};
-
 use yew::prelude::*;
 
 use api::DraftRound;
-use shared::Error;
+use shared::{set_timer, Error};
 
 use crate::round_form::{RoundForm, RoundInfo};
 use crate::round_preview::RoundPreview;
@@ -23,24 +22,23 @@ pub fn round_edit(props: &Props) -> Html {
 
     let center = {
         let clone = draft.clone();
-        let upload = move |image| DraftRound { image: Some(image), ..clone.clone() };
+        let onupload = onedit.reform(move |image| DraftRound { image: Some(image), ..clone });
 
         let clone = draft.clone();
-        let remove = move |_| DraftRound { image: None, ..clone.clone() };
-
-        let onremove = onedit.reform(remove);
-        let onupload = onedit.reform(upload);
+        let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone });
 
         html! { <RoundPreview image={draft.image.clone()} {onremove} {onupload}/>}
     };
 
     let right = {
-        let clone = draft.clone();
         let edit = move |info| {
             let RoundInfo { answer, points, guesses } = info;
-            DraftRound { answer, points, guesses, ..clone.clone() }
+            DraftRound { answer, points, guesses, ..draft.clone() }
         };
 
+        let Props { onback, ondone, onedit, draft } = props.clone();
+
+        let info: RoundInfo = draft.into();
         let footer = html! {
             <Buttons class="mt-auto px-4 py-2">
                 <Button fullwidth=true color={Color::Primary} onclick={ondone} light=true>
@@ -51,12 +49,9 @@ pub fn round_edit(props: &Props) -> Html {
                 </Button>
             </Buttons>
         };
-
-        let inner: RoundInfo = (&draft).into();
-
         html! {
             <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
-                <RoundForm {inner} onchange={onedit.reform(edit)} />
+                <RoundForm {info} onchange={onedit.reform(edit)} />
             </Sidebar>
         }
     };

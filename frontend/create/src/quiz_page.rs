@@ -1,29 +1,30 @@
 use cobul::props::ColumnSize;
 use cobul::*;
-use shared::Auth;
 use yew::prelude::*;
 use yew::props;
 
-use crate::quiz_form::QuizForm;
 use api::{Creator, DraftQuiz, Resolution, IMAGE_PLACEHOLDER};
 use components::QuizCard;
+use shared::{callback, Auth};
+
+use crate::quiz_form::QuizForm;
 
 #[derive(Properties, Debug, Clone, PartialEq)]
 pub struct Props {
-    pub quiz: DraftQuiz,
-    pub editing: bool,
+    pub quiz: Option<DraftQuiz>,
 
     pub onsubmit: Callback<DraftQuiz>,
-    pub oncancel: Callback<()>,
+    pub onback: Callback<()>,
     pub ondelete: Callback<()>,
 }
 
 #[function_component(QuizPage)]
 pub fn quiz_page(props: &Props) -> Html {
-    let Props { onsubmit, oncancel, ondelete, quiz, editing } = &props;
-    let state = use_state(move || quiz.clone());
+    let Props { onsubmit, onback, ondelete, quiz } = props.clone();
 
+    let state = use_state(|| DraftQuiz::default());
     let DraftQuiz { title, public, description, image, .. } = (*state).clone();
+
     let image = image
         .as_ref()
         .map(|x| x.src(Resolution::Card))
@@ -34,25 +35,14 @@ pub fn quiz_page(props: &Props) -> Html {
         Err(_) => return html! { "not allowed" },
     };
 
-    let onchange = {
-        let cloned = state.clone();
-        Callback::from(move |quiz| cloned.set(quiz))
-    };
-
-    let form = props!(Form<DraftQuiz> {
-        inner: (*state).clone(),
-        onsubmit,
-        onchange,
-        oncancel: oncancel.reform(|_| ()),
-        onreset: ondelete.reform(|_| ())
-    });
+    let onchange = callback!(state; move |quiz| state.set(quiz));
 
     html! {
         <Section>
         <Container>
             <Columns>
                 <Column>
-                    <QuizForm {form} editing={*editing}/>
+                    <QuizForm {quiz} {onsubmit} {onback} {onchange} {ondelete}/>
                 </Column>
                 <Column size={ColumnSize::Is1} />
                 <Column size={ColumnSize::Is4}>

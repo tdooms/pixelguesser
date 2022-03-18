@@ -1,17 +1,20 @@
 use std::rc::Rc;
 
 use cobul::props::{Color, ColumnSize, SidebarAlignment};
+use cobul::use_value_state;
 use cobul::{Button, Buttons, Column, Columns, Icon, Icons, Sidebar};
 use futures::FutureExt;
 use gloo::timers::callback::Timeout;
 use yew::prelude::*;
+use yew_router::hooks::use_navigator;
 
-use api::{DraftQuiz, DraftRound, Image, Resolution};
+use api::{DraftRound, Image, Resolution};
 use shared::{reduce_callback, set_timer, Error, CREATE_LONG_SAVE_TIME, CREATE_SHORT_SAVE_TIME};
 
 use crate::round_edit::RoundEdit;
 use crate::round_form::{RoundForm, RoundInfo};
 use crate::round_list::RoundList;
+use crate::round_preview::RoundPreview;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -21,83 +24,71 @@ pub struct Props {
     pub onsave: Callback<Vec<DraftRound>>,
 }
 
-#[derive(Debug, Clone)]
-pub struct State {
-    rounds: Vec<DraftRound>,
-    current: usize,
-}
-
-impl Default for State {
-    fn default() -> Self {
-        Self { rounds: vec![DraftRound::default()], current: 0 }
-    }
-}
-
-pub enum Action {
-    Delete,
+enum Action {
     Add,
+    Delete,
+    Remove,
     Select(usize),
-    Move,
+    Upload(Image),
+    Edit(DraftRound),
 }
 
-impl Reducible for State {
-    type Action = Action;
+pub fn change(
+    (state, current): (UseStateHandle<Vec<DraftRound>>, UseStateHandle<usize>),
+    action: Action,
+) {
+    let mut new = (*state).clone();
+    let index = *current;
 
-    fn reduce(mut self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        let new = Rc::make_mut(&mut self);
-        match action {
-            Action::Delete => {
-                new.rounds.remove(new.current);
-                new.current = new.current.min(new.rounds.len() - 1);
-            }
-            Action::Add => {
-                new.current = new.rounds.len();
-                new.rounds.push(DraftRound::default());
-            }
-            Action::Select(index) => new.current = index,
-            Action::Move => {}
+    match action {
+        Action::Add => {
+            current.set(new.len());
+            new.push(DraftRound::default())
         }
-        Rc::clone(&self)
+        Action::Delete => {
+            new.remove(index);
+            current.set(1.max(index) - 1)
+        }
+        Action::Select(index) => current.set(index),
+        Action::Upload(image) => new[index].image = Some(image),
+        Action::Edit(round) => new[index] = round,
+        Action::Remove => new[index].image = None,
     }
 }
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
-    let Props { rounds, onback, ondone, onsave } = props.clone();
+    let Props { onback, ondone, onsave, .. } = props.clone();
+    let local = use_value_state(&props.rounds);
+    let current = use_state(|| 0_usize);
 
-    let state = use_reducer(State::default);
+    let cloner = || (local.clone(), current.clone());
 
-    let onedit = {
-        let rounds = state.rounds.clone();
-        Callback::from(move |_| onsave.emit(rounds.clone()))
-    };
+    let list = {
+        let onselect = Callback::from(|idx| change(cloner(), Action::Select(idx)));
+        let onadd = Callback::from(|_| change(cloner(), Action::Add));
+        let ondelete = Callback::from(|_| change(cloner(), Action::Delete));
 
-    let left = {
-        let images: Vec<_> = state
-            .rounds
+        let images: Vec<_> = local
             .iter()
-            .map(|x| x.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
+            .map(|round| round.image.map(|img| img.src(Resolution::Thumbnail)))
             .collect();
 
-        let onadd = reduce_callback(&state, |_| Action::Add);
-        let ondelete = reduce_callback(&state, |_| Action::Delete);
-        let onselect = reduce_callback(&state, Action::Select);
+        let current = *current;
 
-        html! {
-            <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} class="p-0" overflow=true>
-                <RoundList {images} {onselect} {ondelete} {onadd} current={state.current}/>
-            </Sidebar>
-        }
+        html! {<RoundList {onselect} {onadd} {ondelete} {images} {current}/>}
     };
 
     let edit = {
-        let draft = state.rounds[state.current].clone();
-        html! {<RoundEdit {onback} {ondone} {draft} {onedit} />}
+        let draft = local[*current].clone();
+        let onedit = Callback::from(|round| change(cloner(), Action::Edit(round)));
+
+        html! {<RoundEdit {draft} {onback} {ondone} {onedit}/>}
     };
 
     html! {
         <Columns>
-            {left}
+            {list}
             {edit}
         </Columns>
     }

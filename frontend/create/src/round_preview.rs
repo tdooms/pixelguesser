@@ -1,20 +1,20 @@
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
-use shared::async_callback;
-use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
-use api::Resolution;
+use api::{Image, Resolution};
+use shared::{async_callback, callback};
+use wasm_bindgen_futures::spawn_local;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub image: Option<api::Image>,
 
-    pub onupload: Callback<api::Image>,
+    pub onupload: Callback<Image>,
     pub onremove: Callback<()>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Copy)]
 struct State {
     previewing: bool,
     revealing: bool,
@@ -23,19 +23,16 @@ struct State {
 
 #[function_component(RoundPreview)]
 pub fn round_preview(props: &Props) -> Html {
-    let Props { image, onupload, onremove } = props.clone();
+    let Props { image, onupload, onremove } = props;
     let state = use_state(|| State::default());
 
-    let onpreview = {
-        let cloned = state.clone();
-        Callback::from(move |_| {
-            cloned.set(State { previewing: true, revealing: true, hovering: false })
-        })
-    };
+    let onpreview = callback!(state; move |_| state.set(State{previewing: true, ..*state}));
+    let onhover = |hovering| callback!(state; move |_| state.set(State{hovering, ..*state}));
 
-    let onhover = |hovering| {
-        let cloned = state.clone();
-        Callback::from(move |_| cloned.set(State { hovering, ..*cloned }))
+    let onupload = {
+        Callback::from(|files: Vec<web_sys::File>| {
+            async_callback(Image::from_local(files[0]), onupload.clone());
+        })
     };
 
     let buttons = html! {
@@ -56,10 +53,6 @@ pub fn round_preview(props: &Props) -> Html {
         false => html! { <DynImage src={image.src(Resolution::FullHd)} height=85 class=""/> },
     };
 
-    let onenter = Callback::from(move |files: Vec<web_sys::File>| {
-        async_callback(api::Image::from_local(files[0].clone()), onupload.clone())
-    });
-
     match &image {
         Some(image) => html! {
             <>
@@ -73,7 +66,7 @@ pub fn round_preview(props: &Props) -> Html {
         },
         None => html! {
             <Center>
-                <File boxed=true alignment={Alignment::Centered} onupload={onenter} />
+                <File boxed=true alignment={Alignment::Centered} onupload={onupload} />
             </Center>
         },
     }
