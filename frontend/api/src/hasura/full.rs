@@ -6,10 +6,16 @@ pub struct FullQuiz {
     pub rounds: Vec<Round>,
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FullDraftQuiz {
     pub quiz: DraftQuiz,
     pub rounds: Vec<DraftRound>,
+}
+
+impl Default for FullDraftQuiz {
+    fn default() -> Self {
+        FullDraftQuiz { quiz: DraftQuiz::default(), rounds: vec![DraftRound::default()] }
+    }
 }
 
 impl From<FullQuiz> for FullDraftQuiz {

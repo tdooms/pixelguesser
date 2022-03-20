@@ -39,11 +39,11 @@ pub fn round_list(props: &Props) -> Html {
     };
 
     html! {
-        <div class="p-4">
+        <Column class="p-4">
             { for images.iter().enumerate().map(map_view) }
             <Button fullwidth=true onclick={onadd}>
                 <Icon icon={Icons::Plus} size={Size::Large}/>
             </Button>
-        </div>
+        </Column>
     }
 }

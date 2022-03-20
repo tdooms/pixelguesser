@@ -1,16 +1,13 @@
 use cobul::use_value_state;
 use cobul::Columns;
-use futures::FutureExt;
 use shared::callback;
 use yew::prelude::*;
 
-use api::{DraftRound, Image, Resolution};
-use shared::{set_timer, Error};
+use api::{DraftRound, Resolution};
 
 use crate::round_edit::RoundEdit;
-use crate::round_form::{RoundForm, RoundInfo};
+
 use crate::round_list::RoundList;
-use crate::round_preview::RoundPreview;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -23,9 +20,7 @@ pub struct Props {
 pub enum Action {
     Add,
     Delete,
-    Remove,
     Select(usize),
-    Upload(Image),
     Edit(DraftRound),
 }
 
@@ -33,6 +28,7 @@ pub fn change(
     state: UseStateHandle<Vec<DraftRound>>,
     current: UseStateHandle<usize>,
     action: Action,
+    onsave: Callback<Vec<DraftRound>>,
 ) {
     let mut new = (*state).clone();
     let index = *current;
@@ -47,10 +43,18 @@ pub fn change(
             current.set(1.max(index) - 1)
         }
         Action::Select(index) => current.set(index),
-        Action::Upload(image) => new[index].image = Some(image),
         Action::Edit(round) => new[index] = round,
-        Action::Remove => new[index].image = None,
     }
+    onsave.emit(new)
+}
+
+pub fn maker<T: 'static>(
+    local: &UseStateHandle<Vec<DraftRound>>,
+    current: &UseStateHandle<usize>,
+    onsave: &Callback<Vec<DraftRound>>,
+    action: fn(T) -> Action,
+) -> Callback<T> {
+    callback!(local, current, onsave; move |x| change(local.clone(), current.clone(), action(x), onsave.clone()))
 }
 
 #[function_component(RoundPage)]
@@ -60,10 +64,9 @@ pub fn round_page(props: &Props) -> Html {
     let current = use_state(|| 0_usize);
 
     let list = {
-        let onselect = callback!(local, current; move |idx| change(local.clone(), current.clone(), Action::Select(idx)));
-        let onadd =
-            callback!(local, current; move |_| change(local.clone(), current.clone(), Action::Add));
-        let ondelete = callback!(local, current; move |_| change(local.clone(), current.clone(), Action::Delete));
+        let onselect = maker(&local, &current, &onsave, Action::Select);
+        let onadd = maker(&local, &current, &onsave, |_| Action::Add);
+        let ondelete = maker(&local, &current, &onsave, |_| Action::Delete);
 
         let images: Vec<_> = local
             .iter()
@@ -77,7 +80,7 @@ pub fn round_page(props: &Props) -> Html {
 
     let edit = {
         let draft = local[*current].clone();
-        let onedit = callback!(local, current; move |round| change(local.clone(), current.clone(), Action::Edit(round)));
+        let onedit = maker(&local, &current, &onsave, Action::Edit);
 
         html! {<RoundEdit {draft} {onback} {ondone} {onedit}/>}
     };

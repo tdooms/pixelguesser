@@ -4,7 +4,6 @@ use yew::prelude::*;
 
 use api::{Image, Resolution};
 use shared::{async_callback, callback};
-use wasm_bindgen_futures::spawn_local;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
-use shared::{callback, Auth, Errors, Route};
+use shared::{callback, Auth, Route};
 
 use crate::quiz_page::QuizPage;
 use crate::round_page::RoundPage;
@@ -32,8 +32,11 @@ pub fn create(props: &Props) -> HtmlResult {
     let inner = match state.stage() {
         CreateStage::Quiz => {
             let onsubmit = callback!(state; move |quiz| state.set_quiz(quiz));
-            let onback = callback!(;move |_| navigator.push(Route::Overview));
-            let ondelete = callback!(state; move |_| state.delete());
+            let onback = callback!(navigator ;move |_| navigator.push(Route::Overview));
+            let ondelete = callback!(state; move |_| {
+                state.delete();
+                navigator.push(Route::Overview)
+            });
             let quiz = state.quiz();
 
             html! { <QuizPage editing=true {quiz} {onsubmit} {onback} {ondelete}/> }

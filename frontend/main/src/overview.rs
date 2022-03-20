@@ -1,5 +1,5 @@
 use cobul::props::ColumnSize;
-use cobul::{Column, Columns, Container, Loading, Section};
+use cobul::{Column, Columns, Container, Section};
 use yew::prelude::*;
 use yew::HtmlResult;
 

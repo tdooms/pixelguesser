@@ -109,27 +109,23 @@ pub async fn full_quiz(user: Option<User>, quiz_id: u64) -> Result<FullQuiz, Err
     Ok(FullQuiz { quiz: data.quizzes_by_pk, rounds: data.rounds })
 }
 
-pub async fn create_quiz(user: Option<User>, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
-    let object = serialize_quiz(user.as_ref().ok_or(Error::NotLoggedIn)?, &draft);
+pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
+    let object = serialize_quiz(&user, &draft);
     let str = format!("insert_quizzes_one(object: {{ {} }}) {{ id }}", object);
 
-    let data: CreateQuizData = exec(user, Kind::Mutation(&str)).await?;
+    let data: CreateQuizData = exec(Some(user), Kind::Mutation(&str)).await?;
     Ok(data.insert_quizzes_one)
 }
 
-pub async fn update_quiz(
-    user: Option<User>,
-    id: u64,
-    draft: DraftQuiz,
-) -> Result<Option<Quiz>, Error> {
-    let object = serialize_quiz(user.as_ref().ok_or(Error::NotLoggedIn)?, &draft);
+pub async fn update_quiz(user: User, id: u64, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
+    let object = serialize_quiz(&user, &draft);
 
     let str = format!(
         "update_quizzes_by_pk(_set: {{ {} }}, pk_columns: {{ id: \\\"{}\\\" }}) {{ {} }}",
         object, id, QUIZ_FIELDS
     );
 
-    let data: UpdateQuizData = exec(user, Kind::Mutation(&str)).await?;
+    let data: UpdateQuizData = exec(Some(user), Kind::Mutation(&str)).await?;
     Ok(data.update_quizzes_one)
 }
 

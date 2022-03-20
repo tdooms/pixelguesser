@@ -3,7 +3,7 @@ use cobul::*;
 use yew::*;
 use yew_router::prelude::*;
 
-use shared::{Auth, Errors, Route};
+use shared::{Auth, Route};
 
 #[function_component(Profile)]
 pub fn profile() -> Html {
