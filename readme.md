@@ -1,6 +1,6 @@
 
 # PixelGuesser
-PixelGuesser is a real life party gam where players try to guess the contents of an
+PixelGuesser is a real life party game where players try to guess the contents of an
 image as quickly as possible. The image starts out heavily pixelated with and slowly
 grows more detailed over time.
 
