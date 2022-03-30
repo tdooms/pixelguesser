@@ -1,12 +1,15 @@
 let auth0 = null;
 
 window.init_auth = async (domain, client_id) => {
-    auth0 = await createAuth0Client({
+    const args = {
         "domain": domain,
         "client_id": client_id,
         "audience": "https://hasura.io/learn",
-        // "prompt": "none",
-    });
+        "cacheLocation": 'localstorage',
+    }
+    console.log("init auth");
+
+    auth0 = await createAuth0Client(args);
 
     const query = window.location.search;
     if (query.includes("code=") && query.includes("state=")) {
