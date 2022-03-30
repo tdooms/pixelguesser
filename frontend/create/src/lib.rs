@@ -1,3 +1,4 @@
+use log::info;
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
@@ -31,15 +32,16 @@ pub fn create(props: &Props) -> HtmlResult {
 
     let inner = match state.stage() {
         CreateStage::Quiz => {
-            let onsubmit = callback!(state; move |quiz| state.set_quiz(quiz));
-            let onback = callback!(navigator ;move |_| navigator.push(Route::Overview));
-            let ondelete = callback!(state; move |_| {
-                state.delete();
-                navigator.push(Route::Overview)
-            });
-            let quiz = state.quiz();
+            let callback = || navigator.push(Route::Overview);
 
-            html! { <QuizPage editing=true {quiz} {onsubmit} {onback} {ondelete}/> }
+            let onsubmit = callback!(state; move |quiz| state.set_quiz(quiz));
+            let onback = callback!(navigator; move |_| navigator.push(Route::Overview));
+            let ondelete = callback!(state; move |_| state.delete(callback));
+
+            let quiz = state.quiz();
+            let editing = state.id().is_some();
+
+            html! { <QuizPage {editing} {quiz} {onsubmit} {onback} {ondelete}/> }
         }
         CreateStage::Rounds => {
             let onsave = callback!(state; move |rounds| state.set_rounds(rounds));

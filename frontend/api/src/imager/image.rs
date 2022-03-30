@@ -78,8 +78,8 @@ impl Image {
         Image { data: ImageData::Local(data), name: file.name() }
     }
 
-    pub fn from_url(url: impl ToString) -> Self {
-        Image { data: ImageData::Url(url.to_string()), name: String::default() }
+    pub fn from_url(url: impl ToString, name: String) -> Self {
+        Image { data: ImageData::Url(url.to_string()), name }
     }
 
     pub async fn upload(&mut self) {

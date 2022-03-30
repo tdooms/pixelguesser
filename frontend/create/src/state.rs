@@ -26,24 +26,26 @@ pub struct UseCreateStateHandle {
 
 impl UseCreateStateHandle {
     pub fn set_quiz(&self, quiz: DraftQuiz) {
-        let mut inner = (*self.handle).clone();
+        let handle = self.handle.clone();
+        let mut inner = (*handle).clone();
 
         inner.full.quiz = quiz.clone();
         inner.stage = CreateStage::Rounds;
 
         let user = self.user.clone();
         spawn_local(async move {
-            match inner.id {
-                Some(id) => {
-                    let _ = api::update_quiz(user, id, quiz).await;
-                }
-                None => {
-                    let _ = api::create_quiz(user, quiz).await;
-                }
-            }
-        });
+            let err = "error updating/creating quiz";
+            let result = match inner.id {
+                Some(id) => api::update_quiz(user, id, quiz).await,
+                None => api::create_quiz(user, quiz).await,
+            };
 
-        self.handle.set(inner)
+            // TODO: use quiz for something else?
+            let quiz = result.expect(err).expect(err);
+
+            inner.id = Some(quiz.id);
+            handle.set(inner)
+        });
     }
 
     pub fn set_stage(&self, stage: CreateStage) {
@@ -62,18 +64,24 @@ impl UseCreateStateHandle {
 
         let user = self.user.clone();
         let id = inner.id.unwrap();
+
         spawn_local(async move {
-            let _ = api::save_rounds(user, id, rounds).await;
+            let err = "error saving rounds";
+            let result = api::save_rounds(user, id, rounds).await;
+            let _ = result.expect(err);
         });
 
         self.handle.set(inner)
     }
 
-    pub fn delete(&self) {
+    pub fn delete(&self, callback: impl FnOnce()) {
         if let Some(id) = self.handle.id {
             let user = self.user.clone();
             spawn_local(async move {
-                let _ = api::delete_quiz(user, id).await;
+                let err = "error deleting quiz";
+                let result = api::delete_quiz(user, id).await;
+                let _ = result.expect(err).expect(err);
+                callback()
             })
         }
     }
@@ -88,6 +96,10 @@ impl UseCreateStateHandle {
 
     pub fn stage(&self) -> CreateStage {
         self.handle.stage.clone()
+    }
+
+    pub fn id(&self) -> Option<u64> {
+        self.handle.id.clone()
     }
 }
 

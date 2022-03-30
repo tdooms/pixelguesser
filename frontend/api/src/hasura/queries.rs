@@ -106,7 +106,8 @@ pub async fn full_quiz(user: Option<User>, quiz_id: u64) -> Result<FullQuiz, Err
     );
 
     let data: QuizData = exec(user, Kind::Query(&str)).await?;
-    Ok(FullQuiz { quiz: data.quizzes_by_pk, rounds: data.rounds })
+    let quiz = data.quizzes_by_pk.ok_or(Error::Empty)?;
+    Ok(FullQuiz { quiz, rounds: data.rounds })
 }
 
 pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {

@@ -32,12 +32,13 @@ pub struct DraftQuiz {
 
 impl From<Quiz> for DraftQuiz {
     fn from(quiz: Quiz) -> Self {
+        let name = format!("{}.jpg", quiz.title.to_lowercase());
         Self {
             title: quiz.title,
             public: quiz.public,
             description: quiz.description,
             explanation: quiz.explanation,
-            image: quiz.image.map(Image::from_url),
+            image: quiz.image.map(|url| Image::from_url(url, name)),
         }
     }
 }

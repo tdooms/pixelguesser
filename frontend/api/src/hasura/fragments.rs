@@ -17,7 +17,7 @@ pub struct QuizzesData {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct QuizData {
-    pub quizzes_by_pk: Quiz,
+    pub quizzes_by_pk: Option<Quiz>,
     pub rounds: Vec<Round>,
 }
 

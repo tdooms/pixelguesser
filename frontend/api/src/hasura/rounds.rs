@@ -1,9 +1,10 @@
-use crate::Image;
 use derive_more::Display;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
 use validator::Validate;
+
+use crate::Image;
 
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
@@ -77,7 +78,7 @@ impl From<Round> for DraftRound {
             points: round.points,
             guesses: round.guesses,
             speed: round.speed,
-            image: Some(Image::from_url(round.image)),
+            image: Some(Image::from_url(round.image, String::default())),
         }
     }
 }

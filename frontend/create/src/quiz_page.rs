@@ -37,14 +37,11 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let onchange = callback!(state; move |quiz| state.set(quiz));
 
-    let left = html! {<Title> {"Overview"} </Title>};
+    let delete =
+        || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete Quiz"} </Button>};
 
-    let right = match editing {
-        false => {
-            html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete Quiz"} </Button>}
-        }
-        true => html! {},
-    };
+    let left = html! {<Title> {"Overview"} </Title>};
+    let right = editing.then(delete).unwrap_or_default();
 
     html! {
         <Section>
