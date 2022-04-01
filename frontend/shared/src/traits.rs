@@ -1,17 +1,19 @@
-pub trait EmitError<Err> {
+use crate::{Error, Errors};
+
+pub trait EmitError {
     type Ty;
-    fn emit(self, callback: &yew::Callback<Err>) -> Option<Self::Ty>
+    fn emit(self, error: &Errors) -> Option<Self::Ty>
     where
         Self: Sized;
 }
 
-impl<T, E> EmitError<E> for Result<T, E> {
+impl<T> EmitError for Result<T, Error> {
     type Ty = T;
-    fn emit(self, callback: &yew::Callback<E>) -> Option<T> {
+    fn emit(self, errors: &Errors) -> Option<T> {
         match self {
             Ok(t) => Some(t),
             Err(err) => {
-                callback.emit(err);
+                errors.emit(err);
                 None
             }
         }

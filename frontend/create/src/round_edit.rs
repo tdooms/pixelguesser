@@ -44,7 +44,7 @@ pub fn round_edit(props: &Props) -> Html {
                     <Icon icon={Icons::ArrowRight}/> <span> {"Overview"} </span>
                 </Button>
                 <Button fullwidth=true color={Color::Info} outlined=true onclick={onback}>
-                    <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Quiz"} </span>
+                    <Icon icon={Icons::ArrowLeft}/> <span> {"Quiz"} </span>
                 </Button>
             </Buttons>
         };

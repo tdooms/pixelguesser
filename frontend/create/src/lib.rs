@@ -2,7 +2,7 @@ use log::info;
 use yew::prelude::*;
 use yew_router::hooks::use_navigator;
 
-use shared::{callback, Auth, Route};
+use shared::{callback, Auth, Errors, Route};
 
 use crate::quiz_page::QuizPage;
 use crate::round_page::RoundPage;
@@ -28,15 +28,19 @@ pub struct Props {
 pub fn create(props: &Props) -> HtmlResult {
     let user = use_context::<Auth>().unwrap().user();
     let navigator = use_navigator().unwrap();
-    let state = use_create_state(props.id, user.clone().unwrap())?;
+    let errors = use_context::<Errors>().unwrap();
+    let state = use_create_state(props.id, user.clone().unwrap(), errors)?;
 
     let inner = match state.stage() {
         CreateStage::Quiz => {
-            let callback = || navigator.push(Route::Overview);
+            let callback = {
+                let navigator = navigator.clone();
+                move || navigator.push(Route::Overview)
+            };
 
             let onsubmit = callback!(state; move |quiz| state.set_quiz(quiz));
             let onback = callback!(navigator; move |_| navigator.push(Route::Overview));
-            let ondelete = callback!(state; move |_| state.delete(callback));
+            let ondelete = callback!(state; move |_| state.delete(callback.clone()));
 
             let quiz = state.quiz();
             let editing = state.id().is_some();
@@ -48,11 +52,12 @@ pub fn create(props: &Props) -> HtmlResult {
             let ondone = callback!(state; move |_| state.set_stage(CreateStage::Summary));
             let onback = callback!(state; move |_| state.set_stage(CreateStage::Quiz));
             let rounds = state.rounds();
+            log::info!("{:?}", rounds);
 
             html! { <RoundPage {rounds} {onsave} {ondone} {onback}/> }
         }
         CreateStage::Summary => {
-            let ondone = callback!(;move |_| navigator.push(Route::Overview));
+            let ondone = callback!(navigator; move |_| navigator.push(Route::Overview));
             let onback = callback!(state; move |_| state.set_stage(CreateStage::Quiz));
             let (quiz, rounds) = (state.quiz(), state.rounds());
 

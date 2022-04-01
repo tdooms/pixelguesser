@@ -43,7 +43,7 @@ pub fn summary(props: &Props) -> Html {
 
         <Buttons>
             <Button color={Color::Info} outlined=true onclick={onback.clone()}>
-                <Icon icon={Icons::ArrowLeft}/> <span> {"Edit Rounds"} </span>
+                <Icon icon={Icons::ArrowLeft}/> <span> {"Rounds"} </span>
             </Button>
             <Button color={Color::Primary} onclick={onfinish.clone()}>
                 <span> {"Submit"} </span>

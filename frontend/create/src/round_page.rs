@@ -60,7 +60,13 @@ pub fn maker<T: 'static>(
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
     let Props { onback, ondone, onsave, .. } = props.clone();
-    let local = use_value_state(&props.rounds);
+
+    let rounds = match props.rounds.len() {
+        0 => vec![DraftRound::default()],
+        _ => props.rounds.clone(),
+    };
+
+    let local = use_value_state(&rounds);
     let current = use_state(|| 0_usize);
 
     let list = {

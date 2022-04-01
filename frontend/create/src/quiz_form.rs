@@ -55,7 +55,7 @@ pub fn quiz_form(props: &Props) -> Html {
                 <Icon icon={Icons::ArrowLeft}/> <span> {"Back"} </span>
             </Button>
             <Button color={Color::Primary} light=true disabled={!form.can_submit()} onclick={form.submit()}>
-                <Icon icon={Icons::ArrowRight}/> <span> {"Edit Rounds"} </span>
+                <Icon icon={Icons::ArrowRight}/> <span> {"Rounds"} </span>
             </Button>
         </Buttons>
         </>

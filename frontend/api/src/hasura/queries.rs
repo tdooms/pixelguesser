@@ -35,9 +35,7 @@ pub async fn exec<T: DeserializeOwned + Debug>(
 ) -> Result<T, Error> {
     let body = match query {
         Kind::Query(str) => format!("{{\"query\":\"query {{ {} }}\"}}", str),
-        Kind::Mutation(str) => {
-            format!("{{\"query\":\"mutation {{ {} }}\" }}", str)
-        }
+        Kind::Mutation(str) => format!("{{\"query\":\"mutation {{ {} }}\" }}", str),
         Kind::Subscription(str) => format!("{{\"query\":\"subscription {{ {} }}\"}}", str),
     };
 

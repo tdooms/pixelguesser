@@ -9,6 +9,7 @@ use crate::imager::Image;
 pub struct Quiz {
     pub id: u64,
     pub public: bool,
+    pub complete: bool,
 
     pub title: String,
     pub description: String,

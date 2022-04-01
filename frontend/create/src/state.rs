@@ -3,15 +3,16 @@ use yew::prelude::*;
 use yew::suspense::{Suspension, SuspensionResult};
 
 use api::{DraftQuiz, DraftRound, FullDraftQuiz, User};
+use shared::{EmitError, Error, Errors};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum CreateStage {
     Quiz,
     Rounds,
     Summary,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Inner {
     id: Option<u64>,
     full: FullDraftQuiz,
@@ -22,65 +23,66 @@ pub struct Inner {
 pub struct UseCreateStateHandle {
     handle: UseStateHandle<Inner>,
     user: User,
+    errors: Errors,
 }
 
 impl UseCreateStateHandle {
     pub fn set_quiz(&self, quiz: DraftQuiz) {
-        let handle = self.handle.clone();
+        let Self { handle, user, errors } = self.clone();
         let mut inner = (*handle).clone();
 
         inner.full.quiz = quiz.clone();
         inner.stage = CreateStage::Rounds;
 
-        let user = self.user.clone();
         spawn_local(async move {
-            let err = "error updating/creating quiz";
             let result = match inner.id {
                 Some(id) => api::update_quiz(user, id, quiz).await,
                 None => api::create_quiz(user, quiz).await,
             };
 
             // TODO: use quiz for something else?
-            let quiz = result.expect(err).expect(err);
+            let quiz = result.map_err(Error::Api).emit(&errors);
 
-            inner.id = Some(quiz.id);
-            handle.set(inner)
+            log::warn!("{:?}", inner);
+            inner.id = quiz.flatten().map(|quiz| quiz.id);
+            handle.set(inner);
         });
     }
 
     pub fn set_stage(&self, stage: CreateStage) {
         let mut inner = (*self.handle).clone();
         inner.stage = stage;
+        log::warn!("{:?}", inner);
         self.handle.set(inner)
     }
 
     pub fn set_rounds(&self, rounds: Vec<DraftRound>) {
+        let Self { user, errors, .. } = self.clone();
         let mut inner = (*self.handle).clone();
+        let id = inner.id.unwrap();
+
+        inner.full.rounds = rounds.clone();
+
         for round in &mut inner.full.rounds {
             round.image.as_mut().map(|x| x.upload());
         }
 
-        inner.full.rounds = rounds.clone();
-
-        let user = self.user.clone();
-        let id = inner.id.unwrap();
+        log::warn!("settings set_rounds");
+        self.handle.set(inner);
 
         spawn_local(async move {
-            let err = "error saving rounds";
             let result = api::save_rounds(user, id, rounds).await;
-            let _ = result.expect(err);
+            let _ = result.map_err(Error::Api).emit(&errors);
         });
-
-        self.handle.set(inner)
     }
 
-    pub fn delete(&self, callback: impl FnOnce()) {
+    pub fn delete(&self, callback: impl FnOnce() + 'static) {
         if let Some(id) = self.handle.id {
-            let user = self.user.clone();
+            let Self { user, errors, .. } = self.clone();
+
             spawn_local(async move {
-                let err = "error deleting quiz";
                 let result = api::delete_quiz(user, id).await;
-                let _ = result.expect(err).expect(err);
+                let _ = result.map_err(Error::Api).emit(&errors).unwrap();
                 callback()
             })
         }
@@ -104,22 +106,28 @@ impl UseCreateStateHandle {
 }
 
 #[hook]
-pub fn use_create_state(id: Option<u64>, user: User) -> SuspensionResult<UseCreateStateHandle> {
-    log::info!("create state handle");
-    let handle =
-        use_state_eq(|| Inner { stage: CreateStage::Quiz, id, full: FullDraftQuiz::default() });
+pub fn use_create_state(
+    id: Option<u64>,
+    user: User,
+    errors: Errors,
+) -> SuspensionResult<UseCreateStateHandle> {
+    let handle = use_state_eq(|| {
+        log::warn!("changing stage");
+        Inner { stage: CreateStage::Quiz, id, full: FullDraftQuiz::default() }
+    });
     let first = use_state_eq(|| true);
     let (suspense, cb) = Suspension::new();
 
     let (handle_clone, user_clone) = (handle.clone(), user.clone());
     if let Some(quiz_id) = id {
-        let clone = first.clone();
+        let clone_first = first.clone();
         spawn_local(async move {
             let full = api::full_quiz(Some(user_clone), quiz_id).await.map(Into::into).unwrap();
-            let inner = Inner { stage: CreateStage::Quiz, id, full };
+            let inner = Inner { stage: (*handle_clone).stage, id, full };
 
+            log::warn!("{:?}", inner);
             handle_clone.set(inner);
-            clone.set(false);
+            clone_first.set(false);
 
             cb.resume();
         })
@@ -128,7 +136,7 @@ pub fn use_create_state(id: Option<u64>, user: User) -> SuspensionResult<UseCrea
     }
 
     match *first {
-        false => Ok(UseCreateStateHandle { user, handle }),
+        false => Ok(UseCreateStateHandle { user, handle, errors }),
         true => Err(suspense),
     }
 }
