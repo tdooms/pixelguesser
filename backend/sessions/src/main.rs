@@ -26,7 +26,7 @@ struct Opts {
 }
 
 async fn start_socket(socket: WebSocket, global: Global) {
-    log::info!("client connected");
+    log::debug!("client connected");
 
     let (sink, mut stream) = socket.split();
     let (responder, receiver) = mpsc::unbounded_channel();
@@ -48,7 +48,7 @@ async fn start_socket(socket: WebSocket, global: Global) {
         }
     }
 
-    log::info!("client disconnected {:?}", connection.local.as_ref().map(|x| x.id));
+    log::debug!("client disconnected {:?}", connection.local.as_ref().map(|x| x.id));
 }
 
 #[tokio::main]

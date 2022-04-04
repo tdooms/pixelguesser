@@ -100,15 +100,15 @@ impl Connection {
     pub async fn request(&mut self, request: Request) {
         let response = match (request, &self.local) {
             (Request::Host, None) => {
-                log::info!("request to host a new session");
+                log::trace!("request to host a new session");
                 self.handle_host().await
             }
             (Request::Manage(session_id), None) => {
-                log::info!("request to manage session {}", session_id);
+                log::trace!("request to manage session {}", session_id);
                 self.handle_manage(session_id).await
             }
             (Request::Update(action, rounds), Some(local)) => {
-                log::info!("request to update session {}", local.id);
+                log::trace!("request to update session {}", local.id);
                 self.handle_update(action, rounds).await
             }
             (request, _) => {
@@ -127,7 +127,7 @@ impl Connection {
         let lock = self.local.as_ref().unwrap().state.lock().await;
 
         let str = serde_json::to_string(&response).unwrap();
-        log::info!("{}", str);
+        log::trace!("{}", str);
         let msg = Message::text(str);
 
         // we don't care about the result, if the connection was closed

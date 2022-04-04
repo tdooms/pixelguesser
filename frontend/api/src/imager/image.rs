@@ -1,29 +1,39 @@
 use crate::IMAGE_ENDPOINT;
+use crate::{Error, IMAGE_PLACEHOLDER};
 use derive_more::Display;
 use gloo::file::futures::read_as_data_url;
 use reqwasm::http::Request;
-use serde::de::Error;
 use serde::de::Visitor;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::Formatter;
+use std::fmt::{Debug, Formatter};
 
 #[derive(Display)]
 pub enum Resolution {
-    #[display(fmt = "height=108")]
+    #[display(fmt = "?height=108")]
     Thumbnail,
-    #[display(fmt = "height=324")]
+    #[display(fmt = "?height=324")]
     Card,
-    #[display(fmt = "height=1080")]
+    #[display(fmt = "?height=1080")]
     FullHd,
     #[display(fmt = "")]
     Max,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum ImageData {
     Local(String),
     Url(String),
     Both(String, String),
+}
+
+impl Debug for ImageData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ImageData::Local(_) => write!(f, "ImageData::Local()"),
+            ImageData::Url(url) => write!(f, "ImageData::Url({})", url),
+            ImageData::Both(url, _) => write!(f, "ImageData::Both({})", url),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -64,7 +74,7 @@ impl<'de> Visitor<'de> for StrVisitor {
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-        E: Error,
+        E: serde::de::Error,
     {
         Ok(v.to_owned())
     }
@@ -82,25 +92,44 @@ impl Image {
         Image { data: ImageData::Url(url.to_string()), name }
     }
 
-    pub async fn upload(&mut self) {
+    pub async fn upload(&mut self) -> Result<(), Error> {
         if let ImageData::Local(local) = &self.data {
             let endpoint = format!("{}/upload", IMAGE_ENDPOINT);
-            log::warn!("{}", endpoint);
-            let response = Request::post(&endpoint).body(local.clone()).send().await.unwrap();
 
-            let filename = response.text().await.unwrap();
+            let body = local.split(',').nth(1).unwrap().to_owned();
+            let response = Request::post(&endpoint).body(body).send().await.unwrap();
+
+            (response.status() == 200).then(|| ()).ok_or(Error::Upload)?;
+
+            let filename = response.text().await?;
+            log::trace!("uploaded image filename: {}", filename);
             self.data = ImageData::Both(local.clone(), filename)
         }
+        Ok(())
     }
 
     pub fn name(&self) -> String {
         self.name.clone()
     }
 
+    pub fn url(&self) -> Option<String> {
+        match &self.data {
+            ImageData::Local(_) => None,
+            ImageData::Url(url) | ImageData::Both(_, url) => Some(url.clone()),
+        }
+    }
+
     pub fn src(&self, resolution: Resolution) -> String {
         match &self.data {
             ImageData::Local(src) | ImageData::Both(src, _) => src.clone(),
-            ImageData::Url(url) => format!("{}/{}?{}", IMAGE_ENDPOINT, url, resolution),
+            ImageData::Url(url) => format!("{IMAGE_ENDPOINT}/{url}{resolution}"),
+        }
+    }
+
+    pub fn src_or_placeholder(img: Option<&Image>, resolution: Resolution) -> String {
+        match img {
+            Some(img) => img.src(resolution),
+            None => IMAGE_PLACEHOLDER.to_owned(),
         }
     }
 }

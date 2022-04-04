@@ -7,7 +7,6 @@ window.init_auth = async (domain, client_id) => {
         "audience": "https://hasura.io/learn",
         "cacheLocation": 'localstorage',
     }
-    console.log("init auth");
 
     auth0 = await createAuth0Client(args);
 

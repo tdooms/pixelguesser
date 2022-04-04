@@ -1,46 +1,46 @@
 use cobul::props::{Color, ColumnSize};
 use cobul::*;
 use yew::prelude::*;
+use yew_router::prelude::use_navigator;
 
-use api::{Creator, DraftQuiz, Resolution, IMAGE_PLACEHOLDER};
+use api::{Creator, DraftQuiz, Image, Resolution, IMAGE_PLACEHOLDER};
 use components::QuizCard;
 use shared::{callback, Auth};
 
 use crate::quiz_form::QuizForm;
-
-#[derive(Properties, Debug, Clone, PartialEq)]
-pub struct Props {
-    pub quiz: DraftQuiz,
-    pub editing: bool,
-
-    pub onsubmit: Callback<DraftQuiz>,
-    pub onback: Callback<()>,
-    pub ondelete: Callback<()>,
-}
+use crate::state::UseCreateStateHandle;
+use crate::Route;
 
 #[function_component(QuizPage)]
-pub fn quiz_page(props: &Props) -> Html {
-    let Props { onsubmit, onback, ondelete, quiz, editing } = props.clone();
+pub fn quiz_page() -> Html {
+    let state = use_context::<UseCreateStateHandle>().unwrap();
+    let navigator = use_navigator().unwrap();
 
-    let state = use_state(|| quiz.clone());
-    let DraftQuiz { title, public, description, image, .. } = (*state).clone();
+    let quiz = state.quiz();
+    let DraftQuiz { title, description, image, public, .. } = quiz.clone();
 
-    let image = image
-        .as_ref()
-        .map(|x| x.src(Resolution::Card))
-        .unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
+    log::trace!("quiz page render {:?}", quiz);
+
+    let image = Image::src_or_placeholder(image.as_ref(), Resolution::Card);
 
     let creator: Creator = match use_context::<Auth>().unwrap().user() {
         Ok(user) => user.into(),
         Err(_) => return html! { "not allowed" },
     };
 
-    let onchange = callback!(state; move |quiz| state.set(quiz));
+    let callback = {
+        let navigator = navigator.clone();
+        move || navigator.push(Route::Overview)
+    };
+
+    let onchange = callback!(state; move |quiz| state.set_quiz(quiz));
+    let onsubmit = callback!(state; move |_| state.submit_quiz());
+    let onback = callback!(navigator; move |_| navigator.push(Route::Overview));
+    let ondelete = callback!(state, navigator; move |_| state.delete(callback.clone()));
 
     let delete = || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete"} </Button>};
-
     let left = html! {<Title> {"Overview"} </Title>};
-    let right = editing.then(delete).unwrap_or_default();
+    let right = state.id().map(|_| delete()).unwrap_or_default();
 
     html! {
         <Section>

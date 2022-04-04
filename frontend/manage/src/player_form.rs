@@ -3,6 +3,8 @@ use cobul::*;
 use validator::Validate;
 use yew::prelude::*;
 
+use shared::callback;
+
 #[derive(Debug, Clone, PartialEq, Validate)]
 struct Player {
     pub name: String,
@@ -19,12 +21,22 @@ pub fn player_form(props: &Props) -> Html {
     let state = use_state(|| String::new());
 
     let player = Player { name: (*state).clone() };
-    let actions = Actions::new().submit(onsubmit.reform(|player: Player| player.name));
-    let (form, Player { name: value }) = use_form(&player, actions);
+
+    let onsubmit = callback!(state, onsubmit; move |player: Player| {
+        state.set(String::new());
+        onsubmit.emit(player.name);
+    });
+
+    let onchange = callback!(state; move |player: Player| state.set(player.name));
+    let actions = Actions::new().submit(onsubmit.clone()).change(onchange);
+
+    log::trace!("render player form {:?}", player);
+    let (form, player) = use_form(&player, actions);
+    let value = player.name.clone();
 
     let onkeypress = Callback::from(move |e: KeyboardEvent| {
         if e.key() == "Enter" {
-            onsubmit.emit(player.name.clone())
+            onsubmit.emit(player.clone());
         }
     });
 

@@ -6,8 +6,9 @@ use shared::{callback, Auth, Errors, Route};
 
 use crate::quiz_page::QuizPage;
 use crate::round_page::RoundPage;
-use crate::state::{use_create_state, CreateStage};
+use crate::state::{use_create_state, CreateStage, UseCreateStateHandle};
 use crate::summary::Summary;
+use yew::suspense::{Suspension, SuspensionResult};
 
 mod quiz_form;
 mod quiz_page;
@@ -27,42 +28,21 @@ pub struct Props {
 #[function_component(Create)]
 pub fn create(props: &Props) -> HtmlResult {
     let user = use_context::<Auth>().unwrap().user();
-    let navigator = use_navigator().unwrap();
     let errors = use_context::<Errors>().unwrap();
-    let state = use_create_state(props.id, user.clone().unwrap(), errors)?;
+
+    // log::info!("create main page before");
+    let state = use_create_state(props.id, user.unwrap(), errors)?;
+    // log::info!("create main page after");
 
     let inner = match state.stage() {
-        CreateStage::Quiz => {
-            let callback = {
-                let navigator = navigator.clone();
-                move || navigator.push(Route::Overview)
-            };
-
-            let onsubmit = callback!(state; move |quiz| state.set_quiz(quiz));
-            let onback = callback!(navigator; move |_| navigator.push(Route::Overview));
-            let ondelete = callback!(state; move |_| state.delete(callback.clone()));
-
-            let quiz = state.quiz();
-            let editing = state.id().is_some();
-
-            html! { <QuizPage {editing} {quiz} {onsubmit} {onback} {ondelete}/> }
-        }
-        CreateStage::Rounds => {
-            let onsave = callback!(state; move |rounds| state.set_rounds(rounds));
-            let ondone = callback!(state; move |_| state.set_stage(CreateStage::Summary));
-            let onback = callback!(state; move |_| state.set_stage(CreateStage::Quiz));
-            let rounds = state.rounds();
-            log::info!("{:?}", rounds);
-
-            html! { <RoundPage {rounds} {onsave} {ondone} {onback}/> }
-        }
-        CreateStage::Summary => {
-            let ondone = callback!(navigator; move |_| navigator.push(Route::Overview));
-            let onback = callback!(state; move |_| state.set_stage(CreateStage::Quiz));
-            let (quiz, rounds) = (state.quiz(), state.rounds());
-
-            html! { <Summary {quiz} {rounds} {ondone} {onback}/> }
-        }
+        CreateStage::Quiz => html! { <QuizPage/> },
+        CreateStage::Rounds => html! { <RoundPage/> },
+        CreateStage::Summary => html! { <Summary/> },
     };
-    Ok(inner)
+
+    Ok(html! {
+        <ContextProvider<UseCreateStateHandle> context={state}>
+            {inner}
+        </ContextProvider<UseCreateStateHandle>>
+    })
 }

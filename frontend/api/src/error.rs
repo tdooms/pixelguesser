@@ -12,6 +12,9 @@ pub enum Error {
     #[error("Session error {0}")]
     Session(#[from] sessions::Error),
 
+    #[error("Image upload failed")]
+    Upload,
+
     #[error("Connection closed")]
     WsClosed,
 

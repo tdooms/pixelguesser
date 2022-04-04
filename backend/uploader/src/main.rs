@@ -28,26 +28,27 @@ pub enum Error {
 // This is ugly
 impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'o> {
+        println!("{:?}", self);
         Status::InternalServerError.respond_to(req)
     }
 }
 
 #[post("/upload", data = "<data>")]
 pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error> {
-    let random: String =
-        rand::thread_rng().sample_iter(&Alphanumeric).take(16).map(char::from).collect();
-
     let base64 = data.open(10.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
     let image = image::load_from_memory_with_format(&buffer, format)?;
 
+    let rng = rand::thread_rng();
+    let random: String = rng.sample_iter(&Alphanumeric).take(16).map(char::from).collect();
     let extension = format.extensions_str().first().unwrap();
 
     let filepath = format!("{}/{}.{}", path.inner().0, random, extension);
     image.save(&filepath)?;
-    Ok(filepath)
+
+    Ok(format!("{}.{}", random, extension))
 }
 
 /// imager (IMAGE-serveR) is a program to efficiently serve images

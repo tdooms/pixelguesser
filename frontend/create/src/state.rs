@@ -12,72 +12,90 @@ pub enum CreateStage {
     Summary,
 }
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct Inner {
-    id: Option<u64>,
-    full: FullDraftQuiz,
-    stage: CreateStage,
+impl Default for CreateStage {
+    fn default() -> Self {
+        CreateStage::Quiz
+    }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct UseCreateStateHandle {
-    handle: UseStateHandle<Inner>,
+    id: UseStateHandle<Option<u64>>,
+    full: UseStateHandle<FullDraftQuiz>,
+    old: UseStateHandle<FullDraftQuiz>,
+    stage: UseStateHandle<CreateStage>,
+
     user: User,
     errors: Errors,
 }
 
 impl UseCreateStateHandle {
-    pub fn set_quiz(&self, quiz: DraftQuiz) {
-        let Self { handle, user, errors } = self.clone();
-        let mut inner = (*handle).clone();
+    pub fn set_quiz(&self, mut quiz: DraftQuiz) {
+        let mut inner = (*self.full).clone();
+        self.full.set(FullDraftQuiz { quiz, ..inner });
+    }
 
-        inner.full.quiz = quiz.clone();
-        inner.stage = CreateStage::Rounds;
+    pub fn submit_quiz(&self) {
+        self.stage.set(CreateStage::Rounds);
+        if &self.old.quiz == &self.full.quiz {
+            return;
+        }
+
+        let Self { id, full, old, user, errors, .. } = self.clone();
 
         spawn_local(async move {
-            let result = match inner.id {
-                Some(id) => api::update_quiz(user, id, quiz).await,
-                None => api::create_quiz(user, quiz).await,
+            let mut quiz = full.quiz.clone();
+
+            if let Some(image) = &mut quiz.image {
+                let _ = image.upload().await.map_err(Error::Api).emit(&errors);
+            }
+
+            let result = match *id {
+                Some(id) => api::update_quiz(user, id, quiz.clone()).await,
+                None => api::create_quiz(user, quiz.clone()).await,
             };
 
-            // TODO: use quiz for something else?
-            let quiz = result.map_err(Error::Api).emit(&errors);
+            let result = result.map_err(Error::Api).emit(&errors);
 
-            log::warn!("{:?}", inner);
-            inner.id = quiz.flatten().map(|quiz| quiz.id);
-            handle.set(inner);
+            id.set(id.or(result.flatten().map(|quiz| quiz.id)));
+
+            full.set(FullDraftQuiz { quiz: quiz.clone(), ..(*full).clone() });
+            old.set(FullDraftQuiz { quiz, ..(*full).clone() });
         });
     }
 
     pub fn set_stage(&self, stage: CreateStage) {
-        let mut inner = (*self.handle).clone();
-        inner.stage = stage;
-        log::warn!("{:?}", inner);
-        self.handle.set(inner)
+        self.stage.set(stage)
     }
 
-    pub fn set_rounds(&self, rounds: Vec<DraftRound>) {
-        let Self { user, errors, .. } = self.clone();
-        let mut inner = (*self.handle).clone();
-        let id = inner.id.unwrap();
+    pub fn set_rounds(&self, mut rounds: Vec<DraftRound>) {
+        let mut inner = (*self.full).clone();
+        self.full.set(FullDraftQuiz { rounds, ..inner });
+    }
 
-        inner.full.rounds = rounds.clone();
-
-        for round in &mut inner.full.rounds {
-            round.image.as_mut().map(|x| x.upload());
+    pub fn submit_rounds(&self) {
+        if &self.old.rounds == &self.full.rounds {
+            return;
         }
 
-        log::warn!("settings set_rounds");
-        self.handle.set(inner);
-
+        let Self { user, errors, full, old, id, .. } = self.clone();
         spawn_local(async move {
-            let result = api::save_rounds(user, id, rounds).await;
+            let mut rounds = full.rounds.clone();
+
+            for image in rounds.iter_mut().filter_map(|round| round.image.as_mut()) {
+                let _ = image.upload().await.map_err(Error::Api).emit(&errors);
+            }
+
+            let result = api::save_rounds(user, (*id).unwrap(), rounds.clone()).await;
             let _ = result.map_err(Error::Api).emit(&errors);
+
+            full.set(FullDraftQuiz { rounds: rounds.clone(), ..(*full).clone() });
+            old.set(FullDraftQuiz { rounds, ..(*full).clone() });
         });
     }
 
     pub fn delete(&self, callback: impl FnOnce() + 'static) {
-        if let Some(id) = self.handle.id {
+        if let Some(id) = *self.id {
             let Self { user, errors, .. } = self.clone();
 
             spawn_local(async move {
@@ -89,54 +107,45 @@ impl UseCreateStateHandle {
     }
 
     pub fn rounds(&self) -> Vec<DraftRound> {
-        self.handle.full.rounds.clone()
+        self.full.rounds.clone()
     }
 
     pub fn quiz(&self) -> DraftQuiz {
-        self.handle.full.quiz.clone()
+        self.full.quiz.clone()
     }
 
     pub fn stage(&self) -> CreateStage {
-        self.handle.stage.clone()
+        (*self.stage).clone()
     }
 
     pub fn id(&self) -> Option<u64> {
-        self.handle.id.clone()
+        (*self.id).clone()
     }
 }
 
 #[hook]
 pub fn use_create_state(
-    id: Option<u64>,
+    quiz_id: Option<u64>,
     user: User,
     errors: Errors,
 ) -> SuspensionResult<UseCreateStateHandle> {
-    let handle = use_state_eq(|| {
-        log::warn!("changing stage");
-        Inner { stage: CreateStage::Quiz, id, full: FullDraftQuiz::default() }
-    });
+    let full = use_state_eq(FullDraftQuiz::default);
+    let old = use_state_eq(FullDraftQuiz::default);
+    let stage = use_state_eq(CreateStage::default);
+    let id = use_state_eq(|| quiz_id);
+
     let first = use_state_eq(|| true);
-    let (suspense, cb) = Suspension::new();
 
-    let (handle_clone, user_clone) = (handle.clone(), user.clone());
-    if let Some(quiz_id) = id {
-        let clone_first = first.clone();
-        spawn_local(async move {
-            let full = api::full_quiz(Some(user_clone), quiz_id).await.map(Into::into).unwrap();
-            let inner = Inner { stage: (*handle_clone).stage, id, full };
+    match (*first, quiz_id) {
+        (true, Some(quiz_id)) => Err(Suspension::from_future(async move {
+            let response: FullDraftQuiz =
+                api::full_quiz(Some(user), quiz_id).await.map(Into::into).unwrap();
 
-            log::warn!("{:?}", inner);
-            handle_clone.set(inner);
-            clone_first.set(false);
+            full.set(response.clone());
+            old.set(response);
 
-            cb.resume();
-        })
-    } else {
-        first.set(false)
-    }
-
-    match *first {
-        false => Ok(UseCreateStateHandle { user, handle, errors }),
-        true => Err(suspense),
+            first.set(false);
+        })),
+        _ => Ok(UseCreateStateHandle { full, old, stage, id, user, errors }),
     }
 }

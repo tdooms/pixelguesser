@@ -71,6 +71,7 @@ impl Auth {
                 }
             };
             *clone.user.borrow_mut() = user.clone();
+            log::trace!("user init: {:?}", user.as_ref().map(|x| x.nickname.clone()));
             clone.callback.emit(user)
         })
     }

@@ -66,7 +66,7 @@ fn serialize_round(quiz_id: u64, index: usize, draft: &DraftRound) -> String {
     let image = draft
         .image
         .as_ref()
-        .map(|x| format!(", image: \\\"{}\\\"", x.src(Resolution::Max)))
+        .map(|x| format!(", image: \\\"{}\\\"", x.url().unwrap()))
         .unwrap_or_default();
 
     let speed = draft.speed.as_ref().map(|x| format!(", speed: \\\"{}\\\"", x)).unwrap_or_default();
@@ -81,7 +81,7 @@ fn serialize_quiz(user: &User, draft: &DraftQuiz) -> String {
     let image = draft
         .image
         .as_ref()
-        .map(|x| format!(", image: \\\"{}\\\"", x.src(Resolution::Max)))
+        .map(|x| format!(", image: \\\"{}\\\"", x.url().unwrap()))
         .unwrap_or_default();
 
     format!(
@@ -92,6 +92,16 @@ fn serialize_quiz(user: &User, draft: &DraftQuiz) -> String {
 
 pub async fn quizzes(user: Option<User>) -> Result<Vec<Quiz>, Error> {
     let str = format!("quizzes {{ {} }}", QUIZ_FIELDS);
+
+    let data: QuizzesData = exec(user, Kind::Query(&str)).await?;
+    Ok(data.quizzes)
+}
+
+pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Quiz>, Error> {
+    let str = format!(
+        "quizzes(where: {{ title: {{ _ilike: \\\"%{}%\\\" }} }} ) {{ {} }}",
+        query, QUIZ_FIELDS
+    );
 
     let data: QuizzesData = exec(user, Kind::Query(&str)).await?;
     Ok(data.quizzes)
@@ -110,7 +120,7 @@ pub async fn full_quiz(user: Option<User>, quiz_id: u64) -> Result<FullQuiz, Err
 
 pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
     let object = serialize_quiz(&user, &draft);
-    let str = format!("insert_quizzes_one(object: {{ {} }}) {{ id }}", object);
+    let str = format!("insert_quizzes_one(object: {{ {} }}) {{ {} }}", object, QUIZ_FIELDS);
 
     let data: CreateQuizData = exec(Some(user), Kind::Mutation(&str)).await?;
     Ok(data.insert_quizzes_one)

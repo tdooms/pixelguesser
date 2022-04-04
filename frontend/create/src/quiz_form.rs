@@ -24,7 +24,9 @@ async fn make_image(mut quiz: DraftQuiz, files: Vec<web_sys::File>) -> DraftQuiz
 
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
+    log::trace!("quiz form render");
     let Props { quiz, onsubmit, onback, onchange } = props.clone();
+
     let actions = Actions::new().submit(onsubmit).change(onchange);
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
     let DraftQuiz { title, explanation, public: _, description, image, .. } = quiz;

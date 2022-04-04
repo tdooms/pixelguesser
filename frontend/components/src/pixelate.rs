@@ -96,7 +96,7 @@ impl Component for Pixelate {
     type Properties = Props;
 
     fn create(ctx: &Context<Self>) -> Self {
-        log::info!("pixelate create");
+        log::trace!("pixelate create");
         Self {
             _resizer: Resizer::new(ctx.link().callback(|_| Msg::Resize)),
             old: ctx.props().clone(),

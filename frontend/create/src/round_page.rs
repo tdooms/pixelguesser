@@ -1,21 +1,15 @@
+use std::rc::Rc;
+
 use cobul::use_value_state;
 use cobul::Columns;
-use shared::callback;
 use yew::prelude::*;
 
-use api::{DraftRound, Resolution};
+use api::{DraftRound, Image, Resolution};
+use shared::callback;
 
 use crate::round_edit::RoundEdit;
-
 use crate::round_list::RoundList;
-
-#[derive(Clone, Debug, Properties, PartialEq)]
-pub struct Props {
-    pub rounds: Vec<DraftRound>,
-    pub onback: Callback<()>,
-    pub ondone: Callback<()>,
-    pub onsave: Callback<Vec<DraftRound>>,
-}
+use crate::state::{CreateStage, UseCreateStateHandle};
 
 pub enum Action {
     Add,
@@ -24,69 +18,88 @@ pub enum Action {
     Edit(DraftRound),
 }
 
-pub fn change(
-    state: UseStateHandle<Vec<DraftRound>>,
-    current: UseStateHandle<usize>,
-    action: Action,
-    onsave: Callback<Vec<DraftRound>>,
-) {
-    let mut new = (*state).clone();
-    let index = *current;
+#[derive(Clone, PartialEq)]
+struct State {
+    pub rounds: Rc<Vec<DraftRound>>,
+    pub changes: UseStateHandle<u64>,
+    pub current: UseStateHandle<usize>,
+}
+
+fn update(state: State, action: Action, onchange: Callback<Vec<DraftRound>>, onsave: Callback<()>) {
+    let mut new = (*state.rounds).clone();
+    let index = *state.current;
 
     match action {
         Action::Add => {
-            current.set(new.len());
+            state.current.set(new.len());
             new.push(DraftRound::default())
         }
         Action::Delete => {
             new.remove(index);
-            current.set(1.max(index) - 1)
+            state.current.set(1.max(index) - 1)
         }
-        Action::Select(index) => current.set(index),
-        Action::Edit(round) => new[index] = round,
+        Action::Select(index) => {
+            if *state.current != index {
+                onsave.emit(())
+            }
+            state.current.set(index);
+        }
+        Action::Edit(round) => {
+            new[index] = round;
+            state.changes.set(0)
+        }
     }
-    onsave.emit(new)
+    onchange.emit(new);
+    state.changes.set(*state.changes + 1);
 }
 
-pub fn maker<T: 'static>(
-    local: &UseStateHandle<Vec<DraftRound>>,
-    current: &UseStateHandle<usize>,
-    onsave: &Callback<Vec<DraftRound>>,
+fn maker<T: 'static>(
+    state: &State,
+    onsave: &Callback<()>,
+    onchange: &Callback<Vec<DraftRound>>,
     action: fn(T) -> Action,
 ) -> Callback<T> {
-    callback!(local, current, onsave; move |x| change(local.clone(), current.clone(), action(x), onsave.clone()))
+    callback!(state, onsave, onchange; move |x| update(state.clone(), action(x), onchange.clone(), onsave.clone()))
 }
 
 #[function_component(RoundPage)]
-pub fn round_page(props: &Props) -> Html {
-    let Props { onback, ondone, onsave, .. } = props.clone();
+pub fn round_page() -> Html {
+    log::trace!("round page render");
+    let create_state = use_context::<UseCreateStateHandle>().unwrap();
 
-    let rounds = match props.rounds.len() {
-        0 => vec![DraftRound::default()],
-        _ => props.rounds.clone(),
+    let onback = callback!(create_state; move |_| create_state.set_stage(CreateStage::Quiz));
+    let ondone = callback!(create_state; move |_| create_state.set_stage(CreateStage::Summary));
+    let onsave = callback!(create_state; move |_| create_state.submit_rounds());
+    let onchange = callback!(create_state; move |rounds| create_state.set_rounds(rounds));
+
+    let rounds = create_state.rounds();
+    let rounds = match rounds.len() {
+        0 => Rc::new(vec![DraftRound::default()]),
+        _ => Rc::new(rounds),
     };
 
-    let local = use_value_state(&rounds);
     let current = use_state(|| 0_usize);
+    let changes = use_state(|| 0_u64);
+    let state = State { rounds, current, changes };
 
     let list = {
-        let onselect = maker(&local, &current, &onsave, Action::Select);
-        let onadd = maker(&local, &current, &onsave, |_| Action::Add);
-        let ondelete = maker(&local, &current, &onsave, |_| Action::Delete);
+        let onselect = maker(&state, &onsave, &onchange, Action::Select);
+        let onadd = maker(&state, &onsave, &onchange, |_| Action::Add);
+        let ondelete = maker(&state, &onsave, &onchange, |_| Action::Delete);
 
-        let images: Vec<_> = local
+        let images: Vec<_> = state
+            .rounds
             .iter()
-            .map(|round| round.image.as_ref().map(|img| img.src(Resolution::Thumbnail)))
+            .map(|round| round.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
             .collect();
 
-        let current = *current;
-
+        let current = *state.current;
         html! {<RoundList {onselect} {onadd} {ondelete} {images} {current}/>}
     };
 
     let edit = {
-        let draft = local[*current].clone();
-        let onedit = maker(&local, &current, &onsave, Action::Edit);
+        let draft = state.rounds[*state.current].clone();
+        let onedit = maker(&state, &onsave, &onchange, Action::Edit);
 
         html! {<RoundEdit {draft} {onback} {ondone} {onedit}/>}
     };
