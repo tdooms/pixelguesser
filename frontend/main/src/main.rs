@@ -14,8 +14,11 @@ use crate::loader::Loader;
 use crate::overview::Overview;
 use crate::test::Test;
 
+pub mod dropdown;
 mod loader;
+pub mod navbar;
 mod overview;
+mod profile;
 mod test;
 
 #[global_allocator]

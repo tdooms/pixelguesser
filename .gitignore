@@ -1,6 +1,7 @@
 /target
 /data
 /frontend/main/dist
+/backend/imageflow
 
 *.lock
 /.idea

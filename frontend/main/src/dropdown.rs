@@ -5,8 +5,8 @@ use yew_router::prelude::*;
 
 use shared::{Auth, Route};
 
-#[function_component(Profile)]
-pub fn profile() -> Html {
+#[function_component(ProfileDropdown)]
+pub fn profile_dropdown() -> Html {
     let state = use_state(|| false);
     let navigator = use_navigator().unwrap();
     let auth = use_context::<Auth>().unwrap();
@@ -22,11 +22,12 @@ pub fn profile() -> Html {
         Ok(user) => html! {
             <>
                 <Button color={Color::Primary} class="m-2" onclick={oncreate}>
-                    <span>{"Create quiz"}</span>
+                    <span>{"Create"}</span>
                 </Button>
 
                 <Dropdown class="m-1 mr-2" trigger={trigger(user.picture.clone())} {onclick} active={*state} right=true>
                     <DropdownItem> {"Profile"} </DropdownItem>
+                    <DropdownItem> {"Library"} </DropdownItem>
                     <DropdownDivider/>
                     <DropdownItem onclick={auth.logout()}> {"Log out"} </DropdownItem>
                 </Dropdown>

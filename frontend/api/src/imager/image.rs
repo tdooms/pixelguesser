@@ -1,5 +1,5 @@
-use crate::IMAGE_ENDPOINT;
 use crate::{Error, IMAGE_PLACEHOLDER};
+use crate::{IMAGE_ENDPOINT, UPLOAD_ENDPOINT};
 use derive_more::Display;
 use gloo::file::futures::read_as_data_url;
 use reqwasm::http::Request;
@@ -94,7 +94,7 @@ impl Image {
 
     pub async fn upload(&mut self) -> Result<(), Error> {
         if let ImageData::Local(local) = &self.data {
-            let endpoint = format!("{}/upload", IMAGE_ENDPOINT);
+            let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
 
             let body = local.split(',').nth(1).unwrap().to_owned();
             let response = Request::post(&endpoint).body(body).send().await.unwrap();

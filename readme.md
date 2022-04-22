@@ -6,7 +6,7 @@ and slowly grows more detailed over time. The game is meant to played in
 real-life, but some support for on-line play could be added later. The 
 intent is that the website is opened on some large screen that can be seen 
 by everyone, there we can choose a quiz that we want to play. Someone can 
-then become the'quiz master' by scanning the QR-code on the screen. That 
+then become the 'quiz master' by scanning the QR-code on the screen. That 
 person will then see the right answers and can select the player that 
 guessed first.
 

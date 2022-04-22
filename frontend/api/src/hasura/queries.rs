@@ -10,12 +10,6 @@ use crate::{
     ROUND_FIELDS,
 };
 
-pub enum Kind<'r> {
-    Query(&'r str),
-    Mutation(&'r str),
-    Subscription(&'r str),
-}
-
 #[derive(serde::Deserialize, Debug)]
 #[serde(untagged)]
 enum Response<T> {
@@ -31,14 +25,8 @@ pub struct GraphqlError {
 
 pub async fn exec<T: DeserializeOwned + Debug>(
     user: Option<User>,
-    query: Kind<'_>,
+    body: String,
 ) -> Result<T, Error> {
-    let body = match query {
-        Kind::Query(str) => format!("{{\"query\":\"query {{ {} }}\"}}", str),
-        Kind::Mutation(str) => format!("{{\"query\":\"mutation {{ {} }}\" }}", str),
-        Kind::Subscription(str) => format!("{{\"query\":\"subscription {{ {} }}\"}}", str),
-    };
-
     log::debug!("request {}", body);
 
     let builder = Request::new(GRAPHQL_ENDPOINT)
