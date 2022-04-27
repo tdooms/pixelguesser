@@ -30,8 +30,8 @@ pub struct UseCreateStateHandle {
 }
 
 impl UseCreateStateHandle {
-    pub fn set_quiz(&self, mut quiz: DraftQuiz) {
-        let mut inner = (*self.full).clone();
+    pub fn set_quiz(&self, quiz: DraftQuiz) {
+        let inner = (*self.full).clone();
         self.full.set(FullDraftQuiz { quiz, ..inner });
     }
 
@@ -68,8 +68,8 @@ impl UseCreateStateHandle {
         self.stage.set(stage)
     }
 
-    pub fn set_rounds(&self, mut rounds: Vec<DraftRound>) {
-        let mut inner = (*self.full).clone();
+    pub fn set_rounds(&self, rounds: Vec<DraftRound>) {
+        let inner = (*self.full).clone();
         self.full.set(FullDraftQuiz { rounds, ..inner });
     }
 

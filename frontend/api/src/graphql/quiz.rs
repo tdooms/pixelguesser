@@ -2,10 +2,17 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use validator::Validate;
 
-use crate::hasura::creator::Creator;
-use crate::imager::Image;
+use crate::graphql::creator::Creator;
+use crate::Image;
 
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+impl hasura::Encode for Image {
+    fn encode(&self) -> String {
+        self.url().unwrap()
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk, hasura::Encode)]
+#[object(name = "quizzes", pk = "id", draft = "DraftQuiz")]
 pub struct Quiz {
     pub id: u64,
     pub public: bool,
@@ -17,10 +24,11 @@ pub struct Quiz {
     pub image: Option<String>,
 
     pub created_at: DateTime<Utc>,
+    #[object(expand)]
     pub creator: Creator,
 }
 
-#[derive(Validate, Default, Debug, Clone, PartialEq, Deserialize)]
+#[derive(Validate, Default, Debug, Clone, PartialEq, Deserialize, hasura::Encode)]
 pub struct DraftQuiz {
     pub public: bool,
 

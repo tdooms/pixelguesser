@@ -3,7 +3,7 @@ use cobul::*;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
-use api::{Creator, DraftQuiz, Image, Resolution, IMAGE_PLACEHOLDER};
+use api::{Creator, DraftQuiz, Image, Resolution};
 use components::QuizCard;
 use shared::{callback, Auth};
 
@@ -36,7 +36,7 @@ pub fn quiz_page() -> Html {
     let onchange = callback!(state; move |quiz| state.set_quiz(quiz));
     let onsubmit = callback!(state; move |_| state.submit_quiz());
     let onback = callback!(navigator; move |_| navigator.push(Route::Overview));
-    let ondelete = callback!(state, navigator; move |_| state.delete(callback.clone()));
+    let ondelete = callback!(state; move |_| state.delete(callback.clone()));
 
     let delete = || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete"} </Button>};
     let left = html! {<Title> {"Overview"} </Title>};

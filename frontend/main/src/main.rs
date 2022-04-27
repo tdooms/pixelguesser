@@ -6,7 +6,7 @@ use cobul::{Loading, Notification};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use api::{Code, User};
+use api::Code;
 use create::Create;
 use shared::{callback, Auth, Error, Errors, Route};
 

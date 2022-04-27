@@ -1,6 +1,6 @@
 use crate::{DraftQuiz, DraftRound, Quiz, Round};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize)]
 pub struct FullQuiz {
     pub quiz: Quiz,
     pub rounds: Vec<Round>,

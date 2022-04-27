@@ -1,6 +1,4 @@
-use log::info;
 use yew::prelude::*;
-use yew_router::hooks::use_navigator;
 
 use shared::{callback, Auth, Errors, Route};
 
@@ -8,7 +6,6 @@ use crate::quiz_page::QuizPage;
 use crate::round_page::RoundPage;
 use crate::state::{use_create_state, CreateStage, UseCreateStateHandle};
 use crate::summary::Summary;
-use yew::suspense::{Suspension, SuspensionResult};
 
 mod quiz_form;
 mod quiz_page;

@@ -1,10 +1,9 @@
 use std::rc::Rc;
 
-use cobul::use_value_state;
 use cobul::Columns;
 use yew::prelude::*;
 
-use api::{DraftRound, Image, Resolution};
+use api::{DraftRound, Resolution};
 use shared::callback;
 
 use crate::round_edit::RoundEdit;

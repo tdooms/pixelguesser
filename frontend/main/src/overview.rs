@@ -3,10 +3,9 @@ use cobul::{Column, Columns, Container, Control, EnumDropdown, Field, Input, Sec
 use strum::EnumIter;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
-use yew::suspense::{Suspension, SuspensionResult};
 use yew::HtmlResult;
 
-use api::{Quiz, Resolution, User};
+use api::{Quiz, Resolution};
 use components::{EmptyCard, MainNavbar, QuizCard};
 use shared::{callback, Auth};
 

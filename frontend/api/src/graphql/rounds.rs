@@ -1,4 +1,5 @@
 use derive_more::Display;
+use hasura::Encode;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
@@ -23,6 +24,12 @@ pub enum PointChoices {
     Five = 5,
 }
 
+impl Encode for PointChoices {
+    fn encode(&self) -> String {
+        format!("\\\"{}\\\"", *self as u8)
+    }
+}
+
 impl Default for PointChoices {
     fn default() -> Self {
         Self::One
@@ -42,23 +49,22 @@ pub enum GuessChoices {
     Three = 3,
 }
 
+impl Encode for GuessChoices {
+    fn encode(&self) -> String {
+        format!("\\\"{}\\\"", *self as u8)
+    }
+}
+
 impl Default for GuessChoices {
     fn default() -> Self {
         Self::Infinity
     }
 }
 
-#[derive(Validate, Debug, Clone, Default, PartialEq)]
-pub struct DraftRound {
-    #[validate(length(min = 1))]
-    pub answer: String,
-    pub points: PointChoices,
-    pub guesses: GuessChoices,
-    pub speed: Option<f64>,
-    pub image: Option<Image>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk, hasura::Encode,
+)]
+#[object(name = "rounds", pk = "quiz_id", pk = "index", draft = "DraftRound")]
 pub struct Round {
     pub quiz_id: u64,
     pub index: u64,
@@ -69,6 +75,16 @@ pub struct Round {
     pub guesses: GuessChoices,
     pub speed: Option<f64>,
     pub image: String,
+}
+
+#[derive(Validate, Debug, Clone, Default, PartialEq, hasura::Encode)]
+pub struct DraftRound {
+    #[validate(length(min = 1))]
+    pub answer: String,
+    pub points: PointChoices,
+    pub guesses: GuessChoices,
+    pub speed: Option<f64>,
+    pub image: Option<Image>,
 }
 
 impl From<Round> for DraftRound {

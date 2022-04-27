@@ -10,6 +10,7 @@ use sessions::{Request, Response};
 
 use crate::Error;
 
+#[allow(dead_code)]
 pub struct WebsocketTask {
     responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
     cancel: oneshot::Sender<()>,

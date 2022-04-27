@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use strum::{EnumIter, IntoEnumIterator};
+use strum::IntoEnumIterator;
 use yew::prelude::*;
 
 use api::{Action, Session};
