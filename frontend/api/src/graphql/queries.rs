@@ -57,7 +57,7 @@ pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Qui
     let condition = Condition { op: "_ilike", value: value.as_str() };
     let conditions = Conditions::Field(Quiz::title(), vec![condition]);
 
-    let body: Query<Quiz> = QueryBuilder::default()
+    let body = QueryBuilder::default()
         .conditions(vec![conditions])
         .returning(Quiz::all())
         .build()
@@ -71,7 +71,7 @@ pub async fn full_quiz(user: Option<User>, id: u64) -> Result<FullQuiz, Error> {
     let condition = Condition { op: "_eq", value: value.as_str() };
     let conditions = Conditions::Field(Round::quiz_id(), vec![condition]);
 
-    let quiz: QueryByPk<Quiz> =
+    let quiz =
         QueryByPkBuilder::default().pk(QuizPk { id }).returning(Quiz::all()).build().unwrap();
 
     let rounds: Query<Round> = QueryBuilder::default()

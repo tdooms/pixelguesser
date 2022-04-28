@@ -1,10 +1,5 @@
 use crate::{Quiz, Round};
 
-pub const QUIZ_FIELDS: &str =
-    "id public complete title description explanation image created_at creator {id name}";
-
-pub const ROUND_FIELDS: &str = "quiz_id index answer points guesses speed image";
-
 #[derive(serde::Deserialize, Debug)]
 pub struct AffectedRows {
     pub affected_rows: u64,
