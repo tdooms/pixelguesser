@@ -1,3 +1,4 @@
+use crate::navbar::MainNavbar;
 use cobul::props::{ColumnSize, Size};
 use cobul::{Column, Columns, Container, Control, EnumDropdown, Field, Input, Section};
 use strum::EnumIter;
@@ -6,7 +7,7 @@ use yew::prelude::*;
 use yew::HtmlResult;
 
 use api::{Quiz, Resolution};
-use components::{EmptyCard, MainNavbar, QuizCard};
+use components::{EmptyCard, QuizCard};
 use shared::{callback, Auth};
 
 #[derive(Clone, Copy, Debug, derive_more::Display, PartialEq, EnumIter)]

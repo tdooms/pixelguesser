@@ -56,7 +56,7 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
 struct Opts {
     /// Sets the folder to be served
-    #[clap(short, long, default_value = "./images")]
+    #[clap(short, long, default_value = "./data/images")]
     folder: String,
 
     /// Sets the port to be used
