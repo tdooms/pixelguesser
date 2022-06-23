@@ -1,16 +1,20 @@
-use std::net::SocketAddr;
-
+use crate::sessions::{Global, Mode, Session};
+use crate::shared::Action;
+use axum::extract::ws::{Message, WebSocket};
+use axum::extract::{Path, WebSocketUpgrade};
+use axum::response::IntoResponse;
+use axum::routing::get;
+use axum::{Extension, Router};
 use clap::Parser;
-use futures::StreamExt;
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::UnboundedReceiverStream;
-use warp::ws::{WebSocket, Ws};
-use warp::Filter;
+use futures::{SinkExt, StreamExt};
+use rand::Rng;
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::str::FromStr;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-mod state;
-
-use crate::state::{Connection, Global};
-use sessions::{Error, Session};
+mod sessions;
+mod shared;
 
 /// sessions is a server to manage pixelguesser game sessions
 #[derive(Parser)]
@@ -25,45 +29,76 @@ struct Opts {
     address: String,
 }
 
-async fn start_socket(socket: WebSocket, global: Global) {
-    log::debug!("client connected");
+async fn handler(
+    ws: WebSocketUpgrade,
+    Extension(global): Extension<Global>,
+    Path(id): Path<u64>,
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| websocket(socket, global, id))
+}
 
-    let (sink, mut stream) = socket.split();
-    let (responder, receiver) = mpsc::unbounded_channel();
-    let proxy = UnboundedReceiverStream::new(receiver);
+async fn creator(Extension(global): Extension<Global>, Path(quiz): Path<u64>) -> impl IntoResponse {
+    let id = rand::thread_rng().gen::<u64>();
+    let mut lock = global.sessions.lock().await;
 
-    tokio::task::spawn(proxy.forward(sink));
+    let session = Session::new(Mode::default(), quiz);
+    lock.insert(id, Arc::new(Mutex::new(session)));
 
-    let mut connection = Connection { global, responder, local: None };
+    id.to_string()
+}
 
-    while let Some(message) = stream.next().await {
-        match message {
-            Ok(message) if message.is_text() => match serde_json::from_slice(&message.as_bytes()) {
-                Ok(request) => connection.request(request).await,
-                Err(_) => connection.respond(&Err(Error::FaultyRequest)).await,
-            },
-            Ok(message) if message.is_ping() => log::debug!("ping/pong is not implemented"),
-            Ok(_) => log::warn!("unsupported websocket message type"),
-            Err(error) => log::error!("websocket error: {}", error),
+async fn websocket(stream: WebSocket, global: Global, id: u64) {
+    let (sender, mut receiver) = stream.split();
+    let connection = rand::thread_rng().gen::<u64>();
+
+    // Add the sender to the connections of the local state
+    let local = {
+        let lock = global.sessions.lock().await;
+        lock.get(&id).unwrap().clone()
+    };
+    local.lock().await.connections.insert(connection, sender);
+
+    while let Some(Ok(message)) = receiver.next().await {
+        // Parse the message
+        let message = message.into_text().unwrap();
+        let action: Action = serde_json::from_str(&message).unwrap();
+
+        // Update the local session state
+        let mut lock = local.lock().await;
+        lock.state.update(action);
+
+        // Notify all the listeners of the updated state
+        let response = serde_json::to_string(&lock.state).unwrap();
+        for (_, sender) in &mut lock.connections {
+            let _ = sender.send(Message::Text(response.clone())).await;
         }
     }
 
-    log::debug!("client disconnected {:?}", connection.local.as_ref().map(|x| x.id));
+    // remove local connection from the session
+    let mut lock = local.lock().await;
+    lock.connections.remove(&connection);
+
+    // Remove the session from the global state if it has no more connections
+    if lock.connections.is_empty() {
+        global.sessions.lock().await.remove(&id);
+    }
 }
 
 #[tokio::main]
 async fn main() {
     pretty_env_logger::init();
-
     let opts: Opts = Opts::parse();
 
+    let v4 = SocketAddrV4::new(Ipv4Addr::from_str(&opts.address).unwrap(), opts.port);
+    let address = SocketAddr::from(v4);
+
     let global = Global::default();
-    let global = warp::any().map(move || global.clone());
 
-    let ws = warp::ws()
-        .and(global)
-        .map(|ws: Ws, global: Global| ws.on_upgrade(|socket| start_socket(socket, global)));
+    let app = Router::new()
+        .route("ws/:id", get(handler))
+        .layer(Extension(global))
+        .route("create/:quiz", get(creator));
 
-    let address: SocketAddr = format!("{}:{}", opts.address, opts.port).parse().unwrap();
-    warp::serve(ws).run(address).await;
+    log::debug!("listening on {}", address);
+    axum::Server::bind(&address).serve(app.into_make_service()).await.unwrap();
 }

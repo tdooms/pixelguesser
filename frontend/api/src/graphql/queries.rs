@@ -5,7 +5,10 @@ use reqwasm::http::{Method, Request};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 
-use crate::{DraftQuiz, DraftRound, Error, FullQuiz, Quiz, QuizPk, Round, User, GRAPHQL_ENDPOINT};
+use crate::{
+    CreateQuizData, DeleteQuizData, DraftQuiz, DraftRound, Error, FullQuiz, FullQuizData, Quiz,
+    QuizPk, QuizzesData, Round, SaveRoundsData, UpdateQuizData, User, GRAPHQL_ENDPOINT,
+};
 
 #[derive(serde::Deserialize, Debug)]
 #[serde(untagged)]
@@ -49,7 +52,8 @@ pub async fn exec<T: DeserializeOwned + Debug>(
 
 pub async fn quizzes(user: Option<User>) -> Result<Vec<Quiz>, Error> {
     let body: Query<Quiz> = QueryBuilder::default().returning(Quiz::all()).build().unwrap();
-    exec(user, query!(body)).await
+    let res: QuizzesData = exec(user, query!(body)).await?;
+    Ok(res.quizzes)
 }
 
 pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Quiz>, Error> {
@@ -63,7 +67,8 @@ pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Qui
         .build()
         .unwrap();
 
-    exec(user, query!(body)).await
+    let res: QuizzesData = exec(user, query!(body)).await?;
+    Ok(res.quizzes)
 }
 
 pub async fn full_quiz(user: Option<User>, id: u64) -> Result<FullQuiz, Error> {
@@ -80,13 +85,15 @@ pub async fn full_quiz(user: Option<User>, id: u64) -> Result<FullQuiz, Error> {
         .build()
         .unwrap();
 
-    exec(user, query!(quiz, rounds)).await
+    let res: FullQuizData = exec(user, query!(quiz, rounds)).await?;
+    Ok(FullQuiz { quiz: res.quizzes_by_pk.ok_or(Error::Empty)?, rounds: res.rounds })
 }
 
 pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
     let body = InsertOneBuilder::default().returning(Quiz::all()).object(draft).build().unwrap();
 
-    exec(Some(user), mutation!(body)).await
+    let res: CreateQuizData = exec(Some(user), mutation!(body)).await?;
+    Ok(res.insert_quizzes_one)
 }
 
 pub async fn update_quiz(user: User, id: u64, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
@@ -97,14 +104,16 @@ pub async fn update_quiz(user: User, id: u64, draft: DraftQuiz) -> Result<Option
         .build()
         .unwrap();
 
-    exec(Some(user), mutation!(body)).await
+    let res: UpdateQuizData = exec(Some(user), mutation!(body)).await?;
+    Ok(res.update_quizzes_one)
 }
 
 pub async fn delete_quiz(user: User, id: u64) -> Result<Option<Quiz>, Error> {
     let body =
         DeleteByPkBuilder::default().pk(QuizPk { id }).returning(Quiz::all()).build().unwrap();
 
-    exec(Some(user), mutation!(body)).await
+    let res: DeleteQuizData = exec(Some(user), mutation!(body)).await?;
+    Ok(res.delete_quizzes_by_pk)
 }
 
 pub async fn save_rounds(
@@ -124,5 +133,6 @@ pub async fn save_rounds(
 
     let insert = InsertBuilder::default().returning(Round::all()).objects(rounds).build().unwrap();
 
-    exec(Some(user), mutation!(delete, insert)).await
+    let res: SaveRoundsData = exec(Some(user), mutation!(delete, insert)).await?;
+    Ok(res.insert_rounds)
 }

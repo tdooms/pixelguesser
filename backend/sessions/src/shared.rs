@@ -1,41 +1,74 @@
-use crate::session::{Action, Session};
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use std::collections::HashMap;
 
-#[derive(Error, Clone, Debug, Serialize, Deserialize)]
-pub enum Error {
-    #[error("Could not join session {0}")]
-    UnableToJoin(u64),
-
-    #[error("Could not create a new session due to an internal server error")]
-    UnableToCreate,
-
-    #[error("Could not join as manager in session {0}")]
-    UnableToManage(u64),
-
-    #[error("The host for this session disconnected")]
-    HostDisconnected,
-
-    #[error("Invalid update {0:?} on session {1:?}")]
-    InvalidUpdate(Action, Session),
-
-    #[error("You are not allowed to perform this operation")]
-    IllegalRequest,
-
-    #[error("Could not parse request")]
-    FaultyRequest,
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Player {
+    score: i64,
+    streak: i64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Request {
-    Host,        // amount of rounds
-    Manage(u64), // session id
-    Update(Action, usize),
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct State {
+    pub players: HashMap<String, Player>,
+    pub status: Status,
+    pub round: Option<usize>,
+    pub master: Option<u64>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Response {
-    pub id: u64,
-    pub managed: bool,
-    pub session: Session,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Action {
+    Add(String),
+    Remove(String),
+
+    Start,
+    Next,
+
+    Status(Status),
+    Score(String, i64),
+    Master(u64),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Status {
+    Playing,
+    Paused,
+    Revealing,
+    Revealed,
+}
+
+impl Default for Status {
+    fn default() -> Self {
+        Status::Playing
+    }
+}
+
+impl State {
+    pub fn update(&mut self, action: Action) {
+        match action {
+            Action::Add(name) => {
+                self.players.insert(name, Player::default());
+            }
+            Action::Remove(name) => {
+                self.players.remove(&name);
+            }
+            Action::Start => {
+                self.round = Some(0);
+                self.status = Status::Playing;
+            }
+            Action::Status(status) => {
+                self.status = status;
+            }
+            Action::Next => {
+                self.round = Some(self.round.unwrap() + 1);
+                self.status = Status::Playing;
+            }
+            Action::Master(id) => {
+                self.master = Some(id);
+            }
+            Action::Score(name, score) => {
+                let player = self.players.get_mut(&name).unwrap();
+                player.score += score;
+            }
+        }
+    }
 }

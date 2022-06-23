@@ -11,14 +11,9 @@ pub struct QuizzesData {
 }
 
 #[derive(serde::Deserialize, Debug)]
-pub struct QuizData {
+pub struct FullQuizData {
     pub quizzes_by_pk: Option<Quiz>,
     pub rounds: Vec<Round>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct CompleteQuizData {
-    pub update_quizzes: AffectedRows,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -34,11 +29,11 @@ pub struct UpdateQuizData {
 #[derive(serde::Deserialize, Debug)]
 pub struct DeleteQuizData {
     pub delete_quizzes_by_pk: Option<Quiz>,
-    pub delete_rounds: AffectedRows,
+    pub delete_rounds: Vec<Round>,
 }
 
 #[derive(serde::Deserialize, Debug)]
 pub struct SaveRoundsData {
-    pub delete_rounds: AffectedRows,
-    pub insert_rounds: AffectedRows,
+    pub delete_rounds: Vec<Round>,
+    pub insert_rounds: Vec<Round>,
 }

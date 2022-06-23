@@ -3,7 +3,7 @@ FROM rust
 WORKDIR usr/src/pixelguesser
 
 COPY backend/imager /usr/src/pixelguesser/imager/
-COPY backend/sessions /usr/src/pixelguesser/sessions/
+COPY backend/old /usr/src/pixelguesser/sessions/
 COPY data/images /usr/scr/pixelguesser/images
 
 RUN cargo install --path ./imager

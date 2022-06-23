@@ -49,7 +49,7 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <SimpleField label="Image" help={form.error("image")} help_color={Color::Danger}>
-            <File fullwidth={fullwidth} filename={filename} onupload={form.async_field(make_image)}/>
+            <File accept={"image/*"} fullwidth={fullwidth} filename={filename} onupload={form.async_field(make_image)}/>
         </SimpleField>
 
         <Buttons>

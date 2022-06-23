@@ -6,6 +6,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew::HtmlResult;
 
+use crate::navbar::MainNavbar;
 use api::{Quiz, Resolution};
 use components::{EmptyCard, QuizCard};
 use shared::{callback, Auth};
@@ -37,10 +38,10 @@ pub fn search(props: &Props) -> Html {
 
         <Field grouped=true>
             <Control expanded=true>
-                <Input placeholder="Find a quiz" value={filter} oninput={onfilter} size={Size::Large}/>
+                <Input placeholder="Find a quiz" value={filter} oninput={onfilter}/>
             </Control>
             <Control>
-                <EnumDropdown<Sort> size={Size::Large} value={sort} onchange={onsort}/>
+                <EnumDropdown<Sort> value={sort} onchange={onsort}/>
             </Control>
         </Field>
 

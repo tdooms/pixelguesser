@@ -20,6 +20,7 @@ impl From<DraftRound> for RoundInfo {
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub onchange: Callback<RoundInfo>,
+    pub onremove: Callback<()>,
     pub info: RoundInfo,
 }
 
@@ -31,7 +32,7 @@ pub fn round_form(props: &Props) -> Html {
     let RoundInfo { answer, points, guesses } = info;
 
     html! {
-        <div class="p-4">
+        <div class="pt-5 pl-4 pr-5">
         <SimpleField label="Answer" help={form.error("answer")}>
             <Input oninput={form.field(|x| &mut x.answer)} value={answer}/>
         </SimpleField>
@@ -45,6 +46,7 @@ pub fn round_form(props: &Props) -> Html {
             <EnumButtons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
             color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
+        <Button fullwidth=true onclick={&props.onremove}> {"Remove image"} </Button>
         </div>
     }
 }

@@ -67,7 +67,10 @@ pub fn round_page() -> Html {
     let create_state = use_context::<UseCreateStateHandle>().unwrap();
 
     let onback = callback!(create_state; move |_| create_state.set_stage(CreateStage::Quiz));
-    let ondone = callback!(create_state; move |_| create_state.set_stage(CreateStage::Summary));
+    let ondone = callback!(create_state; move |_| {
+        create_state.set_stage(CreateStage::Summary);
+        create_state.submit_rounds();
+    });
     let onsave = callback!(create_state; move |_| create_state.submit_rounds());
     let onchange = callback!(create_state; move |rounds| create_state.set_rounds(rounds));
 

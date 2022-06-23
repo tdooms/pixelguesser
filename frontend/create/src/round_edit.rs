@@ -21,13 +21,9 @@ pub fn round_edit(props: &Props) -> Html {
 
     let center = {
         let clone = draft.clone();
-        let onupload =
-            onedit.reform(move |image| DraftRound { image: Some(image), ..clone.clone() });
+        let onupload = onedit.reform(move |img| DraftRound { image: Some(img), ..clone.clone() });
 
-        let clone = draft.clone();
-        let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone.clone() });
-
-        html! { <RoundPreview image={draft.image.clone()} {onremove} {onupload}/>}
+        html! { <RoundPreview image={draft.image.clone()} {onupload}/>}
     };
 
     let right = {
@@ -36,6 +32,9 @@ pub fn round_edit(props: &Props) -> Html {
             let RoundInfo { answer, points, guesses } = info;
             DraftRound { answer, points, guesses, ..clone.clone() }
         };
+
+        let clone = draft.clone();
+        let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone.clone() });
 
         let info: RoundInfo = draft.into();
         let footer = html! {
@@ -50,7 +49,7 @@ pub fn round_edit(props: &Props) -> Html {
         };
         html! {
             <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
-                <RoundForm {info} onchange={onedit.reform(edit)} />
+                <RoundForm {info} onchange={onedit.reform(edit)} {onremove}/>
             </Sidebar>
         }
     };

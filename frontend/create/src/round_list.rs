@@ -30,10 +30,10 @@ pub fn round_list(props: &Props) -> Html {
 
         html! {
             <div class={classes!("columns", grey)} onclick={onselect}>
-                <Column size={ColumnSize::IsNarrow} class={"m-2 p-2"}> <p> {index} </p> </Column>
+                <Column size={ColumnSize::IsNarrow} class={"m-2 pl-2 pr-1"}> <p> {index} </p> </Column>
                 <Column class="p-1"> {image} </Column>
 
-                <div style="position:relative;right:5px;top:5px"> <Delete onclick={ondelete}/> </div>
+                <div style="position:relative;right:3px;top:10px"> <Delete onclick={ondelete}/> </div>
             </div>
         }
     };
