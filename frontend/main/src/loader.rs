@@ -8,26 +8,28 @@ use yew_router::prelude::RouterScopeExt;
 use host::Host;
 use manage::Manage;
 
-use api::{Action, FullQuiz, Request, Response, Session, WebsocketTask, SESSION_ENDPOINT};
+use api::{Action, FullQuiz, Response, Session, WebsocketTask};
 use shared::{async_callback, Auth, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
     // Having a session_id implies being a manager
-    pub session_id: Option<u64>,
-    pub quiz_id: u64,
+    pub session_id: Option<u32>,
+    pub quiz_id: u32,
 }
 
 pub struct Loader {
-    ws: WebsocketTask,
-    session: Option<(u64, Rc<Session>)>,
+    ws: Option<WebsocketTask>,
+    session: Rc<Session>,
     full: Option<Rc<FullQuiz>>,
+
+    session_id: Option<u32>,
 }
 
 pub enum Msg {
-    Ws(Result<Response, api::Error>),
-    Error(api::Error),
+    Ws(Response),
     Quiz(Result<FullQuiz, api::Error>),
+    Session(Result<u32, api::Error>),
     Action(Action),
 }
 
@@ -38,60 +40,63 @@ impl Component for Loader {
     fn create(ctx: &Context<Self>) -> Self {
         let Props { session_id, quiz_id } = ctx.props().clone();
 
-        let mut ws = WebsocketTask::create(
-            SESSION_ENDPOINT,
-            ctx.link().callback(Msg::Ws),
-            ctx.link().callback(Msg::Error),
-        );
-
-        let request = match session_id {
-            Some(session_id) => Request::Manage(session_id),
-            None => Request::Host,
-        };
+        match session_id {
+            None => async_callback(api::create_session(quiz_id), ctx.link().callback(Msg::Session)),
+            Some(id) => ctx.link().send_message(Msg::Session(Ok(id))),
+        }
 
         let (auth, _) = ctx.link().context::<Auth>(Callback::noop()).unwrap();
         async_callback(api::full_quiz(auth.user().ok(), quiz_id), ctx.link().callback(Msg::Quiz));
-        ws.send(&request);
 
-        Self { ws, session: None, full: None }
+        Self { ws: None, session_id: None, session: Rc::new(Session::default()), full: None }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let (errors, _) = ctx.link().context::<Errors>(Callback::noop()).unwrap();
         match msg {
-            Msg::Quiz(Ok(full)) => self.full = Some(Rc::new(full)),
-            Msg::Action(action) => {
-                self.ws.send(&Request::Update(action, self.full.as_ref().unwrap().rounds.len()))
+            Msg::Quiz(Ok(full)) => {
+                // Check if this only happens once?
+                self.full = Some(Rc::new(full))
             }
-            Msg::Ws(Ok(Response { id, managed: _, session })) => {
-                // TODO: check if session with other id exists
-                self.session = Some((id, Rc::new(session)));
-            }
-            Msg::Ws(Err(err)) => {
-                errors.emit(Error::Api(err));
-                ctx.link().navigator().unwrap().push(Route::Overview)
-            }
-            Msg::Error(err) => {
-                errors.emit(Error::Api(err));
+            Msg::Action(action) => self.ws.as_mut().unwrap().send(&action),
+            Msg::Ws(Response::Update(session)) => {
+                self.session = Rc::new(session);
             }
             Msg::Quiz(Err(err)) => {
                 errors.emit(Error::Api(err));
                 ctx.link().navigator().unwrap().push(Route::Overview)
+            }
+            Msg::Ws(Response::Error(err)) => {
+                log::error!("{:?}", err)
+            }
+            Msg::Session(Err(err)) => {
+                log::error!("{:?}", err)
+            }
+            Msg::Session(Ok(id)) => {
+                let cb = ctx.link().callback(Msg::Ws);
+                let mut ws = WebsocketTask::create(id, cb);
+
+                if let None = ctx.props().session_id {
+                    ws.send(&Action::Master);
+                }
+
+                self.session_id = Some(id);
+                self.ws = Some(ws);
             }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let Loader { session, full, .. } = self;
+        let Loader { session, full, session_id, .. } = self;
         let callback = ctx.link().callback(Msg::Action);
 
-        match (session.clone(), full.clone(), ctx.props().session_id) {
-            (Some((_, session)), Some(full), Some(_)) => html! {
+        match (session_id, full.clone(), ctx.props().session_id) {
+            (Some(_), Some(full), Some(_)) => html! {
                 <Manage {session} {full} {callback}/>
             },
-            (Some((session_id, session)), Some(full), None) => html! {
-                <Host {session} {session_id} {full} />
+            (Some(session_id), Some(full), None) => html! {
+                <Host {session} {session_id} {full} {callback}/>
             },
             _ => html! {
                 <Loading />

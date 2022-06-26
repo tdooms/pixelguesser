@@ -71,13 +71,16 @@ pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Qui
     Ok(res.quizzes)
 }
 
-pub async fn full_quiz(user: Option<User>, id: u64) -> Result<FullQuiz, Error> {
+pub async fn full_quiz(user: Option<User>, id: u32) -> Result<FullQuiz, Error> {
     let value = id.to_string();
     let condition = Condition { op: "_eq", value: value.as_str() };
     let conditions = Conditions::Field(Round::quiz_id(), vec![condition]);
 
-    let quiz =
-        QueryByPkBuilder::default().pk(QuizPk { id }).returning(Quiz::all()).build().unwrap();
+    let quiz = QueryByPkBuilder::default()
+        .pk(QuizPk { id: id.into() })
+        .returning(Quiz::all())
+        .build()
+        .unwrap();
 
     let rounds: Query<Round> = QueryBuilder::default()
         .conditions(vec![conditions])
@@ -96,7 +99,7 @@ pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>, E
     Ok(res.insert_quizzes_one)
 }
 
-pub async fn update_quiz(user: User, id: u64, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
+pub async fn update_quiz(user: User, id: u32, draft: DraftQuiz) -> Result<Option<Quiz>, Error> {
     let body = UpdateByPkBuilder::default()
         .pk(QuizPk { id })
         .returning(Quiz::all())
@@ -108,9 +111,12 @@ pub async fn update_quiz(user: User, id: u64, draft: DraftQuiz) -> Result<Option
     Ok(res.update_quizzes_one)
 }
 
-pub async fn delete_quiz(user: User, id: u64) -> Result<Option<Quiz>, Error> {
-    let body =
-        DeleteByPkBuilder::default().pk(QuizPk { id }).returning(Quiz::all()).build().unwrap();
+pub async fn delete_quiz(user: User, quiz_id: u32) -> Result<Option<Quiz>, Error> {
+    let body = DeleteByPkBuilder::default()
+        .pk(QuizPk { id: quiz_id })
+        .returning(Quiz::all())
+        .build()
+        .unwrap();
 
     let res: DeleteQuizData = exec(Some(user), mutation!(body)).await?;
     Ok(res.delete_quizzes_by_pk)
@@ -118,11 +124,11 @@ pub async fn delete_quiz(user: User, id: u64) -> Result<Option<Quiz>, Error> {
 
 pub async fn save_rounds(
     user: User,
-    quiz_id: u64,
+    quiz_id: u32,
     rounds: Vec<DraftRound>,
 ) -> Result<Vec<Round>, Error> {
     let value = quiz_id.to_string();
-    let condition = Condition { op: "_eq", value: value.as_str() };
+    let condition = Condition { op: "_eq", value: &format!("\\\"{}\\\"", value.as_str()) };
     let conditions = Conditions::Field(Round::quiz_id(), vec![condition]);
 
     let delete = DeleteBuilder::default()
@@ -131,8 +137,14 @@ pub async fn save_rounds(
         .build()
         .unwrap();
 
-    let insert = InsertBuilder::default().returning(Round::all()).objects(rounds).build().unwrap();
+    let objects: Vec<_> = rounds
+        .into_iter()
+        .enumerate()
+        .map(|(idx, draft)| Round::from_draft(draft, quiz_id, idx as u32))
+        .collect();
+
+    let insert = InsertBuilder::default().returning(Round::all()).objects(objects).build().unwrap();
 
     let res: SaveRoundsData = exec(Some(user), mutation!(delete, insert)).await?;
-    Ok(res.insert_rounds)
+    Ok(res.insert_rounds.returning)
 }

@@ -1,12 +1,11 @@
-use std::rc::Rc;
+use std::collections::HashMap;
 
 use yew::*;
 
-use api::{FullQuiz, Session};
+use api::{Action, Player, Round, Stage};
 
 use components::Pixelate;
-use shared::set_timer;
-use shared::{HOST_AFTER_REVEALED_TIME, HOST_ROUND_START_TIME};
+use shared::HOST_INFO_DURATION;
 
 use crate::info::Info;
 use crate::ranking::Ranking;
@@ -14,87 +13,39 @@ use gloo::timers::callback::Timeout;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {
+    pub round: Round,
     pub index: usize,
+    pub rounds: usize,
 
-    pub full: Rc<FullQuiz>,
-    pub session: Rc<Session>,
-
-    pub paused: bool,
-    pub revealing: bool,
+    pub stage: Stage,
+    pub players: HashMap<String, Player>,
+    pub callback: Callback<Action>,
 }
 
-#[derive(Debug)]
-pub enum Msg {
-    Timer,
-    Revealed,
-}
+#[function_component(Play)]
+pub fn play(props: &Props) -> Html {
+    let Props { round, index, rounds, stage, players, callback } = props.clone();
+    let onrevealed = callback.reform(|_| Action::Stage(Stage::Revealed));
+    let timer = use_state(|| Timeout::new(0, || ()));
 
-#[derive(Debug, Clone, Copy)]
-enum Stage {
-    Info,
-    Play,
-    Show,
-    Scores,
-}
+    use_effect_with_deps(
+        move |_| {
+            let cb = move || callback.emit(Action::Stage(Stage::Running));
+            timer.set(Timeout::new(1_000 * HOST_INFO_DURATION, cb));
+            || ()
+        },
+        index,
+    );
 
-pub struct Play {
-    timer: Option<Timeout>,
-    index: usize,
-    stage: Stage,
-}
-
-impl Component for Play {
-    type Message = Msg;
-    type Properties = Props;
-
-    fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            timer: Some(set_timer(ctx.link(), HOST_ROUND_START_TIME, Msg::Timer)),
-            index: ctx.props().index,
-            stage: Stage::Info,
-        }
-    }
-
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        self.timer = None;
-
-        match (msg, self.stage) {
-            (Msg::Timer, Stage::Info) => self.stage = Stage::Play,
-            (Msg::Timer, Stage::Show) => self.stage = Stage::Scores,
-            (Msg::Revealed, Stage::Play) => {
-                self.timer = Some(set_timer(ctx.link(), HOST_AFTER_REVEALED_TIME, Msg::Timer));
-                self.stage = Stage::Show;
-            }
-            _ => return false,
-        }
-        true
-    }
-
-    fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        if ctx.props().index != self.index {
-            self.index = ctx.props().index;
-            self.stage = Stage::Info;
-
-            self.timer = Some(set_timer(ctx.link(), HOST_ROUND_START_TIME, Msg::Timer));
-        }
-        true
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let Props { index, full, session, paused, revealing } = ctx.props().clone();
-        let onrevealed = ctx.link().callback(|_| Msg::Revealed);
-        let url = full.rounds[index].image.clone();
-
-        match self.stage {
-            Stage::Info => html! {
-                <Info {index} rounds={full.rounds.len()} round={full.rounds[index].clone()}/>
-            },
-            Stage::Scores => html! {
-                <Ranking {session} />
-            },
-            Stage::Play | Stage::Show => html! {
-                <Pixelate {revealing} {paused} {url} {onrevealed}/>
-            },
-        }
+    match stage {
+        Stage::Info => html! {
+            <Info {index} {rounds} {round}/>
+        },
+        Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed => html! {
+            <Pixelate {stage} url={round.image} {onrevealed}/>
+        },
+        Stage::Scores => html! {
+            <Ranking {players}/>
+        },
     }
 }

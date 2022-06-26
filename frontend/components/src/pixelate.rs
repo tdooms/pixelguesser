@@ -2,7 +2,7 @@ use gloo::timers::callback::Timeout;
 use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 
-use api::IMAGE_ENDPOINT;
+use api::{Stage, IMAGE_ENDPOINT};
 use shared::{
     draw_pixelated, set_timer, EmitError, Error, Resizer, TypeRef, PIXELATE_PLAY_SPEED,
     PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED, PIXELATE_START_PIXELS,
@@ -19,8 +19,7 @@ pub enum Msg {
 #[derive(Debug, Clone, Properties, PartialEq)]
 pub struct Props {
     pub url: String,
-    pub revealing: bool,
-    pub paused: bool,
+    pub stage: Stage,
     pub onrevealed: Callback<()>,
 }
 
@@ -62,7 +61,7 @@ impl Pixelate {
     }
 
     fn pixelate(&mut self, ctx: &Context<Self>) -> Result<(), Error> {
-        let Props { revealing, paused, onrevealed, .. } = ctx.props();
+        let Props { stage, onrevealed, .. } = ctx.props();
         self.timer = None;
 
         // Calculate the maximum pixels that are useful to de-pixelate
@@ -75,9 +74,9 @@ impl Pixelate {
         }
 
         // Set the speed according to the state
-        let speed = match (paused, revealing) {
-            (_, true) => PIXELATE_REVEAL_SPEED,
-            (false, _) => PIXELATE_PLAY_SPEED,
+        let speed = match stage {
+            Stage::Revealing => PIXELATE_REVEAL_SPEED,
+            Stage::Running => PIXELATE_PLAY_SPEED,
             _ => return Ok(()),
         };
 
@@ -141,9 +140,7 @@ impl Component for Pixelate {
         }
 
         // Check if we need to start re-pixelating
-        let pause_change = self.old.paused != ctx.props().paused;
-        let reveal_change = self.old.revealing != ctx.props().revealing;
-        if let (None, true) = (&self.timer, pause_change || reveal_change) {
+        if let (None, true) = (&self.timer, self.old.stage != ctx.props().stage) {
             ctx.link().send_message(Msg::Pixelate)
         }
 

@@ -1,5 +1,4 @@
-pub const HOST_ROUND_START_TIME: u32 = 5_000;
-pub const HOST_AFTER_REVEALED_TIME: u32 = 1_000;
+pub const HOST_INFO_DURATION: u32 = 3;
 pub const PIXELATE_REFRESH_TIME: u32 = 30;
 pub const PIXELATE_START_PIXELS: f64 = 4.0;
 pub const PIXELATE_PLAY_SPEED: f64 = 1.002;

@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use api::{Action, FullQuiz, Session, Stage};
-use cobul::props::{Alignment, Color};
+use api::{Action, FullQuiz, Phase, Session, Stage};
+use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use shared::Route;
 use yew::prelude::*;
@@ -31,40 +31,48 @@ pub struct Props {
 pub fn manage(props: &Props) -> Html {
     let Props { session, full, callback } = props;
 
-    let onsubmit = callback.reform(Action::AddPlayer);
+    let onsubmit = callback.reform(Action::Add);
+    let onremove = callback.reform(Action::Remove);
+
+    let onguess = |round: usize, full: &FullQuiz| {
+        let points = full.rounds[round].points as i64;
+        callback.reform(move |name| Action::Score(name, points))
+    };
+
     let onleave = {
         let navigator = use_navigator().unwrap().clone();
         Callback::from(move |_| navigator.push(Route::Overview))
     };
 
-    let body = match props.session.stage {
-        Stage::Lobby => {
-            let onremove = props.callback.reform(Action::RemovePlayer);
-            let title = "Select a player to remove them.";
-
-            html! {
-                <>
-                <PlayerForm {onsubmit}/>
-                <Block/>
-                <PlayerList title={title} {session} onclick={onremove}/>
-                <Navigate {session} rounds={full.rounds.len()} {callback}/>
-                </>
-            }
-        }
-        Stage::Playing { round, paused: _, revealing: false } => {
-            let points = full.rounds[round].points as i64;
-            let onguess = callback.reform(move |name| Action::CorrectGuess(name, points));
-            let title = "Select the player who guessed correctly.";
-
-            html! {
-                <>
-                <RoundInfo index={round} rounds={full.rounds.len()} round={full.rounds[round].clone()}/>
-                <PlayerList title={title} {session} onclick={onguess}/>
-                <Navigate session={session.clone()} rounds={full.rounds.len()} {callback}/>
-                </>
-            }
-        }
-        Stage::Playing { round, paused: _, revealing: true } => html! {
+    let body = match session.phase {
+        Phase::Lobby => html! {
+            <>
+            <PlayerForm {onsubmit}/>
+            <Block/>
+            <PlayerList title={"Select a player to remove them."} {session} onclick={onremove}/>
+            <Navigate {session} rounds={full.rounds.len()} {callback}/>
+            </>
+        },
+        Phase::Playing { stage: Stage::Info, round } => html! {
+            <RoundInfo index={round} rounds={full.rounds.len()} round={full.rounds[round].clone()}/>
+        },
+        Phase::Playing { stage: Stage::Running | Stage::Paused, round } => html! {
+            <>
+            <RoundInfo index={round} rounds={full.rounds.len()} round={full.rounds[round].clone()}/>
+            <PlayerList title={"Select the player who guessed correctly."} {session} onclick={onguess(round, &full)}/>
+            <Navigate session={session.clone()} rounds={full.rounds.len()} {callback}/>
+            </>
+        },
+        Phase::Playing { stage: Stage::Revealing, .. } => html! {
+            <Hero color={Color::Primary}> <Title> {"Revealing ..."} </Title> </Hero>
+        },
+        Phase::Playing { stage: Stage::Scores, .. } => html! {
+            <>
+            <Hero color={Color::Primary}> <Title> {"Showing scores"} </Title> </Hero>
+            <Navigate session={session.clone()} rounds={full.rounds.len()} {callback}/>
+            </>
+        },
+        Phase::Playing { round, stage: Stage::Revealed } => html! {
             <>
             <Hero color={Color::Primary}>
                 <Title> {format!("End of round {}", round + 1)} </Title>
@@ -72,11 +80,11 @@ pub fn manage(props: &Props) -> Html {
             <Navigate session={session.clone()} rounds={full.rounds.len()} {callback}/>
             </>
         },
-        Stage::Finished => html! {
+        Phase::Finished => html! {
             <>
             <Rating {full} />
             <Buttons alignment={Alignment::Centered}>
-                <Button color={Color::Primary} light=true onclick={onleave}>
+                <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
                     <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
                 </Button>
             </Buttons>

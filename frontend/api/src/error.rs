@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Request error: {0}")]
@@ -26,4 +28,7 @@ pub enum Error {
 
     #[error("Not logged in")]
     NotLoggedIn,
+
+    #[error("Invalid session id")]
+    InvalidSession(#[from] ParseIntError),
 }

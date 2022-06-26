@@ -1,8 +1,7 @@
 use std::rc::Rc;
-use strum::IntoEnumIterator;
 use yew::prelude::*;
 
-use api::{Action, Session};
+use api::{Action, Phase, Session, Stage};
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 
@@ -17,33 +16,50 @@ pub struct Props {
 pub fn navigate(props: &Props) -> Html {
     let Props { callback, session, rounds } = props;
 
-    // button text, button icon, color, inverted
-    let button_attrs = |action: &Action| match action {
-        Action::StartQuiz => Some(("start", "fas fa-play", Color::Primary, false)),
-        Action::PauseRound => Some(("pause", "fas fa-pause", Color::Light, false)),
-        Action::ResumeRound => Some(("resume", "fas fa-play", Color::Light, false)),
-        Action::RevealRound => Some(("reveal", "fas fa-eye", Color::Danger, true)),
-        Action::NextRound => Some(("next", "fas fa-forward", Color::Success, false)),
-        _ => None,
+    let button = |action: Action,
+                  color: Color,
+                  light: bool,
+                  icon: Icons,
+                  text: &str,
+                  hidden: bool| {
+        html! {
+            <Button size={Size::Large} onclick={callback.reform(move |_| action.clone())} {color} {light} {hidden}>
+            <Icon {icon}/> <span>{text}</span>
+            </Button>
+        }
     };
 
-    let actions = session.actions(*rounds);
+    let buttons = |idx: &[usize]| {
+        html! {
+            <>
+            {button(Action::Start, Color::Primary, false, Icons::Play, "start", !idx.contains(&0))}
+            {button(Action::Stage(Stage::Running), Color::Light, false, Icons::Play, "resume", !idx.contains(&1))}
+            {button(Action::Stage(Stage::Paused), Color::Light, false, Icons::Pause, "pause", !idx.contains(&2))}
+            {button(Action::Stage(Stage::Revealing), Color::Danger, true, Icons::EyeSolid, "reveal", !idx.contains(&3))}
+            {button(Action::Stage(Stage::Scores), Color::Info, true, Icons::ListOl, "scores", !idx.contains(&4))}
+            {button(Action::Next, Color::Success, true, Icons::Forward, "next", !idx.contains(&5))}
+            {button(Action::Finish, Color::Primary, true, Icons::FlagCheckered, "finish", !idx.contains(&6))}
+            </>
+        }
+    };
 
-    let button_style = |action: Action| {
-        let (text, icon, color, light) = button_attrs(&action)?;
-        let hidden = !actions.contains(&action);
-
-        let html = html! {
-            <Button hidden={hidden} color={color} light={light} size={Size::Large} onclick={callback.reform(move |_| action.clone())}>
-                <Icon icon={icon}/> <span>{text}</span>
-            </Button>
-        };
-        Some(html)
+    let buttons = match session.phase {
+        Phase::Playing { stage: Stage::Revealing | Stage::Revealed, round }
+            if round >= rounds - 1 =>
+        {
+            buttons(&[6])
+        }
+        Phase::Lobby => buttons(&[0]),
+        Phase::Playing { stage: Stage::Paused, .. } => buttons(&[1, 3]),
+        Phase::Playing { stage: Stage::Running, .. } => buttons(&[2, 3]),
+        Phase::Playing { stage: Stage::Revealing | Stage::Revealed, .. } => buttons(&[4]),
+        Phase::Playing { stage: Stage::Scores, .. } => buttons(&[5]),
+        _ => html! {},
     };
 
     html! {
         <Buttons alignment={Alignment::Centered} class="mt-4">
-            { for Action::iter().filter_map(button_style) }
+            { buttons }
         </Buttons>
     }
 }

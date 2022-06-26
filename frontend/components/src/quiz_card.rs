@@ -10,7 +10,7 @@ use shared::Route;
 #[derive(Properties, Clone, PartialEq, Debug)]
 pub struct Props {
     #[prop_or_default]
-    pub id: Option<u64>,
+    pub id: Option<u32>,
     #[prop_or_default]
     pub image: Option<String>,
 

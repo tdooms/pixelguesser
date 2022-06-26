@@ -1,151 +1,141 @@
-use wasm_bindgen_futures::spawn_local;
-use yew::prelude::*;
-use yew::suspense::{Suspension, SuspensionResult};
-
 use api::{DraftQuiz, DraftRound, FullDraftQuiz, User};
 use shared::{EmitError, Error, Errors};
+use std::cell::Cell;
+use std::rc::Rc;
+use std::sync::Mutex;
+use wasm_bindgen_futures::spawn_local;
+use yew::hook;
+use yew::{use_state, Callback, UseStateHandle};
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum CreateStage {
-    Quiz,
-    Rounds,
-    Summary,
+pub enum RoundsAction {
+    Edit(usize, DraftRound),
+    Remove(usize),
+    Add(usize),
+    Swap(usize, usize),
+    Submit,
 }
 
-impl Default for CreateStage {
-    fn default() -> Self {
-        CreateStage::Quiz
-    }
+pub enum QuizAction {
+    Edit(DraftQuiz),
+    Submit,
+    Delete,
 }
 
-#[derive(Clone, PartialEq)]
-pub struct UseCreateStateHandle {
-    id: UseStateHandle<Option<u64>>,
-    full: UseStateHandle<FullDraftQuiz>,
-    old: UseStateHandle<FullDraftQuiz>,
-    stage: UseStateHandle<CreateStage>,
+#[derive(Clone)]
+pub struct CreateState {
+    previous: UseStateHandle<Vec<DraftRound>>,
+    current: UseStateHandle<Vec<DraftRound>>,
+    quiz: UseStateHandle<DraftQuiz>,
 
-    user: User,
-    errors: Errors,
+    quiz_id: UseStateHandle<Option<u32>>,
+    loading: UseStateHandle<bool>,
 }
 
-impl UseCreateStateHandle {
-    pub fn set_quiz(&self, quiz: DraftQuiz) {
-        let inner = (*self.full).clone();
-        self.full.set(FullDraftQuiz { quiz, ..inner });
+async fn load_quiz(state: CreateState, quiz_id: u32, user: Option<User>, err: Errors) {
+    let full = api::full_quiz(user, quiz_id).await.emit(&err).unwrap();
+    let rounds: Vec<_> = full.rounds.into_iter().map(DraftRound::from).collect();
+    state.previous.set(rounds.clone());
+    state.current.set(rounds);
+    state.quiz.set(full.quiz.into());
+    state.loading.set(false);
+}
+
+async fn upload_quiz(state: CreateState, quiz: DraftQuiz, user: User, err: Errors) {
+    state.quiz.set(quiz.clone());
+
+    match *state.quiz_id {
+        Some(id) => api::update_quiz(user, id, quiz).await.emit(&err),
+        None => api::create_quiz(user, quiz).await.emit(&err),
+    };
+}
+
+async fn delete_quiz(state: CreateState, user: User, err: Errors) {
+    api::delete_quiz(user, state.quiz_id.unwrap()).await.emit(&err);
+}
+
+async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: User, err: Errors) {
+    for image in rounds.iter_mut().filter_map(|round| round.image.as_mut()) {
+        let _ = image.upload().await.emit(&err);
     }
 
-    pub fn submit_quiz(&self) {
-        self.stage.set(CreateStage::Rounds);
-        if &self.old.quiz == &self.full.quiz {
-            return;
-        }
+    let quiz_id = state.quiz_id.unwrap();
+    let _ = api::save_rounds(user, quiz_id, rounds.clone()).await.emit(&err);
 
-        let Self { id, full, old, user, errors, .. } = self.clone();
-
-        spawn_local(async move {
-            let mut quiz = full.quiz.clone();
-
-            if let Some(image) = &mut quiz.image {
-                let _ = image.upload().await.map_err(Error::Api).emit(&errors);
-            }
-
-            let result = match *id {
-                Some(id) => api::update_quiz(user, id, quiz.clone()).await,
-                None => api::create_quiz(user, quiz.clone()).await,
-            };
-
-            let result = result.map_err(Error::Api).emit(&errors);
-
-            id.set(id.or(result.flatten().map(|quiz| quiz.id)));
-
-            full.set(FullDraftQuiz { quiz: quiz.clone(), ..(*full).clone() });
-            old.set(FullDraftQuiz { quiz, ..(*full).clone() });
-        });
-    }
-
-    pub fn set_stage(&self, stage: CreateStage) {
-        self.stage.set(stage)
-    }
-
-    pub fn set_rounds(&self, rounds: Vec<DraftRound>) {
-        let inner = (*self.full).clone();
-        self.full.set(FullDraftQuiz { rounds, ..inner });
-    }
-
-    pub fn submit_rounds(&self) {
-        if &self.old.rounds == &self.full.rounds {
-            return;
-        }
-
-        let Self { user, errors, full, old, id, .. } = self.clone();
-        spawn_local(async move {
-            let mut rounds = full.rounds.clone();
-
-            for image in rounds.iter_mut().filter_map(|round| round.image.as_mut()) {
-                let _ = image.upload().await.map_err(Error::Api).emit(&errors);
-            }
-
-            let result = api::save_rounds(user, (*id).unwrap(), rounds.clone()).await;
-            let _ = result.map_err(Error::Api).emit(&errors);
-
-            full.set(FullDraftQuiz { rounds: rounds.clone(), ..(*full).clone() });
-            old.set(FullDraftQuiz { rounds, ..(*full).clone() });
-        });
-    }
-
-    pub fn delete(&self, callback: impl FnOnce() + 'static) {
-        if let Some(id) = *self.id {
-            let Self { user, errors, .. } = self.clone();
-
-            spawn_local(async move {
-                let result = api::delete_quiz(user, id).await;
-                let _ = result.map_err(Error::Api).emit(&errors).unwrap();
-                callback()
-            })
-        }
-    }
-
-    pub fn rounds(&self) -> Vec<DraftRound> {
-        self.full.rounds.clone()
-    }
-
-    pub fn quiz(&self) -> DraftQuiz {
-        self.full.quiz.clone()
-    }
-
-    pub fn stage(&self) -> CreateStage {
-        (*self.stage).clone()
-    }
-
-    pub fn id(&self) -> Option<u64> {
-        (*self.id).clone()
-    }
+    state.current.set(rounds.clone());
+    state.previous.set(rounds);
 }
 
 #[hook]
 pub fn use_create_state(
-    quiz_id: Option<u64>,
-    user: User,
-    errors: Errors,
-) -> SuspensionResult<UseCreateStateHandle> {
-    let full = use_state_eq(FullDraftQuiz::default);
-    let old = use_state_eq(FullDraftQuiz::default);
-    let stage = use_state_eq(CreateStage::default);
-    let id = use_state_eq(|| quiz_id);
+    callback: Callback<api::Error>,
+    quiz_id: Option<u32>,
+    user: Option<User>,
+    err: Errors,
+) -> CreateState {
+    let previous = use_state(|| vec![]);
+    let current = use_state(|| vec![DraftRound::default()]);
+    let quiz = use_state(|| DraftQuiz::default());
+    let loading = use_state(|| quiz_id.is_some());
+    let quiz_id = use_state(|| quiz_id);
 
-    let first = use_state_eq(|| true);
+    let res = CreateState { previous, current, quiz, loading, quiz_id: quiz_id.clone() };
+    if let Some(quiz_id) = *quiz_id {
+        let cloned = res.clone();
+        spawn_local(async move { load_quiz(cloned, quiz_id, user, err).await })
+    }
 
-    match (*first, quiz_id) {
-        (true, Some(quiz_id)) => Err(Suspension::from_future(async move {
-            let response: FullDraftQuiz =
-                api::full_quiz(Some(user), quiz_id).await.map(Into::into).unwrap();
+    res
+}
 
-            full.set(response.clone());
-            old.set(response);
+impl CreateState {
+    pub fn quiz(&self) -> DraftQuiz {
+        (*self.quiz).clone()
+    }
 
-            first.set(false);
-        })),
-        _ => Ok(UseCreateStateHandle { full, old, stage, id, user, errors }),
+    pub fn rounds(&self) -> Vec<DraftRound> {
+        (*self.current).clone()
+    }
+    pub fn loading(&self) -> bool {
+        *self.loading
+    }
+
+    pub fn set_quiz(&self, action: QuizAction, user: User, err: Errors) {
+        let cloned = self.clone();
+        match action {
+            QuizAction::Edit(quiz) => {
+                self.quiz.set(quiz);
+            }
+            QuizAction::Submit => {
+                let quiz = self.quiz();
+                spawn_local(async move { upload_quiz(cloned, quiz, user, err).await });
+            }
+            QuizAction::Delete => spawn_local(async move { delete_quiz(cloned, user, err).await }),
+        }
+    }
+
+    pub fn set_rounds(&self, action: RoundsAction, user: User, err: Errors) {
+        let mut rounds = (*self.current).clone();
+
+        match action {
+            RoundsAction::Edit(index, round) => {
+                rounds[index] = round;
+            }
+            RoundsAction::Remove(index) => {
+                rounds.remove(index);
+            }
+            RoundsAction::Add(index) => {
+                rounds.insert(index, Default::default());
+            }
+            RoundsAction::Swap(from, to) => {
+                let round = rounds.remove(from);
+                rounds.insert(to, round);
+            }
+            RoundsAction::Submit => {
+                let (cloned, rounds) = (self.clone(), rounds.clone());
+                spawn_local(async move { upload_rounds(cloned, rounds, user, err).await });
+            }
+        };
+
+        self.current.set(rounds)
     }
 }

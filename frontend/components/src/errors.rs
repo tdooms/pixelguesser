@@ -28,7 +28,7 @@ impl<T: Clone + Display + PartialEq + 'static> Component for Alerts<T> {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let view_entry = |(id, alert): (usize, &T)| {
             html! {
-                <Notification color={Color::Warning} light=true onclick={ctx.link().callback(move |_| id)}>
+                <Notification color={Color::Warning} light=true ondelete={ctx.link().callback(move |_| id)}>
                     { format!("{}", alert) }
                 </Notification>
             }

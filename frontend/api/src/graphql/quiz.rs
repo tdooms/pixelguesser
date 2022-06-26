@@ -7,14 +7,14 @@ use crate::Image;
 
 impl hasura::Encode for Image {
     fn encode(&self) -> String {
-        self.url().unwrap()
+        format!("\\\"{}\\\"", self.url().unwrap())
     }
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk, hasura::Encode)]
 #[object(name = "quizzes", pk = "id", draft = "DraftQuiz")]
 pub struct Quiz {
-    pub id: u64,
+    pub id: u32,
     pub public: bool,
     pub complete: bool,
 

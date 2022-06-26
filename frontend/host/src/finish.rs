@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use cobul::props::{Color, HeroSize};
+use cobul::props::{Alignment, Color, HeroSize, Size};
 use cobul::*;
 
 use super::Ranking;
@@ -19,7 +19,6 @@ pub struct Props {
 pub fn finish(props: &Props) -> Html {
     let Props { session, full } = &props;
     let navigator = use_navigator().unwrap().clone();
-
     let onleave = { Callback::from(move |_| navigator.push(Route::Overview)) };
 
     html! {
@@ -30,12 +29,14 @@ pub fn finish(props: &Props) -> Html {
             </Hero>
 
             <Hero color={Color::Primary} size={HeroSize::Medium}>
-                <Ranking {session} />
+                <Ranking players={session.players.clone()} />
             </Hero>
 
-            <Button color={Color::Primary} light=true onclick={onleave}>
+        <Buttons alignment={Alignment::Centered} class="mt-5">
+            <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
                 <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
             </Button>
+        </Buttons>
         </>
     }
 }

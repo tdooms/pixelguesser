@@ -1,4 +1,5 @@
-use crate::shared::State;
+use ::sessions::Session;
+
 use axum::extract::ws::Message;
 use axum::extract::ws::WebSocket;
 use futures::stream::SplitSink;
@@ -18,20 +19,18 @@ impl Default for Mode {
 }
 
 #[derive(Default)]
-pub struct Session {
-    pub state: State,
+pub struct State {
+    pub session: Session,
     pub mode: Mode,
-    pub quiz: u64,
-    pub connections: HashMap<u64, SplitSink<WebSocket, Message>>,
+    pub quiz: u32,
+    pub connections: HashMap<u32, SplitSink<WebSocket, Message>>,
 }
 
-impl Session {
-    pub fn new(mode: Mode, quiz: u64) -> Self {
-        Session { mode, quiz, ..Default::default() }
+impl State {
+    pub fn new(mode: Mode, quiz: u32) -> Self {
+        State { mode, quiz, ..Default::default() }
     }
 }
 
-#[derive(Default, Clone)]
-pub struct Global {
-    pub sessions: Arc<Mutex<HashMap<u64, Arc<Mutex<Session>>>>>,
-}
+pub type Local = Arc<Mutex<State>>;
+pub type Global = Arc<Mutex<HashMap<u32, Local>>>;

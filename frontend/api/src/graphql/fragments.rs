@@ -33,7 +33,12 @@ pub struct DeleteQuizData {
 }
 
 #[derive(serde::Deserialize, Debug)]
+pub struct RoundReturn {
+    pub returning: Vec<Round>,
+}
+
+#[derive(serde::Deserialize, Debug)]
 pub struct SaveRoundsData {
-    pub delete_rounds: Vec<Round>,
-    pub insert_rounds: Vec<Round>,
+    pub delete_rounds: RoundReturn,
+    pub insert_rounds: RoundReturn,
 }

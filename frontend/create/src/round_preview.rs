@@ -1,4 +1,4 @@
-use cobul::props::{Alignment, Color, Size};
+use cobul::props::Alignment;
 use cobul::*;
 use yew::prelude::*;
 

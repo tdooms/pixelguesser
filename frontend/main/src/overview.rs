@@ -1,15 +1,13 @@
 use crate::navbar::MainNavbar;
-use cobul::props::{ColumnSize, Size};
+use api::{Quiz, Resolution};
+use cobul::props::ColumnSize;
 use cobul::{Column, Columns, Container, Control, EnumDropdown, Field, Input, Section};
+use components::{EmptyCard, QuizCard};
+use shared::{callback, Auth};
 use strum::EnumIter;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew::HtmlResult;
-
-use crate::navbar::MainNavbar;
-use api::{Quiz, Resolution};
-use components::{EmptyCard, QuizCard};
-use shared::{callback, Auth};
 
 #[derive(Clone, Copy, Debug, derive_more::Display, PartialEq, EnumIter)]
 pub enum Sort {
@@ -87,7 +85,7 @@ pub fn overview() -> HtmlResult {
 
         html! {
             <Column size={ColumnSize::Is3}>
-                <QuizCard {id} {title} {description} {image} {creator} {public}/>
+                <QuizCard id={id as u32} {title} {description} {image} {creator} {public}/>
             </Column>
         }
     };

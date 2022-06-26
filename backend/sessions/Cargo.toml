@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-server = ["pretty_env_logger", "log", "axum", "tokio", "serde_json", "clap", "rand"]
+server = ["pretty_env_logger", "log", "axum", "tokio", "clap", "rand", "tower-http"]
 api = []
 full = ["api", "server"]
 default = ["full"]
@@ -12,13 +12,15 @@ default = ["full"]
 [dependencies]
 pretty_env_logger = { version = "0.4", optional = true }
 log = { version = "0.4", optional = true }
+
+tower-http = { version = "0.3.0", features = ["cors"], optional = true }
 axum = { version = "0.5", features = ["ws"], optional = true }
 
 tokio = { version = "1.9", features = ["full"], optional = true }
 futures = "0.3"
 
 serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0", optional = true }
+serde_json = "1.0"
 
 clap = { version = "3.0.0-rc.7", features = ["derive"], optional = true }
 rand = { version = "0.8", optional = true }

@@ -1,5 +1,5 @@
 use derive_more::Display;
-use hasura::Encode;
+use hasura::{Encode, Object, Pk};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
@@ -61,13 +61,11 @@ impl Default for GuessChoices {
     }
 }
 
-#[derive(
-    Serialize, Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk, hasura::Encode,
-)]
-#[object(name = "rounds", pk = "quiz_id", pk = "index", draft = "DraftRound")]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk, Encode)]
+#[object(name = "rounds", pk = "quiz_id", pk = "index")]
 pub struct Round {
-    pub quiz_id: u64,
-    pub index: u64,
+    pub quiz_id: u32,
+    pub index: u32,
 
     // copied from draft
     pub answer: String,
@@ -77,7 +75,21 @@ pub struct Round {
     pub image: String,
 }
 
-#[derive(Validate, Debug, Clone, Default, PartialEq, hasura::Encode)]
+impl Round {
+    pub fn from_draft(draft: DraftRound, quiz_id: u32, index: u32) -> Self {
+        Self {
+            quiz_id,
+            index,
+            answer: draft.answer,
+            points: draft.points,
+            guesses: draft.guesses,
+            speed: draft.speed,
+            image: draft.image.map(|x| x.url()).flatten().unwrap_or_default(),
+        }
+    }
+}
+
+#[derive(Validate, Debug, Clone, Default, PartialEq, Encode)]
 pub struct DraftRound {
     #[validate(length(min = 1))]
     pub answer: String,

@@ -7,7 +7,7 @@ use cobul::*;
 pub struct Props {
     pub onselect: Callback<usize>,
     pub onadd: Callback<()>,
-    pub ondelete: Callback<()>,
+    pub onremove: Callback<()>,
 
     pub images: Vec<Option<String>>,
     pub current: usize,
@@ -15,7 +15,7 @@ pub struct Props {
 
 #[function_component(RoundList)]
 pub fn round_list(props: &Props) -> Html {
-    let Props { onselect, onadd, ondelete, images, current } = props;
+    let Props { onselect, onadd, onremove, images, current } = props;
 
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
@@ -26,14 +26,14 @@ pub fn round_list(props: &Props) -> Html {
         let grey = (index == *current).then(|| "has-background-white-ter");
 
         let onselect = onselect.reform(move |_| index);
-        let ondelete = ondelete.reform(move |_| ());
+        let onremove = onremove.reform(move |_| ());
 
         html! {
             <div class={classes!("columns", grey)} onclick={onselect}>
                 <Column size={ColumnSize::IsNarrow} class={"m-2 pl-2 pr-1"}> <p> {index} </p> </Column>
                 <Column class="p-1"> {image} </Column>
 
-                <div style="position:relative;right:3px;top:10px"> <Delete onclick={ondelete}/> </div>
+                <div style="position:relative;right:3px;top:10px"> <Delete onclick={onremove}/> </div>
             </div>
         }
     };

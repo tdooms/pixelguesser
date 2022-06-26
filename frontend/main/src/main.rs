@@ -37,13 +37,13 @@ pub fn app() -> Html {
         _ => html! { <Switch<Route> render={Switch::render(switch)} /> },
     };
 
-    let onremove = callback!(error; move |_| error.set(None));
+    let ondelete = callback!(error; move |_| error.set(None));
     let onadd = callback!(error; move |e| error.set(Some(Rc::new(e))));
 
     let view_error = |error: &Rc<Error>| {
         html! {
             <div style="position:absolute; top:55px; left:55px; z-index: 10">
-                <Notification color={Color::Danger} light=true onclick={onremove}>
+                <Notification color={Color::Danger} light=true {ondelete}>
                     { format!("{}", error.clone()) }
                 </Notification>
             </div>
@@ -79,10 +79,10 @@ fn switch(route: &Route) -> Html {
             html! { <Loader {quiz_id} {session_id}/> }
         }
         Route::Create => {
-            html! {<Suspense {fallback}><Create/></Suspense>}
+            html! { <Create/> }
         }
         Route::Update { quiz_id } => {
-            html! { <Suspense {fallback}> <Create id={*quiz_id}/> </Suspense> }
+            html! { <Create quiz_id={*quiz_id}/> }
         }
         Route::Test => {
             html! { <Test/> }

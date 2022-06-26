@@ -1,17 +1,17 @@
+use std::collections::HashMap;
 use yew::prelude::*;
 
-use api::{Player, Session};
+use api::Player;
 use cobul::*;
-use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub session: Rc<Session>,
+    pub players: HashMap<String, Player>,
 }
 
 #[function_component(Ranking)]
 pub fn ranking(props: &Props) -> Html {
-    let mut sorted: Vec<_> = props.session.players.iter().collect();
+    let mut sorted: Vec<_> = props.players.iter().collect();
     sorted.sort_by_key(|(_, player)| std::cmp::Reverse(player.score));
 
     let view_player = |player: &(&String, &Player)| {
@@ -35,6 +35,8 @@ pub fn ranking(props: &Props) -> Html {
     html! {
         <div class="columns is-centered is-desktop">
             <div class="column is-half">
+                <Block class="my-6 py-6"/>
+
                 { for sorted.first().map(view_winner) }
                 { for sorted.iter().skip(1).map(view_player) }
             </div>

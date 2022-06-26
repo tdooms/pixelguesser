@@ -4,20 +4,20 @@ use yew::prelude::*;
 
 use api::{DraftQuiz, DraftRound, Resolution};
 
-use crate::state::UseCreateStateHandle;
-use crate::{callback, CreateStage, Route};
-use yew_router::prelude::use_navigator;
+use crate::{callback, Stage};
+
+#[derive(Properties, Clone, PartialEq)]
+pub struct Props {
+    pub onstage: Callback<Stage>,
+    pub rounds: Vec<DraftRound>,
+    pub quiz: DraftQuiz,
+}
 
 #[function_component(Summary)]
-pub fn summary() -> Html {
-    let state = use_context::<UseCreateStateHandle>().unwrap();
-    let navigator = use_navigator().unwrap();
-
-    let ondone = callback!(navigator; move |_| navigator.push(Route::Overview));
-    let onback = callback!(state; move |_| state.set_stage(CreateStage::Rounds));
-
-    let DraftQuiz { title, description, .. } = state.quiz();
-    let rounds = state.rounds();
+pub fn summary(props: &Props) -> Html {
+    let Props { onstage, quiz, rounds } = props;
+    let ondone = callback!(onstage; move |_| onstage.emit(Stage::Done));
+    let onback = callback!(onstage; move |_| onstage.emit(Stage::Quiz));
 
     let round_mapper = |round: &DraftRound| {
         html! {
@@ -33,8 +33,8 @@ pub fn summary() -> Html {
         <Container>
 
         <Hero color={Color::Primary}>
-            <Title> {title} </Title>
-            <Subtitle> {description} </Subtitle>
+            <Title> {&quiz.title} </Title>
+            <Subtitle> {&quiz.description} </Subtitle>
         </Hero>
 
         <Box class="mt-5">
@@ -51,6 +51,7 @@ pub fn summary() -> Html {
                 <span> {"Submit"} </span>
             </Button>
         </Buttons>
+
         </Container>
         </Section>
     }

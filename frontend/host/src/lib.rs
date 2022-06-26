@@ -9,7 +9,7 @@ use crate::lobby::Lobby;
 use crate::play::Play;
 use crate::ranking::Ranking;
 
-use api::{Code, FullQuiz, Session, Stage};
+use api::{Action, Code, FullQuiz, Phase, Session};
 use js_sys::Function;
 use std::rc::Rc;
 use web_sys::window;
@@ -17,9 +17,10 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
-    pub session_id: u64,
+    pub session_id: u32,
     pub session: Rc<Session>,
     pub full: Rc<FullQuiz>,
+    pub callback: Callback<Action>,
 }
 
 #[function_component(Host)]
@@ -32,18 +33,16 @@ pub fn host(props: &Props) -> Html {
         (),
     );
 
-    let Props { session_id, session, full } = props.clone();
+    let Props { session_id, session, full, callback } = props.clone();
+    let code = Code { session_id, quiz_id: full.quiz.id as u32 }.to_string();
 
-    match session.stage {
-        Stage::Lobby => {
-            let code = Code { session_id, quiz_id: full.quiz.id }.to_string();
-            html! { <Lobby {code} {session} {full}/> }
+    let rounds = full.rounds.len();
+
+    match session.phase {
+        Phase::Lobby => html! {<Lobby {code} {session} {full} /> },
+        Phase::Playing { round, stage } => {
+            html! { <Play round={full.rounds[round].clone()} {rounds} {stage} players={session.players.clone()} {callback} index={round}/> }
         }
-        Stage::Playing { round, paused, revealing } => {
-            html! { <Play index={round} {full} {session} {paused} {revealing}/> }
-        }
-        Stage::Finished => {
-            html! { <Finish {session} {full}/> }
-        }
+        Phase::Finished => html! {<Finish {session} {full} /> },
     }
 }
