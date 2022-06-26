@@ -1,8 +1,8 @@
-use api::{DraftQuiz, DraftRound, FullDraftQuiz, User};
-use shared::{EmitError, Error, Errors};
-use std::cell::Cell;
-use std::rc::Rc;
-use std::sync::Mutex;
+use api::{DraftQuiz, DraftRound, User};
+use shared::{EmitError, Errors};
+
+
+
 use wasm_bindgen_futures::spawn_local;
 use yew::hook;
 use yew::{use_state, Callback, UseStateHandle};
@@ -67,7 +67,7 @@ async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: Us
 
 #[hook]
 pub fn use_create_state(
-    callback: Callback<api::Error>,
+    _callback: Callback<api::Error>,
     quiz_id: Option<u32>,
     user: Option<User>,
     err: Errors,

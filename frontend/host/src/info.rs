@@ -3,7 +3,7 @@ use yew::prelude::*;
 use api::Round;
 use cobul::props::{Color, HeaderSize, HeroSize};
 use cobul::*;
-use gloo::timers::callback::{Interval, Timeout};
+use gloo::timers::callback::{Timeout};
 use shared::HOST_INFO_DURATION;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

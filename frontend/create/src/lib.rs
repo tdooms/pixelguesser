@@ -39,7 +39,7 @@ pub fn create(props: &Props) -> Html {
 
     let user = match user {
         Ok(user) => user,
-        Err(err) => return html! { <Redirect<Route> to={Route::Overview} /> },
+        Err(_err) => return html! { <Redirect<Route> to={Route::Overview} /> },
     };
 
     // TODO: route the errors correctly
