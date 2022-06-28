@@ -8,7 +8,7 @@ use yew_router::prelude::RouterScopeExt;
 use host::Host;
 use manage::Manage;
 
-use api::{Action, FullQuiz, Response, Session, WebsocketTask};
+use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
 use shared::{async_callback, Auth, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
@@ -76,9 +76,12 @@ impl Component for Loader {
                 let cb = ctx.link().callback(Msg::Ws);
                 let mut ws = WebsocketTask::create(id, cb);
 
-                if let None = ctx.props().session_id {
-                    ws.send(&Action::Master);
-                }
+                let participant = match ctx.props().session_id {
+                    None => Participant::Master,
+                    Some(_) => Participant::Host,
+                };
+
+                ws.send(&Action::Join(participant));
 
                 self.session_id = Some(id);
                 self.ws = Some(ws);

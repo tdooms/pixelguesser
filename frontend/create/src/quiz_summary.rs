@@ -17,7 +17,7 @@ pub struct Props {
 pub fn summary(props: &Props) -> Html {
     let Props { onstage, quiz, rounds } = props;
     let ondone = callback!(onstage; move |_| onstage.emit(Stage::Done));
-    let onback = callback!(onstage; move |_| onstage.emit(Stage::Quiz));
+    let onback = callback!(onstage; move |_| onstage.emit(Stage::Rounds));
 
     let round_mapper = |round: &DraftRound| {
         html! {

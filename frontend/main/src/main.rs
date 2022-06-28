@@ -19,6 +19,7 @@ mod loader;
 pub mod navbar;
 mod overview;
 mod profile;
+mod search;
 mod test;
 
 #[global_allocator]

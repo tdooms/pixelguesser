@@ -1,13 +1,24 @@
+extern crate core;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("could not parse request")]
-    Parse(#[from] serde_json::Error),
+    CouldNotParse(#[from] serde_json::Error),
 
     #[error("the request is not a text message")]
     NonText,
+
+    #[error("already a quiz master present")]
+    DuplicateMaster,
+
+    #[error("already a host present")]
+    DuplicateHost,
+
+    #[error("session not found")]
+    SessionNotFound,
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -16,8 +27,17 @@ pub struct Player {
     pub streak: i64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub enum Participant {
+    Master,
+    Host,
+    Player(String),
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Action {
+    Join(Participant),
+
     Add(String),
     Remove(String),
 
@@ -27,7 +47,6 @@ pub enum Action {
 
     Stage(Stage),
     Score(String, i64),
-    Master,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
@@ -64,12 +83,19 @@ pub struct Session {
     pub players: HashMap<String, Player>,
     pub phase: Phase,
     pub round: Option<usize>,
-    pub master: Option<u32>,
+    pub participants: HashMap<Participant, u32>,
 }
 
 impl Session {
-    pub fn update(&mut self, action: Action, id: u32) {
+    pub fn update(&mut self, action: Action, id: u32) -> Result<(), Error> {
         match (action, self.phase) {
+            (Action::Join(participant), _) => {
+                match (self.participants.contains_key(&participant), participant) {
+                    (true, Participant::Master) => return Err(Error::DuplicateMaster),
+                    (true, Participant::Host) => return Err(Error::DuplicateMaster),
+                    (_, participant) => self.participants.insert(participant, id),
+                };
+            }
             (Action::Add(name), Phase::Lobby) => {
                 self.players.insert(name, Player::default());
             }
@@ -88,19 +114,15 @@ impl Session {
             (Action::Finish, _) => {
                 self.phase = Phase::Finished;
             }
-            (Action::Master, _) => {
-                // TODO: check is there is already a master
-                self.master = Some(id);
-            }
             (Action::Score(name, score), Phase::Playing { round, .. }) => {
                 match self.players.get_mut(&name) {
                     Some(player) => player.score += score,
                     None => (),
                 }
-
                 self.phase = Phase::Playing { round, stage: Stage::Revealing };
             }
             _ => (),
         }
+        Ok(())
     }
 }

@@ -36,19 +36,19 @@ pub fn quiz_form(props: &Props) -> Html {
 
     html! {
         <>
-        <SimpleField label="Quiz Title" help={form.error("title")} help_color={Color::Danger}>
+        <SimpleField label="Quiz Title" help={form.error("title")}>
             <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE_DEFAULT}/>
         </SimpleField>
 
-        <SimpleField label="Description" help={form.error("description")} help_color={Color::Danger}>
+        <SimpleField label="Description" help={form.error("description")}>
             <Input oninput={form.field(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION_DEFAULT} />
         </SimpleField>
 
-        <SimpleField label="Explanation" help={EXPLANATION_HELP}>
+        <SimpleField label="Explanation">
             <Input oninput={form.field(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION_DEFAULT}/>
         </SimpleField>
 
-        <SimpleField label="Image" help={form.error("image")} help_color={Color::Danger}>
+        <SimpleField label="Image" help={form.error("image")}>
             <File accept={"image/*"} fullwidth={fullwidth} filename={filename} onupload={form.async_field(make_image)}/>
         </SimpleField>
 

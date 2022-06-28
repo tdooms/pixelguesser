@@ -9,7 +9,7 @@ use tokio::sync::Mutex;
 
 pub enum Mode {
     Couch,
-    // Online,
+    Online,
 }
 
 impl Default for Mode {

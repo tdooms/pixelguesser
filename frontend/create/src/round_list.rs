@@ -1,21 +1,24 @@
+use std::collections::HashSet;
 use yew::prelude::*;
 
 use cobul::props::{ColumnSize, Size};
 use cobul::*;
+use shared::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub onselect: Callback<usize>,
     pub onadd: Callback<()>,
-    pub onremove: Callback<()>,
+    pub onremove: Callback<usize>,
 
     pub images: Vec<Option<String>>,
+    pub incomplete: Vec<bool>,
     pub current: usize,
 }
 
 #[function_component(RoundList)]
 pub fn round_list(props: &Props) -> Html {
-    let Props { onselect, onadd, onremove, images, current } = props;
+    let Props { onselect, onadd, onremove, images, current, incomplete } = props;
 
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
@@ -23,17 +26,24 @@ pub fn round_list(props: &Props) -> Html {
             None => html! {},
         };
 
-        let grey = (index == *current).then(|| "has-background-white-ter");
-
         let onselect = onselect.reform(move |_| index);
-        let onremove = onremove.reform(move |_| ());
+
+        let onkeydown = callback!(onremove; move |e: KeyboardEvent| {
+            if e.key() == "Delete" {
+                onremove.emit(index);
+            }
+        });
+
+        let background = match (incomplete[index], index == *current) {
+            (true, false) => "has-background-danger-light",
+            (_, true) => "has-background-white-ter",
+            (false, false) => "",
+        };
 
         html! {
-            <div class={classes!("columns", grey)} onclick={onselect}>
-                <Column size={ColumnSize::IsNarrow} class={"m-2 pl-2 pr-1"}> <p> {index} </p> </Column>
+            <div style="border-width:thin" tabindex="0" class={classes!("columns", background)} onclick={onselect} {onkeydown}>
+                <Column size={ColumnSize::IsNarrow} class={"m-2 pl-2 pr-1"}> <p> {index+1} </p> </Column>
                 <Column class="p-1"> {image} </Column>
-
-                <div style="position:relative;right:3px;top:10px"> <Delete onclick={onremove}/> </div>
             </div>
         }
     };

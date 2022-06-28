@@ -30,9 +30,12 @@ pub fn quiz_page(props: &Props) -> Html {
         Err(_) => return html! { "not allowed" },
     };
 
-    let onsubmit = callback!(onchange; move |_| onchange.emit(QuizAction::Submit));
+    let onsubmit = callback!(onchange, onstage; move |_| {
+        onchange.emit(QuizAction::Submit);
+        onstage.emit(Stage::Rounds);
+    });
     let ondelete = callback!(onchange; move |_| onchange.emit(QuizAction::Delete));
-    let onback = callback!(onstage; move |_| onstage.emit(Stage::Quiz));
+    let onback = callback!(onstage; move |_| onstage.emit(Stage::Back));
     let onchange = callback!(onchange; move |quiz| onchange.emit(QuizAction::Edit(quiz)));
 
     let delete = || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete"} </Button>};

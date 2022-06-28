@@ -35,56 +35,57 @@ struct Opts {
 async fn websocket(
     ws: WebSocketUpgrade,
     Extension(global): Extension<Global>,
-    Path(id): Path<u32>,
+    Path(session_id): Path<u32>,
 ) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_connection(socket, global, id))
+    ws.on_upgrade(move |socket| handle_connection(socket, global, session_id))
 }
 
 async fn creator(Extension(global): Extension<Global>, Path(quiz): Path<u32>) -> impl IntoResponse {
-    let id = rand::thread_rng().gen::<u32>();
+    let session_id = rand::thread_rng().gen::<u32>();
     let mut lock = global.lock().await;
 
     let state = State::new(Mode::default(), quiz);
-    lock.insert(id, Arc::new(Mutex::new(state)));
-    log::info!("created session {id}");
+    lock.insert(session_id, Arc::new(Mutex::new(state)));
 
-    id.to_string()
+    log::info!("created session {session_id}");
+    session_id.to_string()
 }
 
-async fn handle_message(message: Message, state: &mut State, connection: u32) -> Result<(), Error> {
+async fn handle_message(message: Message, state: &mut State, conn_id: u32) -> Result<(), Error> {
     let message = message.into_text().map_err(|_| Error::NonText)?;
     let action: Action = serde_json::from_str(&message)?;
 
-    state.session.update(action, connection);
-
-    let response = serde_json::to_string(&Response::Update(state.session.clone())).unwrap();
-    for (_, sender) in &mut state.connections {
-        let _ = sender.send(Message::Text(response.clone())).await;
-    }
+    state.session.update(action, conn_id)?;
+    notify(state, &Response::Update(state.session.clone())).await;
 
     Ok(())
 }
 
-async fn handle_local(global: &Global, connection: u32) -> Option<Local> {
+async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> {
     let lock = global.lock().await;
-    match lock.get(&connection) {
-        Some(state) => Some(state.clone()),
-        None => {
-            log::error!("session not found");
-            None
-        }
+
+    Ok(lock.get(&session_id).cloned().ok_or(Error::SessionNotFound)?)
+}
+
+async fn notify(state: &mut State, response: &Response) {
+    let response = serde_json::to_string(&Response::Update(state.session.clone())).unwrap();
+    for (_, sender) in &mut state.connections {
+        let _ = sender.send(Message::Text(response.clone())).await;
     }
 }
 
-async fn handle_connection(stream: WebSocket, global: Global, id: u32) {
-    let (sender, mut receiver) = stream.split();
+async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
+    let (mut sender, mut receiver) = stream.split();
     let connection = rand::thread_rng().gen::<u32>();
-    log::info!("attempted connection to {id}");
+    log::info!("attempted connection to {session_id}");
 
     // Add the sender to the connections of the local state
-    let local = match handle_local(&global, id).await {
-        Some(local) => local,
-        None => return,
+    let local = match handle_local(&global, session_id).await {
+        Ok(local) => local,
+        Err(err) => {
+            sender.send(Message::Text(format!("{err}"))).await.unwrap();
+            return;
+        }
     };
 
     local.lock().await.connections.insert(connection, sender);
@@ -96,14 +97,17 @@ async fn handle_connection(stream: WebSocket, global: Global, id: u32) {
         }
     }
 
-    // remove local connection from the session
+    // Remove local connection from the session
     let mut lock = local.lock().await;
     lock.connections.remove(&connection);
 
     // Remove the session from the global state if it has no more connections
     if lock.connections.is_empty() {
-        global.lock().await.remove(&id);
+        global.lock().await.remove(&session_id);
     }
+
+    let session = lock.session.clone();
+    notify(&mut *lock, &Response::Update(session)).await;
 }
 
 #[tokio::main]

@@ -6,6 +6,7 @@ use yew::prelude::*;
 
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct RoundInfo {
+    #[validate(length(min = 1, message = "Must not be empty"))]
     pub answer: String,
     pub points: PointChoices,
     pub guesses: GuessChoices,
@@ -33,11 +34,11 @@ pub fn round_form(props: &Props) -> Html {
 
     html! {
         <div class="pt-5 pl-4 pr-5">
-        <SimpleField label="Answer" help={form.error("answer")}>
+        <SimpleField label="Answer" help={form.error("answer")} >
             <Input oninput={form.field(|x| &mut x.answer)} value={answer}/>
         </SimpleField>
 
-        <SimpleField label="Points" help={form.error("points")}>
+        <SimpleField label="Points" help={form.error("points")} >
             <EnumButtons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
             color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
         </SimpleField>
