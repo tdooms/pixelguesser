@@ -68,7 +68,7 @@ async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> 
 }
 
 async fn notify(state: &mut State, response: &Response) {
-    let response = serde_json::to_string(&Response::Update(state.session.clone())).unwrap();
+    let response = serde_json::to_string(&response).unwrap();
     for (_, sender) in &mut state.connections {
         let _ = sender.send(Message::Text(response.clone())).await;
     }
