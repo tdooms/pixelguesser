@@ -1,6 +1,5 @@
 use cobul::Columns;
-use futures::stream::iter;
-use std::collections::HashMap;
+
 use yew::prelude::*;
 
 use api::{DraftRound, Resolution};
@@ -28,10 +27,12 @@ pub fn round_page(props: &Props) -> Html {
     let Props { onstage, onchange, rounds } = props.clone();
     let current = use_state(|| 0usize);
     let draft = rounds[*current].clone();
-    let incomplete = check_rounds(&rounds);
 
-    let ondone = callback!(onstage, onchange, incomplete; move |_| {
-        if incomplete.iter().all(|x| !x) {
+    let incompletes = check_rounds(&rounds);
+    let complete = !incompletes.iter().any(|x| *x);
+
+    let ondone = callback!(onstage, onchange, complete; move |_| {
+        if complete {
             onstage.emit(Stage::Summary);
             onchange.emit(RoundsAction::Submit);
         }
@@ -59,8 +60,8 @@ pub fn round_page(props: &Props) -> Html {
             .map(|round| round.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
             .collect();
 
-        let (current, incomplete) = (*current, incomplete.clone());
-        html! {<RoundList {onselect} {onadd} {onremove} {images} {current} {incomplete}/>}
+        let (current, incompletes) = (*current, incompletes.clone());
+        html! {<RoundList {onselect} {onadd} {onremove} {images} {current} {incompletes}/>}
     };
 
     let edit = {
@@ -68,7 +69,7 @@ pub fn round_page(props: &Props) -> Html {
             onchange.emit(RoundsAction::Edit(*current, round));
         });
 
-        html! {<RoundEdit {draft} {onback} {ondone} {onedit}/>}
+        html! {<RoundEdit {draft} {onback} {ondone} {onedit} {complete}/>}
     };
 
     html! {

@@ -34,7 +34,10 @@ pub fn quiz_page(props: &Props) -> Html {
         onchange.emit(QuizAction::Submit);
         onstage.emit(Stage::Rounds);
     });
-    let ondelete = callback!(onchange; move |_| onchange.emit(QuizAction::Delete));
+    let ondelete = callback!(onchange, onstage; move |_| {
+        onchange.emit(QuizAction::Delete);
+        onstage.emit(Stage::Back);
+    });
     let onback = callback!(onstage; move |_| onstage.emit(Stage::Back));
     let onchange = callback!(onchange; move |quiz| onchange.emit(QuizAction::Edit(quiz)));
 

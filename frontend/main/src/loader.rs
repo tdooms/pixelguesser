@@ -9,7 +9,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
-use shared::{async_callback, Auth, Error, Errors, Route};
+use shared::{async_callback, Auth, Error, Errors, Internal, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -72,18 +72,18 @@ impl Component for Loader {
             Msg::Session(Err(err)) => {
                 log::error!("{:?}", err)
             }
-            Msg::Session(Ok(id)) => {
+            Msg::Session(Ok(session_id)) => {
                 let cb = ctx.link().callback(Msg::Ws);
-                let mut ws = WebsocketTask::create(id, cb);
+                let mut ws = WebsocketTask::new(session_id, cb);
 
                 let participant = match ctx.props().session_id {
-                    None => Participant::Master,
-                    Some(_) => Participant::Host,
+                    None => Participant::Host,
+                    Some(_) => Participant::Manager,
                 };
 
                 ws.send(&Action::Join(participant));
 
-                self.session_id = Some(id);
+                self.session_id = Some(session_id);
                 self.ws = Some(ws);
             }
         }

@@ -29,7 +29,7 @@ pub struct UpdateQuizData {
 #[derive(serde::Deserialize, Debug)]
 pub struct DeleteQuizData {
     pub delete_quizzes_by_pk: Option<Quiz>,
-    pub delete_rounds: Vec<Round>,
+    pub delete_rounds: RoundReturn,
 }
 
 #[derive(serde::Deserialize, Debug)]

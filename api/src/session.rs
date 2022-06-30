@@ -59,67 +59,65 @@ pub async fn create_session(quiz_id: u32) -> Result<u32, Error> {
     Ok(u32::from_str(&response)?)
 }
 
-#[allow(dead_code)]
 pub struct WebsocketTask {
-    responder: mpsc::UnboundedSender<Result<Message, WebSocketError>>,
-    cancel: oneshot::Sender<()>,
+    _marker: oneshot::Sender<()>,
+    sender: mpsc::Sender<Action>,
 }
 
 impl WebsocketTask {
     pub fn send(&mut self, action: &Action) {
-        log::debug!("ws request: {:?}", action);
+        log::trace!("ws request: {:?}", action);
 
-        let request = serde_json::to_string(action).unwrap();
-        let mut responder = self.responder.clone();
-
-        spawn_local(async move { responder.send(Ok(Message::Text(request))).await.unwrap() });
+        let (mut sender, action) = (self.sender.clone(), action.clone());
+        spawn_local(async move { sender.send(action).await.unwrap() });
     }
 
-    fn handle(result: Result<Message, WebSocketError>, callback: &Callback<Response>) {
-        match result {
-            Ok(Message::Text(m)) => {
-                log::debug!("ws response: {:?}", m);
-                match serde_json::from_str::<Response>(&m) {
-                    Ok(response) => callback.emit(response),
-                    Err(err) => log::warn!("ws error: {:?}", err),
-                }
-            }
-            Ok(Message::Bytes(_)) => {
-                log::warn!("deserializing bytes over ws not supported")
-            }
-            Err(_web) => {
-                log::warn!("websocket error")
-            }
+    pub fn handle(message: Option<Result<Message, WebSocketError>>) -> Result<Response, String> {
+        match message.ok_or(String::from("none option"))?.map_err(|e| e.to_string())? {
+            Message::Bytes(_) => Err("Websocket received bytes".to_string()),
+            Message::Text(text) => serde_json::from_str(&text).map_err(|e| e.to_string()),
         }
     }
 
-    pub fn create(id: u32, callback: Callback<Response>) -> Self {
-        let endpoint = format!("{SESSION_WS_ENDPOINT}/{id}");
-        let ws = WebSocket::open(&endpoint).unwrap();
-        log::debug!("connecting to {endpoint}");
+    pub async fn run(
+        mut actions: mpsc::Receiver<Action>,
+        mut cancel: oneshot::Receiver<()>,
+        callback: Callback<Response>,
+        ws: WebSocket,
+    ) {
+        let (mut sender, receiver) = ws.split();
+        let mut receiver = receiver.fuse();
 
-        let (sink, stream) = ws.split();
-        let (responder, receiver) = mpsc::unbounded();
-
-        let (cancel_send, mut cancel_recv) = oneshot::channel();
-
-        let mut stream = stream.fuse();
-
-        spawn_local(async move {
-            receiver.forward(sink).await.unwrap();
-            log::debug!("should be dropped (5)")
-        });
-
-        spawn_local(async move {
-            while let Some(m) = select! {
-                message = stream.next() => message,
-                _ = cancel_recv => return
-            } {
-                Self::handle(m, &callback)
+        loop {
+            select! {
+                message = receiver.next() => match Self::handle(message) {
+                    Ok(response) => {
+                        log::trace!("ws response: {:?}", response);
+                        callback.emit(response);
+                    },
+                    Err(err) => log::error!("{}", err),
+                },
+                action = actions.next() => {
+                    let message = Message::Text(serde_json::to_string(&action).unwrap());
+                    sender.send(message).await.unwrap();
+                },
+                _ = cancel => break
             }
-            log::debug!("should be dropped (6)");
-        });
+        }
 
-        Self { responder, cancel: cancel_send }
+        let ws = sender.reunite(receiver.into_inner()).unwrap();
+        ws.close(Some(1000), Some("session closed by user")).unwrap();
+    }
+
+    pub fn new(session_id: u32, callback: Callback<Response>) -> Self {
+        let endpoint = format!("{SESSION_WS_ENDPOINT}/{session_id}");
+        let ws = WebSocket::open(&endpoint).unwrap();
+
+        let (_marker, cancel) = oneshot::channel();
+        let (sender, actions) = mpsc::channel(100);
+
+        spawn_local(async move { Self::run(actions, cancel, callback, ws).await });
+
+        Self { _marker, sender }
     }
 }

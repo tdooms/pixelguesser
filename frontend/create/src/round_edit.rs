@@ -10,6 +10,7 @@ use crate::round_preview::RoundPreview;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub draft: DraftRound,
+    pub complete: bool,
     pub onback: Callback<()>,
     pub ondone: Callback<()>,
     pub onedit: Callback<DraftRound>,
@@ -17,7 +18,7 @@ pub struct Props {
 
 #[function_component(RoundEdit)]
 pub fn round_edit(props: &Props) -> Html {
-    let Props { draft, onback, ondone, onedit } = props.clone();
+    let Props { draft, onback, ondone, onedit, complete } = props.clone();
 
     let center = {
         let clone = draft.clone();
@@ -39,16 +40,16 @@ pub fn round_edit(props: &Props) -> Html {
         let info: RoundInfo = draft.into();
         let footer = html! {
             <Buttons class="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Primary} onclick={ondone} light=true>
-                    <Icon icon={Icons::ArrowRight}/> <span> {"Overview"} </span>
+                <Button fullwidth=true color={Color::Info} onclick={ondone} disabled={!complete}>
+                    <span> {"Overview"} </span>
                 </Button>
-                <Button fullwidth=true color={Color::Info} outlined=true onclick={onback}>
-                    <Icon icon={Icons::ArrowLeft}/> <span> {"Quiz"} </span>
+                <Button fullwidth=true color={Color::Info} light=true onclick={onback}>
+                    <span> {"Back"} </span>
                 </Button>
             </Buttons>
         };
         html! {
-            <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
+            <Sidebar size={ColumnSize::Is3} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
                 <RoundForm {info} onchange={onedit.reform(edit)} {onremove}/>
             </Sidebar>
         }
@@ -56,7 +57,7 @@ pub fn round_edit(props: &Props) -> Html {
 
     html! {
         <>
-            <Column size={ColumnSize::Is8}> {center} </Column>
+            <Column size={ColumnSize::Is7}> {center} </Column>
             {right}
         </>
     }

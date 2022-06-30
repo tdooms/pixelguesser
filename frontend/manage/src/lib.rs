@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use api::{Action, FullQuiz, Phase, Session, Stage};
+use api::{Action, FullQuiz, Participant, Phase, Session, Stage};
 use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use shared::Route;
@@ -38,6 +38,10 @@ pub fn manage(props: &Props) -> Html {
         let points = full.rounds[round].points as i64;
         callback.reform(move |name| Action::Score(name, points))
     };
+
+    if !session.participants.contains_key(&Participant::Host) {
+        log::error!("host has left")
+    }
 
     let onleave = {
         let navigator = use_navigator().unwrap().clone();

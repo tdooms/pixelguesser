@@ -1,14 +1,15 @@
+use crate::error::Internal;
 use crate::Error;
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
 
 fn canvas_context(element: &HtmlCanvasElement) -> Result<CanvasRenderingContext2d, Error> {
-    element
+    Ok(element
         .get_context("2d")
-        .map_err(|_| Error::JsError)?
-        .ok_or(Error::InvalidCast)?
+        .map_err(|_| Internal::JsError)?
+        .ok_or(Internal::InvalidCast)?
         .dyn_into::<CanvasRenderingContext2d>()
-        .map_err(|_| Error::InvalidCast)
+        .map_err(|_| Internal::InvalidCast)?)
 }
 
 pub fn draw_pixelated(
@@ -40,12 +41,12 @@ pub fn draw_pixelated(
 
     offscreen_ctx
         .draw_image_with_html_image_element_and_dw_and_dh(&image, 0.0, 0.0, x_pixels, y_pixels)
-        .map_err(|_| Error::DrawError)?;
+        .map_err(|_| Internal::DrawError)?;
 
     canvas_ctx.set_image_smoothing_enabled(pixels > height);
     canvas_ctx.clear_rect(0.0, 0.0, c_width, c_height);
 
-    canvas_ctx
+    Ok(canvas_ctx
         .draw_image_with_html_canvas_element_and_sw_and_sh_and_dx_and_dy_and_dw_and_dh(
             &offscreen,
             0.0,
@@ -57,5 +58,5 @@ pub fn draw_pixelated(
             i_width * scale,
             i_height * scale,
         )
-        .map_err(|_| Error::DrawError)
+        .map_err(|_| Internal::DrawError)?)
 }

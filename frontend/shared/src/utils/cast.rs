@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::ops::Deref;
 
+use crate::error::Internal;
 use crate::Error;
 use wasm_bindgen::JsValue;
 use web_sys::Node;
@@ -13,7 +14,7 @@ pub struct TypeRef<T: AsRef<Node> + From<JsValue>> {
 
 impl<T: AsRef<Node> + From<JsValue>> TypeRef<T> {
     pub fn get(&self) -> Result<T, Error> {
-        self.node.cast::<T>().ok_or(Error::InvalidCast)
+        Ok(self.node.cast::<T>().ok_or(Internal::InvalidCast)?)
     }
 }
 

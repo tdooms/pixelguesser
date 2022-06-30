@@ -1,5 +1,5 @@
 use cobul::Loading;
-use shared::{callback, Auth, Errors, Route};
+use shared::{callback, Auth, Error, Errors, Route};
 use yew::prelude::*;
 use yew_router::prelude::Redirect;
 
@@ -35,7 +35,7 @@ pub enum Stage {
 #[function_component(Create)]
 pub fn create(props: &Props) -> Html {
     let user = use_context::<Auth>().unwrap().user();
-    let err = use_context::<Errors>().unwrap();
+    let errors = use_context::<Errors>().unwrap();
 
     let user = match user {
         Ok(user) => user,
@@ -43,13 +43,13 @@ pub fn create(props: &Props) -> Html {
     };
 
     // TODO: route the errors correctly
-    let callback = Callback::noop();
-    let state = use_create_state(callback, props.quiz_id, Some(user.clone()), err.clone());
+    let callback = callback!(errors; move |err| errors.emit(Error::Api(err)));
+    let state = use_create_state(callback, props.quiz_id, Some(user.clone()), errors.clone());
     let stage = use_state(|| Stage::Quiz);
 
     let onstage = callback!(stage; move |new| stage.set(new));
-    let onrounds = callback!(state, user, err; move |action| state.set_rounds(action, user.clone(), err.clone()));
-    let onquiz = callback!(state, user, err; move |action| state.set_quiz(action, user.clone(), err.clone()));
+    let onrounds = callback!(state, user, errors; move |action| state.set_rounds(action, user.clone(), errors.clone()));
+    let onquiz = callback!(state, user, errors; move |action| state.set_quiz(action, user.clone(), errors.clone()));
 
     let inner = match *stage {
         Stage::Quiz => {

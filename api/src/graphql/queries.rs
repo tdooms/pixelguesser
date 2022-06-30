@@ -71,13 +71,13 @@ pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Qui
     Ok(res.quizzes)
 }
 
-pub async fn full_quiz(user: Option<User>, id: u32) -> Result<FullQuiz, Error> {
-    let value = id.to_string();
+pub async fn full_quiz(user: Option<User>, quiz_id: u32) -> Result<FullQuiz, Error> {
+    let value = quiz_id.to_string();
     let condition = Condition { op: "_eq", value: value.as_str() };
     let conditions = Conditions::Field(Round::quiz_id(), vec![condition]);
 
     let quiz = QueryByPkBuilder::default()
-        .pk(QuizPk { id: id.into() })
+        .pk(QuizPk { id: quiz_id.into() })
         .returning(Quiz::all())
         .build()
         .unwrap();
@@ -112,13 +112,24 @@ pub async fn update_quiz(user: User, id: u32, draft: DraftQuiz) -> Result<Option
 }
 
 pub async fn delete_quiz(user: User, quiz_id: u32) -> Result<Option<Quiz>, Error> {
-    let body = DeleteByPkBuilder::default()
+    let first = DeleteByPkBuilder::default()
         .pk(QuizPk { id: quiz_id })
         .returning(Quiz::all())
         .build()
         .unwrap();
 
-    let res: DeleteQuizData = exec(Some(user), mutation!(body)).await?;
+    let value = quiz_id.to_string();
+    let condition = Condition { op: "_eq", value: value.as_str() };
+    let conditions = Conditions::Field(Round::quiz_id(), vec![condition]);
+
+    let second = DeleteBuilder::default()
+        .returning(Round::all())
+        .conditions(vec![conditions])
+        .build()
+        .unwrap();
+
+    // TODO: maybe also return rounds
+    let res: DeleteQuizData = exec(Some(user), mutation!(first, second)).await?;
     Ok(res.delete_quizzes_by_pk)
 }
 

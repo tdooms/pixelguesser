@@ -28,6 +28,7 @@ pub fn lobby(props: &Props) -> Html {
     let Props { session, code, full } = &props;
     let url = format!("{}/manage/{}", SELF_ENDPOINT, code);
 
+    // SAFETY: Only errors if the url is too long.
     let generate_qr = || {
         let buffer = QrCode::new(&url)
             .unwrap()

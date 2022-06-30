@@ -32,20 +32,25 @@ pub fn round_form(props: &Props) -> Html {
 
     let RoundInfo { answer, points, guesses } = info;
 
+    let color = {
+        let form = form.clone();
+        move |name: &str| form.error(name).map(|_| Color::Danger)
+    };
+
     html! {
         <div class="pt-5 pl-4 pr-5">
         <SimpleField label="Answer" help={form.error("answer")} >
-            <Input oninput={form.field(|x| &mut x.answer)} value={answer}/>
+            <Input oninput={form.field(|x| &mut x.answer)} value={answer} color={color("answer")}/>
         </SimpleField>
 
         <SimpleField label="Points" help={form.error("points")} >
             <EnumButtons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
-            color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
+            color={Color::Link} alignment={Alignment::Centered}/>
         </SimpleField>
 
         <SimpleField label="Guesses" help={form.error("guesses")}>
             <EnumButtons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
-            color={Color::Link} alignment={Alignment::Centered} size={Size::Small}/>
+            color={Color::Link} alignment={Alignment::Centered}/>
         </SimpleField>
         <Button fullwidth=true onclick={&props.onremove}> {"Remove image"} </Button>
         </div>

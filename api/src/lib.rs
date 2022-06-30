@@ -3,9 +3,9 @@ pub use consts::*;
 pub use error::Error;
 pub use graphql::*;
 pub use image::{Image, Resolution};
-pub use session::*;
-
 pub use sessions::*;
+
+pub use session::*;
 
 mod auth0;
 mod consts;

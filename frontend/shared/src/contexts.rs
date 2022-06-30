@@ -8,6 +8,7 @@ use yew::Callback;
 
 use api::{User, AUTH0_CLIENT_ID, AUTH0_DOMAIN};
 
+use crate::error::Internal;
 use crate::Error;
 
 #[wasm_bindgen]
@@ -47,14 +48,13 @@ impl Auth {
 
     async fn init_inner() -> Result<Option<User>, Error> {
         let (domain, client_id) = (AUTH0_DOMAIN.to_owned(), AUTH0_CLIENT_ID.to_owned());
-        let js_user = init_auth(domain, client_id)
-            .await
-            .map_err(|x| Error::AuthInit(x.as_string().unwrap_or_default()))?;
+        let js_user = init_auth(domain, client_id).await.map_err(|_| Internal::AuthUnreachable)?;
 
         if js_user.is_undefined() {
             Ok(None)
         } else {
-            Ok(serde_wasm_bindgen::from_value(js_user).map(Option::Some)?)
+            let user = serde_wasm_bindgen::from_value(js_user);
+            Ok(user.map(Option::Some).map_err(Internal::AuthError)?)
         }
     }
 
@@ -62,18 +62,20 @@ impl Auth {
         let clone = self.clone();
 
         spawn_local(async move {
-            let user = match Self::init_inner().await {
+            let result = Self::init_inner().await;
+            let _ = result.as_ref().map_err(|err| log::error!("auth error {err}"));
+
+            let user = match result {
                 Ok(Some(user)) => Ok(user),
                 Ok(None) => Err(false),
-                Err(err) => {
-                    log::error!("authentication init error: {:?}", err);
-                    Err(true)
-                }
+                Err(_) => Err(true),
             };
+
+            log::trace!("user init: {:?}", user.as_ref().map(|x| &x.nickname));
+
             *clone.user.borrow_mut() = user.clone();
-            log::trace!("user init: {:?}", user.as_ref().map(|x| x.nickname.clone()));
-            clone.callback.emit(user)
-        })
+            clone.callback.emit(user);
+        });
     }
 
     pub fn login(&self) -> Callback<()> {

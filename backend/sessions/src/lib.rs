@@ -5,14 +5,14 @@ use std::collections::HashMap;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("could not parse request")]
+    #[error("could not parse request {0}")]
     CouldNotParse(#[from] serde_json::Error),
 
     #[error("the request is not a text message")]
     NonText,
 
-    #[error("already a quiz master present")]
-    DuplicateMaster,
+    #[error("already a manager present")]
+    DuplicateManager,
 
     #[error("already a host present")]
     DuplicateHost,
@@ -29,7 +29,7 @@ pub struct Player {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum Participant {
-    Master,
+    Manager,
     Host,
     Player(String),
 }
@@ -91,8 +91,8 @@ impl Session {
         match (action, self.phase) {
             (Action::Join(participant), _) => {
                 match (self.participants.contains_key(&participant), participant) {
-                    (true, Participant::Master) => return Err(Error::DuplicateMaster),
-                    (true, Participant::Host) => return Err(Error::DuplicateMaster),
+                    (true, Participant::Manager) => return Err(Error::DuplicateManager),
+                    (true, Participant::Host) => return Err(Error::DuplicateManager),
                     (_, participant) => self.participants.insert(participant, id),
                 };
             }

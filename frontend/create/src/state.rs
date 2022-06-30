@@ -31,9 +31,16 @@ pub struct CreateState {
     loading: UseStateHandle<bool>,
 }
 
-async fn load_quiz(state: CreateState, quiz_id: u32, user: Option<User>, err: Errors) {
-    let full = api::full_quiz(user, quiz_id).await.emit(&err).unwrap();
-    let rounds: Vec<_> = full.rounds.into_iter().map(DraftRound::from).collect();
+async fn load_quiz(
+    state: CreateState,
+    quiz_id: u32,
+    user: Option<User>,
+    err: Errors,
+) -> Option<()> {
+    let full = api::full_quiz(user, quiz_id).await.emit(&err)?;
+    let mut rounds: Vec<_> = full.rounds.into_iter().map(DraftRound::from).collect();
+
+    rounds.extend(rounds.is_empty().then(|| DraftRound::default()));
 
     state.prev_rounds.set(rounds.clone());
     state.rounds.set(rounds);
@@ -42,10 +49,18 @@ async fn load_quiz(state: CreateState, quiz_id: u32, user: Option<User>, err: Er
     state.quiz.set(full.quiz.into());
 
     state.loading.set(false);
+    Some(())
 }
 
-async fn upload_quiz(state: CreateState, quiz: DraftQuiz, user: User, err: Errors) {
+async fn upload_quiz(state: CreateState, mut quiz: DraftQuiz, user: User, err: Errors) {
+    // Upload the quiz image
+    if let Some(image) = &mut quiz.image {
+        let _ = image.upload().await.emit(&err);
+    }
+    quiz.creator_id = user.sub.clone();
+
     state.quiz.set(quiz.clone());
+    state.prev_quiz.set(quiz.clone());
 
     match *state.quiz_id {
         Some(id) => api::update_quiz(user, id, quiz).await.emit(&err),
@@ -62,6 +77,7 @@ async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: Us
         let _ = image.upload().await.emit(&err);
     }
 
+    // The quiz must exist before we can save rounds
     let quiz_id = state.quiz_id.unwrap();
     let _ = api::save_rounds(user, quiz_id, rounds.clone()).await.emit(&err);
 
@@ -71,7 +87,7 @@ async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: Us
 
 #[hook]
 pub fn use_create_state(
-    _callback: Callback<api::Error>,
+    callback: Callback<api::Error>,
     quiz_id: Option<u32>,
     user: Option<User>,
     err: Errors,
@@ -91,7 +107,11 @@ pub fn use_create_state(
     use_effect_with_deps(
         move |_| {
             if let Some(quiz_id) = *cloned.quiz_id {
-                spawn_local(async move { load_quiz(cloned, quiz_id, user, err).await })
+                spawn_local(async move {
+                    if let None = load_quiz(cloned, quiz_id, user, err).await {
+                        callback.emit(api::Error::Empty);
+                    }
+                })
             }
             || ()
         },
@@ -123,8 +143,12 @@ impl CreateState {
                 spawn_local(async move { delete_quiz(cloned, user, err).await });
             }
             QuizAction::Submit if self.quiz != self.prev_quiz => {
-                let quiz = self.quiz();
-                spawn_local(async move { upload_quiz(cloned, quiz, user, err).await });
+                self.loading.set(true);
+                let (quiz, loading) = (self.quiz(), self.loading.clone());
+                spawn_local(async move {
+                    upload_quiz(cloned, quiz, user, err).await;
+                    loading.set(false);
+                });
             }
             QuizAction::Submit => {}
         }

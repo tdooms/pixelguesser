@@ -76,7 +76,7 @@ async fn notify(state: &mut State, response: &Response) {
 
 async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
     let (mut sender, mut receiver) = stream.split();
-    let connection = rand::thread_rng().gen::<u32>();
+    let conn_id = rand::thread_rng().gen::<u32>();
     log::info!("attempted connection to {session_id}");
 
     // Add the sender to the connections of the local state
@@ -88,24 +88,33 @@ async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
         }
     };
 
-    local.lock().await.connections.insert(connection, sender);
+    local.lock().await.connections.insert(conn_id, sender);
 
     while let Some(Ok(message)) = receiver.next().await {
         let mut lock = local.lock().await;
-        if let Err(err) = handle_message(message, &mut *lock, connection).await {
+        if let Err(err) = handle_message(message, &mut *lock, conn_id).await {
             log::error!("{}", err);
         }
     }
 
     // Remove local connection from the session
     let mut lock = local.lock().await;
-    lock.connections.remove(&connection);
+    lock.connections.remove(&conn_id);
 
     // Remove the session from the global state if it has no more connections
     if lock.connections.is_empty() {
         global.lock().await.remove(&session_id);
     }
 
+    log::debug!("{:?}", lock.session.participants);
+
+    // Remove the participant corresponding to this connection
+    // TODO: Should participants be part of local or session?
+    lock.session.participants.retain(|_, v| *v != conn_id);
+
+    log::debug!("{:?}", lock.session.participants);
+
+    // Notify the rest of the participants of the session change
     let session = lock.session.clone();
     notify(&mut *lock, &Response::Update(session)).await;
 }

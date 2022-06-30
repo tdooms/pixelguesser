@@ -1,4 +1,5 @@
 use gloo::timers::callback::Timeout;
+use shared::Internal;
 use web_sys::{HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::prelude::*;
 
@@ -128,7 +129,7 @@ impl Component for Pixelate {
                 // Redraw on resize to reduce stutter
                 self.draw().emit(&errors);
             }
-            Msg::CouldNotLoad => errors.emit(Error::ImageCouldNotLoad),
+            Msg::CouldNotLoad => errors.emit(Error::Internal(Internal::ImageCouldNotLoad)),
         }
         false
     }

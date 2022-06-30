@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use yew::prelude::*;
 
 use cobul::props::{ColumnSize, Size};
@@ -12,13 +11,13 @@ pub struct Props {
     pub onremove: Callback<usize>,
 
     pub images: Vec<Option<String>>,
-    pub incomplete: Vec<bool>,
+    pub incompletes: Vec<bool>,
     pub current: usize,
 }
 
 #[function_component(RoundList)]
 pub fn round_list(props: &Props) -> Html {
-    let Props { onselect, onadd, onremove, images, current, incomplete } = props;
+    let Props { onselect, onadd, onremove, images, current, incompletes } = props;
 
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
@@ -34,7 +33,7 @@ pub fn round_list(props: &Props) -> Html {
             }
         });
 
-        let background = match (incomplete[index], index == *current) {
+        let background = match (incompletes[index], index == *current) {
             (true, false) => "has-background-danger-light",
             (_, true) => "has-background-white-ter",
             (false, false) => "",

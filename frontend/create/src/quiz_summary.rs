@@ -44,10 +44,10 @@ pub fn summary(props: &Props) -> Html {
         </Box>
 
         <Buttons>
-            <Button color={Color::Info} outlined=true onclick={onback}>
-                <Icon icon={Icons::ArrowLeft}/> <span> {"Rounds"} </span>
+            <Button color={Color::Info} light=true onclick={onback}>
+                <span> {"Rounds"} </span>
             </Button>
-            <Button color={Color::Primary} onclick={ondone}>
+            <Button color={Color::Info} onclick={ondone}>
                 <span> {"Submit"} </span>
             </Button>
         </Buttons>

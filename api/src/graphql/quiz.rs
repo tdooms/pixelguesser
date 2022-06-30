@@ -37,6 +37,8 @@ pub struct DraftQuiz {
     pub description: String,
     pub explanation: String,
     pub image: Option<Image>,
+
+    pub creator_id: String,
 }
 
 impl From<Quiz> for DraftQuiz {
@@ -48,6 +50,7 @@ impl From<Quiz> for DraftQuiz {
             description: quiz.description,
             explanation: quiz.explanation,
             image: quiz.image.map(|url| Image::from_url(url, name)),
+            creator_id: quiz.creator.id,
         }
     }
 }

@@ -7,7 +7,7 @@ use api::DraftQuiz;
 const TITLE_DEFAULT: &str = "Cities";
 const EXPLANATION_DEFAULT: &str = "Guess quickly";
 const DESCRIPTION_DEFAULT: &str = "The best quiz";
-const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
+// const EXPLANATION_HELP: &str = "Players will see this when they start the quiz.";
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -53,11 +53,11 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <Buttons>
-            <Button color={Color::Info} outlined=true onclick={onback}>
-                <Icon icon={Icons::ArrowLeft}/> <span> {"Back"} </span>
+            <Button color={Color::Info} light=true onclick={onback}>
+                <span> {"Back"} </span>
             </Button>
-            <Button color={Color::Primary} light=true disabled={!form.can_submit()} onclick={form.submit()}>
-                <Icon icon={Icons::ArrowRight}/> <span> {"Rounds"} </span>
+            <Button color={Color::Info} disabled={!form.can_submit()} onclick={form.submit()}>
+                <span> {"Rounds"} </span>
             </Button>
         </Buttons>
         </>

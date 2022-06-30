@@ -3,17 +3,15 @@ name = "manage"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-api = { path = "../api" }
+api = { path = "../../api" }
 shared = { path = "../shared" }
-cobul = { git = "https://github.com/tdooms/cobul.git" }
 
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms", "hooks"] }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-gloo-timers = "0.2.4"
 
+gloo-timers = "0.2.4"
 strum = { version = "0.24"}
 validator = { version = "0.14", features = ["derive"] }
 log = "0.4"
