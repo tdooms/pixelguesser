@@ -39,14 +39,14 @@ impl Default for PointChoices {
 #[derive(Serialize_repr, Deserialize_repr, Display, EnumIter, Clone, Copy, Debug, PartialEq)]
 #[repr(u8)]
 pub enum GuessChoices {
-    #[display(fmt = "no limit")]
-    Infinity = 0,
     #[display(fmt = "1")]
     One = 1,
     #[display(fmt = "2")]
     Two = 2,
     #[display(fmt = "3")]
     Three = 3,
+    #[display(fmt = "infinite")]
+    Infinite = 0,
 }
 
 impl Encode for GuessChoices {
@@ -57,7 +57,7 @@ impl Encode for GuessChoices {
 
 impl Default for GuessChoices {
     fn default() -> Self {
-        Self::Infinity
+        Self::Infinite
     }
 }
 

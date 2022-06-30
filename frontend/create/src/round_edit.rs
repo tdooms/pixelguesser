@@ -37,20 +37,19 @@ pub fn round_edit(props: &Props) -> Html {
         let clone = draft.clone();
         let onremove = onedit.reform(move |_| DraftRound { image: None, ..clone.clone() });
 
-        let info: RoundInfo = draft.into();
         let footer = html! {
             <Buttons class="mt-auto px-4 py-2">
-                <Button fullwidth=true color={Color::Info} onclick={ondone} disabled={!complete}>
+                <Button fullwidth=true color={Color::Info} onclick={ondone} disabled={!complete} class="mr-1">
                     <span> {"Overview"} </span>
                 </Button>
-                <Button fullwidth=true color={Color::Info} light=true onclick={onback}>
+                <Button fullwidth=true color={Color::Info} light=true onclick={onback} class="mr-1">
                     <span> {"Back"} </span>
                 </Button>
             </Buttons>
         };
         html! {
             <Sidebar size={ColumnSize::Is3} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
-                <RoundForm {info} onchange={onedit.reform(edit)} {onremove}/>
+                <RoundForm {draft} onchange={onedit.reform(edit)} {onremove}/>
             </Sidebar>
         }
     };

@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use cobul::props::{ColumnSize, Size};
+use cobul::props::SidebarAlignment;
 use cobul::*;
 use shared::callback;
 
@@ -48,11 +48,11 @@ pub fn round_list(props: &Props) -> Html {
     };
 
     html! {
-        <Column class="p-4">
+        <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} overflow=true class="p-4">
             { for images.iter().enumerate().map(map_view) }
-            <Button fullwidth=true onclick={onadd}>
+            <Button fullwidth=true onclick={onadd} class="ml-1">
                 <Icon icon={Icons::Plus} size={Size::Large}/>
             </Button>
-        </Column>
+        </Sidebar>
     }
 }

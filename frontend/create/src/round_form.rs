@@ -1,5 +1,4 @@
 use api::{DraftRound, GuessChoices, PointChoices};
-use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use validator::Validate;
 use yew::prelude::*;
@@ -22,13 +21,16 @@ impl From<DraftRound> for RoundInfo {
 pub struct Props {
     pub onchange: Callback<RoundInfo>,
     pub onremove: Callback<()>,
-    pub info: RoundInfo,
+    pub draft: DraftRound,
 }
 
 #[function_component(RoundForm)]
 pub fn round_form(props: &Props) -> Html {
+    let has_image = props.draft.image.is_some();
+    let info: RoundInfo = props.draft.clone().into();
+
     let actions = Actions::new().change(props.onchange.clone());
-    let (form, info) = use_form(&props.info, actions);
+    let (form, info) = use_form(&info, actions);
 
     let RoundInfo { answer, points, guesses } = info;
 
@@ -45,14 +47,19 @@ pub fn round_form(props: &Props) -> Html {
 
         <SimpleField label="Points" help={form.error("points")} >
             <EnumButtons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
-            color={Color::Link} alignment={Alignment::Centered}/>
+            color={Color::Info} />
         </SimpleField>
 
         <SimpleField label="Guesses" help={form.error("guesses")}>
             <EnumButtons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
-            color={Color::Link} alignment={Alignment::Centered}/>
+            color={Color::Info} />
         </SimpleField>
-        <Button fullwidth=true onclick={&props.onremove}> {"Remove image"} </Button>
+
+        <Block/>
+        <Button fullwidth=true onclick={&props.onremove} light=true color={Color::Danger} hidden={!has_image}>
+        {"Remove image"}
+        </Button>
+
         </div>
     }
 }

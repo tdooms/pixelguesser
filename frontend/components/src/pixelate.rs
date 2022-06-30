@@ -21,7 +21,10 @@ pub enum Msg {
 pub struct Props {
     pub url: String,
     pub stage: Stage,
-    pub onrevealed: Callback<()>,
+    pub onreveal: Callback<()>,
+
+    #[prop_or_default(100)]
+    pub height: u32,
 }
 
 pub struct Pixelate {
@@ -62,7 +65,7 @@ impl Pixelate {
     }
 
     fn pixelate(&mut self, ctx: &Context<Self>) -> Result<(), Error> {
-        let Props { stage, onrevealed, .. } = ctx.props();
+        let Props { stage, onreveal, .. } = ctx.props();
         self.timer = None;
 
         // Calculate the maximum pixels that are useful to de-pixelate
@@ -70,7 +73,7 @@ impl Pixelate {
 
         // Quick exit if already done
         if self.pixels >= max_pixels {
-            onrevealed.emit(());
+            onreveal.emit(());
             return Ok(());
         }
 
@@ -150,6 +153,7 @@ impl Component for Pixelate {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let style = format!("height:{}vh", ctx.props().height);
         html! {
             <>
                 <img style="display:none"
@@ -160,7 +164,7 @@ impl Component for Pixelate {
 
                 <canvas style="display:none" ref={self.offscreen.clone()}/>
 
-                <div style="height:100vh" ref={self.container.clone()}>
+                <div {style} ref={self.container.clone()}>
                     <canvas style="display:block" ref={self.canvas.clone()}/>
                 </div>
             </>

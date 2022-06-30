@@ -25,7 +25,7 @@ pub struct Props {
 #[function_component(Play)]
 pub fn play(props: &Props) -> Html {
     let Props { round, index, rounds, stage, players, callback } = props.clone();
-    let onrevealed = callback.reform(|_| Action::Stage(Stage::Revealed));
+    let onreveal = callback.reform(|_| Action::Stage(Stage::Revealed));
     let timer = use_state(|| Timeout::new(0, || ()));
 
     use_effect_with_deps(
@@ -42,7 +42,7 @@ pub fn play(props: &Props) -> Html {
             <Info {index} {rounds} {round}/>
         },
         Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed => html! {
-            <Pixelate {stage} url={round.image} {onrevealed}/>
+            <Pixelate {stage} url={round.image} {onreveal}/>
         },
         Stage::Scores => html! {
             <Ranking {players}/>

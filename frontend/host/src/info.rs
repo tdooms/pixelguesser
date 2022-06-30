@@ -1,9 +1,9 @@
 use yew::prelude::*;
 
-use api::Round;
+use api::{GuessChoices, Round};
 use cobul::props::{Color, HeaderSize, HeroSize};
 use cobul::*;
-use gloo::timers::callback::{Timeout};
+use gloo::timers::callback::Timeout;
 use shared::HOST_INFO_DURATION;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -36,9 +36,9 @@ pub fn info(props: &Props) -> Html {
         x => format!("{} Points", x),
     };
 
-    let guesses = match round.guesses as u64 {
-        1 => "1 Guess".to_owned(),
-        x => format!("{} Guesses", x),
+    let guesses = match round.guesses {
+        GuessChoices::One => "1 Guess".to_owned(),
+        x => format!("{x} Guesses"),
     };
 
     html! {
