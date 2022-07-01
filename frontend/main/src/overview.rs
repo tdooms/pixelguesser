@@ -69,7 +69,7 @@ pub fn overview() -> HtmlResult {
     Ok(html! {
         <>
         <MainNavbar/>
-        <Section>
+        <Section class="pt-0">
         <Container>
             <Search {onsort} {onfilter} sort={*sort} filter={(*filter).clone()}/>
             <Columns multiline=true> {list} </Columns>

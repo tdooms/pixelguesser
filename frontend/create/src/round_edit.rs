@@ -43,12 +43,12 @@ pub fn round_edit(props: &Props) -> Html {
                     <span> {"Overview"} </span>
                 </Button>
                 <Button fullwidth=true color={Color::Info} light=true onclick={onback} class="mr-1">
-                    <span> {"Back"} </span>
+                    <span> {"Quiz"} </span>
                 </Button>
             </Buttons>
         };
         html! {
-            <Sidebar size={ColumnSize::Is3} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
+            <Sidebar size={ColumnSize::IsNarrow} alignment={SidebarAlignment::Right} class="p-0" overflow=false footer={footer}>
                 <RoundForm {draft} onchange={onedit.reform(edit)} {onremove}/>
             </Sidebar>
         }
@@ -56,7 +56,7 @@ pub fn round_edit(props: &Props) -> Html {
 
     html! {
         <>
-            <Column size={ColumnSize::Is7}> {center} </Column>
+            <Column> {center} </Column>
             {right}
         </>
     }

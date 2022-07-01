@@ -19,5 +19,5 @@ gloo = "0.5"
 log = "0.4"
 futures = "0.3"
 validator = { version = "*", features = ["derive"] }
-web-sys = { version = "0.3", features = ["File"] }
+web-sys = { version = "0.3", features = ["File", "DragEvent", "DataTransfer"] }
 wasm-bindgen-futures = "0.4"

@@ -20,8 +20,6 @@ pub enum PointChoices {
     Three = 3,
     #[display(fmt = "4")]
     Four = 4,
-    #[display(fmt = "5")]
-    Five = 5,
 }
 
 impl Encode for PointChoices {

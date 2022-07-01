@@ -1,5 +1,8 @@
+use std::cmp::Ordering;
+use web_sys::DragEvent;
 use yew::prelude::*;
 
+use crate::state::RoundsAction;
 use cobul::props::SidebarAlignment;
 use cobul::*;
 use shared::callback;
@@ -9,6 +12,7 @@ pub struct Props {
     pub onselect: Callback<usize>,
     pub onadd: Callback<()>,
     pub onremove: Callback<usize>,
+    pub onswap: Callback<(usize, usize)>,
 
     pub images: Vec<Option<String>>,
     pub incompletes: Vec<bool>,
@@ -17,15 +21,56 @@ pub struct Props {
 
 #[function_component(RoundList)]
 pub fn round_list(props: &Props) -> Html {
-    let Props { onselect, onadd, onremove, images, current, incompletes } = props;
+    let Props { onselect, onadd, onremove, onswap, images, current, incompletes } = props;
+    let original = use_state_eq(|| None);
+    let hover = use_state_eq(|| None);
+
+    let style = "height:100px;display:block;margin-left:auto;margin-right:auto;border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray;";
+
+    let visualise = |hidden: bool| {
+        html! {
+            <hr class="p-0 m-0 has-background-danger" style={hidden.then_some("visibility:hidden")}/>
+        }
+    };
+
+    let line = match (*original, *hover) {
+        (Some(original), Some(hover)) if original > hover => Some(hover),
+        (Some(original), Some(hover)) if original < hover => Some(hover + 1),
+        _ => None,
+    };
 
     let map_view = |(index, src): (usize, &Option<String>)| {
         let image = match src {
-            Some(src) => html! { <DynImage src={src.clone()} height=10/> },
+            Some(src) => html! { <img src={src.clone()} class={"m-0 p-0"} {style}/> },
             None => html! {},
         };
 
         let onselect = onselect.reform(move |_| index);
+
+        let ondragstart = callback!(original; move |event: DragEvent| {
+            // event.prevent_default();
+            event.data_transfer().unwrap().set_drop_effect("move");
+            original.set(Some(index))
+        });
+        let ondragover = callback!(hover; move |event: DragEvent| {
+            event.prevent_default();
+            event.data_transfer().unwrap().set_drop_effect("move");
+            hover.set(Some(index))
+        });
+
+        let ondragend = callback!(original, hover, onswap; move |event: DragEvent| {
+            event.prevent_default();
+            if *original != *hover {
+                onswap.emit((original.unwrap(), hover.unwrap()));
+            }
+
+            original.set(None);
+            hover.set(None);
+        });
+
+        let ondrop = callback!(; move |event: DragEvent| {
+            event.prevent_default();
+        });
 
         let onkeydown = callback!(onremove; move |e: KeyboardEvent| {
             if e.key() == "Delete" {
@@ -39,17 +84,24 @@ pub fn round_list(props: &Props) -> Html {
             (false, false) => "",
         };
 
+        let style = "border-width:thin;";
+        let class = classes!(background, "columns", "m-0", "p-0");
+
         html! {
-            <div style="border-width:thin" tabindex="0" class={classes!("columns", background)} onclick={onselect} {onkeydown}>
-                <Column size={ColumnSize::IsNarrow} class={"m-2 pl-2 pr-1"}> <p> {index+1} </p> </Column>
-                <Column class="p-1"> {image} </Column>
+            <>
+            { visualise(Some(index) != line) }
+            <div {style} {class} draggable="true" tabindex="0" onclick={onselect} {onkeydown} {ondragstart} {ondragover} {ondragend} {ondrop}>
+                <Column size={ColumnSize::IsNarrow} class="m-1 p-0"> <p> {index+1} </p> </Column>
+                <Column style="justify-content:center" class="p-1 is-flex"> {image} </Column>
             </div>
+            </>
         }
     };
 
     html! {
         <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} overflow=true class="p-4">
             { for images.iter().enumerate().map(map_view) }
+            { visualise(Some(images.len()) != line) }
             <Button fullwidth=true onclick={onadd} class="ml-1">
                 <Icon icon={Icons::Plus} size={Size::Large}/>
             </Button>

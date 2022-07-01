@@ -25,7 +25,7 @@ pub fn search(props: &Props) -> Html {
     let Props { sort, filter, onsort, onfilter } = props.clone();
 
     html! {
-        <Columns centered=true class="py-4">
+        <Columns centered=true class="py-3">
         <Column size={ColumnSize::Is8}>
 
         <Field grouped=true>

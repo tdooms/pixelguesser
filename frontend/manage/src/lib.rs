@@ -48,7 +48,12 @@ pub fn manage(props: &Props) -> Html {
         Callback::from(move |_| navigator.push(Route::Overview))
     };
 
+    let rounds = full.rounds.len();
     let body = match session.phase {
+        Phase::Playing { round, .. } if round >= rounds => {
+            log::error!("empty quiz");
+            html! {}
+        }
         Phase::Lobby => html! {
             <>
             <PlayerForm {onsubmit}/>

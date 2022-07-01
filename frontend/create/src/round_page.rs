@@ -54,6 +54,10 @@ pub fn round_page(props: &Props) -> Html {
             onchange.emit(RoundsAction::Remove(idx));
             current.set(*current - current.min((idx <= *current) as usize));
         });
+        let onswap = callback!(current, onchange; move |(from, to)| {
+            onchange.emit(RoundsAction::Swap(from, to));
+            current.set(to);
+        });
 
         let images: Vec<_> = rounds
             .iter()
@@ -61,7 +65,7 @@ pub fn round_page(props: &Props) -> Html {
             .collect();
 
         let (current, incompletes) = (*current, incompletes.clone());
-        html! {<RoundList {onselect} {onadd} {onremove} {images} {current} {incompletes}/>}
+        html! {<RoundList {onselect} {onadd} {onremove} {onswap} {images} {current} {incompletes}/>}
     };
 
     let edit = {

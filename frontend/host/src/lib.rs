@@ -39,10 +39,20 @@ pub fn host(props: &Props) -> Html {
     let rounds = full.rounds.len();
 
     match session.phase {
-        Phase::Lobby => html! {<Lobby {code} {session} {full} /> },
-        Phase::Playing { round, stage } => {
-            html! { <Play round={full.rounds[round].clone()} {rounds} {stage} players={session.players.clone()} {callback} index={round}/> }
+        Phase::Lobby => {
+            html! {<Lobby {code} {session} {full} /> }
         }
-        Phase::Finished => html! {<Finish {session} {full} /> },
+        Phase::Playing { round, .. } if round > rounds => {
+            log::error!("empty quiz");
+            html! {}
+        }
+        Phase::Playing { round: index, stage } => {
+            let round = full.rounds[index].clone();
+            let players = session.players.clone();
+            html! { <Play {round} {rounds} {stage} {players} {callback} {index}/> }
+        }
+        Phase::Finished => {
+            html! {<Finish {session} {full} /> }
+        }
     }
 }

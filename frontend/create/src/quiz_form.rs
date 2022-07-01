@@ -29,7 +29,7 @@ pub fn quiz_form(props: &Props) -> Html {
 
     let actions = Actions::new().submit(onsubmit).change(onchange);
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
-    let DraftQuiz { title, explanation, public: _, description, image, .. } = quiz;
+    let DraftQuiz { title, explanation, public, description, image, .. } = quiz;
 
     let filename = image.as_ref().map(api::Image::name);
     let fullwidth = filename.as_ref().is_some();
@@ -50,6 +50,12 @@ pub fn quiz_form(props: &Props) -> Html {
 
         <SimpleField label="Image" help={form.error("image")}>
             <File accept={"image/*"} fullwidth={fullwidth} filename={filename} onupload={form.async_field(make_image)}/>
+        </SimpleField>
+
+        <SimpleField label="Public">
+            <Checkbox name="" checked={public} onchange={form.field(|x| &mut x.public)}>
+            {" Make this quiz public"}
+            </Checkbox>
         </SimpleField>
 
         <Buttons>

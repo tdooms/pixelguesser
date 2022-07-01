@@ -23,6 +23,7 @@ it will be released on the website www.pixelguesser.com.
   - ~~Make quizzes searchable by name and description. (low)~~
   - ~~Editable icon only shows if user has privileges. (high)~~
   - Favourite quizzes and sharing quizzes. (low)
+  - Hide incomplete quizzes (low)
 - Host
   - ~~Show the explanation (high)~~
   - ~~Show the points/guesses before every round (high)~~
@@ -35,10 +36,11 @@ it will be released on the website www.pixelguesser.com.
   - Edit points interface, in case of erroneous input (medium)
   - Also need to access the quiz when not owner and not public (high)
 - Create
-  - Test properly (high)
+  - ~~Test properly (high)~~
   - Queries should be deterministic aka order by (medium)
   - Proper forms and public checkbox (high)
   - More options than pixelate (medium)
+  - Leave warning unsaved work
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
@@ -51,6 +53,11 @@ it will be released on the website www.pixelguesser.com.
   - Consistent styling (medium)
   - Help/Explain pages (low)
   - Logo (high)
+
+# Known issues
+When deleting a quiz, it redirects to the overview. 
+Sometimes the quiz is not yet deleted before the page 
+is fetched resulting in wrong info shown.
 
 
   
