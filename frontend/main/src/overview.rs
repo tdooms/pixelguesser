@@ -17,11 +17,6 @@ pub struct Props {
 pub fn quiz_column(Props { quiz }: &Props) -> Html {
     let Quiz { title, description, image, id, creator, public, .. } = quiz.clone();
 
-    let image = api::Image::src_or_placeholder(
-        image.map(|url| api::Image::from_url(url, String::new())).as_ref(),
-        Resolution::Card,
-    );
-
     html! {
         <Column size={ColumnSize::Is3}>
             <QuizCard id={id as u32} {title} {description} {image} {creator} {public}/>

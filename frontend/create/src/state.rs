@@ -53,11 +53,8 @@ async fn load_quiz(
 }
 
 async fn upload_quiz(state: CreateState, mut quiz: DraftQuiz, user: User, err: Errors) {
-    // Upload the quiz image
-    if let Some(image) = &mut quiz.image {
-        let _ = image.upload().await.emit(&err);
-    }
     quiz.creator_id = user.sub.clone();
+    quiz.image.upload().await.emit(&err);
 
     state.quiz.set(quiz.clone());
     state.prev_quiz.set(quiz.clone());
@@ -73,8 +70,8 @@ async fn delete_quiz(state: CreateState, user: User, err: Errors) {
 }
 
 async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: User, err: Errors) {
-    for image in rounds.iter_mut().filter_map(|round| round.image.as_mut()) {
-        let _ = image.upload().await.emit(&err);
+    for round in &mut rounds {
+        round.image.upload().await.emit(&err);
     }
 
     // The quiz must exist before we can save rounds

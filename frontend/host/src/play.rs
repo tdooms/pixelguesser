@@ -42,7 +42,7 @@ pub fn play(props: &Props) -> Html {
             <Info {index} {rounds} {round}/>
         },
         Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed => html! {
-            <Pixelate {stage} url={round.image} {onreveal}/>
+            <Pixelate {stage} image={round.image} {onreveal}/>
         },
         Stage::Scores => html! {
             <Ranking {players}/>

@@ -22,7 +22,7 @@ pub fn summary(props: &Props) -> Html {
     let round_mapper = |round: &DraftRound| {
         html! {
             <Column size={ColumnSize::Is3}>
-            <DynImage src={api::Image::src_or_placeholder(round.image.as_ref(), Resolution::Thumbnail)} height=20/>
+            <DynImage src={(*round.image.src(Resolution::Thumbnail)).clone()} height=20/>
             <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
             </Column>
         }

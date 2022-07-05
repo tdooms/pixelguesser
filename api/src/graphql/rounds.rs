@@ -3,7 +3,7 @@ use hasura::{Encode, Object, Pk};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 use crate::Image;
 
@@ -59,18 +59,25 @@ impl Default for GuessChoices {
     }
 }
 
+fn validate_image(image: &Image) -> Result<(), ValidationError> {
+    if image.is_none() {
+        Err(ValidationError::new("Image must not be empty."))
+    } else {
+        Ok(())
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk, Encode)]
 #[object(name = "rounds", pk = "quiz_id", pk = "index")]
 pub struct Round {
     pub quiz_id: u32,
     pub index: u32,
 
-    // copied from draft
     pub answer: String,
     pub points: PointChoices,
     pub guesses: GuessChoices,
     pub speed: Option<f64>,
-    pub image: String,
+    pub image: Image,
 }
 
 impl Round {
@@ -82,7 +89,7 @@ impl Round {
             points: draft.points,
             guesses: draft.guesses,
             speed: draft.speed,
-            image: draft.image.map(|x| x.url()).flatten().unwrap_or_default(),
+            image: draft.image,
         }
     }
 }
@@ -91,10 +98,13 @@ impl Round {
 pub struct DraftRound {
     #[validate(length(min = 1))]
     pub answer: String,
+
     pub points: PointChoices,
     pub guesses: GuessChoices,
     pub speed: Option<f64>,
-    pub image: Option<Image>,
+
+    #[validate(custom = "validate_image")]
+    pub image: Image,
 }
 
 impl From<Round> for DraftRound {
@@ -104,7 +114,7 @@ impl From<Round> for DraftRound {
             points: round.points,
             guesses: round.guesses,
             speed: round.speed,
-            image: Some(Image::from_url(round.image, String::default())),
+            image: round.image,
         }
     }
 }

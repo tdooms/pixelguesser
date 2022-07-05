@@ -7,7 +7,7 @@ use shared::{async_callback, callback};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub image: Option<api::Image>,
+    pub image: Image,
     pub onupload: Callback<Image>,
 }
 
@@ -40,7 +40,7 @@ pub fn round_preview(props: &Props) -> Html {
 
     let onupload = {
         Callback::from(move |files: Vec<web_sys::File>| {
-            async_callback(Image::from_local(files[0].clone()), onupload.clone());
+            async_callback(Image::from_file(files[0].clone()), onupload.clone());
         })
     };
 
@@ -70,20 +70,20 @@ pub fn round_preview(props: &Props) -> Html {
         State::Revealed => ([false, true, true, true], Stage::Revealed),
     };
 
-    match (&image, *state) {
-        (Some(image), State::Revealed) => html! {
+    match (image.is_none(), *state) {
+        (false, State::Revealed) => html! {
             <div>
-            <DynImage src={image.src(Resolution::FullHd)} height=85/>
+            <DynImage src={(*image.src(Resolution::HD)).clone()} height=85/>
             { buttons(&hidden) }
             </div>
         },
-        (Some(image), _) => html! {
+        (false, _) => html! {
             <div>
-            <Pixelate url={image.url().unwrap()} {stage} {onreveal} height=85/>
+            <Pixelate image={(*image).clone()} {stage} {onreveal} height=85/>
             { buttons(&hidden) }
             </div>
         },
-        (None, _) => html! {
+        (true, _) => html! {
             <Center>
                 <File accept={"image/*"} boxed=true alignment={Alignment::Centered} {onupload} />
             </Center>

@@ -1,135 +1,111 @@
-use crate::{Error, IMAGE_PLACEHOLDER};
-use crate::{IMAGE_ENDPOINT, UPLOAD_ENDPOINT};
-use derive_more::Display;
+use crate::{Error, IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 use gloo::file::futures::read_as_data_url;
 use reqwasm::http::Request;
-use serde::de::Visitor;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
 
-#[derive(Display)]
+#[derive(Clone, Copy, Debug, PartialEq, derive_more::Display)]
 pub enum Resolution {
     #[display(fmt = "?height=108")]
     Thumbnail,
     #[display(fmt = "?height=324")]
     Card,
     #[display(fmt = "?height=1080")]
-    FullHd,
+    HD,
     #[display(fmt = "")]
-    Max,
+    Original,
 }
 
-#[derive(Clone, PartialEq)]
-pub enum ImageData {
-    Local(String),
-    Url(String),
-    Both(String, String),
+#[derive(Clone, Debug, PartialEq, Default)]
+pub enum Format {
+    Both {
+        data: Rc<String>,
+        url: String,
+    },
+    Local {
+        data: Rc<String>,
+    },
+    Url {
+        url: String,
+    },
+
+    #[default]
+    None,
 }
 
-impl Debug for ImageData {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ImageData::Local(_) => write!(f, "ImageData::Local()"),
-            ImageData::Url(url) => write!(f, "ImageData::Url({})", url),
-            ImageData::Both(url, _) => write!(f, "ImageData::Both({})", url),
-        }
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Image {
-    data: ImageData,
-    name: String,
+    format: Format,
+    name: Option<String>,
 }
 
 impl Serialize for Image {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match &self.data {
-            ImageData::Local(_) => unimplemented!(),
-            ImageData::Url(url) | ImageData::Both(url, _) => serializer.serialize_str(url),
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match &self.format {
+            Format::None => serializer.serialize_none(),
+            Format::Local { .. } => Err(serde::ser::Error::custom("Must have a url")),
+            Format::Url { url } | Format::Both { url, .. } => serializer.serialize_str(url),
         }
     }
 }
 
 impl<'de> Deserialize<'de> for Image {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let url = deserializer.deserialize_str(StrVisitor)?;
-        Ok(Self { data: ImageData::Url(url), name: "".to_string() })
-    }
-}
-
-struct StrVisitor;
-impl<'de> Visitor<'de> for StrVisitor {
-    type Value = String;
-
-    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("a string")
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Ok(v.to_owned())
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let url = String::deserialize(deserializer)?;
+        Ok(Self { format: Format::Url { url }, name: None })
     }
 }
 
 impl Image {
-    pub async fn from_local(file: web_sys::File) -> Self {
+    pub async fn from_file(file: web_sys::File) -> Self {
         let blob = gloo::file::Blob::from(file.clone());
-        let data = read_as_data_url(&blob).await.unwrap();
+        let data = Rc::new(read_as_data_url(&blob).await.unwrap());
 
-        Image { data: ImageData::Local(data), name: file.name() }
+        Self { format: Format::Local { data }, name: Some(file.name()) }
     }
 
-    pub fn from_url(url: impl ToString, name: String) -> Self {
-        Image { data: ImageData::Url(url.to_string()), name }
+    pub fn from_url(url: impl ToString) -> Self {
+        Self { format: Format::Url { url: url.to_string() }, name: None }
+    }
+
+    pub fn name(&self) -> Option<String> {
+        self.name.clone()
     }
 
     pub async fn upload(&mut self) -> Result<(), Error> {
-        if let ImageData::Local(local) = &self.data {
+        if let Format::Local { data } = self.format.clone() {
             let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
 
-            let body = local.split(',').nth(1).unwrap().to_owned();
+            let body = data.split(',').nth(1).unwrap().to_owned();
             let response = Request::post(&endpoint).body(body).send().await.unwrap();
-
             (response.status() == 200).then(|| ()).ok_or(Error::Upload)?;
 
-            let filename = response.text().await?;
-            log::trace!("uploaded image filename: {}", filename);
-            self.data = ImageData::Both(local.clone(), filename)
+            let url = response.text().await?;
+            log::trace!("uploaded image filename: {}", url);
+            self.format = Format::Both { data, url };
         }
         Ok(())
     }
 
-    pub fn name(&self) -> String {
-        self.name.clone()
+    pub fn src(&self, resolution: Resolution) -> Rc<String> {
+        match &self.format {
+            Format::None => Rc::new(IMAGE_PLACEHOLDER.to_string()),
+            Format::Local { data } | Format::Both { data, .. } => data.clone(),
+            Format::Url { url } => Rc::new(format!("{url}{resolution}")),
+        }
     }
 
     pub fn url(&self) -> Option<String> {
-        match &self.data {
-            ImageData::Local(_) => None,
-            ImageData::Url(url) | ImageData::Both(_, url) => Some(url.clone()),
+        match &self.format {
+            Format::None | Format::Local { .. } => None,
+            Format::Url { url } | Format::Both { url, .. } => Some(url.clone()),
         }
     }
 
-    pub fn src(&self, resolution: Resolution) -> String {
-        match &self.data {
-            ImageData::Local(src) | ImageData::Both(src, _) => src.clone(),
-            ImageData::Url(url) => format!("{IMAGE_ENDPOINT}/{url}{resolution}"),
-        }
-    }
-
-    pub fn src_or_placeholder(img: Option<&Image>, resolution: Resolution) -> String {
-        match img {
-            Some(img) => img.src(resolution),
-            None => IMAGE_PLACEHOLDER.to_owned(),
+    pub fn is_none(&self) -> bool {
+        match self.format {
+            Format::None => true,
+            _ => false,
         }
     }
 }

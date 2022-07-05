@@ -40,7 +40,9 @@ it will be released on the website www.pixelguesser.com.
   - Queries should be deterministic aka order by (medium)
   - Proper forms and public checkbox (high)
   - More options than pixelate (medium)
-  - Leave warning unsaved work
+  - Leave warning unsaved work (low)
+  - Atomic writes upon submit or continuous saves? (low)
+  - Portrait image rotated
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
@@ -49,6 +51,8 @@ it will be released on the website www.pixelguesser.com.
 - Backend:
   - ~~Make image size dynamic based on needs (high)~~
   - Security overview (medium)
+  - Rewritten image solution with proper scaling (high)
+  - GraphQL answer handling built-in to api (high)
 - General
   - Consistent styling (medium)
   - Help/Explain pages (low)

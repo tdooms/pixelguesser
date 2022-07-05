@@ -14,6 +14,7 @@ yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 
+wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
 log = "*"
 gloo = "0.5"

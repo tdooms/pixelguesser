@@ -1,3 +1,5 @@
+use api::{Image, Stage};
+use components::Pixelate;
 use yew::prelude::*;
 use yew::suspense::{Suspension, SuspensionResult};
 
@@ -16,6 +18,12 @@ fn content() -> HtmlResult {
 
 #[function_component(Test)]
 pub fn test() -> Html {
-    let fallback = html! {<div>{"Loading..."}</div>};
-    html! {<Suspense {fallback}> <Content /> </Suspense>}
+    let image = use_state(|| {
+        Image::from_url("https://img.webmd.com/dtmcms/live/webmd/consumer_assets/site_images/article_thumbnails/other/cat_relaxing_on_patio_other/1800x1200_cat_relaxing_on_patio_other.jpg")
+    });
+
+    let stage = Stage::Running;
+    let onreveal = Callback::noop();
+
+    html! {<Pixelate image={(*image).clone()} {stage} {onreveal} />}
 }

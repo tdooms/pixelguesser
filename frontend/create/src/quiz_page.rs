@@ -23,8 +23,6 @@ pub fn quiz_page(props: &Props) -> Html {
     let Props { onstage, onchange, quiz, has_delete } = props.clone();
     let DraftQuiz { title, description, image, public, .. } = quiz.clone();
 
-    let image = Image::src_or_placeholder(image.as_ref(), Resolution::Card);
-
     let creator: Creator = match use_context::<Auth>().unwrap().user() {
         Ok(user) => user.into(),
         Err(_) => return html! { "not allowed" },

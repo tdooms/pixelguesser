@@ -26,7 +26,7 @@ pub struct Props {
 
 #[function_component(RoundForm)]
 pub fn round_form(props: &Props) -> Html {
-    let has_image = props.draft.image.is_some();
+    let has_image = !props.draft.image.is_none();
     let info: RoundInfo = props.draft.clone().into();
 
     let actions = Actions::new().change(props.onchange.clone());

@@ -2,6 +2,7 @@
 extern crate rocket;
 
 use clap::Parser;
+use image::GenericImageView;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use rocket::data::ToByteUnit;
@@ -40,6 +41,8 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
     let image = image::load_from_memory_with_format(&buffer, format)?;
+
+    println!("{} {}", image.width(), image.height());
 
     let rng = rand::thread_rng();
     let random: String = rng.sample_iter(&Alphanumeric).take(16).map(char::from).collect();

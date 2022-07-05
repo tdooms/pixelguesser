@@ -1,4 +1,4 @@
-use api::{Creator, IMAGE_PLACEHOLDER};
+use api::{Creator, Image, Resolution, IMAGE_PLACEHOLDER};
 use cobul::props::{Color, ImageSize};
 use cobul::*;
 use shared::Auth;
@@ -11,8 +11,9 @@ use shared::Route;
 pub struct Props {
     #[prop_or_default]
     pub id: Option<u32>,
+
     #[prop_or_default]
-    pub image: Option<String>,
+    pub image: Image,
 
     pub title: String,
     pub description: String,
@@ -52,8 +53,8 @@ pub fn quiz_card(props: &Props) -> Html {
         _ => html! {},
     };
 
-    let src = image.unwrap_or_else(|| IMAGE_PLACEHOLDER.to_owned());
-    let image = html! { <Image size={ImageSize::Is3by2} {src} /> };
+    let src = image.src(Resolution::Card);
+    let image = html! { <cobul::Image size={ImageSize::Is3by2} src={(*src).clone()} /> };
 
     html! {
         <Card {image} {footer} fullheight=true>
@@ -77,7 +78,8 @@ pub fn empty_card() -> Html {
         </Button>
     };
 
-    let image = html! { <Image size={ImageSize::Is3by2} src={IMAGE_PLACEHOLDER.to_owned()} /> };
+    let src = IMAGE_PLACEHOLDER.to_owned();
+    let image = html! { <cobul::Image size={ImageSize::Is3by2} {src} /> };
     let right = html! { <Icon icon={Icons::EditRegular}/> };
 
     let empty = std::iter::repeat(' ').take(20).collect::<String>();

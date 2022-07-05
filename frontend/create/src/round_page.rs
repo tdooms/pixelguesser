@@ -59,10 +59,8 @@ pub fn round_page(props: &Props) -> Html {
             current.set(to);
         });
 
-        let images: Vec<_> = rounds
-            .iter()
-            .map(|round| round.image.as_ref().map(|x| x.src(Resolution::Thumbnail)))
-            .collect();
+        let images: Vec<_> =
+            rounds.iter().map(|round| round.image.src(Resolution::Thumbnail)).collect();
 
         let (current, incompletes) = (*current, incompletes.clone());
         html! {<RoundList {onselect} {onadd} {onremove} {onswap} {images} {current} {incompletes}/>}

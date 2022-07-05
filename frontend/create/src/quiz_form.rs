@@ -18,7 +18,7 @@ pub struct Props {
 }
 
 async fn make_image(mut quiz: DraftQuiz, files: Vec<web_sys::File>) -> DraftQuiz {
-    quiz.image = Some(api::Image::from_local(files[0].clone()).await);
+    quiz.image = api::Image::from_file(files[0].clone()).await;
     quiz
 }
 
@@ -31,8 +31,8 @@ pub fn quiz_form(props: &Props) -> Html {
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
     let DraftQuiz { title, explanation, public, description, image, .. } = quiz;
 
-    let filename = image.as_ref().map(api::Image::name);
-    let fullwidth = filename.as_ref().is_some();
+    let filename = image.name().unwrap_or(title.clone());
+    let fullwidth = !image.is_none();
 
     html! {
         <>
@@ -49,7 +49,7 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <SimpleField label="Image" help={form.error("image")}>
-            <File accept={"image/*"} fullwidth={fullwidth} filename={filename} onupload={form.async_field(make_image)}/>
+            <File accept={"image/*"} {fullwidth} {filename} onupload={form.async_field(make_image)}/>
         </SimpleField>
 
         <SimpleField label="Public">
