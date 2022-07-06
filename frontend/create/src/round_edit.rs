@@ -1,5 +1,5 @@
 use cobul::props::{Color, ColumnSize, SidebarAlignment};
-use cobul::{Button, Buttons, Column, Icon, Icons, Sidebar};
+use cobul::{Button, Buttons, Column, Sidebar};
 use yew::prelude::*;
 
 use api::{DraftRound, Image};

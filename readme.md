@@ -20,9 +20,9 @@ it will be released on the website www.pixelguesser.com.
 # TODO
 - ~~Use Code struct in sessions for type security~~
 - Overview 
-  - ~~Make quizzes searchable by name and description. (low)~~
-  - ~~Editable icon only shows if user has privileges. (high)~~
-  - Favourite quizzes and sharing quizzes. (low)
+  - ~~Make quizzes searchable by name and description (low)~~
+  - ~~Editable icon only shows if user has privileges (high)~~
+  - Favourite quizzes and sharing quizzes (low)
   - Hide incomplete quizzes (low)
 - Host
   - ~~Show the explanation (high)~~
@@ -42,16 +42,17 @@ it will be released on the website www.pixelguesser.com.
   - More options than pixelate (medium)
   - Leave warning unsaved work (low)
   - Atomic writes upon submit or continuous saves? (low)
-  - Portrait image rotated
+  - Portrait image rotated (high)
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
+  - Warnings with cookies about same site (low)
   - Style the login interface (medium)
   - Interface to change nickname and other profile stuff (high)
 - Backend:
   - ~~Make image size dynamic based on needs (high)~~
   - Security overview (medium)
-  - Rewritten image solution with proper scaling (high)
+  - ~~Rewritten image solution with proper scaling (high)~~
   - GraphQL answer handling built-in to api (high)
 - General
   - Consistent styling (medium)

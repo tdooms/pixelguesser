@@ -2,7 +2,7 @@ use cobul::props::{Color, ColumnSize};
 use cobul::*;
 use yew::prelude::*;
 
-use api::{Creator, DraftQuiz, Image, Resolution};
+use api::{Creator, DraftQuiz};
 use components::QuizCard;
 use shared::{callback, Auth};
 

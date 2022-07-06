@@ -1,5 +1,9 @@
 use api::{Image, Resolution, Stage};
-use shared::{callback, Error, Internal, PIXELATE_PLAY_SPEED, PIXELATE_REVEAL_SPEED};
+use gloo::timers::callback::{Interval, Timeout};
+use shared::{
+    callback, Error, Internal, PIXELATE_PLAY_SPEED, PIXELATE_REFRESH_TIME, PIXELATE_REVEAL_SPEED,
+    PIXELATE_START_PIXELS,
+};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
@@ -61,14 +65,14 @@ pub fn draw_pixelated(
         .map_err(|_| Internal::DrawError)?)
 }
 
-#[derive(Properties, PartialEq, Debug)]
+#[derive(Properties, PartialEq, Debug, Clone)]
 pub struct Props {
     pub image: Image,
     pub stage: Stage,
 
     pub onreveal: Callback<()>,
 
-    #[prop_or_default(100)]
+    #[prop_or(100)]
     pub height: u32,
 }
 
@@ -76,8 +80,8 @@ pub struct Props {
 pub fn pixelate(props: &Props) -> Html {
     let Props { image, stage, onreveal, height } = props.clone();
 
-    let size = use_state_eq(|| 5.0);
-    // let timer = use_state(|| None);
+    let size = use_state(|| PIXELATE_START_PIXELS);
+    let iteration = use_state(|| 0);
 
     let offscreen = use_node_ref();
     let canvas = use_node_ref();
@@ -85,55 +89,71 @@ pub fn pixelate(props: &Props) -> Html {
 
     let image = use_state(|| {
         let element = web_sys::HtmlImageElement::new().unwrap();
-        element.set_src(&props.image.src(Resolution::HD));
+        element.set_src(&image.src(Resolution::HD));
         element
     });
 
-    // let timeout = callback!(size, image; |_| {
-    //     let factor = match stage {
-    //         Stage::Running => Some(PIXELATE_PLAY_SPEED),
-    //         Stage::Revealing => Some(PIXELATE_REVEAL_SPEED),
-    //         _ => None,
-    //     };
-    //
-    //     if let Some(factor) = factor {
-    //         let new = (*size * factor).min(image.height() as f64);
-    //         size.set(new);
-    //     }
-    //     // TODO: call timer again
-    // });
+    let timer = use_state(|| Timeout::new(0, || ()));
+    let image_height = image.height() as f64;
+    let size_c = size.clone();
+    use_effect_with_deps(
+        move |iteration| {
+            let new = match stage {
+                Stage::Running => *size_c * PIXELATE_PLAY_SPEED,
+                Stage::Revealing => *size_c * PIXELATE_REVEAL_SPEED,
+                _ => *size_c,
+            }
+            .min(image_height);
+            size_c.set(new);
+            log::info!("{new}");
 
-    let (image_c, canvas_c, offscreen_c, container_c, size_c) =
-        (image.clone(), canvas.clone(), offscreen.clone(), container.clone(), size.clone());
+            if new == image_height {
+                onreveal.emit(());
+            } else {
+                let cloned = iteration.clone();
+                timer.set(Timeout::new(PIXELATE_REFRESH_TIME, move || cloned.set(*cloned + 1)));
+            }
 
-    use_effect(move || {
-        let element = container_c.cast::<HtmlDivElement>().unwrap();
-        let width = element.offset_width() as u32;
-        let height = element.offset_height() as u32;
+            || ()
+        },
+        iteration.clone(),
+    );
 
-        let canvas = canvas_c.clone().cast::<HtmlCanvasElement>().unwrap();
-        let offscreen = offscreen_c.clone().cast::<HtmlCanvasElement>().unwrap();
+    let (image_c, canvas_c, offscreen_c, container_c) =
+        (image.clone(), canvas.clone(), offscreen.clone(), container.clone());
 
-        draw_pixelated(*size_c as u32, width, height, &*image_c, &canvas, &offscreen).unwrap();
-        || ()
-    });
+    use_effect_with_deps(
+        move |size| {
+            let element = container_c.cast::<HtmlDivElement>().unwrap();
+            let width = element.offset_width() as u32;
+            let height = element.offset_height() as u32;
 
-    let (size_c, offscreen_c) = (size.clone(), offscreen.clone());
+            let canvas = canvas_c.clone().cast::<HtmlCanvasElement>().unwrap();
+            let offscreen = offscreen_c.clone().cast::<HtmlCanvasElement>().unwrap();
+
+            log::info!("drawing");
+            draw_pixelated(*size, width, height, &*image_c, &canvas, &offscreen).unwrap();
+            || ()
+        },
+        *size as u32,
+    );
+
+    let (size_c, offscreen_c, image_c) = (size.clone(), offscreen.clone(), image.clone());
     use_effect_with_deps(
         move |_| {
-            let (width, height) = (image.width(), image.height());
+            let (width, height) = (image_c.width(), image_c.height());
             let offscreen = offscreen_c.cast::<HtmlCanvasElement>().unwrap();
 
             offscreen.set_width(width);
             offscreen.set_height(height);
 
-            size_c.set(5.0);
+            size_c.set(PIXELATE_START_PIXELS);
             || ()
         },
-        props.image.clone(),
+        image.clone(),
     );
 
-    let style = format!("height:{}vh", props.height);
+    let style = format!("height:{}vh", height);
     html! {
         <div {style} ref={container.clone()}>
             <canvas style="display:none" ref={offscreen}/>

@@ -1,4 +1,4 @@
-use crate::{Error, IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
+use crate::{Error, IMAGE_ENDPOINT, IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 use gloo::file::futures::read_as_data_url;
 use reqwasm::http::Request;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -6,13 +6,13 @@ use std::rc::Rc;
 
 #[derive(Clone, Copy, Debug, PartialEq, derive_more::Display)]
 pub enum Resolution {
-    #[display(fmt = "?height=108")]
+    #[display(fmt = "thumbnail")]
     Thumbnail,
-    #[display(fmt = "?height=324")]
+    #[display(fmt = "card")]
     Card,
-    #[display(fmt = "?height=1080")]
+    #[display(fmt = "hd")]
     HD,
-    #[display(fmt = "")]
+    #[display(fmt = "original")]
     Original,
 }
 
@@ -64,10 +64,6 @@ impl Image {
         Self { format: Format::Local { data }, name: Some(file.name()) }
     }
 
-    pub fn from_url(url: impl ToString) -> Self {
-        Self { format: Format::Url { url: url.to_string() }, name: None }
-    }
-
     pub fn name(&self) -> Option<String> {
         self.name.clone()
     }
@@ -91,7 +87,7 @@ impl Image {
         match &self.format {
             Format::None => Rc::new(IMAGE_PLACEHOLDER.to_string()),
             Format::Local { data } | Format::Both { data, .. } => data.clone(),
-            Format::Url { url } => Rc::new(format!("{url}{resolution}")),
+            Format::Url { url } => Rc::new(format!("{IMAGE_ENDPOINT}/{resolution}/{url}")),
         }
     }
 

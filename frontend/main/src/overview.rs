@@ -1,6 +1,6 @@
 use crate::navbar::MainNavbar;
 use crate::search::{Search, Sort};
-use api::{Quiz, Resolution};
+use api::{Quiz};
 use cobul::*;
 use components::{EmptyCard, QuizCard};
 use shared::{callback, Auth};

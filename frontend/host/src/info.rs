@@ -20,6 +20,7 @@ pub fn info(props: &Props) -> Html {
 
     let countdown = use_state(|| HOST_INFO_DURATION);
     let timer = use_state(|| Timeout::new(0, || ()));
+
     use_effect_with_deps(
         move |countdown| {
             if **countdown > 0 {

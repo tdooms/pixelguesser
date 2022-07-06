@@ -2,6 +2,7 @@
 extern crate rocket;
 
 use clap::Parser;
+use image::imageops::FilterType;
 use image::GenericImageView;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
@@ -40,18 +41,53 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
 
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
-    let image = image::load_from_memory_with_format(&buffer, format)?;
-
-    println!("{} {}", image.width(), image.height());
 
     let rng = rand::thread_rng();
     let random: String = rng.sample_iter(&Alphanumeric).take(16).map(char::from).collect();
     let extension = format.extensions_str().first().unwrap();
+    let base = &path.inner().0;
 
-    let filepath = format!("{}/{}.{}", path.inner().0, random, extension);
-    image.save(&filepath)?;
+    let original = image::load_from_memory_with_format(&buffer, format)?;
+    original.save(&format!("{base}/original/{random}.{extension}"))?;
 
+    let thumbnail = original.resize(1_000_000, 108, FilterType::Lanczos3);
+    thumbnail.save(&format!("{base}/thumbnail/{random}.{extension}"))?;
+
+    let card = original.resize(1_000_000, 320, FilterType::Lanczos3);
+    card.save(&format!("{base}/card/{random}.{extension}"))?;
+
+    let hd = original.resize(1_000_000, 1080, FilterType::Lanczos3);
+    hd.save(&format!("{base}/hd/{random}.{extension}"))?;
+
+    println!("{} {}", original.width(), original.height());
     Ok(format!("{}.{}", random, extension))
+}
+
+pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::fmt::Display) {
+    for file in std::fs::read_dir(templates).unwrap() {
+        let name = file.as_ref().unwrap().file_name().into_string().unwrap();
+
+        println!("computing caches for image: {name}");
+
+        let original = image::open(&file.unwrap().path()).unwrap();
+
+        if !std::path::Path::new(&format!("{base}/original/{name}")).exists() {
+            original.save(&format!("{base}/original/{name}")).unwrap();
+        }
+        if !std::path::Path::new(&format!("{base}/thumbnail/{name}")).exists() {
+            let thumbnail = original.resize(1_000_000, 108, FilterType::Lanczos3);
+            thumbnail.save(&format!("{base}/thumbnail/{name}")).unwrap();
+        }
+
+        if !std::path::Path::new(&format!("{base}/card/{name}")).exists() {
+            let card = original.resize(1_000_000, 320, FilterType::Lanczos3);
+            card.save(&format!("{base}/card/{name}")).unwrap();
+        }
+        if !std::path::Path::new(&format!("{base}/hd/{name}")).exists() {
+            let hd = original.resize(1_000_000, 1080, FilterType::Lanczos3);
+            hd.save(&format!("{base}/hd/{name}")).unwrap();
+        }
+    }
 }
 
 /// imager (IMAGE-serveR) is a program to efficiently serve images
@@ -59,7 +95,7 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
 struct Opts {
     /// Sets the folder to be served
-    #[clap(short, long, default_value = "./data/images")]
+    #[clap(short, long, default_value = "./data")]
     folder: String,
 
     /// Sets the port to be used
@@ -74,13 +110,17 @@ struct Opts {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
+    // upload_template("./data/template", "./data");
 
     let config = Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
 
     let cors = CorsOptions::default().to_cors()?;
 
     rocket::custom(config)
-        .mount("/", FileServer::new(&opts.folder, Options::default()))
+        .mount("/original", FileServer::new("data/original", Options::Index))
+        .mount("/hd", FileServer::new("data/hd", Options::Index))
+        .mount("/card", FileServer::new("data/card", Options::Index))
+        .mount("/thumbnail", FileServer::new("data/thumbnail", Options::Index))
         .mount("/", routes![upload])
         .manage(Path(opts.folder))
         .attach(cors)

@@ -31,7 +31,7 @@ pub fn quiz_form(props: &Props) -> Html {
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
     let DraftQuiz { title, explanation, public, description, image, .. } = quiz;
 
-    let filename = image.name().unwrap_or(title.clone());
+    let filename = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
     let fullwidth = !image.is_none();
 
     html! {

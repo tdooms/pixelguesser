@@ -9,7 +9,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
-use shared::{async_callback, Auth, Error, Errors, Internal, Route};
+use shared::{async_callback, Auth, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
