@@ -1,8 +1,11 @@
 use cobul::props::Color;
 use cobul::*;
+use std::rc::Rc;
 use yew::prelude::*;
 
-use api::DraftQuiz;
+use api::{DraftQuiz, Image, Resolution};
+use cropper::Cropper;
+use ywt::callback;
 
 const TITLE_DEFAULT: &str = "Cities";
 const EXPLANATION_DEFAULT: &str = "Guess quickly";
@@ -17,25 +20,46 @@ pub struct Props {
     pub onback: Callback<()>,
 }
 
-async fn make_image(mut quiz: DraftQuiz, files: Vec<web_sys::File>) -> DraftQuiz {
-    quiz.image = api::Image::from_file(files[0].clone()).await;
-    quiz
-}
-
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
-    log::trace!("quiz form render");
     let Props { quiz, onsubmit, onback, onchange } = props.clone();
 
     let actions = Actions::new().submit(onsubmit).change(onchange);
     let (form, quiz) = use_form(&quiz.unwrap_or_default(), actions);
     let DraftQuiz { title, explanation, public, description, image, .. } = quiz;
 
-    let filename = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
+    let cropper = use_state(|| None);
+    let name = use_state(|| None);
+
+    let onloaded = callback!(cropper, name; move |image: Image| {
+        cropper.set(Some(image.src(Resolution::Original)));
+        name.set(image.name());
+    });
+    let onupload = callback!(onloaded; move |files: Vec<web_sys::File>| {
+        Image::from_file(files[0].clone(), onloaded.clone());
+    });
+    let callback = callback!(cropper, name, form; move |opt: Option<String>| {
+        if let Some(base64) = opt {
+            let image = Image::from_base64(base64, (*name).clone());
+            form.field(|x| &mut x.image).emit(image);
+        }
+        cropper.set(None);
+        name.set(None);
+    });
+
+    let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
+    let filename = (!image.is_none()).then(move || name);
     let fullwidth = !image.is_none();
+
+    let modal = match (*cropper).clone() {
+        Some(src) => html! {<Cropper src={Rc::new(src)} {callback} height=450 width=600/>},
+        None => html! {},
+    };
 
     html! {
         <>
+        {modal}
+
         <SimpleField label="Quiz Title" help={form.error("title")}>
             <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE_DEFAULT}/>
         </SimpleField>
@@ -49,7 +73,7 @@ pub fn quiz_form(props: &Props) -> Html {
         </SimpleField>
 
         <SimpleField label="Image" help={form.error("image")}>
-            <File accept={"image/*"} {fullwidth} {filename} onupload={form.async_field(make_image)}/>
+            <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
         </SimpleField>
 
         <SimpleField label="Public">

@@ -8,7 +8,8 @@ use yew_router::prelude::*;
 
 use api::Code;
 use create::Create;
-use shared::{callback, Auth, Error, Errors, Route};
+use shared::{Auth, Error, Errors, Route};
+use ywt::callback;
 
 use crate::loader::Loader;
 use crate::overview::Overview;

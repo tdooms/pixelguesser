@@ -1,4 +1,3 @@
-mod callback;
 mod consts;
 mod contexts;
 mod error;
@@ -6,7 +5,6 @@ mod resize;
 mod route;
 mod traits;
 
-pub use callback::*;
 pub use consts::*;
 pub use contexts::*;
 pub use error::{Error, Info, Internal, Warning};

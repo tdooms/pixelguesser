@@ -4,7 +4,8 @@ use yew::prelude::*;
 
 use api::{DraftQuiz, DraftRound, Resolution};
 
-use crate::{callback, Stage};
+use crate::Stage;
+use ywt::callback;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -22,7 +23,7 @@ pub fn summary(props: &Props) -> Html {
     let round_mapper = |round: &DraftRound| {
         html! {
             <Column size={ColumnSize::Is3}>
-            <DynImage src={(*round.image.src(Resolution::Thumbnail)).clone()} height=20/>
+            <DynImage src={round.image.src(Resolution::Thumbnail)} height=20/>
             <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
             </Column>
         }

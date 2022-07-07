@@ -4,12 +4,13 @@ use cobul::Loading;
 use yew::prelude::*;
 
 use yew_router::prelude::RouterScopeExt;
+use ywt::spawn;
 
 use host::Host;
 use manage::Manage;
 
 use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
-use shared::{async_callback, Auth, Error, Errors, Route};
+use shared::{Auth, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -41,12 +42,23 @@ impl Component for Loader {
         let Props { session_id, quiz_id } = ctx.props().clone();
 
         match session_id {
-            None => async_callback(api::create_session(quiz_id), ctx.link().callback(Msg::Session)),
+            None => {
+                let callback = ctx.link().callback(Msg::Session);
+                spawn!(async move {
+                    let result = api::create_session(quiz_id).await;
+                    callback.emit(result);
+                });
+            }
             Some(id) => ctx.link().send_message(Msg::Session(Ok(id))),
         }
 
         let (auth, _) = ctx.link().context::<Auth>(Callback::noop()).unwrap();
-        async_callback(api::full_quiz(auth.user().ok(), quiz_id), ctx.link().callback(Msg::Quiz));
+
+        let callback = ctx.link().callback(Msg::Quiz);
+        spawn!(async move {
+            let result = api::full_quiz(auth.user().ok(), quiz_id).await;
+            callback.emit(result);
+        });
 
         Self { ws: None, session_id: None, session: Rc::new(Session::default()), full: None }
     }

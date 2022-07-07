@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use yew::*;
 
-use api::{Action, Player, Round, Stage};
+use api::{Action, Player, Resolution, Round, Stage};
 
 use components::Pixelate;
 use shared::HOST_INFO_DURATION;
@@ -10,6 +10,7 @@ use shared::HOST_INFO_DURATION;
 use crate::info::Info;
 use crate::ranking::Ranking;
 use gloo::timers::callback::Timeout;
+use web_sys::HtmlImageElement;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {
@@ -26,7 +27,9 @@ pub struct Props {
 pub fn play(props: &Props) -> Html {
     let Props { round, index, rounds, stage, players, callback } = props.clone();
     let onreveal = callback.reform(|_| Action::Stage(Stage::Revealed));
+
     let timer = use_state(|| Timeout::new(0, || ()));
+    let image = use_state(|| None);
 
     use_effect_with_deps(
         move |_| {
@@ -37,14 +40,29 @@ pub fn play(props: &Props) -> Html {
         index,
     );
 
-    match stage {
-        Stage::Info => html! {
+    let src = round.image.src(Resolution::HD);
+    let image_c = image.clone();
+    use_effect_with_deps(
+        move |index| {
+            let element = HtmlImageElement::new().unwrap();
+            element.set_src(&src);
+            image_c.set(Some(element));
+            || ()
+        },
+        index,
+    );
+
+    match (stage, (*image).clone()) {
+        (Stage::Info, _) => html! {
             <Info {index} {rounds} {round}/>
         },
-        Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed => html! {
-            <Pixelate {stage} image={round.image} {onreveal}/>
+        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, Some(img)) => html! {
+            <Pixelate {stage} image={img} {onreveal}/>
         },
-        Stage::Scores => html! {
+        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, None) => html! {
+            "image not loaded"
+        },
+        (Stage::Scores, _) => html! {
             <Ranking {players}/>
         },
     }

@@ -1,9 +1,10 @@
 use cobul::*;
 use components::Pixelate;
+use web_sys::HtmlImageElement;
 use yew::*;
 
 use api::{Image, Resolution, Stage};
-use shared::{async_callback, callback};
+use ywt::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -38,11 +39,9 @@ pub fn round_preview(props: &Props) -> Html {
         props.image.clone(),
     );
 
-    let onupload = {
-        Callback::from(move |files: Vec<web_sys::File>| {
-            async_callback(Image::from_file(files[0].clone()), onupload.clone());
-        })
-    };
+    let onupload = callback!(onupload; move |files: Vec<web_sys::File>| {
+        Image::from_file(files[0].clone(), onupload.clone());
+    });
 
     let buttons = |idx: &[bool]| {
         html! {
@@ -70,16 +69,19 @@ pub fn round_preview(props: &Props) -> Html {
         State::Revealed => ([false, true, true, true], Stage::Revealed),
     };
 
+    let element = HtmlImageElement::new().unwrap();
+    element.set_src(&image.src(Resolution::HD));
+
     match (image.is_none(), *state) {
         (false, State::Revealed) => html! {
             <div>
-            <DynImage src={(*image.src(Resolution::HD)).clone()} height=85/>
+            <DynImage src={image.src(Resolution::HD)} height=85/>
             { buttons(&hidden) }
             </div>
         },
         (false, _) => html! {
             <div>
-            <Pixelate image={(*image).clone()} {stage} {onreveal} height=85/>
+            <Pixelate image={element} {stage} {onreveal} height=85/>
             { buttons(&hidden) }
             </div>
         },

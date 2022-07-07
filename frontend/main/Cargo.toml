@@ -14,7 +14,9 @@ manage = { path = "../manage" }
 api = { path = "../../api" }
 shared = { path = "../shared" }
 components = { path = "../components" }
+
 cobul = { git = "https://github.com/tdooms/cobul.git" }
+ywt = { git = "https://github.com/tdooms/ywt.git" }
 
 yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }

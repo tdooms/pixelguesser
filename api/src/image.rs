@@ -3,6 +3,7 @@ use gloo::file::futures::read_as_data_url;
 use reqwasm::http::Request;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::rc::Rc;
+use yew::Callback;
 
 #[derive(Clone, Copy, Debug, PartialEq, derive_more::Display)]
 pub enum Resolution {
@@ -57,11 +58,17 @@ impl<'de> Deserialize<'de> for Image {
 }
 
 impl Image {
-    pub async fn from_file(file: web_sys::File) -> Self {
+    pub fn from_file(file: web_sys::File, callback: Callback<Self>) {
         let blob = gloo::file::Blob::from(file.clone());
-        let data = Rc::new(read_as_data_url(&blob).await.unwrap());
+        wasm_bindgen_futures::spawn_local(async move {
+            let data = Rc::new(read_as_data_url(&blob).await.unwrap());
+            let result = Self { format: Format::Local { data }, name: Some(file.name()) };
+            callback.emit(result)
+        })
+    }
 
-        Self { format: Format::Local { data }, name: Some(file.name()) }
+    pub fn from_base64(base64: String, name: Option<String>) -> Self {
+        Self { format: Format::Local { data: Rc::new(base64) }, name }
     }
 
     pub fn name(&self) -> Option<String> {
@@ -83,11 +90,11 @@ impl Image {
         Ok(())
     }
 
-    pub fn src(&self, resolution: Resolution) -> Rc<String> {
+    pub fn src(&self, resolution: Resolution) -> String {
         match &self.format {
-            Format::None => Rc::new(IMAGE_PLACEHOLDER.to_string()),
-            Format::Local { data } | Format::Both { data, .. } => data.clone(),
-            Format::Url { url } => Rc::new(format!("{IMAGE_ENDPOINT}/{resolution}/{url}")),
+            Format::None => IMAGE_PLACEHOLDER.to_string(),
+            Format::Local { data } | Format::Both { data, .. } => (**data).clone(),
+            Format::Url { url } => format!("{IMAGE_ENDPOINT}/{resolution}/{url}"),
         }
     }
 

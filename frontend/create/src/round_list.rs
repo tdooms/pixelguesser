@@ -1,12 +1,10 @@
-
 use std::rc::Rc;
 use web_sys::DragEvent;
 use yew::prelude::*;
 
-
 use cobul::props::SidebarAlignment;
 use cobul::*;
-use shared::callback;
+use ywt::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -15,7 +13,7 @@ pub struct Props {
     pub onremove: Callback<usize>,
     pub onswap: Callback<(usize, usize)>,
 
-    pub images: Vec<Rc<String>>,
+    pub images: Vec<String>,
     pub incompletes: Vec<bool>,
     pub current: usize,
 }
@@ -38,7 +36,7 @@ pub fn round_list(props: &Props) -> Html {
         _ => None,
     };
 
-    let map_view = |(index, src): (usize, &Rc<String>)| {
+    let map_view = |(index, src): (usize, &String)| {
         let onselect = onselect.reform(move |_| index);
 
         let ondragstart = callback!(original; move |event: DragEvent| {
@@ -90,7 +88,7 @@ pub fn round_list(props: &Props) -> Html {
                 </Column>
 
                 <Column style="justify-content:center" class="p-1 is-flex">
-                    <img src={(**src).clone()} class={"m-0 p-0"} style={img_style}/>
+                    <img src={src.clone()} class={"m-0 p-0"} style={img_style}/>
                 </Column>
             </div>
             </>

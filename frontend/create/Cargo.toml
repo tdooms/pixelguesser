@@ -9,6 +9,9 @@ edition = "2021"
 api = { path = "../../api" }
 components = { path = "../components" }
 shared = { path = "../shared" }
+
+cropper = { git = "https://github.com/tdooms/cropper.git" }
+ywt = { git = "https://github.com/tdooms/ywt.git" }
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms", "hooks"] }
 
 yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }

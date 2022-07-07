@@ -60,8 +60,13 @@ async fn upload_quiz(state: CreateState, mut quiz: DraftQuiz, user: User, err: E
     state.prev_quiz.set(quiz.clone());
 
     match *state.quiz_id {
-        Some(id) => api::update_quiz(user, id, quiz).await.emit(&err),
-        None => api::create_quiz(user, quiz).await.emit(&err),
+        Some(id) => {
+            api::update_quiz(user, id, quiz).await.emit(&err);
+        }
+        None => {
+            let quiz = api::create_quiz(user, quiz).await.emit(&err).flatten();
+            state.quiz_id.set(quiz.map(|x| x.id));
+        }
     };
 }
 

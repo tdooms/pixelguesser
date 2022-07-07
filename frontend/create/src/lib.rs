@@ -1,7 +1,8 @@
 use cobul::Loading;
-use shared::{callback, Auth, Error, Errors, Route};
+use shared::{Auth, Error, Errors, Route};
 use yew::prelude::*;
 use yew_router::prelude::Redirect;
+use ywt::callback;
 
 use crate::quiz_page::QuizPage;
 use crate::quiz_summary::Summary;

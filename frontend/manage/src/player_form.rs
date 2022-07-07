@@ -2,8 +2,7 @@ use cobul::props::{Color, InputType, Size};
 use cobul::*;
 use validator::Validate;
 use yew::prelude::*;
-
-use shared::callback;
+use ywt::callback;
 
 #[derive(Debug, Clone, PartialEq, Validate)]
 struct Player {

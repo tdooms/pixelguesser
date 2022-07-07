@@ -54,7 +54,7 @@ pub fn quiz_card(props: &Props) -> Html {
     };
 
     let src = image.src(Resolution::Card);
-    let image = html! { <cobul::Image size={ImageSize::Is3by2} src={(*src).clone()} /> };
+    let image = html! { <cobul::Image size={ImageSize::Is3by2} {src} /> };
 
     html! {
         <Card {image} {footer} fullheight=true>

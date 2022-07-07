@@ -3,7 +3,7 @@ use cobul::Columns;
 use yew::prelude::*;
 
 use api::{DraftRound, Resolution};
-use shared::callback;
+use ywt::callback;
 
 use crate::round_edit::RoundEdit;
 use crate::round_list::RoundList;

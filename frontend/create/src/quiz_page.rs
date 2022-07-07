@@ -4,7 +4,8 @@ use yew::prelude::*;
 
 use api::{Creator, DraftQuiz};
 use components::QuizCard;
-use shared::{callback, Auth};
+use shared::Auth;
+use ywt::callback;
 
 use crate::quiz_form::QuizForm;
 use crate::state::QuizAction;
