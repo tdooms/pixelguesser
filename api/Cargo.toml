@@ -21,7 +21,7 @@ gloo = { version = "0.5", features = ["futures"] }
 wasm-bindgen-futures = "*"
 futures = "0.3"
 reqwasm = "0.4.0"
-validator = { version = "0.14", features = ["derive"] }
+validator = { version = "0.15", features = ["derive"] }
 derive_more = "0.99.16"
 strum = { version = "0.24", features = ["derive"] }
 

@@ -33,7 +33,7 @@ pub fn search(props: &Props) -> Html {
                 <Input placeholder="Find a quiz" value={filter} oninput={onfilter}/>
             </Control>
             <Control>
-                <EnumDropdown<Sort> value={sort} onchange={onsort}/>
+                <simple::Dropdown<Sort> value={sort} onchange={onsort}/>
             </Control>
         </Field>
 

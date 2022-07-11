@@ -1,9 +1,8 @@
+use cobul::custom::{Sidebar, SidebarAlignment};
+use cobul::*;
 use std::rc::Rc;
 use web_sys::DragEvent;
-use yew::prelude::*;
-
-use cobul::props::SidebarAlignment;
-use cobul::*;
+use yew::*;
 use ywt::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

@@ -1,7 +1,5 @@
-use yew::prelude::*;
-
-use cobul::props::{Alignment, Color, HeroSize, Size};
 use cobul::*;
+use yew::*;
 
 use super::Ranking;
 use api::{FullQuiz, Session};

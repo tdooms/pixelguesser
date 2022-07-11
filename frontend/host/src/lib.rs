@@ -13,7 +13,7 @@ use api::{Action, Code, FullQuiz, Phase, Session};
 use js_sys::Function;
 use std::rc::Rc;
 use web_sys::window;
-use yew::prelude::*;
+use yew::*;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {

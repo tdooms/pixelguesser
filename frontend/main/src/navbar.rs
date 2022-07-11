@@ -1,4 +1,4 @@
-use yew::prelude::*;
+use yew::*;
 use yew_router::prelude::Link;
 
 use crate::dropdown::ProfileDropdown;

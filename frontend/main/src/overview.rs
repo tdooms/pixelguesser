@@ -5,8 +5,8 @@ use cobul::*;
 use components::{EmptyCard, QuizCard};
 use shared::Auth;
 use wasm_bindgen_futures::spawn_local;
-use yew::prelude::*;
 use yew::HtmlResult;
+use yew::*;
 use ywt::callback;
 
 #[derive(Properties, PartialEq, Clone)]

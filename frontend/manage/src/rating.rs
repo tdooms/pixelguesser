@@ -1,8 +1,6 @@
-use std::rc::Rc;
-
-use cobul::props::HeroSize;
 use cobul::*;
-use yew::prelude::*;
+use std::rc::Rc;
+use yew::*;
 
 use api::FullQuiz;
 

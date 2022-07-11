@@ -1,9 +1,10 @@
 use std::rc::Rc;
 use std::str::FromStr;
 
-use cobul::props::Color;
-use cobul::{Loading, Notification};
-use yew::prelude::*;
+use cobul::custom::Loading;
+use cobul::{Color, Notification};
+
+use yew::*;
 use yew_router::prelude::*;
 
 use api::Code;

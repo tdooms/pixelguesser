@@ -1,9 +1,6 @@
-use yew::prelude::*;
-
-use cobul::props::HeroSize;
-use cobul::*;
-
 use api::Round;
+use cobul::*;
+use yew::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

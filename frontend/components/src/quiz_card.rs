@@ -1,8 +1,7 @@
 use api::{Creator, Image, Resolution, IMAGE_PLACEHOLDER};
-use cobul::props::{Color, ImageSize};
 use cobul::*;
 use shared::Auth;
-use yew::prelude::*;
+use yew::*;
 use yew_router::prelude::*;
 
 use shared::Route;

@@ -1,9 +1,8 @@
 use std::fmt::Display;
 use std::marker::PhantomData;
 
-use yew::prelude::*;
+use yew::*;
 
-use cobul::props::Color;
 use cobul::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

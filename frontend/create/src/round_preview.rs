@@ -75,7 +75,7 @@ pub fn round_preview(props: &Props) -> Html {
     match (image.is_none(), *state) {
         (false, State::Revealed) => html! {
             <div>
-            <DynImage src={image.src(Resolution::HD)} height=85/>
+            <custom::DynImage src={image.src(Resolution::HD)} height=85/>
             { buttons(&hidden) }
             </div>
         },
@@ -86,9 +86,9 @@ pub fn round_preview(props: &Props) -> Html {
             </div>
         },
         (true, _) => html! {
-            <Center>
+            <custom::Center>
                 <File accept={"image/*"} boxed=true alignment={Alignment::Centered} {onupload} />
-            </Center>
+            </custom::Center>
         },
     }
 }

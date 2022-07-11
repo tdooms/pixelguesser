@@ -1,7 +1,6 @@
-use cobul::props::Color;
 use cobul::*;
 use std::rc::Rc;
-use yew::prelude::*;
+use yew::*;
 
 use api::{DraftQuiz, Image, Resolution};
 use cropper::Cropper;
@@ -38,11 +37,16 @@ pub fn quiz_form(props: &Props) -> Html {
     let onupload = callback!(onloaded; move |files: Vec<web_sys::File>| {
         Image::from_file(files[0].clone(), onloaded.clone());
     });
-    let callback = callback!(cropper, name, form; move |opt: Option<String>| {
-        if let Some(base64) = opt {
-            let image = Image::from_base64(base64, (*name).clone());
+
+    let ondone = callback!(form, cropper, name; move |base64| {
+        let image = Image::from_base64(base64, (*name).clone());
             form.field(|x| &mut x.image).emit(image);
-        }
+
+            cropper.set(None);
+            name.set(None);
+    });
+
+    let oncancel = callback!(cropper, name; move |_| {
         cropper.set(None);
         name.set(None);
     });
@@ -52,7 +56,7 @@ pub fn quiz_form(props: &Props) -> Html {
     let fullwidth = !image.is_none();
 
     let modal = match (*cropper).clone() {
-        Some(src) => html! {<Cropper src={Rc::new(src)} {callback} height=450 width=600/>},
+        Some(src) => html! {<Cropper src={Rc::new(src)} {ondone} {oncancel} height=450 width=600/>},
         None => html! {},
     };
 
@@ -60,27 +64,27 @@ pub fn quiz_form(props: &Props) -> Html {
         <>
         {modal}
 
-        <SimpleField label="Quiz Title" help={form.error("title")}>
+        <simple::Field label="Quiz Title" help={form.error("title")}>
             <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE_DEFAULT}/>
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Description" help={form.error("description")}>
+        <simple::Field label="Description" help={form.error("description")}>
             <Input oninput={form.field(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION_DEFAULT} />
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Explanation">
+        <simple::Field label="Explanation">
             <Input oninput={form.field(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION_DEFAULT}/>
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Image" help={form.error("image")}>
+        <simple::Field label="Image" help={form.error("image")}>
             <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Public">
+        <simple::Field label="Public">
             <Checkbox name="" checked={public} onchange={form.field(|x| &mut x.public)}>
             {" Make this quiz public"}
             </Checkbox>
-        </SimpleField>
+        </simple::Field>
 
         <Buttons>
             <Button color={Color::Info} light=true onclick={onback}>

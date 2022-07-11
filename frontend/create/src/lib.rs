@@ -1,6 +1,6 @@
-use cobul::Loading;
+use cobul::custom::Loading;
 use shared::{Auth, Error, Errors, Route};
-use yew::prelude::*;
+use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
 
@@ -43,7 +43,6 @@ pub fn create(props: &Props) -> Html {
         Err(_err) => return html! { <Redirect<Route> to={Route::Overview} /> },
     };
 
-    // TODO: route the errors correctly
     let callback = callback!(errors; move |err| errors.emit(Error::Api(err)));
     let state = use_create_state(callback, props.quiz_id, Some(user.clone()), errors.clone());
     let stage = use_state(|| Stage::Quiz);

@@ -1,10 +1,9 @@
 use std::rc::Rc;
 
 use api::{Action, FullQuiz, Participant, Phase, Session, Stage};
-use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 use shared::Route;
-use yew::prelude::*;
+use yew::*;
 use yew_router::prelude::*;
 
 use crate::navigate::Navigate;

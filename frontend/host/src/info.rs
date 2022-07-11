@@ -1,7 +1,6 @@
-use yew::prelude::*;
+use yew::*;
 
 use api::{GuessChoices, Round};
-use cobul::props::{Color, HeaderSize, HeroSize};
 use cobul::*;
 use gloo::timers::callback::Timeout;
 use shared::HOST_INFO_DURATION;

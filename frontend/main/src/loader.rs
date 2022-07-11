@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use cobul::Loading;
-use yew::prelude::*;
+use cobul::custom::Loading;
+use yew::*;
 
 use yew_router::prelude::RouterScopeExt;
 use ywt::spawn;

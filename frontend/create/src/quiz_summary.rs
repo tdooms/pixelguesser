@@ -1,6 +1,5 @@
-use cobul::props::{Color, ColumnSize};
 use cobul::*;
-use yew::prelude::*;
+use yew::*;
 
 use api::{DraftQuiz, DraftRound, Resolution};
 
@@ -23,7 +22,7 @@ pub fn summary(props: &Props) -> Html {
     let round_mapper = |round: &DraftRound| {
         html! {
             <Column size={ColumnSize::Is3}>
-            <DynImage src={round.image.src(Resolution::Thumbnail)} height=20/>
+            <custom::DynImage src={round.image.src(Resolution::Thumbnail)} height=20/>
             <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
             </Column>
         }

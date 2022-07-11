@@ -1,8 +1,7 @@
 use std::rc::Rc;
-use yew::prelude::*;
+use yew::*;
 
 use api::{Action, Phase, Session, Stage};
-use cobul::props::{Alignment, Color, Size};
 use cobul::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]

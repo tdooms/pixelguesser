@@ -1,4 +1,3 @@
-use cobul::props::{Color, ImageSize};
 use cobul::*;
 use yew::*;
 use yew_router::prelude::*;

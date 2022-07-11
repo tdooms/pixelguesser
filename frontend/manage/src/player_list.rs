@@ -1,7 +1,6 @@
-use yew::prelude::*;
+use yew::*;
 
 use api::{Player, Session};
-use cobul::props::Size;
 use cobul::*;
 use std::rc::Rc;
 

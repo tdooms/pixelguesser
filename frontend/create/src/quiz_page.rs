@@ -1,6 +1,5 @@
-use cobul::props::{Color, ColumnSize};
 use cobul::*;
-use yew::prelude::*;
+use yew::*;
 
 use api::{Creator, DraftQuiz};
 use components::QuizCard;

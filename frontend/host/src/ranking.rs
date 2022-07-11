@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use yew::prelude::*;
+use yew::*;
 
 use api::Player;
 use cobul::*;

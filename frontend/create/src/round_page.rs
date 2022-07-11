@@ -1,6 +1,6 @@
 use cobul::Columns;
 
-use yew::prelude::*;
+use yew::*;
 
 use api::{DraftRound, Resolution};
 use ywt::callback;

@@ -1,7 +1,7 @@
 use api::{DraftRound, GuessChoices, PointChoices};
 use cobul::*;
 use validator::Validate;
-use yew::prelude::*;
+use yew::*;
 
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct RoundInfo {
@@ -41,19 +41,19 @@ pub fn round_form(props: &Props) -> Html {
 
     html! {
         <div class="pt-5 pl-4 pr-5">
-        <SimpleField label="Answer" help={form.error("answer")} >
+        <simple::Field label="Answer" help={form.error("answer")} >
             <Input oninput={form.field(|x| &mut x.answer)} value={answer} color={color("answer")}/>
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Points" help={form.error("points")} >
-            <EnumButtons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
+        <simple::Field label="Points" help={form.error("points")} >
+            <simple::Buttons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
             color={Color::Info} />
-        </SimpleField>
+        </simple::Field>
 
-        <SimpleField label="Guesses" help={form.error("guesses")}>
-            <EnumButtons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
+        <simple::Field label="Guesses" help={form.error("guesses")}>
+            <simple::Buttons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
             color={Color::Info} />
-        </SimpleField>
+        </simple::Field>
 
         <Block/>
         <Button fullwidth=true onclick={&props.onremove} light=true color={Color::Danger} hidden={!has_image}>

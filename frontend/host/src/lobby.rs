@@ -1,8 +1,7 @@
-use cobul::props::{Color, ColumnSize, HeaderSize, HeroSize};
 use cobul::*;
 use qrcode::QrCode;
 use std::rc::Rc;
-use yew::prelude::*;
+use yew::*;
 
 use api::{FullQuiz, Player, Session, SELF_ENDPOINT};
 use image::Rgba;
