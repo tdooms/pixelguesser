@@ -41,9 +41,9 @@ it will be released on the website www.pixelguesser.com.
   - Proper forms and public checkbox (high)
   - More options than pixelate (medium)
   - Leave warning unsaved work (low)
-  - Atomic writes upon submit or continuous saves? (low)
+  - Atomic writes upon submit or continuous saves? - if not atomic, reference to the new page of the quiz (low)
   - Portrait image rotated (high)
-  - Cropper has delay before showing image (high)
+  - ~~Cropper has delay before showing image (high)~~
   - Side images are wrong on ultra-wide images (medium)
   - Extra information on what's missing on overview click - flash danger red on missing (low)
   - Remove images form server if dangling reference (medium)

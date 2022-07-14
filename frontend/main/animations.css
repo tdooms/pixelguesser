@@ -1,0 +1,3 @@
+@keyframes flash-danger {
+    50% { background-color: hsl(348, 86%, 61%) }
+}

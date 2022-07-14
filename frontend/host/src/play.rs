@@ -43,7 +43,7 @@ pub fn play(props: &Props) -> Html {
     let src = round.image.src(Resolution::HD);
     let image_c = image.clone();
     use_effect_with_deps(
-        move |index| {
+        move |_index| {
             let element = HtmlImageElement::new().unwrap();
             element.set_src(&src);
             image_c.set(Some(element));

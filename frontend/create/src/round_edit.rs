@@ -1,5 +1,6 @@
 use cobul::custom::{Sidebar, SidebarAlignment};
 use cobul::*;
+use std::rc::Rc;
 use yew::*;
 
 use api::{DraftRound, Image};
@@ -9,8 +10,9 @@ use crate::round_preview::RoundPreview;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub draft: DraftRound,
+    pub draft: Rc<DraftRound>,
     pub complete: bool,
+
     pub onback: Callback<()>,
     pub ondone: Callback<()>,
     pub onedit: Callback<DraftRound>,
@@ -21,22 +23,22 @@ pub fn round_edit(props: &Props) -> Html {
     let Props { draft, onback, ondone, onedit, complete } = props.clone();
 
     let center = {
-        let clone = draft.clone();
-        let onupload = onedit.reform(move |image| DraftRound { image, ..clone.clone() });
+        let cloned = (*draft).clone();
+        let onupload = onedit.reform(move |image| DraftRound { image, ..cloned.clone() });
 
-        html! { <RoundPreview image={draft.image.clone()} {onupload}/>}
+        html! { <RoundPreview draft={draft.clone()} {onupload}/>}
     };
 
     let right = {
-        let clone = draft.clone();
+        let cloned = (*draft).clone();
         let edit = move |info| {
             let RoundInfo { answer, points, guesses } = info;
-            DraftRound { answer, points, guesses, ..clone.clone() }
+            DraftRound { answer, points, guesses, ..cloned.clone() }
         };
 
-        let clone = draft.clone();
+        let cloned = (*draft).clone();
         let onremove =
-            onedit.reform(move |_| DraftRound { image: Image::default(), ..clone.clone() });
+            onedit.reform(move |_| DraftRound { image: Image::default(), ..cloned.clone() });
 
         let footer = html! {
             <Buttons class="mt-auto px-4 py-2">

@@ -1,4 +1,5 @@
 use cobul::*;
+use std::rc::Rc;
 use yew::*;
 
 use api::{DraftQuiz, DraftRound, Resolution};
@@ -9,8 +10,8 @@ use ywt::callback;
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub onstage: Callback<Stage>,
-    pub rounds: Vec<DraftRound>,
-    pub quiz: DraftQuiz,
+    pub rounds: Rc<Vec<DraftRound>>,
+    pub quiz: Rc<DraftQuiz>,
 }
 
 #[function_component(Summary)]

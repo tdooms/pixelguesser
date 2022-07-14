@@ -1,4 +1,5 @@
 use cobul::*;
+use std::rc::Rc;
 use yew::*;
 
 use api::{Creator, DraftQuiz};
@@ -14,14 +15,14 @@ use crate::Stage;
 pub struct Props {
     pub onstage: Callback<Stage>,
     pub onchange: Callback<QuizAction>,
-    pub quiz: DraftQuiz,
+    pub quiz: Rc<DraftQuiz>,
     pub has_delete: bool,
 }
 
 #[function_component(QuizPage)]
 pub fn quiz_page(props: &Props) -> Html {
     let Props { onstage, onchange, quiz, has_delete } = props.clone();
-    let DraftQuiz { title, description, image, public, .. } = quiz.clone();
+    let DraftQuiz { title, description, image, public, .. } = (*quiz).clone();
 
     let creator: Creator = match use_context::<Auth>().unwrap().user() {
         Ok(user) => user.into(),

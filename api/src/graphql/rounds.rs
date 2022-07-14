@@ -96,7 +96,8 @@ impl Round {
 
 #[derive(Validate, Debug, Clone, Default, PartialEq, Encode)]
 pub struct DraftRound {
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "Round must have an answer."))]
+    #[validate(length(max = 32, message = "Answer cannot exceed 32 characters."))]
     pub answer: String,
 
     pub points: PointChoices,

@@ -8,11 +8,11 @@ use yew::Callback;
 #[derive(Clone, Copy, Debug, PartialEq, derive_more::Display)]
 pub enum Resolution {
     #[display(fmt = "thumbnail")]
-    Thumbnail,
+    Thumbnail = 108,
     #[display(fmt = "card")]
-    Card,
+    Card = 320,
     #[display(fmt = "hd")]
-    HD,
+    HD = 1080,
     #[display(fmt = "original")]
     Original,
 }
@@ -90,11 +90,11 @@ impl Image {
         Ok(())
     }
 
-    pub fn src(&self, resolution: Resolution) -> String {
+    pub fn src(&self, resolution: Resolution) -> Rc<String> {
         match &self.format {
-            Format::None => IMAGE_PLACEHOLDER.to_string(),
-            Format::Local { data } | Format::Both { data, .. } => (**data).clone(),
-            Format::Url { url } => format!("{IMAGE_ENDPOINT}/{resolution}/{url}"),
+            Format::None => Rc::new(IMAGE_PLACEHOLDER.to_string()),
+            Format::Local { data } | Format::Both { data, .. } => data.clone(),
+            Format::Url { url } => Rc::new(format!("{IMAGE_ENDPOINT}/{resolution}/{url}")),
         }
     }
 

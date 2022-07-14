@@ -1,11 +1,13 @@
 use api::{DraftRound, GuessChoices, PointChoices};
 use cobul::*;
+use std::rc::Rc;
 use validator::Validate;
 use yew::*;
 
 #[derive(Validate, Clone, Debug, PartialEq)]
 pub struct RoundInfo {
-    #[validate(length(min = 1, message = "Must not be empty"))]
+    #[validate(length(min = 1, message = "Round must have an answer."))]
+    #[validate(length(max = 32, message = "Answer cannot exceed 32 characters."))]
     pub answer: String,
     pub points: PointChoices,
     pub guesses: GuessChoices,
@@ -21,13 +23,13 @@ impl From<DraftRound> for RoundInfo {
 pub struct Props {
     pub onchange: Callback<RoundInfo>,
     pub onremove: Callback<()>,
-    pub draft: DraftRound,
+    pub draft: Rc<DraftRound>,
 }
 
 #[function_component(RoundForm)]
 pub fn round_form(props: &Props) -> Html {
     let has_image = !props.draft.image.is_none();
-    let info: RoundInfo = props.draft.clone().into();
+    let info: RoundInfo = (*props.draft).clone().into();
 
     let actions = Actions::new().change(props.onchange.clone());
     let (form, info) = use_form(&info, actions);

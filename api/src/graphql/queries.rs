@@ -156,6 +156,9 @@ pub async fn save_rounds(
 
     let insert = InsertBuilder::default().returning(Round::all()).objects(objects).build().unwrap();
 
+    // TODO: set the quiz to complete
+    // let update = UpdateByPk::default().pk(Quiz::Pk { id: quiz_id} ).set()
+
     let res: SaveRoundsData = exec(Some(user), mutation!(delete, insert)).await?;
     Ok(res.insert_rounds.returning)
 }

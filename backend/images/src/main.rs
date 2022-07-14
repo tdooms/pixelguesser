@@ -3,7 +3,6 @@ extern crate rocket;
 
 use clap::Parser;
 use image::imageops::FilterType;
-use image::GenericImageView;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use rocket::data::ToByteUnit;
@@ -64,6 +63,13 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
 }
 
 pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::fmt::Display) {
+    // std::fs::create_dir(&format!("{base}/original")).unwrap();
+    // std::fs::create_dir(&format!("{base}/thumbnail")).unwrap();
+    // std::fs::create_dir(&format!("{base}/card")).unwrap();
+    // std::fs::create_dir(&format!("{base}/hd")).unwrap();
+
+    println!("start computing caches");
+
     for file in std::fs::read_dir(templates).unwrap() {
         let name = file.as_ref().unwrap().file_name().into_string().unwrap();
 
@@ -88,6 +94,8 @@ pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::f
             hd.save(&format!("{base}/hd/{name}")).unwrap();
         }
     }
+
+    println!("end computing caches");
 }
 
 /// imager (IMAGE-serveR) is a program to efficiently serve images

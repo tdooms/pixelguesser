@@ -1,5 +1,6 @@
 use cobul::custom::Loading;
 use shared::{Auth, Error, Errors, Route};
+use std::rc::Rc;
 use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
@@ -53,13 +54,16 @@ pub fn create(props: &Props) -> Html {
 
     let inner = match *stage {
         Stage::Quiz => {
-            html! { <QuizPage {onstage} onchange={onquiz} quiz={state.quiz()} has_delete={props.quiz_id.is_some()}/> }
+            let quiz = Rc::new(state.quiz());
+            html! { <QuizPage {onstage} onchange={onquiz} {quiz} has_delete={props.quiz_id.is_some()}/> }
         }
         Stage::Rounds => {
-            html! { <RoundPage {onstage} onchange={onrounds} rounds={state.rounds()} /> }
+            let rounds = Rc::new(state.rounds());
+            html! { <RoundPage {onstage} onaction={onrounds} {rounds} /> }
         }
         Stage::Summary => {
-            html! { <Summary {onstage} quiz={state.quiz()} rounds={state.rounds()} /> }
+            let (rounds, quiz) = (Rc::new(state.rounds()), Rc::new(state.quiz()));
+            html! { <Summary {onstage} {quiz} {rounds} /> }
         }
         Stage::Back | Stage::Done => html! {<Redirect<Route> to={Route::Overview}/>},
     };
