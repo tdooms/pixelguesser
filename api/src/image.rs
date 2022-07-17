@@ -5,17 +5,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::rc::Rc;
 use yew::Callback;
 
-#[derive(Clone, Copy, Debug, PartialEq, derive_more::Display)]
-pub enum Resolution {
-    #[display(fmt = "thumbnail")]
-    Thumbnail = 108,
-    #[display(fmt = "card")]
-    Card = 320,
-    #[display(fmt = "hd")]
-    HD = 1080,
-    #[display(fmt = "original")]
-    Original,
-}
+pub use images::Resolution;
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum Format {

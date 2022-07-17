@@ -146,7 +146,7 @@ pub fn round_list(props: &ListProps) -> Html {
         <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} overflow=true class="p-4">
             { for (0..max).map(part) }
             { draw_line(Some(max) != line_idx) }
-
+            <hr class="my-0" />
             <Button fullwidth=true {onclick} class="ml-1">
                 <Icon icon={Icons::Plus} size={Size::Large}/>
             </Button>

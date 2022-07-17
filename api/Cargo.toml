@@ -7,7 +7,10 @@ edition = "2021"
 
 [dependencies]
 sessions = { path = "../backend/sessions", features = ["api"], default-features = false }
+images = { path = "../backend/images", features = ["api"], default-features = false }
+
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+hasura = { git = "https://github.com/tdooms/hasura.git" }
 
 serde_json = "*"
 dotenv_codegen = "0.15"
@@ -24,5 +27,3 @@ reqwasm = "0.4.0"
 validator = { version = "0.15", features = ["derive"] }
 derive_more = "0.99.16"
 strum = { version = "0.24", features = ["derive"] }
-
-hasura = { git = "https://github.com/tdooms/hasura.git" }

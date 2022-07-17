@@ -1,16 +1,17 @@
 #[macro_use]
 extern crate rocket;
 
+use base64::{CharacterSet, Config};
 use clap::Parser;
 use image::imageops::FilterType;
-use rand::distributions::Alphanumeric;
-use rand::Rng;
+use images::Resolution;
 use rocket::data::ToByteUnit;
 use rocket::fs::{FileServer, Options};
 use rocket::http::Status;
 use rocket::response::Responder;
-use rocket::{response, Config, Data, Request, State};
+use rocket::{response, Data, Request, State};
 use rocket_cors::CorsOptions;
+use sha3::Digest;
 
 pub struct Path(String);
 
@@ -41,57 +42,47 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
 
-    let rng = rand::thread_rng();
-    let random: String = rng.sample_iter(&Alphanumeric).take(16).map(char::from).collect();
+    let hash = &sha3::Sha3_256::new_with_prefix(&buffer).finalize();
+    let filename = base64::encode(&hash);
     let extension = format.extensions_str().first().unwrap();
+
     let base = &path.inner().0;
 
     let original = image::load_from_memory_with_format(&buffer, format)?;
-    original.save(&format!("{base}/original/{random}.{extension}"))?;
+    original.save(&format!("{base}/original/{filename}.{extension}"))?;
 
-    let thumbnail = original.resize(1_000_000, 108, FilterType::Lanczos3);
-    thumbnail.save(&format!("{base}/thumbnail/{random}.{extension}"))?;
+    for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD] {
+        let img = original.thumbnail(1_000_000, res as u32);
+        img.save(&format!("{base}/{res}/{filename}.{extension}"))?;
+    }
 
-    let card = original.resize(1_000_000, 320, FilterType::Lanczos3);
-    card.save(&format!("{base}/card/{random}.{extension}"))?;
-
-    let hd = original.resize(1_000_000, 1080, FilterType::Lanczos3);
-    hd.save(&format!("{base}/hd/{random}.{extension}"))?;
-
-    println!("{} {}", original.width(), original.height());
-    Ok(format!("{}.{}", random, extension))
+    Ok(format!("{}.{}", filename, extension))
 }
 
 pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::fmt::Display) {
-    // std::fs::create_dir(&format!("{base}/original")).unwrap();
-    // std::fs::create_dir(&format!("{base}/thumbnail")).unwrap();
-    // std::fs::create_dir(&format!("{base}/card")).unwrap();
-    // std::fs::create_dir(&format!("{base}/hd")).unwrap();
+    println!("computing image caches from template");
 
-    println!("start computing caches");
+    for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original] {
+        let _ = std::fs::create_dir(&format!("{}/{}", base, res));
+    }
 
     for file in std::fs::read_dir(templates).unwrap() {
-        let name = file.as_ref().unwrap().file_name().into_string().unwrap();
+        let path = file.as_ref().unwrap().path();
 
-        println!("computing caches for image: {name}");
+        println!("\t {}", path.display());
+        let original = image::open(&path).unwrap();
 
-        let original = image::open(&file.unwrap().path()).unwrap();
+        let hash = sha3::Sha3_256::new_with_prefix(original.as_bytes()).finalize();
+        let filename = base64::encode_config(&hash, Config::new(CharacterSet::UrlSafe, true));
 
-        if !std::path::Path::new(&format!("{base}/original/{name}")).exists() {
-            original.save(&format!("{base}/original/{name}")).unwrap();
-        }
-        if !std::path::Path::new(&format!("{base}/thumbnail/{name}")).exists() {
-            let thumbnail = original.resize(1_000_000, 108, FilterType::Lanczos3);
-            thumbnail.save(&format!("{base}/thumbnail/{name}")).unwrap();
-        }
+        let _ = std::fs::copy(path, &format!("{base}/original/{filename}.jpg"));
 
-        if !std::path::Path::new(&format!("{base}/card/{name}")).exists() {
-            let card = original.resize(1_000_000, 320, FilterType::Lanczos3);
-            card.save(&format!("{base}/card/{name}")).unwrap();
-        }
-        if !std::path::Path::new(&format!("{base}/hd/{name}")).exists() {
-            let hd = original.resize(1_000_000, 1080, FilterType::Lanczos3);
-            hd.save(&format!("{base}/hd/{name}")).unwrap();
+        for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD] {
+            let path = format!("{base}/{res}/{filename}.jpg");
+            if !std::path::Path::new(&path).exists() {
+                let image = original.resize(1_000_000, res as u32, FilterType::Lanczos3);
+                image.save(&path).unwrap();
+            }
         }
     }
 
@@ -120,7 +111,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
     // upload_template("./data/template", "./data");
 
-    let config = Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
+    let config =
+        rocket::Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
 
     let cors = CorsOptions::default().to_cors()?;
 

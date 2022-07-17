@@ -7,7 +7,7 @@ use crate::Image;
 
 impl hasura::Encode for Image {
     fn encode(&self) -> String {
-        format!("\\\"{}\\\"", self.url().unwrap())
+        format!("\\\"{}\\\"", self.url())
     }
 }
 
