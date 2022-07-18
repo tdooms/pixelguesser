@@ -6,8 +6,9 @@ pub struct FullQuiz {
     pub rounds: Vec<Round>,
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct FullDraftQuiz {
+    #[serde(flatten)]
     pub quiz: DraftQuiz,
     pub rounds: Vec<DraftRound>,
 }

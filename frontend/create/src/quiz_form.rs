@@ -13,7 +13,7 @@ const DESCRIPTION_DEFAULT: &str = "The best quiz";
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub quiz: Option<Rc<DraftQuiz>>,
+    pub draft: Option<Rc<DraftQuiz>>,
     pub onsubmit: Callback<DraftQuiz>,
     pub onchange: Callback<DraftQuiz>,
     pub onback: Callback<()>,
@@ -21,11 +21,11 @@ pub struct Props {
 
 #[function_component(QuizForm)]
 pub fn quiz_form(props: &Props) -> Html {
-    let Props { quiz, onsubmit, onback, onchange } = props.clone();
+    let Props { draft, onsubmit, onback, onchange } = props.clone();
 
     let actions = Actions::new().submit(onsubmit).change(onchange);
-    let (form, quiz) = use_form(&*quiz.unwrap_or_default(), actions);
-    let DraftQuiz { title, explanation, public, description, image, .. } = quiz;
+    let (form, draft) = use_form(&*draft.unwrap_or_default(), actions);
+    let DraftQuiz { title, explanation, public, description, image, .. } = draft;
 
     let cropper = use_state(|| None);
     let name = use_state(|| None);

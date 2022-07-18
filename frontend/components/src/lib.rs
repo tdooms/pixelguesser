@@ -4,4 +4,4 @@ mod quiz_card;
 
 pub use errors::Alerts;
 pub use pixelate::Pixelate;
-pub use quiz_card::{EmptyCard, QuizCard};
+pub use quiz_card::{QuizCard, View};

@@ -7,6 +7,7 @@ use cobul::{Color, Notification};
 use yew::*;
 use yew_router::prelude::*;
 
+use admin::Database;
 use api::Code;
 use create::Create;
 use shared::{Auth, Error, Errors, Route};
@@ -89,6 +90,9 @@ fn switch(route: &Route) -> Html {
         }
         Route::Test => {
             html! { <Test/> }
+        }
+        Route::Database => {
+            html! { <Database/> }
         }
         Route::Overview | Route::NotFound => {
             html! {<Suspense {fallback}><Overview/></Suspense>}

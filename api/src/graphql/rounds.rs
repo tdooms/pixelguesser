@@ -1,5 +1,5 @@
 use derive_more::Display;
-use hasura::{Encode, Object, Pk};
+use hasura::{Object, Pk};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::EnumIter;
@@ -22,12 +22,6 @@ pub enum PointChoices {
     Four = 4,
 }
 
-impl Encode for PointChoices {
-    fn encode(&self) -> String {
-        format!("\\\"{}\\\"", *self as u8)
-    }
-}
-
 impl Default for PointChoices {
     fn default() -> Self {
         Self::One
@@ -47,12 +41,6 @@ pub enum GuessChoices {
     Infinite = 0,
 }
 
-impl Encode for GuessChoices {
-    fn encode(&self) -> String {
-        format!("\\\"{}\\\"", *self as u8)
-    }
-}
-
 impl Default for GuessChoices {
     fn default() -> Self {
         Self::Infinite
@@ -67,7 +55,7 @@ fn validate_image(image: &Image) -> Result<(), ValidationError> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk, Encode)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk)]
 #[object(name = "rounds", pk = "quiz_id", pk = "index")]
 pub struct Round {
     pub quiz_id: u32,
@@ -94,7 +82,7 @@ impl Round {
     }
 }
 
-#[derive(Validate, Debug, Clone, Default, PartialEq, Encode)]
+#[derive(Validate, Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct DraftRound {
     #[validate(length(min = 1, message = "Round must have an answer."))]
     #[validate(length(max = 32, message = "Answer cannot exceed 32 characters."))]

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use yew::*;
 
 use api::{Creator, DraftQuiz};
-use components::QuizCard;
+use components::{QuizCard, View};
 use shared::Auth;
 use ywt::callback;
 
@@ -15,17 +15,17 @@ use crate::Stage;
 pub struct Props {
     pub onstage: Callback<Stage>,
     pub onchange: Callback<QuizAction>,
-    pub quiz: Rc<DraftQuiz>,
+
+    pub draft: Rc<DraftQuiz>,
     pub has_delete: bool,
 }
 
 #[function_component(QuizPage)]
 pub fn quiz_page(props: &Props) -> Html {
-    let Props { onstage, onchange, quiz, has_delete } = props.clone();
-    let DraftQuiz { title, description, image, public, .. } = (*quiz).clone();
+    let Props { onstage, onchange, draft, has_delete } = props.clone();
 
-    let creator: Creator = match use_context::<Auth>().unwrap().user() {
-        Ok(user) => user.into(),
+    let creator = match use_context::<Auth>().unwrap().user() {
+        Ok(user) => user.name,
         Err(_) => return html! { "not allowed" },
     };
 
@@ -50,11 +50,11 @@ pub fn quiz_page(props: &Props) -> Html {
             <Columns>
                 <Column>
                     <Level {left} {right} />
-                    <QuizForm {quiz} {onsubmit} {onback} {onchange}/>
+                    <QuizForm draft={draft.clone()} {onsubmit} {onback} {onchange}/>
                 </Column>
                 <Column size={ColumnSize::Is1} />
                 <Column size={ColumnSize::Is4}>
-                    <QuizCard {title} {description} {image} {creator} {public}/>
+                    <QuizCard view={View::Preview{draft, creator}}/>
                 </Column>
             </Columns>
         </Container>

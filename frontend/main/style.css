@@ -14,17 +14,3 @@ body {
 main {
     min-height: 100vh !important;
 }
-
-.is-blurred {
-    filter: blur(5px)
-}
-
-/* Square top corners */
-.has-square-top {
-    border-top-left-radius: 0 !important;
-    border-top-right-radius: 0 !important;
-}
-
-.has-no-pointer {
-    cursor: unset;
-}

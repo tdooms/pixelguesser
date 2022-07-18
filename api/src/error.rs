@@ -5,8 +5,8 @@ pub enum Error {
     #[error("Request error: {0}")]
     Request(#[from] reqwasm::Error),
 
-    #[error("Graphql error: {0:?}")]
-    Graphql(Vec<String>),
+    #[error("Hasura error: {0:?}")]
+    Hasura(#[from] hasura::Error),
 
     #[error("Serde error: {0:?}")]
     Serde(#[from] serde_json::Error),
@@ -32,3 +32,5 @@ pub enum Error {
     #[error("Invalid session id")]
     InvalidSession(#[from] ParseIntError),
 }
+
+pub type Result<T> = std::result::Result<T, Error>;

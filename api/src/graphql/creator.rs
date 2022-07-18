@@ -1,7 +1,7 @@
 use crate::auth0::User;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk, hasura::Encode)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, hasura::Object, hasura::Pk)]
 #[object(name = "users", pk = "id")]
 pub struct Creator {
     pub id: String,

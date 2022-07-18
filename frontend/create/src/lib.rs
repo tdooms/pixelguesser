@@ -54,8 +54,8 @@ pub fn create(props: &Props) -> Html {
 
     let inner = match *stage {
         Stage::Quiz => {
-            let quiz = Rc::new(state.quiz());
-            html! { <QuizPage {onstage} onchange={onquiz} {quiz} has_delete={props.quiz_id.is_some()}/> }
+            let draft = Rc::new(state.quiz());
+            html! { <QuizPage {onstage} onchange={onquiz} {draft} has_delete={props.quiz_id.is_some()}/> }
         }
         Stage::Rounds => {
             let rounds = Rc::new(state.rounds());

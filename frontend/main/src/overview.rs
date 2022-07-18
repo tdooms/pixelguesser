@@ -2,11 +2,12 @@ use crate::navbar::MainNavbar;
 use crate::search::{Search, Sort};
 use api::Quiz;
 use cobul::*;
-use components::{EmptyCard, QuizCard};
-use shared::Auth;
+use components::{QuizCard, View};
+use shared::{Auth, Route};
 use wasm_bindgen_futures::spawn_local;
 use yew::HtmlResult;
 use yew::*;
+use yew_router::hooks::use_navigator;
 use ywt::callback;
 
 #[derive(Properties, PartialEq, Clone)]
@@ -15,19 +16,29 @@ pub struct Props {
 }
 
 #[function_component(QuizColumn)]
-pub fn quiz_column(Props { quiz }: &Props) -> Html {
-    let Quiz { title, description, image, id, creator, public, .. } = quiz.clone();
+pub fn quiz_column(props: &Props) -> Html {
+    let quiz = props.quiz.clone();
+    let quiz_id = quiz.id;
+
+    let navigator = use_navigator().unwrap();
+
+    let onedit = callback!(navigator; move |_| {
+        navigator.push(Route::Update{quiz_id})
+    });
+    let onclick = callback!(navigator; move |_| {
+        navigator.push(Route::Host{quiz_id})
+    });
 
     html! {
         <Column size={ColumnSize::Is3}>
-            <QuizCard id={id as u32} {title} {description} {image} {creator} {public}/>
+            <QuizCard view={View::Normal{quiz, onclick, onedit}}/>
         </Column>
     }
 }
 
 #[function_component(EmptyColumn)]
 pub fn empty_column() -> Html {
-    html! {<Column size={ColumnSize::Is3}><EmptyCard/></Column>}
+    html! {<Column size={ColumnSize::Is3}><QuizCard view={View::Empty}/></Column>}
 }
 
 #[function_component(Overview)]

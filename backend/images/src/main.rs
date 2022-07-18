@@ -116,7 +116,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cors = CorsOptions::default().to_cors()?;
 
-    rocket::custom(config)
+    let _ = rocket::custom(config)
         .mount("/original", FileServer::new("data/original", Options::Index))
         .mount("/hd", FileServer::new("data/hd", Options::Index))
         .mount("/card", FileServer::new("data/card", Options::Index))

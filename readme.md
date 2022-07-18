@@ -48,6 +48,7 @@ it will be released on the website www.pixelguesser.com.
   - Extra information on what's missing on overview click - flash danger red on missing (low)
   - Remove images form server if dangling reference (medium)
   - Image similarity system to avoid duplicates on the server (low)
+  - Handling of no user set in context (see quiz_page return html)
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
