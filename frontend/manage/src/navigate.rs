@@ -18,7 +18,7 @@ pub fn navigate(props: &Props) -> Html {
     let button = |action: Action,
                   color: Color,
                   light: bool,
-                  icon: Icons,
+                  icon: Solid,
                   text: &str,
                   hidden: bool| {
         html! {
@@ -31,13 +31,13 @@ pub fn navigate(props: &Props) -> Html {
     let buttons = |idx: &[usize]| {
         html! {
             <>
-            {button(Action::Start, Color::Primary, false, Icons::Play, "start", !idx.contains(&0))}
-            {button(Action::Stage(Stage::Running), Color::Light, false, Icons::Play, "resume", !idx.contains(&1))}
-            {button(Action::Stage(Stage::Paused), Color::Light, false, Icons::Pause, "pause", !idx.contains(&2))}
-            {button(Action::Stage(Stage::Revealing), Color::Danger, true, Icons::EyeSolid, "reveal", !idx.contains(&3))}
-            {button(Action::Stage(Stage::Scores), Color::Info, true, Icons::ListOl, "scores", !idx.contains(&4))}
-            {button(Action::Next, Color::Success, true, Icons::Forward, "next", !idx.contains(&5))}
-            {button(Action::Finish, Color::Primary, true, Icons::FlagCheckered, "finish", !idx.contains(&6))}
+            {button(Action::Start, Color::Primary, false, Solid::Play, "start", !idx.contains(&0))}
+            {button(Action::Stage(Stage::Running), Color::Light, false, Solid::Play, "resume", !idx.contains(&1))}
+            {button(Action::Stage(Stage::Paused), Color::Light, false, Solid::Pause, "pause", !idx.contains(&2))}
+            {button(Action::Stage(Stage::Revealing), Color::Danger, true, Solid::Eye, "reveal", !idx.contains(&3))}
+            {button(Action::Stage(Stage::Scores), Color::Info, true, Solid::ListOl, "scores", !idx.contains(&4))}
+            {button(Action::Next, Color::Success, true, Solid::Forward, "next", !idx.contains(&5))}
+            {button(Action::Finish, Color::Primary, true, Solid::FlagCheckered, "finish", !idx.contains(&6))}
             </>
         }
     };

@@ -1,9 +1,7 @@
 use api::Stage;
 use gloo::timers::callback::Timeout;
-use shared::{
-    Error, Internal, PIXELATE_MAX_REFRESH, PIXELATE_PLAY_SPEED, PIXELATE_REVEAL_SPEED,
-    PIXELATE_START_PIXELS, PIXELATE_UPSCALE_TIME,
-};
+use shared::pixelation::*;
+use shared::{Error, Internal};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
@@ -66,24 +64,23 @@ pub fn draw_pixelated(
         .map_err(|_| Internal::DrawError)?)
 }
 
-fn update_duration(mut previous: f64, stage: Stage, max: u32) -> Option<(f64, u32)> {
-    let speed = match stage {
-        Stage::Revealing => PIXELATE_REVEAL_SPEED,
-        Stage::Running => PIXELATE_PLAY_SPEED,
+fn update_duration(stage: Stage, pixels: u32, max: u32) -> Option<(f64, u32)> {
+    let (speed, time) = match stage {
+        Stage::Running => (PLAY_SPEED, PLAY_UPSCALE),
+        Stage::Revealing => (REVEAL_SPEED, REVEAL_UPSCALE),
         _ => return None,
     };
 
-    // TODO: this can be done analytically
-    let mut sum = 0.0;
-    for i in 1..max {
-        previous /= speed;
-        sum += previous;
+    for new in pixels + 1..=max {
+        let constant = time / ((START_PIXELS as f64 + 1.0) / START_PIXELS as f64).log(speed);
+        let delay = constant * (new as f64 / pixels as f64).log(speed);
 
-        if sum > PIXELATE_MAX_REFRESH {
-            return Some((previous, i));
+        if delay > MAX_REFRESH {
+            return Some((delay, new));
         }
     }
-    return Some((sum, max));
+
+    Some(((max as f64 / pixels as f64).log(speed), max))
 }
 
 #[derive(Properties, PartialEq, Debug, Clone)]
@@ -102,8 +99,7 @@ pub struct Props {
 pub fn pixelate(props: &Props) -> Html {
     let Props { image, stage, onreveal, height } = props.clone();
 
-    let size = use_state(|| PIXELATE_START_PIXELS);
-    let duration = use_state(|| PIXELATE_UPSCALE_TIME);
+    let size = use_state(|| START_PIXELS);
     let timer = use_state(|| Timeout::new(0, || ()));
 
     let canvas_ref = use_node_ref();
@@ -111,7 +107,7 @@ pub fn pixelate(props: &Props) -> Html {
     let container_ref = use_node_ref();
 
     {
-        clone!(size, duration, offscreen_ref, image);
+        clone!(size, offscreen_ref, image);
         let src = image.src();
         // effect which initialises the canvas and state when the image is changed
         use_effect_with_deps(
@@ -124,8 +120,7 @@ pub fn pixelate(props: &Props) -> Html {
                 offscreen.set_width(width);
                 offscreen.set_height(height);
 
-                size.set(PIXELATE_START_PIXELS);
-                duration.set(PIXELATE_UPSCALE_TIME);
+                size.set(START_PIXELS);
 
                 || ()
             },
@@ -134,21 +129,19 @@ pub fn pixelate(props: &Props) -> Html {
     }
 
     {
-        clone!(timer, duration, image);
+        clone!(timer, image);
         // effect which resets the timer when the size/stage changes
         use_effect_with_deps(
             move |(size, stage)| {
-                let max = image.height() - **size;
-                match update_duration(*duration, *stage, max) {
-                    Some((_, x)) if x == max => {
+                match update_duration(*stage, **size, image.height()) {
+                    Some((_, x)) if x == image.height() => {
                         onreveal.emit(());
                         log::info!("emitting revealed");
                     }
-                    Some((time, steps)) => {
+                    Some((time, new)) => {
                         let cloned = size.clone();
-                        timer.set(Timeout::new(time as u32, move || cloned.set(*cloned + steps)));
-                        duration.set(time);
-                        log::info!("from {} to {} in {time:.0} ms", **size, **size + steps);
+                        timer.set(Timeout::new(time as u32, move || cloned.set(new)));
+                        log::info!("from {} to {} in {time:.0} ms", **size, new);
                     }
                     None => {
                         timer.set(Timeout::new(0, || ()));

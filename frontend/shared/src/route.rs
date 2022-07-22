@@ -12,8 +12,6 @@ pub enum Route {
     Update { quiz_id: u32 },
     #[at("/test")]
     Test,
-    #[at("/admin/database")]
-    Database,
     #[at("/")]
     Overview,
     #[not_found]

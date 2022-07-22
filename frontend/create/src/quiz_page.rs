@@ -2,7 +2,7 @@ use cobul::*;
 use std::rc::Rc;
 use yew::*;
 
-use api::{Creator, DraftQuiz};
+use api::DraftQuiz;
 use components::{QuizCard, View};
 use shared::Auth;
 use ywt::callback;
@@ -25,7 +25,7 @@ pub fn quiz_page(props: &Props) -> Html {
     let Props { onstage, onchange, draft, has_delete } = props.clone();
 
     let creator = match use_context::<Auth>().unwrap().user() {
-        Ok(user) => user.name,
+        Ok(user) => user.nickname,
         Err(_) => return html! { "not allowed" },
     };
 

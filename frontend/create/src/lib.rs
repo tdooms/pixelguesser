@@ -1,4 +1,4 @@
-use cobul::custom::Loading;
+use cobul::Loader;
 use shared::{Auth, Error, Errors, Route};
 use std::rc::Rc;
 use yew::*;
@@ -63,13 +63,13 @@ pub fn create(props: &Props) -> Html {
         }
         Stage::Summary => {
             let (rounds, quiz) = (Rc::new(state.rounds()), Rc::new(state.quiz()));
-            html! { <Summary {onstage} {quiz} {rounds} /> }
+            html! { <Summary {onstage} {quiz} {rounds} onaction={onrounds}/> }
         }
         Stage::Back | Stage::Done => html! {<Redirect<Route> to={Route::Overview}/>},
     };
 
     match state.loading() {
-        true => html! { <Loading /> },
+        true => html! { <Loader /> },
         false => inner,
     }
 }

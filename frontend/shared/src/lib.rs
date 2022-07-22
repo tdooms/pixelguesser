@@ -5,7 +5,7 @@ mod resize;
 mod route;
 mod traits;
 
-pub use consts::*;
+pub use consts::{host, pixelation};
 pub use contexts::*;
 pub use error::{Error, Info, Internal, Warning};
 pub use resize::{Dimensions, Resizer};

@@ -1,0 +1,163 @@
+{
+    "quizzes": [
+        {
+            "title": "Cities",
+            "description": "Popular monuments in popular cities",
+            "explanation": "Guess the CITY where the popular monument is located",
+            "image": "city.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Paris", "image": "paris.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pisa", "image": "pisa.jpg"},
+                {"points": 2, "guesses": 1, "answer": "London", "image": "london.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Brussels", "image": "brussels.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Washington", "image": "washington.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Moscow", "image": "moscow.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Sydney", "image": "sydney.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Rio", "image": "rio.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Los Angeles", "image": "los_angeles.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Rome", "image": "rome.jpg"},
+                {"points": 2, "guesses": 1, "answer": "New York", "image": "new_york_liberty.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Giza (or Cairo)", "image": "giza.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Las Vegas", "image": "las_vegas.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Berlin", "image": "berlin.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Agra", "image": "agra.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Barcelona", "image": "barcelona.jpg"},
+                {"points": 4, "guesses": 1, "answer": "New York", "image": "new_york_times.jpg"}
+            ]
+        },
+        {
+            "title": "Animals",
+            "description": "Well-known animals",
+            "explanation": "Guess the animal",
+            "image": "animal.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Paris", "image": "elephant.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Panda", "image": "panda.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Dog", "image": "dog.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Penguin", "image": "penguin.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Giraffe", "image": "giraffe.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Bunny", "image": "bunny.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Lion", "image": "lion.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Rhino", "image": "rhino.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pig", "image": "pig.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Fox", "image": "fox.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Elk", "image": "elk.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Cat", "image": "cat.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Tiger", "image": "tiger.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Snake", "image": "snake.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Gorilla", "image": "gorilla.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Owl", "image": "owl.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Peacock", "image": "peacock.jpg"}
+            ]
+        },
+        {
+            "title": "Celebrities",
+            "description": "Famous people around the world",
+            "explanation": "Guess the famous person",
+            "image": "celebrity.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Barack Obama", "image": "obama.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Charles Michel", "image": "michel.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Donald Trump", "image": "trump.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Queen Elizabeth", "image": "elizabeth.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Will Smith", "image": "smith.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Marc Zuckerberg", "image": "zuckerberg.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Vladimir Putin", "image": "putin.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Freddie Mercury", "image": "mercury.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Kim Jong Un", "image": "jong_un.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Elon Musk", "image": "musk.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Adolf Hitler", "image": "hitler.jpg"}
+            ]
+        },
+        {
+            "title": "Christmas",
+            "description": "Anything and everything that involves christmas",
+            "explanation": "Guess the typical christmas item",
+            "image": "christmas.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Christmas tree", "image": "tree.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Christmas ball", "image": "ball.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Mistletoe", "image": "mistletoe.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Rudolph", "image": "rudolph.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Present", "image": "present.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Snowman", "image": "snowman.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Buche", "image": "buche.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Crib", "image": "crib.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Gluhwein", "image": "gluhwein.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Santa Claus", "image": "santa.jpg"}
+            ]
+        },
+        {
+            "title": "Logos",
+            "description": "Like logo quiz but better (not complete)",
+            "explanation": "Guess the company name with this famous logo",
+            "image": "logo.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Christmas tree", "image": "apple.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Hamburger", "image": "hamburger.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pizza", "image": "pizza.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Banana", "image": "banana.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Fries", "image": "fries.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Salad", "image": "salad.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Spaghetti", "image": "spaghetti.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Steak", "image": "steak.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pancakes", "image": "pancakes.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Ice Cream", "image": "ice_cream.jpg"},
+                {"points": 3, "guesses": 1, "answer": "English breakfast", "image": "english.jpg"}
+            ]
+        },
+        {
+            "title": "Foods",
+            "description": "tasty! But can you guess it quickly",
+            "explanation": "Guess the food as quickly as possible",
+            "image": "food.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Apple", "image": "apple.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Hamburger", "image": "hamburger.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pizza", "image": "pizza.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Banana", "image": "banana.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Fries", "image": "fries.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Salad", "image": "salad.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Spaghetti", "image": "spaghetti.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Steak", "image": "steak.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Pancakes", "image": "pancakes.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Ice Cream", "image": "ice_cream.jpg"},
+                {"points": 3, "guesses": 1, "answer": "English breakfast", "image": "english.jpg"}
+            ]
+        },
+        {
+            "title": "Family",
+            "description": "Who knows their family best?",
+            "explanation": "Guess the name of the family member",
+            "image": "family.jpg",
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {"points": 1, "guesses": 1, "answer": "Silke", "image": "silke.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Micheline", "image": "micheline.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Luc", "image": "luc.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Mathias", "image": "mathias.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Christian", "image": "christian.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Ari", "image": "ari.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Catherine", "image": "catherine.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Thomas", "image": "thomas.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Anne-Sophie", "image": "anne_sophie.jpg"},
+                {"points": 3, "guesses": 1, "answer": "An", "image": "an.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Lucas", "image": "lucas.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Paul", "image": "paul.jpg"}
+            ]
+        }
+    ]
+}

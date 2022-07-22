@@ -1,5 +1,6 @@
 use cobul::*;
 use components::Pixelate;
+use components::{Center, DynImage};
 use cropper::Cropper;
 use std::rc::Rc;
 use web_sys::HtmlImageElement;
@@ -27,6 +28,7 @@ pub fn round_preview(props: &Props) -> Html {
     let Props { draft, onupload } = props.clone();
     let state = use_state(|| State::Revealed);
     let cropper = use_state(|| false);
+    let reader = use_state(|| None);
 
     let onpause = callback!(state; move |_| state.set(State::Paused));
     let onrunning = callback!(state; move |_| state.set(State::Running));
@@ -50,27 +52,28 @@ pub fn round_preview(props: &Props) -> Html {
     let oncancel = callback!(cropper; move |_| cropper.set(false));
     let oncropper = callback!(cropper; move |_| cropper.set(true));
 
-    let onupload = callback!(onupload; move |files: Vec<web_sys::File>| {
-        Image::from_file(files[0].clone(), onupload.clone());
+    let onupload = callback!(onupload, reader; move |files: Vec<web_sys::File>| {
+        let fr = Image::from_file(files[0].clone(), onupload.clone());
+        reader.set(Some(fr));
     });
 
     let buttons = |idx: &[bool]| {
         html! {
             <Buttons alignment={Alignment::Centered} class="mt-5">
             <Button onclick={onrunning.clone()} hidden={idx[0]}>
-                <Icon icon={Icons::EyeSolid} /> <span> {"preview"} </span>
+                <Icon icon={Solid::Eye} /> <span> {"preview"} </span>
             </Button>
             <Button onclick={oncropper} hidden={idx[1]}>
-                <Icon icon={Icons::Crop} /> <span> {"crop"} </span>
+                <Icon icon={Solid::Crop} /> <span> {"crop"} </span>
             </Button>
             <Button onclick={onrevealing} hidden={idx[2]}>
-                <Icon icon={Icons::Forward} /> <span> {"reveal"} </span>
+                <Icon icon={Solid::Forward} /> <span> {"reveal"} </span>
             </Button>
             <Button onclick={onpause} hidden={idx[3]}>
-                <Icon icon={Icons::Pause} /> <span> {"pause"} </span>
+                <Icon icon={Solid::Pause} /> <span> {"pause"} </span>
             </Button>
             <Button onclick={onrunning} hidden={idx[4]}>
-                <Icon icon={Icons::Play} /> <span> {"continue"} </span>
+                <Icon icon={Solid::Play} /> <span> {"continue"} </span>
             </Button>
             </Buttons>
         }
@@ -92,7 +95,7 @@ pub fn round_preview(props: &Props) -> Html {
         },
         (false, State::Revealed, false) => html! {
             <div>
-            <custom::DynImage src={draft.image.src(Resolution::HD)} height=85/>
+            <DynImage src={draft.image.src(Resolution::HD)} height=85/>
             { buttons(&hidden) }
             </div>
         },
@@ -103,9 +106,9 @@ pub fn round_preview(props: &Props) -> Html {
             </div>
         },
         (true, _, false) => html! {
-            <custom::Center>
+            <Center>
                 <File accept={"image/*"} boxed=true alignment={Alignment::Centered} {onupload} />
-            </custom::Center>
+            </Center>
         },
     }
 }

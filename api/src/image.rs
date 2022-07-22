@@ -1,11 +1,22 @@
 use crate::{Error, IMAGE_ENDPOINT, IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
-use gloo::file::futures::read_as_data_url;
-use reqwasm::http::Request;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::rc::Rc;
-use yew::Callback;
 
 pub use images::Resolution;
+
+#[cfg(all(feature = "wasm", not(feature = "native")))]
+async fn upload(body: String, endpoint: String) -> Result<String, Error> {
+    let response = gloo_net::http::Request::post(&endpoint).body(body).send().await?;
+    (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
+    Ok(response.text().await?)
+}
+
+#[cfg(feature = "native")]
+async fn upload(body: String, endpoint: String) -> Result<String, Error> {
+    let response = reqwest::Client::new().post(&endpoint).body(body).send().await?;
+    (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
+    Ok(response.text().await?)
+}
 
 #[derive(Clone, Debug, PartialEq, Default)]
 pub enum Format {
@@ -42,18 +53,27 @@ impl Serialize for Image {
 
 impl<'de> Deserialize<'de> for Image {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let url = String::deserialize(deserializer)?;
-        Ok(Self { format: Format::Url { url }, name: None })
+        match Option::deserialize(deserializer)? {
+            Some(url) => Ok(Self { format: Format::Url { url }, name: None }),
+            None => Ok(Self::default()),
+        }
     }
 }
 
 impl Image {
-    pub fn from_file(file: web_sys::File, callback: Callback<Self>) {
-        let blob = gloo::file::Blob::from(file.clone());
-        wasm_bindgen_futures::spawn_local(async move {
-            let data = Rc::new(read_as_data_url(&blob).await.unwrap());
-            let result = Self { format: Format::Local { data }, name: Some(file.name()) };
-            callback.emit(result)
+    #[cfg(feature = "wasm")]
+    #[must_use]
+    pub fn from_file(
+        file: web_sys::File,
+        callback: yew::Callback<Self>,
+    ) -> gloo_file::callbacks::FileReader {
+        let blob = gloo_file::Blob::from(file.clone());
+        let name = Some(file.name());
+
+        gloo_file::callbacks::read_as_data_url(&blob, move |data| {
+            let format = Format::Local { data: Rc::new(data.unwrap()) };
+            let image = Self { format, name };
+            callback.emit(image)
         })
     }
 
@@ -68,13 +88,15 @@ impl Image {
     pub async fn upload(&mut self) -> Result<(), Error> {
         if let Format::Local { data } = self.format.clone() {
             let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
+            let string = match data.split(',').nth(1) {
+                None => (*data).clone(),
+                Some(split) => split.to_owned(),
+            };
+            let url = upload(string, endpoint).await?;
 
-            let body = data.split(',').nth(1).unwrap().to_owned();
-            let response = Request::post(&endpoint).body(body).send().await.unwrap();
-            (response.status() == 200).then(|| ()).ok_or(Error::Upload)?;
-
-            let url = response.text().await?;
+            #[cfg(feature = "wasm")]
             log::trace!("uploaded image filename: {}", url);
+
             self.format = Format::Both { data, url };
         }
         Ok(())

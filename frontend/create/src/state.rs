@@ -31,60 +31,57 @@ pub struct CreateState {
     loading: UseStateHandle<bool>,
 }
 
-async fn load_quiz(
-    state: CreateState,
-    quiz_id: u32,
-    user: Option<User>,
-    err: Errors,
-) -> Option<()> {
-    let full = api::full_quiz(user, quiz_id).await.emit(&err)?;
-    let mut rounds: Vec<_> = full.rounds.into_iter().map(DraftRound::from).collect();
+impl CreateState {
+    async fn load_quiz(self, quiz_id: u32, user: Option<User>, err: Errors) -> Option<()> {
+        let full = api::full_quiz(user, quiz_id).await.emit(&err)?;
 
-    rounds.extend(rounds.is_empty().then(|| DraftRound::default()));
+        let mut rounds: Vec<_> = full.rounds.into_iter().map(DraftRound::from).collect();
+        rounds.extend(rounds.is_empty().then(|| DraftRound::default()));
 
-    state.prev_rounds.set(rounds.clone());
-    state.rounds.set(rounds);
+        self.prev_rounds.set(rounds.clone());
+        self.rounds.set(rounds);
 
-    state.prev_quiz.set(full.quiz.clone().into());
-    state.quiz.set(full.quiz.into());
+        self.prev_quiz.set(full.quiz.clone().into());
+        self.quiz.set(full.quiz.into());
 
-    state.loading.set(false);
-    Some(())
-}
-
-async fn upload_quiz(state: CreateState, mut quiz: DraftQuiz, user: User, err: Errors) {
-    quiz.creator_id = user.sub.clone();
-    quiz.image.upload().await.emit(&err);
-
-    state.quiz.set(quiz.clone());
-    state.prev_quiz.set(quiz.clone());
-
-    match *state.quiz_id {
-        Some(id) => {
-            api::update_quiz(user, id, quiz).await.emit(&err);
-        }
-        None => {
-            let quiz = api::create_quiz(user, quiz).await.emit(&err).flatten();
-            state.quiz_id.set(quiz.map(|x| x.id));
-        }
-    };
-}
-
-async fn delete_quiz(state: CreateState, user: User, err: Errors) {
-    api::delete_quiz(user, state.quiz_id.unwrap()).await.emit(&err);
-}
-
-async fn upload_rounds(state: CreateState, mut rounds: Vec<DraftRound>, user: User, err: Errors) {
-    for round in &mut rounds {
-        round.image.upload().await.emit(&err);
+        self.loading.set(false);
+        Some(())
     }
 
-    // The quiz must exist before we can save rounds
-    let quiz_id = state.quiz_id.unwrap();
-    let _ = api::save_rounds(user, quiz_id, rounds.clone()).await.emit(&err);
+    async fn upload_quiz(self, mut draft: DraftQuiz, user: User, err: Errors) {
+        draft.creator_id = user.sub.clone();
+        draft.image.upload().await.emit(&err);
 
-    state.rounds.set(rounds.clone());
-    state.prev_rounds.set(rounds);
+        self.quiz.set(draft.clone());
+        self.prev_quiz.set(draft.clone());
+
+        match *self.quiz_id {
+            Some(quiz_id) => {
+                api::update_quiz(user, quiz_id, draft).await.emit(&err);
+            }
+            None => {
+                let quiz = api::create_quiz(user, draft).await.emit(&err).flatten();
+                self.quiz_id.set(quiz.map(|x| x.id));
+            }
+        };
+    }
+
+    async fn delete_quiz(self, user: User, err: Errors) {
+        api::delete_quiz(user, self.quiz_id.unwrap()).await.emit(&err);
+    }
+
+    async fn upload_rounds(self, mut rounds: Vec<DraftRound>, user: User, err: Errors) {
+        for round in &mut rounds {
+            round.image.upload().await.emit(&err);
+        }
+
+        // The quiz must exist before we can save rounds
+        let quiz_id = self.quiz_id.unwrap();
+        let _ = api::save_rounds(user, quiz_id, rounds.clone()).await.emit(&err);
+
+        self.rounds.set(rounds.clone());
+        self.prev_rounds.set(rounds);
+    }
 }
 
 #[hook]
@@ -110,8 +107,8 @@ pub fn use_create_state(
         move |_| {
             if let Some(quiz_id) = *cloned.quiz_id {
                 spawn_local(async move {
-                    if let None = load_quiz(cloned, quiz_id, user, err).await {
-                        callback.emit(api::Error::Empty);
+                    if let None = cloned.load_quiz(quiz_id, user, err).await {
+                        callback.emit(api::Error::EmptyResponse);
                     }
                 })
             }
@@ -127,7 +124,6 @@ impl CreateState {
     pub fn quiz(&self) -> DraftQuiz {
         (*self.quiz).clone()
     }
-
     pub fn rounds(&self) -> Vec<DraftRound> {
         (*self.rounds).clone()
     }
@@ -142,13 +138,14 @@ impl CreateState {
                 self.quiz.set(quiz);
             }
             QuizAction::Delete => {
-                spawn_local(async move { delete_quiz(cloned, user, err).await });
+                spawn_local(async move { cloned.delete_quiz(user, err).await });
             }
             QuizAction::Submit if self.quiz != self.prev_quiz => {
                 self.loading.set(true);
                 let (quiz, loading) = (self.quiz(), self.loading.clone());
+
                 spawn_local(async move {
-                    upload_quiz(cloned, quiz, user, err).await;
+                    cloned.upload_quiz(quiz, user, err).await;
                     loading.set(false);
                 });
             }
@@ -176,7 +173,7 @@ impl CreateState {
             }
             RoundsAction::Submit if self.rounds != self.prev_rounds => {
                 let (cloned, rounds) = (self.clone(), rounds.clone());
-                spawn_local(async move { upload_rounds(cloned, rounds, user, err).await });
+                spawn_local(async move { cloned.upload_rounds(rounds, user, err).await });
             }
             RoundsAction::Submit => {}
         };

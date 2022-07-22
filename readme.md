@@ -37,18 +37,21 @@ it will be released on the website www.pixelguesser.com.
   - Also need to access the quiz when not owner and not public (high)
 - Create
   - ~~Test properly (high)~~
-  - Queries should be deterministic aka order by (medium)
+  - ~~Queries should be deterministic aka order by (medium)~~
   - Proper forms and public checkbox (high)
   - More options than pixelate (medium)
   - Leave warning unsaved work (low)
-  - Atomic writes upon submit or continuous saves? - if not atomic, reference to the new page of the quiz (low)
-  - Portrait image rotated (high)
+  - ~~Atomic writes upon submit or continuous saves? - if not atomic, reference to the new page of the quiz (low)~~
+  - Portrait image rotated (this is due to the EXIF extension being ignored) (high)
   - ~~Cropper has delay before showing image (high)~~
-  - Side images are wrong on ultra-wide images (medium)
-  - Extra information on what's missing on overview click - flash danger red on missing (low)
+  - ~~Side images are wrong when very-wide (medium)~~
+  - ~~Extra information on what's missing on overview click - flash danger red on missing (low)~~
   - Remove images form server if dangling reference (medium)
-  - Image similarity system to avoid duplicates on the server (low)
-  - Handling of no user set in context (see quiz_page return html)
+  - ~~Image similarity system to avoid duplicates on the server (low)~~
+  - Handling of no user set in context (see quiz_page return html) (low)
+  - Generalised state diffing manager (medium)
+  - Search web for images (google/unsplash/pixabay) (medium)
+  - Drag and drop image, copy paste url, ... (medium)
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)
@@ -59,7 +62,7 @@ it will be released on the website www.pixelguesser.com.
   - ~~Make image size dynamic based on needs (high)~~
   - Security overview (medium)
   - ~~Rewritten image solution with proper scaling (high)~~
-  - GraphQL answer handling built-in to api (high)
+  - ~~GraphQL answer handling built-in to api (high)~~
 - General
   - Consistent styling (medium)
   - Help/Explain pages (low)

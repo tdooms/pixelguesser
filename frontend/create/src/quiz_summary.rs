@@ -1,29 +1,35 @@
 use cobul::*;
+use components::DynImage;
 use std::rc::Rc;
 use yew::*;
 
 use api::{DraftQuiz, DraftRound, Resolution};
 
+use crate::state::RoundsAction;
 use crate::Stage;
 use ywt::callback;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub onstage: Callback<Stage>,
+    pub onaction: Callback<RoundsAction>,
     pub rounds: Rc<Vec<DraftRound>>,
     pub quiz: Rc<DraftQuiz>,
 }
 
 #[function_component(Summary)]
 pub fn summary(props: &Props) -> Html {
-    let Props { onstage, quiz, rounds } = props;
-    let ondone = callback!(onstage; move |_| onstage.emit(Stage::Done));
+    let Props { onstage, onaction, quiz, rounds } = props;
+    let ondone = callback!(onstage, onaction; move |_| {
+        onaction.emit(RoundsAction::Submit);
+        onstage.emit(Stage::Done)
+    });
     let onback = callback!(onstage; move |_| onstage.emit(Stage::Rounds));
 
     let round_mapper = |round: &DraftRound| {
         html! {
             <Column size={ColumnSize::Is3}>
-            <custom::DynImage src={round.image.src(Resolution::Thumbnail)} height=20/>
+            <DynImage src={round.image.src(Resolution::Thumbnail)} height=20/>
             <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
             </Column>
         }

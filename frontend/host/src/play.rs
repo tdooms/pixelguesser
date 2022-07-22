@@ -5,7 +5,7 @@ use yew::*;
 use api::{Action, Player, Resolution, Round, Stage};
 
 use components::Pixelate;
-use shared::HOST_INFO_DURATION;
+use shared::host::INFO_DURATION;
 
 use crate::info::Info;
 use crate::ranking::Ranking;
@@ -34,7 +34,7 @@ pub fn play(props: &Props) -> Html {
     use_effect_with_deps(
         move |_| {
             let cb = move || callback.emit(Action::Stage(Stage::Running));
-            timer.set(Timeout::new(1_000 * HOST_INFO_DURATION, cb));
+            timer.set(Timeout::new(1_000 * INFO_DURATION, cb));
             || ()
         },
         index,

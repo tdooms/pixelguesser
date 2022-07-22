@@ -26,13 +26,17 @@ pub fn round_page(props: &Props) -> Html {
     let current = use_state(|| 0usize);
     let draft = Rc::new(rounds[*current].clone());
 
-    let errors: Vec<_> = rounds.iter().map(|x| x.validate()).collect();
-    let complete = errors.iter().all(|x| x.is_ok());
+    let validate = |draft: &DraftRound| match draft.validate() {
+        Ok(_) => None,
+        Err(err) => Some(err),
+    };
 
-    let ondone = callback!(onstage, onaction, complete; move |_| {
+    let errors: Rc<Vec<_>> = Rc::new(rounds.iter().map(validate).collect());
+    let complete = errors.iter().all(|x| x.is_none());
+
+    let ondone = callback!(onstage, complete; move |_| {
         if !complete {return}
         onstage.emit(Stage::Summary);
-        onaction.emit(RoundsAction::Submit);
     });
 
     let onback = callback!(onstage; move |_| {
@@ -57,11 +61,10 @@ pub fn round_page(props: &Props) -> Html {
         current.set(idx);
     });
 
-    let (current, errors) = (*current, Rc::new(errors));
     html! {
         <Columns>
-            <RoundList {onselect} {onaction} {rounds} {current} {errors} flash=true/>
-            <RoundEdit {draft} {onback} {ondone} {onedit} {complete}/>
+            <RoundList {onselect} {onaction} {rounds} current={*current} errors={errors.clone()} flash=true/>
+            <RoundEdit {draft} {onback} {ondone} {onedit} {errors}/>
         </Columns>
     }
 }

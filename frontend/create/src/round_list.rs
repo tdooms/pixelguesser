@@ -1,5 +1,5 @@
-use cobul::custom::{Sidebar, SidebarAlignment};
 use cobul::*;
+use components::{Sidebar, SidebarAlignment};
 use std::rc::Rc;
 use validator::ValidationErrors;
 
@@ -74,7 +74,7 @@ pub fn round_elem(props: &ElemProps) -> Html {
         (false, false) => "",
     };
 
-    let img_style = "height:100px;display:block;margin-left:auto;margin-right:auto;border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
+    let img_style = "object-fit:cover;height:100px;display:block;margin-left:auto;margin-right:auto;border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
     let div_style = "border-width:thin";
 
     let style = match flash {
@@ -104,7 +104,7 @@ pub struct ListProps {
     pub onselect: Callback<usize>,
 
     pub rounds: Rc<Vec<DraftRound>>,
-    pub errors: Rc<Vec<Result<(), ValidationErrors>>>,
+    pub errors: Rc<Vec<Option<ValidationErrors>>>,
 
     pub flash: bool,
     pub current: usize,
@@ -131,8 +131,7 @@ pub fn round_list(props: &ListProps) -> Html {
 
     let part = move |index| {
         clone!(start, rounds, hover, onaction, onselect);
-        let result: &Result<(), ValidationErrors> = &errors[index];
-        let error = result.is_err();
+        let error = errors.get(index).is_none();
 
         html! {
             <>
@@ -143,12 +142,12 @@ pub fn round_list(props: &ListProps) -> Html {
     };
 
     html! {
-        <Sidebar size={ColumnSize::Is2} alignment={SidebarAlignment::Left} overflow=true class="p-4">
+        <Sidebar style="width:230px" alignment={SidebarAlignment::Left} overflow=true class="p-4">
             { for (0..max).map(part) }
             { draw_line(Some(max) != line_idx) }
             <hr class="my-0" />
             <Button fullwidth=true {onclick} class="ml-1">
-                <Icon icon={Icons::Plus} size={Size::Large}/>
+                <Icon icon={Solid::Plus} size={Size::Large}/>
             </Button>
         </Sidebar>
     }

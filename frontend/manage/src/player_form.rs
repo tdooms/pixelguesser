@@ -46,7 +46,7 @@ pub fn player_form(props: &Props) -> Html {
             </Control>
             <Control>
                 <Button size={Size::Large} color={Color::Info} onclick={form.submit()}>
-                    <Icon icon={Icons::Plus}> </Icon>
+                    <Icon icon={Solid::Plus}> </Icon>
                 </Button>
             </Control>
         </Field>

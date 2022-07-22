@@ -48,13 +48,11 @@ pub fn round_form(props: &Props) -> Html {
         </simple::Field>
 
         <simple::Field label="Points" help={form.error("points")} >
-            <simple::Buttons<PointChoices> onclick={form.field(|x| &mut x.points)} value={points}
-            color={Color::Info} />
+            <simple::Tabs<PointChoices> fullwidth=true toggle=true onclick={form.field(|x| &mut x.points)} value={points}/>
         </simple::Field>
 
         <simple::Field label="Guesses" help={form.error("guesses")}>
-            <simple::Buttons<GuessChoices> onclick={form.field(|x| &mut x.guesses)} value={guesses}
-            color={Color::Info} />
+            <simple::Tabs<GuessChoices> fullwidth=true toggle=true onclick={form.field(|x| &mut x.guesses)} value={guesses}/>
         </simple::Field>
 
         <Block/>

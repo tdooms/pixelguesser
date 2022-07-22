@@ -6,13 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-api = { path = "../../api" }
+api = { path = "../../api", features = ["wasm"] }
 components = { path = "../components" }
 shared = { path = "../shared" }
+hasura = { git = "https://github.com/tdooms/hasura.git" }
 
 cropper = { git = "https://github.com/tdooms/cropper.git" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms", "simple"] }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "forms", "simple", "extensions"] }
 
 yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }

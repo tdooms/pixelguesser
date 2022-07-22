@@ -1,9 +1,8 @@
 #[macro_use]
 extern crate rocket;
 
-use base64::{CharacterSet, Config};
+use base64::URL_SAFE;
 use clap::Parser;
-use image::imageops::FilterType;
 use images::Resolution;
 use rocket::data::ToByteUnit;
 use rocket::fs::{FileServer, Options};
@@ -37,17 +36,18 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
 
 #[post("/upload", data = "<data>")]
 pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error> {
-    let base64 = data.open(10.mebibytes()).into_string().await?;
+    let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
 
     let hash = &sha3::Sha3_256::new_with_prefix(&buffer).finalize();
-    let filename = base64::encode(&hash);
+    let filename = base64::encode_config(&hash, URL_SAFE);
     let extension = format.extensions_str().first().unwrap();
 
     let base = &path.inner().0;
 
+    println!("{base}/original/{filename}.{extension}");
     let original = image::load_from_memory_with_format(&buffer, format)?;
     original.save(&format!("{base}/original/{filename}.{extension}"))?;
 
@@ -59,34 +59,19 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
     Ok(format!("{}.{}", filename, extension))
 }
 
-pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::fmt::Display) {
-    println!("computing image caches from template");
-
+#[post("/delete/<file>")]
+pub async fn delete_single(file: &str, path: &State<Path>) -> Result<(), Error> {
+    let base = &path.inner().0;
+    // TODO: this is probably a huge security hole
     for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original] {
-        let _ = std::fs::create_dir(&format!("{}/{}", base, res));
+        std::fs::remove_file(&format!("{}/{}/{}", base, res, file))?;
     }
+    Ok(())
+}
 
-    for file in std::fs::read_dir(templates).unwrap() {
-        let path = file.as_ref().unwrap().path();
-
-        println!("\t {}", path.display());
-        let original = image::open(&path).unwrap();
-
-        let hash = sha3::Sha3_256::new_with_prefix(original.as_bytes()).finalize();
-        let filename = base64::encode_config(&hash, Config::new(CharacterSet::UrlSafe, true));
-
-        let _ = std::fs::copy(path, &format!("{base}/original/{filename}.jpg"));
-
-        for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD] {
-            let path = format!("{base}/{res}/{filename}.jpg");
-            if !std::path::Path::new(&path).exists() {
-                let image = original.resize(1_000_000, res as u32, FilterType::Lanczos3);
-                image.save(&path).unwrap();
-            }
-        }
-    }
-
-    println!("end computing caches");
+#[post("/delete")]
+pub async fn delete_all() -> Result<(), Error> {
+    unimplemented!()
 }
 
 /// imager (IMAGE-serveR) is a program to efficiently serve images
@@ -94,7 +79,7 @@ pub fn upload_template(templates: impl AsRef<std::path::Path>, base: impl std::f
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
 struct Opts {
     /// Sets the folder to be served
-    #[clap(short, long, default_value = "./data")]
+    #[clap(short, long, default_value = "./backend/images/data")]
     folder: String,
 
     /// Sets the port to be used
@@ -109,18 +94,23 @@ struct Opts {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
-    // upload_template("./data/template", "./data");
 
-    let config =
-        rocket::Config { port: opts.port, address: opts.address.parse()?, ..Default::default() };
+    let address = opts.address.parse()?;
+    let config = rocket::Config { port: opts.port, address, ..Default::default() };
 
     let cors = CorsOptions::default().to_cors()?;
 
+    let res = [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original];
+    for resolution in res {
+        let _ = std::fs::create_dir(&format!("{}/{}", opts.folder, resolution));
+    }
+    let vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
+
     let _ = rocket::custom(config)
-        .mount("/original", FileServer::new("data/original", Options::Index))
-        .mount("/hd", FileServer::new("data/hd", Options::Index))
-        .mount("/card", FileServer::new("data/card", Options::Index))
-        .mount("/thumbnail", FileServer::new("data/thumbnail", Options::Index))
+        .mount("/original", FileServer::new(&vec[3], Options::Index))
+        .mount("/hd", FileServer::new(&vec[2], Options::Index))
+        .mount("/card", FileServer::new(&vec[1], Options::Index))
+        .mount("/thumbnail", FileServer::new(&vec[0], Options::Index))
         .mount("/", routes![upload])
         .manage(Path(opts.folder))
         .attach(cors)

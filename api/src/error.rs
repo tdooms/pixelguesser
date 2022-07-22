@@ -1,9 +1,12 @@
-use std::num::ParseIntError;
-
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[cfg(feature = "wasm")]
     #[error("Request error: {0}")]
-    Request(#[from] reqwasm::Error),
+    Request(#[from] gloo_net::Error),
+
+    #[cfg(feature = "native")]
+    #[error("Request error: {0}")]
+    Request(#[from] reqwest::Error),
 
     #[error("Hasura error: {0:?}")]
     Hasura(#[from] hasura::Error),
@@ -14,23 +17,26 @@ pub enum Error {
     #[error("Session error {0}")]
     Session(#[from] sessions::Error),
 
-    #[error("Image upload failed")]
-    Upload,
+    #[error("invalid session id")]
+    InvalidSession,
 
-    #[error("Connection closed")]
+    #[error("Image upload failed")]
+    ImageUpload,
+
+    #[error("Websocket connection failure")]
+    WsConnection,
+
+    #[error("Websocket connection closed")]
     WsClosed,
 
-    #[error("Connection error")]
-    WsError,
+    #[error("Websocket connection closed")]
+    WsFailure,
 
-    #[error("Empty Graphql response")]
-    Empty,
+    #[error("Websocket received bytes instead of text")]
+    WsBytes,
 
-    #[error("Not logged in")]
-    NotLoggedIn,
-
-    #[error("Invalid session id")]
-    InvalidSession(#[from] ParseIntError),
+    #[error("Missing Graphql response")]
+    EmptyResponse,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use cobul::custom::Loading;
+use cobul::Loader;
 use yew::*;
 
 use yew_router::prelude::RouterScopeExt;
@@ -10,7 +10,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
-use shared::{Auth, Error, Errors, Route};
+use shared::{Auth, EmitError, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -19,7 +19,7 @@ pub struct Props {
     pub quiz_id: u32,
 }
 
-pub struct Loader {
+pub struct Initializer {
     ws: Option<WebsocketTask>,
     session: Rc<Session>,
     full: Option<Rc<FullQuiz>>,
@@ -34,7 +34,7 @@ pub enum Msg {
     Action(Action),
 }
 
-impl Component for Loader {
+impl Component for Initializer {
     type Message = Msg;
     type Properties = Props;
 
@@ -86,24 +86,26 @@ impl Component for Loader {
             }
             Msg::Session(Ok(session_id)) => {
                 let cb = ctx.link().callback(Msg::Ws);
-                let mut ws = WebsocketTask::new(session_id, cb);
+                let mut ws = WebsocketTask::new(session_id, cb).emit(&errors);
 
                 let participant = match ctx.props().session_id {
                     None => Participant::Host,
                     Some(_) => Participant::Manager,
                 };
 
-                ws.send(&Action::Join(participant));
+                if let Some(ws) = &mut ws {
+                    ws.send(&Action::Join(participant));
+                }
 
                 self.session_id = Some(session_id);
-                self.ws = Some(ws);
+                self.ws = ws;
             }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let Loader { session, full, session_id, .. } = self;
+        let Initializer { session, full, session_id, .. } = self;
         let callback = ctx.link().callback(Msg::Action);
 
         match (session_id, full.clone(), ctx.props().session_id) {
@@ -114,7 +116,7 @@ impl Component for Loader {
                 <Host {session} {session_id} {full} {callback}/>
             },
             _ => html! {
-                <Loading />
+                <Loader />
             },
         }
     }

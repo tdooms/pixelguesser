@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-api = { path = "../../api" }
+api = { path = "../../api", features=["wasm"] }
 shared = { path = "../shared" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
 
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["custom", "fa", "forms"] }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "forms"] }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 

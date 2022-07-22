@@ -3,7 +3,7 @@ use yew::*;
 use api::{GuessChoices, Round};
 use cobul::*;
 use gloo::timers::callback::Timeout;
-use shared::HOST_INFO_DURATION;
+use shared::host::INFO_DURATION;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -17,7 +17,7 @@ pub struct Props {
 pub fn info(props: &Props) -> Html {
     let Props { index, rounds, round } = props.clone();
 
-    let countdown = use_state(|| HOST_INFO_DURATION);
+    let countdown = use_state(|| INFO_DURATION);
     let timer = use_state(|| Timeout::new(0, || ()));
 
     use_effect_with_deps(

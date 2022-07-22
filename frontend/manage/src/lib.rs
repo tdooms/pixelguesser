@@ -93,7 +93,7 @@ pub fn manage(props: &Props) -> Html {
             <Rating {full} />
             <Buttons alignment={Alignment::Centered}>
                 <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
-                    <Icon icon={Icons::SignOutAlt}/> <span> {"leave"} </span>
+                    <Icon icon={Solid::RightFromBracket}/> <span> {"leave"} </span>
                 </Button>
             </Buttons>
             </>
