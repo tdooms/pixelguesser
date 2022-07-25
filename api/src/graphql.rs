@@ -3,7 +3,7 @@ use crate::{Image, User};
 use chrono::{DateTime, Utc};
 use derive_more::Display;
 use hasura::{Data, Object, Pk};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_repr::{Deserialize_repr as Derepr, Serialize_repr as Serepr};
 use strum::EnumIter;
 use validator::{Validate, ValidationError};
@@ -14,6 +14,58 @@ fn validate_image(image: &Image) -> Result<(), ValidationError> {
     } else {
         Ok(())
     }
+}
+
+fn skip_empty<T: Serialize>(x: &Data<Vec<T>>) -> bool {
+    x.data.is_empty()
+}
+
+fn strip_data<'de, T: Deserialize<'de> + Serialize, D: Deserializer<'de>>(
+    deser: D,
+) -> Result<Data<Vec<T>>, D::Error> {
+    Ok(Data { data: Vec::<T>::deserialize(deser)? })
+}
+
+#[derive(Serepr, Derepr, Display, EnumIter, Clone, Copy, Debug, PartialEq, Default)]
+#[repr(u8)]
+pub enum Points {
+    #[display(fmt = "0")]
+    None = 0,
+    #[display(fmt = "1")]
+    #[default]
+    One = 1,
+    #[display(fmt = "2")]
+    Two = 2,
+    #[display(fmt = "3")]
+    Three = 3,
+    #[display(fmt = "4")]
+    Four = 4,
+}
+
+#[derive(Serepr, Derepr, Display, EnumIter, Clone, Copy, Debug, PartialEq, Default)]
+#[repr(u8)]
+pub enum Guesses {
+    #[display(fmt = "1")]
+    One = 1,
+    #[display(fmt = "2")]
+    Two = 2,
+    #[display(fmt = "3")]
+    Three = 3,
+    #[display(fmt = "infinite")]
+    #[default]
+    Infinite = 0,
+}
+
+#[derive(Serepr, Derepr, Display, EnumIter, Clone, Copy, Debug, PartialEq, Default)]
+#[repr(u8)]
+pub enum Algorithm {
+    #[default]
+    #[display(fmt = "pixelate")]
+    Pixelate = 0,
+    #[display(fmt = "contrast")]
+    Contrast = 1,
+    #[display(fmt = "blur")]
+    Blur = 2,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk)]
@@ -41,19 +93,22 @@ pub struct Quiz {
     pub id: u32,
     pub public: bool,
     pub complete: bool,
-
     pub title: String,
     pub description: String,
     pub explanation: String,
     pub image: Image,
-
     pub created_at: DateTime<Utc>,
 
     #[object(expand)]
     pub creator: Creator,
 
     #[object(expand)]
+    #[serde(default)]
     pub tags: Vec<Tag>,
+
+    #[object(expand)]
+    #[serde(default)]
+    pub rounds: Vec<Round>,
 }
 
 #[derive(Validate, Default, Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -62,59 +117,23 @@ pub struct DraftQuiz {
     #[validate(length(max = 32, message = "Name cannot exceed 32 characters."))]
     pub title: String,
 
+    #[serde(default)]
+    pub creator_id: String,
+
     pub description: String,
     pub explanation: String,
     pub image: Image,
     pub public: bool,
 
+    #[serde(skip_serializing_if = "skip_empty")]
+    #[serde(deserialize_with = "strip_data")]
     #[serde(default)]
-    pub creator_id: String,
-
-    #[serde(skip_serializing)]
     pub tags: Data<Vec<DraftTag>>,
-}
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct FullQuiz {
-    pub quiz: Quiz,
-    pub rounds: Vec<Round>,
-}
-
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct FullDraftQuiz {
-    #[serde(flatten)]
-    pub quiz: DraftQuiz,
-    pub rounds: Vec<DraftRound>,
-}
-
-#[derive(Serepr, Derepr, Display, EnumIter, Clone, Copy, Debug, PartialEq, Default)]
-#[repr(u8)]
-pub enum PointChoices {
-    #[display(fmt = "0")]
-    None = 0,
-    #[display(fmt = "1")]
-    #[default]
-    One = 1,
-    #[display(fmt = "2")]
-    Two = 2,
-    #[display(fmt = "3")]
-    Three = 3,
-    #[display(fmt = "4")]
-    Four = 4,
-}
-
-#[derive(Serepr, Derepr, Display, EnumIter, Clone, Copy, Debug, PartialEq, Default)]
-#[repr(u8)]
-pub enum GuessChoices {
-    #[display(fmt = "1")]
-    One = 1,
-    #[display(fmt = "2")]
-    Two = 2,
-    #[display(fmt = "3")]
-    Three = 3,
-    #[display(fmt = "infinite")]
-    #[default]
-    Infinite = 0,
+    #[serde(skip_serializing_if = "skip_empty")]
+    #[serde(deserialize_with = "strip_data")]
+    #[serde(default)]
+    pub rounds: Data<Vec<DraftRound>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk)]
@@ -122,23 +141,27 @@ pub enum GuessChoices {
 pub struct Round {
     pub quiz_id: u32,
     pub index: u32,
-
-    pub answer: String,
-    pub points: PointChoices,
-    pub guesses: GuessChoices,
-    pub speed: Option<f64>,
+    pub points: Points,
+    pub guesses: Guesses,
     pub image: Image,
+    pub answer: String,
+    pub speed: u64,
+    pub algorithm: Algorithm,
 }
 
 #[derive(Validate, Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
 pub struct DraftRound {
+    #[serde(default)]
+    pub index: u32,
+
     #[validate(length(min = 1, message = "Round must have an answer."))]
     #[validate(length(max = 32, message = "Answer cannot exceed 32 characters."))]
     pub answer: String,
 
-    pub points: PointChoices,
-    pub guesses: GuessChoices,
-    pub speed: Option<f64>,
+    pub points: Points,
+    pub guesses: Guesses,
+    pub speed: u64,
+    pub algorithm: Algorithm,
 
     #[validate(custom = "validate_image")]
     pub image: Image,
@@ -147,13 +170,6 @@ pub struct DraftRound {
 impl From<Tag> for DraftTag {
     fn from(tag: Tag) -> Self {
         Self { value: tag.value }
-    }
-}
-
-impl From<FullQuiz> for FullDraftQuiz {
-    fn from(full: FullQuiz) -> Self {
-        let rounds = full.rounds.iter().cloned().map(Into::into).collect();
-        FullDraftQuiz { rounds, quiz: full.quiz.into() }
     }
 }
 
@@ -167,6 +183,7 @@ impl Round {
             guesses: draft.guesses,
             speed: draft.speed,
             image: draft.image,
+            algorithm: draft.algorithm,
         }
     }
 }
@@ -181,6 +198,7 @@ impl From<Quiz> for DraftQuiz {
             image: quiz.image,
             creator_id: quiz.creator.id,
             tags: Data { data: quiz.tags.into_iter().map(DraftTag::from).collect() },
+            rounds: Data { data: quiz.rounds.into_iter().map(DraftRound::from).collect() },
         }
     }
 }
@@ -194,11 +212,13 @@ impl From<User> for Creator {
 impl From<Round> for DraftRound {
     fn from(round: Round) -> Self {
         Self {
+            index: round.index,
             answer: round.answer,
             points: round.points,
             guesses: round.guesses,
             speed: round.speed,
             image: round.image,
+            algorithm: round.algorithm,
         }
     }
 }

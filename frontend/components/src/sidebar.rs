@@ -33,9 +33,12 @@ pub struct Props {
 
 #[function_component(Sidebar)]
 pub fn sidebar(props: &Props) -> Html {
-    let footer_class = props.footer.as_ref().map(|_| "is-flex is-flex-direction-column");
+    let footer_class = props
+        .footer
+        .as_ref()
+        .map(|_| "is-flex is-flex-direction-column is-justify-content-space-between");
 
-    let classes = classes!("column", props.class.clone(), props.size, footer_class);
+    let class = classes!("column", props.class.clone(), props.size, footer_class);
 
     let shadow = match props.alignment {
         SidebarAlignment::Right => "-10px 0px 10px 1px #eeeeee",
@@ -51,17 +54,15 @@ pub fn sidebar(props: &Props) -> Html {
     let inner = match &props.footer {
         Some(html) => html! {
             <>
-                { for props.children.iter() }
-                <div style="margin-bottom:auto" />
-                <hr class="my-0"/>
-                { html.clone() }
+                <div> { for props.children.iter() } </div>
+                <div> <hr class="my-0"/> { html.clone() } </div>
             </>
         },
         None => html! { { for props.children.iter() } },
     };
 
     html! {
-        <div class={classes} style={style}>
+        <div {class} {style}>
             { inner }
         </div>
     }

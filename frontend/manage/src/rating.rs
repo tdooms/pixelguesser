@@ -2,11 +2,11 @@ use cobul::*;
 use std::rc::Rc;
 use yew::*;
 
-use api::FullQuiz;
+use api::Quiz;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub full: Rc<FullQuiz>,
+    pub quiz: Rc<Quiz>,
 }
 
 #[function_component(Rating)]
@@ -15,7 +15,7 @@ pub fn rating(props: &Props) -> Html {
         <Hero size={HeroSize::Medium}>
             <Container class="has-text-centered">
                 <Title> {"give rating"} </Title>
-                <Subtitle> {props.full.quiz.title.clone()} </Subtitle>
+                <Subtitle> {props.quiz.title.clone()} </Subtitle>
             </Container>
         </Hero>
     }

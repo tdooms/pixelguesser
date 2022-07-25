@@ -1,4 +1,5 @@
 use cobul::*;
+use std::rc::Rc;
 use validator::Validate;
 use yew::*;
 use ywt::callback;
@@ -18,18 +19,19 @@ pub fn player_form(props: &Props) -> Html {
     let Props { onsubmit } = props.clone();
     let state = use_state(|| String::new());
 
-    let player = Player { name: (*state).clone() };
+    let player = Rc::new(Player { name: (*state).clone() });
 
-    let onsubmit = callback!(state, onsubmit; move |player: Player| {
+    let onsubmit = callback!(state, onsubmit; move |player: Rc<Player>| {
         state.set(String::new());
-        onsubmit.emit(player.name);
+        onsubmit.emit(player.name.clone());
+    });
+    let onchange = callback!(state; move |player: Rc<Player>| {
+        state.set(player.name.clone());
     });
 
-    let onchange = callback!(state; move |player: Player| state.set(player.name));
     let actions = Actions::new().submit(onsubmit.clone()).change(onchange);
 
-    log::trace!("render player form {:?}", player);
-    let (form, player) = use_form(&player, actions);
+    let form = use_form(player.clone(), actions);
     let value = player.name.clone();
 
     let onkeypress = Callback::from(move |e: KeyboardEvent| {

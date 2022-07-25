@@ -2,63 +2,65 @@ use hasura::{
     delete::*, insert::*, mutation, query, query::*, update::*, Conditions, Eq, Ilike, Object,
 };
 
-use crate::{
-    DraftQuiz, DraftRound, Error, FullQuiz, Quiz, QuizPk, Result, Round, Tag, User,
-    GRAPHQL_ENDPOINT,
-};
+use crate::{DraftQuiz, Error, Quiz, QuizPk, Result, Round, Tag, User, GRAPHQL_ENDPOINT};
 
-pub async fn quizzes(user: Option<User>) -> Result<Vec<Quiz>> {
-    let body: Query<Quiz> = QueryBuilder::default().returning(Quiz::all()).build().unwrap();
+pub async fn query_quizzes(user: Option<User>, rounds: bool) -> Result<Vec<Quiz>> {
+    let returning = match rounds {
+        false => Quiz::except(&[Quiz::rounds(Round::all())]),
+        true => Quiz::all(),
+    };
+    let body = QueryBuilder::default().returning(returning).build().unwrap();
     Ok(query!(body).token(user.map(|x| x.token)).send(GRAPHQL_ENDPOINT).await?)
 }
 
-pub async fn search_quizzes(user: Option<User>, query: String) -> Result<Vec<Quiz>> {
+pub async fn search_quizzes(user: Option<User>, query: String, rounds: bool) -> Result<Vec<Quiz>> {
     let condition = Ilike(format!("%{}%", query));
     let conditions = Conditions::single(Quiz::title(), condition);
 
-    let body = QueryBuilder::default()
-        .conditions(vec![conditions])
-        .returning(Quiz::all())
-        .build()
-        .unwrap();
+    let returning = match rounds {
+        false => Quiz::except(&[Quiz::rounds(Round::all())]),
+        true => Quiz::all(),
+    };
+
+    let body =
+        QueryBuilder::default().conditions(vec![conditions]).returning(returning).build().unwrap();
 
     Ok(query!(body).token(user.map(|x| x.token)).send(GRAPHQL_ENDPOINT).await?)
 }
 
-pub async fn full_quiz(user: Option<User>, quiz_id: u32) -> Result<FullQuiz> {
-    let condition = Eq(quiz_id.to_string());
-    let conditions = Conditions::single(Round::quiz_id(), condition);
-
-    let quiz = QueryByPkBuilder::default()
+pub async fn query_quiz(user: Option<User>, quiz_id: u32) -> Result<Quiz> {
+    let first = QueryByPkBuilder::default()
         .pk(QuizPk { id: quiz_id.into() })
         .returning(Quiz::all())
         .build()
         .unwrap();
 
-    let rounds: Query<Round> = QueryBuilder::default()
-        .conditions(vec![conditions])
-        .returning(Round::all())
-        .build()
-        .unwrap();
-
     let token = user.map(|x| x.token);
-    let (quiz, mut rounds) = query!(quiz, rounds).token(token).send(GRAPHQL_ENDPOINT).await?;
-    rounds.sort_by_key(|x| x.index);
+    let fut = query!(first).token(token).send(GRAPHQL_ENDPOINT);
+    let mut res = fut.await?.ok_or(Error::EmptyResponse)?;
 
-    Ok(FullQuiz { quiz: quiz.ok_or(Error::EmptyResponse)?, rounds })
+    res.rounds.sort_by_key(|x| x.index);
+
+    Ok(res)
 }
 
-pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Option<Quiz>> {
+pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Quiz> {
     let first = InsertOneBuilder::default().returning(Quiz::all()).object(draft).build().unwrap();
-    Ok(mutation!(first).token(Some(user.token)).send(GRAPHQL_ENDPOINT).await?)
+
+    let fut = mutation!(first).token(Some(user.token)).send(GRAPHQL_ENDPOINT);
+    fut.await?.ok_or(Error::EmptyResponse)
 }
 
-pub async fn update_quiz(user: User, quiz_id: u32, mut draft: DraftQuiz) -> Result<Option<Quiz>> {
-    let condition = Eq(quiz_id.to_string());
-    let conditions = Conditions::single(Tag::quiz_id(), condition);
-
+pub async fn update_quiz(user: User, quiz_id: u32, mut draft: DraftQuiz) -> Result<Quiz> {
     let tags = std::mem::take(&mut draft.tags.data);
     let tags: Vec<_> = tags.into_iter().map(|x| Tag { value: x.value.clone(), quiz_id }).collect();
+
+    let rounds = std::mem::take(&mut draft.rounds.data);
+    let rounds: Vec<_> = rounds
+        .into_iter()
+        .enumerate()
+        .map(|(index, draft)| Round::from_draft(draft, quiz_id, index as u32))
+        .collect();
 
     let first = UpdateByPkBuilder::default()
         .pk(QuizPk { id: quiz_id })
@@ -67,61 +69,38 @@ pub async fn update_quiz(user: User, quiz_id: u32, mut draft: DraftQuiz) -> Resu
         .build()
         .unwrap();
 
+    let condition = Eq(quiz_id.to_string());
     let second = DeleteBuilder::default()
         .returning(Tag::all())
-        .conditions(vec![conditions])
+        .conditions(vec![Conditions::single(Tag::quiz_id(), condition)])
         .build()
         .unwrap();
 
     let third = InsertBuilder::default().returning(Tag::all()).objects(tags).build().unwrap();
 
-    let (res, _, _) =
-        mutation!(first, second, third).token(Some(user.token)).send(GRAPHQL_ENDPOINT).await?;
+    let condition = Eq(quiz_id.to_string());
+    let fourth = DeleteBuilder::default()
+        .returning(Round::all())
+        .conditions(vec![Conditions::single(Round::quiz_id(), condition)])
+        .build()
+        .unwrap();
 
-    Ok(res)
+    let fifth = InsertBuilder::default().returning(Round::all()).objects(rounds).build().unwrap();
+
+    let token = Some(user.token.clone());
+    let _ = mutation!(fourth, fifth).token(token.clone()).send(GRAPHQL_ENDPOINT).await?;
+
+    let fut = mutation!(first, second, third).token(token).send(GRAPHQL_ENDPOINT);
+    fut.await?.0.ok_or(Error::EmptyResponse)
 }
 
-pub async fn delete_quiz(user: User, quiz_id: u32) -> Result<Option<Quiz>> {
+pub async fn delete_quiz(user: User, quiz_id: u32) -> Result<Quiz> {
     let first = DeleteByPkBuilder::default()
         .pk(QuizPk { id: quiz_id })
         .returning(Quiz::all())
         .build()
         .unwrap();
 
-    let condition = Eq(quiz_id.to_string());
-    let conditions = Conditions::single(Round::quiz_id(), condition);
-
-    let second = DeleteBuilder::default()
-        .returning(Round::all())
-        .conditions(vec![conditions])
-        .build()
-        .unwrap();
-
-    // TODO: maybe also return rounds
-    let (res, _) = mutation!(first, second).token(Some(user.token)).send(GRAPHQL_ENDPOINT).await?;
-    Ok(res)
-}
-
-pub async fn save_rounds(user: User, quiz_id: u32, rounds: Vec<DraftRound>) -> Result<Vec<Round>> {
-    let condition = Eq(quiz_id.to_string());
-    let conditions = Conditions::single(Round::quiz_id(), condition);
-
-    let delete = DeleteBuilder::default()
-        .returning(Round::all())
-        .conditions(vec![conditions])
-        .build()
-        .unwrap();
-
-    let objects: Vec<_> = rounds
-        .into_iter()
-        .enumerate()
-        .map(|(idx, draft)| Round::from_draft(draft, quiz_id, idx as u32))
-        .collect();
-
-    let insert = InsertBuilder::default().returning(Round::all()).objects(objects).build().unwrap();
-
-    // TODO: set the quiz to complete
-    // let update = UpdateByPk::default().pk(Quiz::Pk { id: quiz_id} ).set()
-    let (_, res) = mutation!(delete, insert).token(Some(user.token)).send(GRAPHQL_ENDPOINT).await?;
-    Ok(res)
+    let token = Some(user.token.clone());
+    mutation!(first).token(token).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)
 }

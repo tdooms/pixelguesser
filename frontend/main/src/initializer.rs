@@ -9,7 +9,7 @@ use ywt::spawn;
 use host::Host;
 use manage::Manage;
 
-use api::{Action, FullQuiz, Participant, Response, Session, WebsocketTask};
+use api::{Action, Participant, Quiz, Response, Session, WebsocketTask};
 use shared::{Auth, EmitError, Error, Errors, Route};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
@@ -22,14 +22,14 @@ pub struct Props {
 pub struct Initializer {
     ws: Option<WebsocketTask>,
     session: Rc<Session>,
-    full: Option<Rc<FullQuiz>>,
+    quiz: Option<Rc<Quiz>>,
 
     session_id: Option<u32>,
 }
 
 pub enum Msg {
     Ws(Response),
-    Quiz(Result<FullQuiz, api::Error>),
+    Quiz(api::Result<Quiz>),
     Session(Result<u32, api::Error>),
     Action(Action),
 }
@@ -56,19 +56,19 @@ impl Component for Initializer {
 
         let callback = ctx.link().callback(Msg::Quiz);
         spawn!(async move {
-            let result = api::full_quiz(auth.user().ok(), quiz_id).await;
+            let result = api::query_quiz(auth.user().ok(), quiz_id).await;
             callback.emit(result);
         });
 
-        Self { ws: None, session_id: None, session: Rc::new(Session::default()), full: None }
+        Self { ws: None, session_id: None, session: Rc::new(Session::default()), quiz: None }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         let (errors, _) = ctx.link().context::<Errors>(Callback::noop()).unwrap();
         match msg {
-            Msg::Quiz(Ok(full)) => {
+            Msg::Quiz(Ok(quiz)) => {
                 // Check if this only happens once?
-                self.full = Some(Rc::new(full))
+                self.quiz = Some(Rc::new(quiz))
             }
             Msg::Action(action) => self.ws.as_mut().unwrap().send(&action),
             Msg::Ws(Response::Update(session)) => {
@@ -105,15 +105,15 @@ impl Component for Initializer {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let Initializer { session, full, session_id, .. } = self;
+        let Initializer { session, quiz, session_id, .. } = self;
         let callback = ctx.link().callback(Msg::Action);
 
-        match (session_id, full.clone(), ctx.props().session_id) {
-            (Some(_), Some(full), Some(_)) => html! {
-                <Manage {session} {full} {callback}/>
+        match (session_id, quiz.clone(), ctx.props().session_id) {
+            (Some(_), Some(quiz), Some(_)) => html! {
+                <Manage {session} {quiz} {callback}/>
             },
-            (Some(session_id), Some(full), None) => html! {
-                <Host {session} {session_id} {full} {callback}/>
+            (Some(session_id), Some(quiz), None) => html! {
+                <Host {session} {session_id} {quiz} {callback}/>
             },
             _ => html! {
                 <Loader />

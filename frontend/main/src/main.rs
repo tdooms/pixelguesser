@@ -69,7 +69,6 @@ pub fn app() -> Html {
     let trigger = use_state(|| ());
 
     let auth = use_state(|| Auth::new(callback!(trigger; move |_| trigger.set(()))));
-    log::trace!("main app {:?}, {:?}", error.as_ref(), auth.user().map(|x| x.nickname));
 
     let inner = match &auth.user() {
         Err(true) => html! { <Loader />},

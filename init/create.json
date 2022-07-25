@@ -25,6 +25,9 @@
                 {"points": 4, "guesses": 1, "answer": "Agra", "image": "agra.jpg"},
                 {"points": 4, "guesses": 1, "answer": "Barcelona", "image": "barcelona.jpg"},
                 {"points": 4, "guesses": 1, "answer": "New York", "image": "new_york_times.jpg"}
+            ],
+            "tags": [
+                {"value": "geography"}
             ]
         },
         {
@@ -35,7 +38,7 @@
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Paris", "image": "elephant.jpg"},
+                {"points": 1, "guesses": 1, "answer": "Elephant", "image": "elephant.jpg"},
                 {"points": 2, "guesses": 1, "answer": "Panda", "image": "panda.jpg"},
                 {"points": 2, "guesses": 1, "answer": "Dog", "image": "dog.jpg"},
                 {"points": 2, "guesses": 1, "answer": "Penguin", "image": "penguin.jpg"},
@@ -52,6 +55,9 @@
                 {"points": 4, "guesses": 1, "answer": "Gorilla", "image": "gorilla.jpg"},
                 {"points": 4, "guesses": 1, "answer": "Owl", "image": "owl.jpg"},
                 {"points": 4, "guesses": 1, "answer": "Peacock", "image": "peacock.jpg"}
+            ],
+            "tags": [
+                {"value": "nature"}
             ]
         },
         {
@@ -73,6 +79,9 @@
                 {"points": 2, "guesses": 1, "answer": "Kim Jong Un", "image": "jong_un.jpg"},
                 {"points": 3, "guesses": 1, "answer": "Elon Musk", "image": "musk.jpg"},
                 {"points": 2, "guesses": 1, "answer": "Adolf Hitler", "image": "hitler.jpg"}
+            ],
+            "tags": [
+                {"value": "pop culture"}
             ]
         },
         {
@@ -93,27 +102,35 @@
                 {"points": 3, "guesses": 1, "answer": "Crib", "image": "crib.jpg"},
                 {"points": 2, "guesses": 1, "answer": "Gluhwein", "image": "gluhwein.jpg"},
                 {"points": 3, "guesses": 1, "answer": "Santa Claus", "image": "santa.jpg"}
+            ],
+            "tags": [
+                {"value": "holidays"}
             ]
         },
         {
             "title": "Logos",
-            "description": "Like logo quiz but better (not complete)",
-            "explanation": "Guess the company name with this famous logo",
+            "description": "Like logo quiz but better",
+            "explanation": "Guess the company name that has this famous logo",
             "image": "logo.jpg",
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Christmas tree", "image": "apple.jpg"},
-                {"points": 2, "guesses": 1, "answer": "Hamburger", "image": "hamburger.jpg"},
-                {"points": 2, "guesses": 1, "answer": "Pizza", "image": "pizza.jpg"},
-                {"points": 2, "guesses": 1, "answer": "Banana", "image": "banana.jpg"},
-                {"points": 2, "guesses": 1, "answer": "Fries", "image": "fries.jpg"},
-                {"points": 3, "guesses": 1, "answer": "Salad", "image": "salad.jpg"},
-                {"points": 3, "guesses": 1, "answer": "Spaghetti", "image": "spaghetti.jpg"},
-                {"points": 3, "guesses": 1, "answer": "Steak", "image": "steak.jpg"},
-                {"points": 2, "guesses": 1, "answer": "Pancakes", "image": "pancakes.jpg"},
-                {"points": 3, "guesses": 1, "answer": "Ice Cream", "image": "ice_cream.jpg"},
-                {"points": 3, "guesses": 1, "answer": "English breakfast", "image": "english.jpg"}
+                {"points": 1, "guesses": 1, "answer": "Ikea", "image": "ikea.jpg"},
+                {"points": 1, "guesses": 1, "answer": "Volkswage", "image": "volkswagen.jpg"},
+                {"points": 1, "guesses": 1, "answer": "Apple", "image": "appleco.jpg"},
+                {"points": 1, "guesses": 1, "answer": "Facebook", "image": "facebook.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Tesla", "image": "tesla.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Coca Cola", "image": "cocacola.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Nutella", "image": "nutella.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Twitter", "image": "twitter.jpg"},
+                {"points": 2, "guesses": 1, "answer": "Mc Donalds", "image": "mcdonalds.jpg"},
+                {"points": 3, "guesses": 1, "answer": "BMW", "image": "bmw.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Android", "image": "android.jpg"},
+                {"points": 3, "guesses": 1, "answer": "Starbucks", "image": "starbucks.jpg"},
+                {"points": 4, "guesses": 1, "answer": "Hard Rock Cafe", "image": "hardrock.jpg"}
+            ],
+            "tags": [
+                {"value": "companies"}
             ]
         },
         {
@@ -135,6 +152,9 @@
                 {"points": 2, "guesses": 1, "answer": "Pancakes", "image": "pancakes.jpg"},
                 {"points": 3, "guesses": 1, "answer": "Ice Cream", "image": "ice_cream.jpg"},
                 {"points": 3, "guesses": 1, "answer": "English breakfast", "image": "english.jpg"}
+            ],
+            "tags": [
+                {"value": "family friendly"}
             ]
         },
         {

@@ -1,24 +1,21 @@
 use cobul::Loader;
 use shared::{Auth, Error, Errors, Route};
-use std::rc::Rc;
 use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
 
-use crate::quiz_page::QuizPage;
-use crate::quiz_summary::Summary;
-use crate::round_page::RoundPage;
+use crate::quiz::QuizPage;
+use crate::rounds::RoundPage;
 use crate::state::use_create_state;
+use crate::summary::Summary;
 
-mod quiz_form;
-mod quiz_page;
-mod quiz_summary;
-mod round_edit;
-mod round_form;
-mod round_list;
-mod round_page;
-mod round_preview;
+mod edit;
+mod list;
+mod preview;
+mod quiz;
+mod rounds;
 mod state;
+mod summary;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -29,7 +26,6 @@ pub enum Stage {
     Quiz,
     Rounds,
     Summary,
-
     Back,
     Done,
 }
@@ -49,22 +45,15 @@ pub fn create(props: &Props) -> Html {
     let stage = use_state(|| Stage::Quiz);
 
     let onstage = callback!(stage; move |new| stage.set(new));
-    let onrounds = callback!(state, user, errors; move |action| state.set_rounds(action, user.clone(), errors.clone()));
-    let onquiz = callback!(state, user, errors; move |action| state.set_quiz(action, user.clone(), errors.clone()));
+    let onaction = callback!(state, user, errors; move |action| state.action(action, user.clone(), errors.clone()));
+
+    let draft = state.quiz();
+    let has_delete = props.quiz_id.is_some();
 
     let inner = match *stage {
-        Stage::Quiz => {
-            let draft = Rc::new(state.quiz());
-            html! { <QuizPage {onstage} onchange={onquiz} {draft} has_delete={props.quiz_id.is_some()}/> }
-        }
-        Stage::Rounds => {
-            let rounds = Rc::new(state.rounds());
-            html! { <RoundPage {onstage} onaction={onrounds} {rounds} /> }
-        }
-        Stage::Summary => {
-            let (rounds, quiz) = (Rc::new(state.rounds()), Rc::new(state.quiz()));
-            html! { <Summary {onstage} {quiz} {rounds} onaction={onrounds}/> }
-        }
+        Stage::Quiz => html! { <QuizPage {onstage} {onaction} {draft} {has_delete}/> },
+        Stage::Rounds => html! { <RoundPage {onstage} {onaction} {draft} /> },
+        Stage::Summary => html! { <Summary {onstage} {draft} {onaction}/> },
         Stage::Back | Stage::Done => html! {<Redirect<Route> to={Route::Overview}/>},
     };
 

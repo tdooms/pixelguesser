@@ -56,8 +56,8 @@ pub fn overview() -> HtmlResult {
             let filter = (**deps).clone();
             spawn_local(async move {
                 let result = match filter.is_empty() {
-                    true => api::quizzes(user).await,
-                    false => api::search_quizzes(user, filter).await,
+                    true => api::query_quizzes(user, false).await,
+                    false => api::search_quizzes(user, filter, false).await,
                 }
                 .emit(&errors);
                 cloned.set(result);

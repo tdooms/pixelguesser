@@ -1,6 +1,6 @@
 use yew::*;
 
-use api::{GuessChoices, Round};
+use api::{Guesses, Round};
 use cobul::*;
 use gloo::timers::callback::Timeout;
 use shared::host::INFO_DURATION;
@@ -37,7 +37,7 @@ pub fn info(props: &Props) -> Html {
     };
 
     let guesses = match round.guesses {
-        GuessChoices::One => "1 Guess".to_owned(),
+        Guesses::One => "1 Guess".to_owned(),
         x => format!("{x} Guesses"),
     };
 

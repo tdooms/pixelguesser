@@ -4,34 +4,35 @@ use validator::Validate;
 
 use yew::*;
 
-use api::DraftRound;
+use api::{DraftQuiz, DraftRound};
 use ywt::callback;
 
-use crate::round_edit::RoundEdit;
-use crate::round_list::RoundList;
-use crate::state::RoundsAction;
+use crate::edit::RoundEdit;
+use crate::list::RoundList;
+use crate::preview::RoundPreview;
+use crate::state::Action;
 use crate::Stage;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub onstage: Callback<Stage>,
-    pub onaction: Callback<RoundsAction>,
-    pub rounds: Rc<Vec<DraftRound>>,
+    pub onaction: Callback<Action>,
+    pub draft: Rc<DraftQuiz>,
 }
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
-    let Props { onstage, onaction, rounds } = props.clone();
+    let Props { onstage, onaction, draft } = props.clone();
 
     let current = use_state(|| 0usize);
-    let draft = Rc::new(rounds[*current].clone());
+    let round = Rc::new(draft.rounds.data[*current].clone());
 
-    let validate = |draft: &DraftRound| match draft.validate() {
+    let validate = |round: &DraftRound| match round.validate() {
         Ok(_) => None,
         Err(err) => Some(err),
     };
 
-    let errors: Rc<Vec<_>> = Rc::new(rounds.iter().map(validate).collect());
+    let errors: Rc<Vec<_>> = Rc::new(draft.rounds.data.iter().map(validate).collect());
     let complete = errors.iter().all(|x| x.is_none());
 
     let ondone = callback!(onstage, complete; move |_| {
@@ -44,14 +45,14 @@ pub fn round_page(props: &Props) -> Html {
     });
 
     let onedit = callback!(onaction, current; move |round| {
-        onaction.emit(RoundsAction::Edit(*current, round));
+        onaction.emit(Action::Round(*current, round));
     });
 
     let onaction = callback!(current, onaction; move |action| {
         match action {
-            RoundsAction::Add(_) => current.set(*current + 1),
-            RoundsAction::Remove(idx) => current.set(*current - current.min((idx <= *current) as usize)),
-            RoundsAction::Swap(from, to) => onaction.emit(RoundsAction::Swap(from, to)),
+            Action::Add(_) => current.set(*current + 1),
+            Action::Remove(idx) => current.set(*current - current.min((idx <= *current) as usize)),
+            Action::Swap(from, to) => onaction.emit(Action::Swap(from, to)),
             _ => ()
         }
         onaction.emit(action);
@@ -63,8 +64,9 @@ pub fn round_page(props: &Props) -> Html {
 
     html! {
         <Columns>
-            <RoundList {onselect} {onaction} {rounds} current={*current} errors={errors.clone()} flash=true/>
-            <RoundEdit {draft} {onback} {ondone} {onedit} {errors}/>
+            <RoundList {onselect} {onaction} {draft} current={*current} errors={errors.clone()}/>
+            <RoundPreview round={round.clone()} onedit={onedit.clone()}/>
+            <RoundEdit {round} {onback} {ondone} {onedit} {errors}/>
         </Columns>
     }
 }

@@ -3,7 +3,7 @@ use qrcode::QrCode;
 use std::rc::Rc;
 use yew::*;
 
-use api::{FullQuiz, Player, Session, SELF_ENDPOINT};
+use api::{Player, Quiz, Session, SELF_ENDPOINT};
 use image::Rgba;
 use photon_rs::PhotonImage;
 
@@ -11,7 +11,7 @@ use photon_rs::PhotonImage;
 pub struct Props {
     pub code: String,
     pub session: Rc<Session>,
-    pub full: Rc<FullQuiz>,
+    pub quiz: Rc<Quiz>,
 }
 
 pub fn player_column((name, _): (&String, &Player)) -> Html {
@@ -24,7 +24,7 @@ pub fn player_column((name, _): (&String, &Player)) -> Html {
 
 #[function_component(Lobby)]
 pub fn lobby(props: &Props) -> Html {
-    let Props { session, code, full } = &props;
+    let Props { session, code, quiz } = &props;
     let url = format!("{}/manage/{}", SELF_ENDPOINT, code);
 
     // SAFETY: Only errors if the url is too long.
@@ -44,12 +44,13 @@ pub fn lobby(props: &Props) -> Html {
     html! {
         <>
         <Hero>
-            <Title size={HeaderSize::Is1}> {full.quiz.title.clone()} </Title>
-            <Subtitle size={HeaderSize::Is4}> {full.quiz.explanation.clone()} </Subtitle>
+            <Title size={HeaderSize::Is1}> {quiz.title.clone()} </Title>
+            <Subtitle size={HeaderSize::Is4}> {quiz.explanation.clone()} </Subtitle>
         </Hero>
 
         <Hero color={Color::Primary} size={HeroSize::Small}>
             <Container class="has-text-centered">
+                <Subtitle> {"Scan me to become the quiz master"} </Subtitle>
                 <img src={(*image).clone()} />
                 <p><a class="title is-3" href={url} target="_blank"> {code} </a></p>
             </Container>

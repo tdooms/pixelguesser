@@ -79,7 +79,7 @@ fn update_duration(stage: Stage, pixels: u32, max: u32) -> Option<(f64, u32)> {
             return Some((delay, new));
         }
     }
-
+    log::info!("{} {}", (max as f64 / pixels as f64).log(speed), max);
     Some(((max as f64 / pixels as f64).log(speed), max))
 }
 

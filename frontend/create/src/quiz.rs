@@ -3,10 +3,14 @@ use std::rc::Rc;
 use yew::*;
 
 use api::{DraftQuiz, Image, Resolution};
-use components::TagsField;
+use components::{QuizCard, TagsField, View};
 use cropper::Cropper;
 use hasura::Data;
+use shared::Auth;
 use ywt::callback;
+
+use crate::state::Action;
+use crate::Stage;
 
 const TITLE: &str = "Cities";
 const EXPLANATION: &str = "Guess quickly";
@@ -15,23 +19,39 @@ const TAGS: &str = "Europe/Geography/Movies";
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub draft: Option<Rc<DraftQuiz>>,
-    pub onsubmit: Callback<DraftQuiz>,
-    pub onchange: Callback<DraftQuiz>,
-    pub onback: Callback<()>,
+    pub onstage: Callback<Stage>,
+    pub onaction: Callback<Action>,
+
+    pub draft: Rc<DraftQuiz>,
+    pub has_delete: bool,
 }
 
-#[function_component(QuizForm)]
-pub fn quiz_form(props: &Props) -> Html {
-    let Props { draft, onsubmit, onback, onchange } = props.clone();
+#[function_component(QuizPage)]
+pub fn quiz_page(props: &Props) -> Html {
+    let Props { onstage, onaction, draft, has_delete } = props.clone();
 
-    let actions = Actions::new().submit(onsubmit).change(onchange.clone());
-    let (form, draft) = use_form(&*draft.unwrap_or_default(), actions);
+    let creator = match use_context::<Auth>().unwrap().user() {
+        Ok(user) => user.nickname,
+        Err(_) => return html! { "not allowed" },
+    };
 
     let cropper = use_state(|| None);
     let name = use_state(|| None);
     let reader = use_state(|| None);
 
+    let actions = Actions::new()
+        .submit(onstage.reform(|_| Stage::Rounds))
+        .change(onaction.reform(Action::Quiz));
+
+    let form = use_form(draft.clone(), actions);
+
+    let ondelete = callback!(onaction, onstage; move |_| {
+        onaction.emit(Action::Delete);
+        onstage.emit(Stage::Back);
+    });
+    let onback = callback!(onstage; move |_| {
+        onstage.emit(Stage::Back)
+    });
     let onloaded = callback!(cropper, name; move |image: Image| {
         cropper.set(Some(image.src(Resolution::Original)));
         name.set(image.name());
@@ -47,17 +67,16 @@ pub fn quiz_form(props: &Props) -> Html {
         cropper.set(None);
         name.set(None);
     });
-    let ontags = callback!(onchange, draft; move |tags| {
-        let new = DraftQuiz { tags: Data{data: tags}, ..draft.clone()};
-        onchange.emit(new);
+    let ontags = callback!(onaction, draft; move |tags| {
+        let new = DraftQuiz { tags: Data{data: tags}, ..(*draft).clone()};
+        onaction.emit(Action::Quiz(Rc::new(new)));
     });
     let oncancel = callback!(cropper, name; move |_| {
         cropper.set(None);
         name.set(None);
     });
 
-    let DraftQuiz { title, explanation, public, description, image, .. } = draft;
-
+    let DraftQuiz { title, explanation, description, image, .. } = (*draft).clone();
     let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
     let filename = (!image.is_none()).then(move || name);
     let fullwidth = !image.is_none();
@@ -67,9 +86,13 @@ pub fn quiz_form(props: &Props) -> Html {
         None => html! {},
     };
 
-    html! {
+    let delete = || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete"} </Button>};
+    let left = html! {<Title> {"Overview"} </Title>};
+    let right = has_delete.then(|| delete()).unwrap_or_default();
+
+    let form_body = html! {
         <>
-        {modal}
+        <Level {left} {right} />
 
         <simple::Field label="Quiz Title" help={form.error("title")}>
             <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE}/>
@@ -88,21 +111,31 @@ pub fn quiz_form(props: &Props) -> Html {
         <simple::Field label="Image" help={form.error("image")}>
             <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
         </simple::Field>
+        </>
+    };
 
-        <simple::Field label="Public">
-            <Checkbox name="" checked={public} onchange={form.field(|x| &mut x.public)}>
-            {" Make this quiz public"}
-            </Checkbox>
-        </simple::Field>
-
+    let buttons = html! {
         <Buttons>
             <Button color={Color::Info} light=true onclick={onback}>
-                <span> {"Back"} </span>
+            <span> {"Back"} </span>
             </Button>
             <Button color={Color::Info} disabled={!form.can_submit()} onclick={form.submit()}>
-                <span> {"Rounds"} </span>
+            <span> {"Rounds"} </span>
             </Button>
         </Buttons>
-        </>
+    };
+
+    html! {
+        <Section>
+        <Container>
+            {modal}
+            <Columns>
+                <Column> {form_body} </Column>
+                <Column size={ColumnSize::Is1} />
+                <Column size={ColumnSize::Is4}> <QuizCard view={View::Preview{draft, creator}}/> </Column>
+            </Columns>
+            {buttons}
+        </Container>
+        </Section>
     }
 }

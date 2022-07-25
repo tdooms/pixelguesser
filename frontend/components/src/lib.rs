@@ -7,7 +7,7 @@ mod sidebar;
 mod tags;
 
 pub use center::Center;
-pub use dyn_image::DynImage;
+pub use dyn_image::{DynImage, Fit, Height};
 pub use errors::Alerts;
 pub use pixelate::Pixelate;
 pub use quiz_card::{QuizCard, View};

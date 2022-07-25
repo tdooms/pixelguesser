@@ -15,12 +15,7 @@ pub struct Props {
 pub fn navigate(props: &Props) -> Html {
     let Props { callback, session, rounds } = props;
 
-    let button = |action: Action,
-                  color: Color,
-                  light: bool,
-                  icon: Solid,
-                  text: &str,
-                  hidden: bool| {
+    let btn = |action: Action, color: Color, light: bool, icon: Solid, text: &str, hidden: bool| {
         html! {
             <Button size={Size::Large} onclick={callback.reform(move |_| action.clone())} {color} {light} {hidden}>
             <Icon {icon}/> <span>{text}</span>
@@ -31,13 +26,13 @@ pub fn navigate(props: &Props) -> Html {
     let buttons = |idx: &[usize]| {
         html! {
             <>
-            {button(Action::Start, Color::Primary, false, Solid::Play, "start", !idx.contains(&0))}
-            {button(Action::Stage(Stage::Running), Color::Light, false, Solid::Play, "resume", !idx.contains(&1))}
-            {button(Action::Stage(Stage::Paused), Color::Light, false, Solid::Pause, "pause", !idx.contains(&2))}
-            {button(Action::Stage(Stage::Revealing), Color::Danger, true, Solid::Eye, "reveal", !idx.contains(&3))}
-            {button(Action::Stage(Stage::Scores), Color::Info, true, Solid::ListOl, "scores", !idx.contains(&4))}
-            {button(Action::Next, Color::Success, true, Solid::Forward, "next", !idx.contains(&5))}
-            {button(Action::Finish, Color::Primary, true, Solid::FlagCheckered, "finish", !idx.contains(&6))}
+            {btn(Action::Start, Color::Primary, false, Solid::Play, "Start", !idx.contains(&0))}
+            {btn(Action::Stage(Stage::Running), Color::Light, false, Solid::Play, "Resume", !idx.contains(&1))}
+            {btn(Action::Stage(Stage::Paused), Color::Light, false, Solid::Pause, "Pause", !idx.contains(&2))}
+            {btn(Action::Stage(Stage::Revealing), Color::Danger, true, Solid::Eye, "Reveal", !idx.contains(&3))}
+            {btn(Action::Stage(Stage::Scores), Color::Info, true, Solid::ListOl, "Scores", !idx.contains(&4))}
+            {btn(Action::Next, Color::Success, true, Solid::Forward, "Next", !idx.contains(&5))}
+            {btn(Action::Finish, Color::Primary, true, Solid::FlagCheckered, "Final Scores", !idx.contains(&6))}
             </>
         }
     };

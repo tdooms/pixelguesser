@@ -11,8 +11,9 @@ use rocket::response::Responder;
 use rocket::{response, Data, Request, State};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
+use sqlx::{Row, SqlitePool};
 
-pub struct Path(String);
+pub struct Folder(String);
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -24,6 +25,9 @@ pub enum Error {
 
     #[error("error manipulating image: {0:?}")]
     Image(#[from] image::ImageError),
+
+    #[error("error writing to database: {0:?}")]
+    Sqlx(#[from] sqlx::Error),
 }
 
 // This is ugly
@@ -34,8 +38,13 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     }
 }
 
-#[post("/upload", data = "<data>")]
-pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error> {
+#[post("/upload/<user>", data = "<data>")]
+pub async fn upload(
+    data: Data<'_>,
+    user: &str,
+    path: &State<Folder>,
+    db: &State<SqlitePool>,
+) -> Result<String, Error> {
     let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
@@ -56,22 +65,44 @@ pub async fn upload(data: Data<'_>, path: &State<Path>) -> Result<String, Error>
         img.save(&format!("{base}/{res}/{filename}.{extension}"))?;
     }
 
+    sqlx::query("insert into owners (image, user) values (?1, ?2)")
+        .bind(&filename)
+        .bind(&user)
+        .execute(&**db)
+        .await?;
+
     Ok(format!("{}.{}", filename, extension))
 }
 
-#[post("/delete/<file>")]
-pub async fn delete_single(file: &str, path: &State<Path>) -> Result<(), Error> {
+#[post("/delete/<file>/<user>")]
+pub async fn delete(
+    file: &str,
+    user: &str,
+    path: &State<Folder>,
+    db: &State<SqlitePool>,
+) -> Result<(), Error> {
     let base = &path.inner().0;
-    // TODO: this is probably a huge security hole
+    let (filename, _) = file.rsplit_once('.').unwrap();
+
+    sqlx::query("delete from owners where image = ?1 and user = ?2")
+        .bind(&filename)
+        .bind(&user)
+        .execute(&**db)
+        .await?;
+
+    let count = sqlx::query("select count(*) from owners where image = ?1")
+        .bind(&filename)
+        .fetch_one(&**db)
+        .await?;
+
+    if count.get::<u32, _>(0) != 0 {
+        return Ok(());
+    }
+
     for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original] {
         std::fs::remove_file(&format!("{}/{}/{}", base, res, file))?;
     }
     Ok(())
-}
-
-#[post("/delete")]
-pub async fn delete_all() -> Result<(), Error> {
-    unimplemented!()
 }
 
 /// imager (IMAGE-serveR) is a program to efficiently serve images
@@ -81,6 +112,10 @@ struct Opts {
     /// Sets the folder to be served
     #[clap(short, long, default_value = "./backend/images/data")]
     folder: String,
+
+    /// Sets the folder to be served
+    #[clap(short, long, default_value = "./backend/images/data/db.sqlite")]
+    database: String,
 
     /// Sets the port to be used
     #[clap(short, long, default_value = "8000")]
@@ -106,13 +141,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
 
+    if !std::path::Path::new(&opts.database).exists() {
+        std::fs::File::create(&opts.database)?;
+    }
+
+    let url = format!("file:{}", opts.database);
+    let db = SqlitePool::connect(&url).await?;
+
+    sqlx::query("create table if not exists owners (image text, user text)").execute(&db).await?;
+
     let _ = rocket::custom(config)
         .mount("/original", FileServer::new(&vec[3], Options::Index))
         .mount("/hd", FileServer::new(&vec[2], Options::Index))
         .mount("/card", FileServer::new(&vec[1], Options::Index))
         .mount("/thumbnail", FileServer::new(&vec[0], Options::Index))
         .mount("/", routes![upload])
-        .manage(Path(opts.folder))
+        .manage(Folder(opts.folder))
+        .manage(db)
         .attach(cors)
         .launch()
         .await?;

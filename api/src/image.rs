@@ -85,9 +85,10 @@ impl Image {
         self.name.clone()
     }
 
-    pub async fn upload(&mut self) -> Result<(), Error> {
+    #[cfg(any(feature = "wasm", feature = "native"))]
+    pub async fn upload(&mut self, creator: String) -> Result<(), Error> {
         if let Format::Local { data } = self.format.clone() {
-            let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
+            let endpoint = format!("{UPLOAD_ENDPOINT}/upload/{creator}");
             let string = match data.split(',').nth(1) {
                 None => (*data).clone(),
                 Some(split) => split.to_owned(),

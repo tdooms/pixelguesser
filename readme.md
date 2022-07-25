@@ -49,7 +49,7 @@ it will be released on the website www.pixelguesser.com.
   - Remove images form server if dangling reference (medium)
   - ~~Image similarity system to avoid duplicates on the server (low)~~
   - Handling of no user set in context (see quiz_page return html) (low)
-  - Generalised state diffing manager (medium)
+  - ~~Generalised state diffing manager (medium)~~ (indirectly fixed with round/quiz merge)
   - Search web for images (google/unsplash/pixabay) (medium)
   - Drag and drop image, copy paste url, ... (medium)
 - Auth

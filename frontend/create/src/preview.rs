@@ -1,6 +1,6 @@
 use cobul::*;
 use components::Pixelate;
-use components::{Center, DynImage};
+use components::{Center, DynImage, Fit, Height};
 use cropper::Cropper;
 use std::rc::Rc;
 use web_sys::HtmlImageElement;
@@ -11,8 +11,8 @@ use ywt::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub draft: Rc<DraftRound>,
-    pub onupload: Callback<Image>,
+    pub round: Rc<DraftRound>,
+    pub onedit: Callback<Rc<DraftRound>>,
 }
 
 #[derive(Clone, Copy)]
@@ -25,15 +25,11 @@ enum State {
 
 #[function_component(RoundPreview)]
 pub fn round_preview(props: &Props) -> Html {
-    let Props { draft, onupload } = props.clone();
+    let Props { round, onedit } = props.clone();
+
     let state = use_state(|| State::Revealed);
     let cropper = use_state(|| false);
     let reader = use_state(|| None);
-
-    let onpause = callback!(state; move |_| state.set(State::Paused));
-    let onrunning = callback!(state; move |_| state.set(State::Running));
-    let onreveal = callback!(state; move |_| state.set(State::Revealed));
-    let onrevealing = callback!(state; move |_| state.set(State::Revealing));
 
     let cloned = state.clone();
     use_effect_with_deps(
@@ -41,20 +37,26 @@ pub fn round_preview(props: &Props) -> Html {
             cloned.set(State::Revealed);
             || ()
         },
-        props.draft.image.clone(),
+        props.round.image.clone(),
     );
 
-    let ondone = callback!(cropper, onupload; move |base64| {
-        onupload.emit(Image::from_base64(base64, None));
-        cropper.set(false);
-    });
-
+    let onpause = callback!(state; move |_| state.set(State::Paused));
+    let onrunning = callback!(state; move |_| state.set(State::Running));
+    let onreveal = callback!(state; move |_| state.set(State::Revealed));
+    let onrevealing = callback!(state; move |_| state.set(State::Revealing));
     let oncancel = callback!(cropper; move |_| cropper.set(false));
     let oncropper = callback!(cropper; move |_| cropper.set(true));
 
-    let onupload = callback!(onupload, reader; move |files: Vec<web_sys::File>| {
-        let fr = Image::from_file(files[0].clone(), onupload.clone());
+    let onuploaded = callback!(round; move |image| {
+        onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
+    });
+    let onupload = callback!(reader, onuploaded; move |files: Vec<web_sys::File>| {
+        let fr = Image::from_file(files[0].clone(), onuploaded.clone());
         reader.set(Some(fr));
+    });
+    let ondone = callback!(cropper; move |base64| {
+        onuploaded.emit(Image::from_base64(base64, None));
+        cropper.set(false);
     });
 
     let buttons = |idx: &[bool]| {
@@ -86,22 +88,23 @@ pub fn round_preview(props: &Props) -> Html {
         State::Revealed => ([false, false, true, true, true], Stage::Revealed),
     };
 
-    let element = HtmlImageElement::new().unwrap();
-    element.set_src(&draft.image.src(Resolution::HD));
+    let src = round.image.src(Resolution::HD);
+    let image = HtmlImageElement::new().unwrap();
+    image.set_src(&src);
 
-    match (draft.image.is_none(), *state, *cropper) {
+    let body = match (round.image.is_none(), *state, *cropper) {
         (_, _, true) => html! {
-            <Cropper src={draft.image.src(Resolution::Original)} {ondone} {oncancel} height=450 width=600/>
+            <Cropper {src} {ondone} {oncancel} height=450 width=600/>
         },
         (false, State::Revealed, false) => html! {
             <div>
-            <DynImage src={draft.image.src(Resolution::HD)} height=85/>
+            <DynImage {src} height={Height::Vh(85)} fit={Fit::Contain}/>
             { buttons(&hidden) }
             </div>
         },
         (false, _, false) => html! {
             <div>
-            <Pixelate image={element} {stage} {onreveal} height=85/>
+            <Pixelate {image} {stage} {onreveal} height=85/>
             { buttons(&hidden) }
             </div>
         },
@@ -110,5 +113,9 @@ pub fn round_preview(props: &Props) -> Html {
                 <File accept={"image/*"} boxed=true alignment={Alignment::Centered} {onupload} />
             </Center>
         },
+    };
+
+    html! {
+        <Column> {body} </Column>
     }
 }
