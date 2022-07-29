@@ -15,7 +15,7 @@ yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 
 log = "0.4"
-gloo = "0.5"
+gloo = "0.8.0"
 web-sys = "0.3"
 qrcode = "0.12"
 image = "0.23"

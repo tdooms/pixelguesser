@@ -17,11 +17,13 @@ cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "forms"
 
 yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996"}
+yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 
-gloo = "0.5"
+gloo = "0.8"
 log = "0.4"
 futures = "0.3"
-validator = { version = "0.15", features = ["derive"] }
+derive_more = "0.99"
+strum = { version = "0.24", features = ["derive"] }
+validator = { version = "0.16", features = ["derive"] }
 web-sys = { version = "0.3", features = ["File", "DragEvent", "DataTransfer"] }
 wasm-bindgen-futures = "0.4"

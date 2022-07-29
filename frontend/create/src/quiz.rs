@@ -37,7 +37,6 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let cropper = use_state(|| None);
     let name = use_state(|| None);
-    let reader = use_state(|| None);
 
     let actions = Actions::new()
         .submit(onstage.reform(|_| Stage::Rounds))
@@ -52,13 +51,12 @@ pub fn quiz_page(props: &Props) -> Html {
     let onback = callback!(onstage; move |_| {
         onstage.emit(Stage::Back)
     });
-    let onloaded = callback!(cropper, name; move |image: Image| {
-        cropper.set(Some(image.src(Resolution::Original)));
-        name.set(image.name());
-    });
-    let onupload = callback!(onloaded, reader; move |files: Vec<web_sys::File>| {
-        let fr = Image::from_file(files[0].clone(), onloaded.clone());
-        reader.set(Some(fr))
+    let onupload = callback!(name, cropper; move |files: Vec<web_sys::File>| {
+        ywt::spawn!(name, cropper; async move {
+            let image = Image::from_web(files[0].clone()).await.unwrap();
+            cropper.set(Some(image.src(Resolution::Original)));
+            name.set(image.name());
+        })
     });
     let ondone = callback!(form, cropper, name; move |base64| {
         let image = Image::from_base64(base64, (*name).clone());
@@ -78,8 +76,8 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let DraftQuiz { title, explanation, description, image, .. } = (*draft).clone();
     let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
-    let filename = (!image.is_none()).then(move || name);
-    let fullwidth = !image.is_none();
+    let filename = (!image.is_empty()).then(move || name);
+    let fullwidth = !image.is_empty();
 
     let modal = match (*cropper).clone() {
         Some(src) => html! {<Cropper {src} {ondone} {oncancel} height=450 width=600/>},

@@ -58,9 +58,8 @@ pub fn overview() -> HtmlResult {
                 let result = match filter.is_empty() {
                     true => api::query_quizzes(user, false).await,
                     false => api::search_quizzes(user, filter, false).await,
-                }
-                .emit(&errors);
-                cloned.set(result);
+                };
+                cloned.set(result.emit(&errors));
             });
             || ()
         },

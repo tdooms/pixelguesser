@@ -11,6 +11,7 @@ use crate::summary::Summary;
 
 mod edit;
 mod list;
+mod picker;
 mod preview;
 mod quiz;
 mod rounds;

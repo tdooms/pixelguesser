@@ -72,12 +72,6 @@ impl Default for Phase {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum Response {
-    Update(Session),
-    Error(String),
-}
-
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
     pub players: HashMap<String, Player>,

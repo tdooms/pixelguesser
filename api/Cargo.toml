@@ -4,20 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-wasm = ["gloo-net", "gloo-file", "log", "web-sys", "hasura", "hasura/wasm", "yew"]
-native = ["reqwest", "hasura", "hasura/native"]
+wasm = ["gloo-net", "gloo-file", "log", "web-sys", "hasura", "hasura/wasm"]
+native = ["reqwest", "hasura", "hasura/native", "base64"]
 default = []
 
 [dependencies]
 sessions = { path = "../backend/sessions", features = ["api"], default-features = false }
 images = { path = "../backend/images", features = ["api"], default-features = false }
-
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996", optional = true }
 hasura = { git = "https://github.com/tdooms/hasura.git", default-features = false, optional = true }
 
 serde_json = "1.0"
 serde_repr = "0.1"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive", "rc"] }
 
 reqwest = { version = "0.11", optional = true }
 
@@ -25,6 +23,7 @@ web-sys = { version = "0.3", features = ["Url"], optional = true }
 log = { version = "0.4", optional = true }
 gloo-file = { version = "0.2", optional = true }
 gloo-net = { version = "0.2", optional = true }
+base64 = { version = "0.13", optional = true }
 
 dotenv_codegen = "0.15"
 thiserror = "1.0"
@@ -34,5 +33,5 @@ futures = "0.3"
 wasm-bindgen-futures = "0.4"
 
 chrono = { version = "0.4", features = ["serde"] }
-validator = { version = "0.15", features = ["derive"] }
+validator = { version = "0.16", features = ["derive"] }
 strum = { version = "0.24", features = ["derive"] }

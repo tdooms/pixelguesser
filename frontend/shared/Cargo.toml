@@ -16,7 +16,7 @@ wasm-bindgen-futures = "*"
 serde-wasm-bindgen = "0.4.2"
 
 serde = { version = "*", features = ["derive"] }
-gloo = "0.5"
+gloo = "0.8"
 log = "*"
 derive_more = "0.99"
 futures = "0.3"

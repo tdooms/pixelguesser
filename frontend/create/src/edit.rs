@@ -47,7 +47,7 @@ pub fn round_edit(props: &Props) -> Html {
     };
 
     let DraftRound { answer, points, guesses, speed, algorithm, .. } = (*round).clone();
-    let has_image = !props.round.image.is_none();
+    let has_image = !props.round.image.is_empty();
     let disabled = errors.iter().any(|x| x.is_some());
     let tooltip = generate_error_message(&&errors);
 

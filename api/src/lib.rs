@@ -3,7 +3,8 @@ pub use code::*;
 pub use consts::*;
 pub use error::{Error, Result};
 pub use graphql::*;
-pub use image::{Image, Resolution};
+pub use image::Image;
+pub use images::Resolution;
 pub use queries::*;
 pub use sessions::*;
 

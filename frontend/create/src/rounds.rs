@@ -9,6 +9,7 @@ use ywt::callback;
 
 use crate::edit::RoundEdit;
 use crate::list::RoundList;
+use crate::picker::Picker;
 use crate::preview::RoundPreview;
 use crate::state::Action;
 use crate::Stage;
@@ -65,7 +66,8 @@ pub fn round_page(props: &Props) -> Html {
     html! {
         <Columns>
             <RoundList {onselect} {onaction} {draft} current={*current} errors={errors.clone()}/>
-            <RoundPreview round={round.clone()} onedit={onedit.clone()}/>
+            // <RoundPreview round={round.clone()} onedit={onedit.clone()}/>
+            <Picker onchange={Callback::noop()} />
             <RoundEdit {round} {onback} {ondone} {onedit} {errors}/>
         </Columns>
     }

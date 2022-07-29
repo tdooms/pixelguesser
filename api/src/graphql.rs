@@ -9,11 +9,15 @@ use strum::EnumIter;
 use validator::{Validate, ValidationError};
 
 fn validate_image(image: &Image) -> Result<(), ValidationError> {
-    if image.is_none() {
+    if image.is_empty() {
         Err(ValidationError::new("Image must not be empty."))
     } else {
         Ok(())
     }
+}
+
+fn default_speed() -> u64 {
+    100
 }
 
 fn skip_empty<T: Serialize>(x: &Data<Vec<T>>) -> bool {
@@ -96,8 +100,10 @@ pub struct Quiz {
     pub title: String,
     pub description: String,
     pub explanation: String,
-    pub image: Image,
     pub created_at: DateTime<Utc>,
+
+    #[serde(flatten)]
+    pub image: Image,
 
     #[object(expand)]
     pub creator: Creator,
@@ -122,8 +128,10 @@ pub struct DraftQuiz {
 
     pub description: String,
     pub explanation: String,
-    pub image: Image,
     pub public: bool,
+
+    #[serde(flatten)]
+    pub image: Image,
 
     #[serde(skip_serializing_if = "skip_empty")]
     #[serde(deserialize_with = "strip_data")]
@@ -143,10 +151,12 @@ pub struct Round {
     pub index: u32,
     pub points: Points,
     pub guesses: Guesses,
-    pub image: Image,
     pub answer: String,
     pub speed: u64,
     pub algorithm: Algorithm,
+
+    #[serde(flatten)]
+    pub image: Image,
 }
 
 #[derive(Validate, Debug, Clone, Default, PartialEq, Deserialize, Serialize)]
@@ -160,9 +170,14 @@ pub struct DraftRound {
 
     pub points: Points,
     pub guesses: Guesses,
+
+    #[serde(default = "default_speed")]
     pub speed: u64,
+
+    #[serde(default)]
     pub algorithm: Algorithm,
 
+    #[serde(flatten)]
     #[validate(custom = "validate_image")]
     pub image: Image,
 }

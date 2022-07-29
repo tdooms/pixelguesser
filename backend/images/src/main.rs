@@ -5,13 +5,14 @@ use base64::URL_SAFE;
 use clap::Parser;
 use images::Resolution;
 use rocket::data::ToByteUnit;
-use rocket::fs::{FileServer, Options};
+use rocket::fs::{FileServer, NamedFile, Options};
 use rocket::http::Status;
 use rocket::response::Responder;
 use rocket::{response, Data, Request, State};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
 use sqlx::{Row, SqlitePool};
+use std::path::Path;
 
 pub struct Folder(String);
 
@@ -38,6 +39,13 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     }
 }
 
+#[get("/<img>/<kind>")]
+pub async fn download(img: &str, kind: &str) -> Option<NamedFile> {
+    let path = format!("backend/images/data/{kind}/{img}.jpg");
+    println!("{path}");
+    NamedFile::open(Path::new(&path)).await.ok()
+}
+
 #[post("/upload/<user>", data = "<data>")]
 pub async fn upload(
     data: Data<'_>,
@@ -58,11 +66,11 @@ pub async fn upload(
 
     println!("{base}/original/{filename}.{extension}");
     let original = image::load_from_memory_with_format(&buffer, format)?;
-    original.save(&format!("{base}/original/{filename}.{extension}"))?;
+    original.save(&format!("{base}/original/{filename}.jpg"))?;
 
-    for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD] {
+    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
         let img = original.thumbnail(1_000_000, res as u32);
-        img.save(&format!("{base}/{res}/{filename}.{extension}"))?;
+        img.save(&format!("{base}/{res}/{filename}.jpg"))?;
     }
 
     sqlx::query("insert into owners (image, user) values (?1, ?2)")
@@ -71,7 +79,8 @@ pub async fn upload(
         .execute(&**db)
         .await?;
 
-    Ok(format!("{}.{}", filename, extension))
+    let endpoint = "http://localhost:8901";
+    Ok(format!("{endpoint}/{filename}"))
 }
 
 #[post("/delete/<file>/<user>")]
@@ -99,7 +108,7 @@ pub async fn delete(
         return Ok(());
     }
 
-    for res in [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original] {
+    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD, Resolution::Original] {
         std::fs::remove_file(&format!("{}/{}/{}", base, res, file))?;
     }
     Ok(())
@@ -135,7 +144,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let cors = CorsOptions::default().to_cors()?;
 
-    let res = [Resolution::Thumbnail, Resolution::Card, Resolution::HD, Resolution::Original];
+    let _ = std::fs::create_dir(&opts.folder);
+
+    let res = [Resolution::Thumb, Resolution::Small, Resolution::HD, Resolution::Original];
     for resolution in res {
         let _ = std::fs::create_dir(&format!("{}/{}", opts.folder, resolution));
     }
@@ -151,11 +162,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sqlx::query("create table if not exists owners (image text, user text)").execute(&db).await?;
 
     let _ = rocket::custom(config)
-        .mount("/original", FileServer::new(&vec[3], Options::Index))
-        .mount("/hd", FileServer::new(&vec[2], Options::Index))
-        .mount("/card", FileServer::new(&vec[1], Options::Index))
-        .mount("/thumbnail", FileServer::new(&vec[0], Options::Index))
-        .mount("/", routes![upload])
+        .mount("/", routes![upload, download])
         .manage(Folder(opts.folder))
         .manage(db)
         .attach(cors)

@@ -19,4 +19,4 @@ yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
 log = "*"
-gloo = "0.5"
+gloo = "0.8"

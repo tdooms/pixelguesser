@@ -32,16 +32,16 @@ pub fn quiz_card(props: &Props) -> Html {
 
     let footer = match &props.view {
         View::Normal { onclick, .. } => {
-            button(Color::Success, true, Solid::Play, "Play", Some(onclick))
+            button(Color::Success, true, fa::Solid::Play, "Play", Some(onclick))
         }
         View::Preview { .. } | View::Empty => {
-            button(Color::Success, false, Solid::Play, "Play", None)
+            button(Color::Success, false, fa::Solid::Play, "Play", None)
         }
     };
 
     let right = match (&props.view, use_context::<Auth>().unwrap().user()) {
         (View::Normal { quiz, onedit, .. }, Ok(user)) if user.sub == quiz.creator.id => {
-            html! { <Button onclick={onedit} color={Color::White}> <Icon icon={Solid::PenToSquare}/> </Button> }
+            html! { <Button onclick={onedit} color={Color::White}> <Icon icon={fa::Solid::PenToSquare}/> </Button> }
         }
         _ => html! {},
     };
@@ -51,14 +51,14 @@ pub fn quiz_card(props: &Props) -> Html {
 
     let (src, title, creator, description, tags) = match &props.view {
         View::Normal { quiz, .. } => (
-            quiz.image.src(Resolution::Card),
+            quiz.image.src(Resolution::Small),
             &quiz.title,
             &quiz.creator.name,
             &quiz.description,
             Rc::new(quiz.tags.iter().cloned().map(DraftTag::from).collect::<Vec<_>>()),
         ),
         View::Preview { draft, creator } => (
-            draft.image.src(Resolution::Card),
+            draft.image.src(Resolution::Small),
             &draft.title,
             creator,
             &draft.description,

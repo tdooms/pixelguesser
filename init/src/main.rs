@@ -1,4 +1,4 @@
-use api::{DraftQuiz, Quiz, GRAPHQL_ENDPOINT};
+use api::{DraftQuiz, DraftRound, Image, Quiz, GRAPHQL_ENDPOINT};
 use hasura::{mutation, DeleteBuilder, InsertBuilder, Object};
 use std::fs::File;
 
@@ -7,11 +7,9 @@ struct Quizzes {
     quizzes: Vec<DraftQuiz>,
 }
 
-async fn convert_image(image: &mut api::Image, creator: String) {
+async fn convert_image(image: &mut Image, creator: String) {
     let path = std::mem::take(image).url().unwrap();
-
-    let vec = std::fs::read(&format!("init/images/{path}")).unwrap();
-    *image = api::Image::from_base64(base64::encode(vec), None);
+    *image = Image::from_native(&format!("init/images/{path}")).unwrap();
 
     log::info!("uploading image: {path}");
     image.upload(creator).await.unwrap();

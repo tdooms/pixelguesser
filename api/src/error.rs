@@ -23,6 +23,9 @@ pub enum Error {
     #[error("Image upload failed")]
     ImageUpload,
 
+    #[error("Could not find image at path {0}")]
+    ImageRead(String),
+
     #[error("Websocket connection failure")]
     WsConnection,
 

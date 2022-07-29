@@ -26,7 +26,7 @@ pub fn summary_round(RoundProps { round }: &RoundProps) -> Html {
     let style = "border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
     html! {
         <Column size={ColumnSize::Is3}>
-        <DynImage {style} src={round.image.src(Resolution::Card)} height={Height::Vh(20)} fit={Fit::Cover} border=true/>
+        <DynImage {style} src={round.image.src(Resolution::Small)} height={Height::Vh(20)} fit={Fit::Cover} border=true/>
         <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
         </Column>
     }

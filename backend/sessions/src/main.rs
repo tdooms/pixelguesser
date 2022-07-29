@@ -1,5 +1,5 @@
 use crate::sessions::{Global, Local, Mode, State};
-use ::sessions::{Action, Error, Response};
+use ::sessions::{Action, Error, Session};
 use tower_http::cors::{Any, CorsLayer};
 
 use axum::extract::ws::{Message, WebSocket};
@@ -56,7 +56,7 @@ async fn handle_message(message: Message, state: &mut State, conn_id: u32) -> Re
     let action: Action = serde_json::from_str(&message)?;
 
     state.session.update(action, conn_id)?;
-    notify(state, &Response::Update(state.session.clone())).await;
+    notify(state, &Ok(state.session.clone())).await;
 
     Ok(())
 }
@@ -67,7 +67,7 @@ async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> 
     Ok(lock.get(&session_id).cloned().ok_or(Error::SessionNotFound)?)
 }
 
-async fn notify(state: &mut State, response: &Response) {
+async fn notify(state: &mut State, response: &Result<Session, String>) {
     let response = serde_json::to_string(&response).unwrap();
     for (_, sender) in &mut state.connections {
         let _ = sender.send(Message::Text(response.clone())).await;
@@ -116,7 +116,7 @@ async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
 
     // Notify the rest of the participants of the session change
     let session = lock.session.clone();
-    notify(&mut *lock, &Response::Update(session)).await;
+    notify(&mut *lock, &Ok(session)).await;
 }
 
 #[tokio::main]

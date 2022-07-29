@@ -32,7 +32,7 @@ pub fn finish(props: &Props) -> Html {
 
         <Buttons alignment={Alignment::Centered} class="mt-5">
             <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
-                <Icon icon={Solid::RightFromBracket}/> <span> {"leave"} </span>
+                <Icon icon={fa::Solid::RightFromBracket}/> <span> {"leave"} </span>
             </Button>
         </Buttons>
         </>

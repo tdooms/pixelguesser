@@ -29,7 +29,6 @@ pub fn round_preview(props: &Props) -> Html {
 
     let state = use_state(|| State::Revealed);
     let cropper = use_state(|| false);
-    let reader = use_state(|| None);
 
     let cloned = state.clone();
     use_effect_with_deps(
@@ -47,15 +46,16 @@ pub fn round_preview(props: &Props) -> Html {
     let oncancel = callback!(cropper; move |_| cropper.set(false));
     let oncropper = callback!(cropper; move |_| cropper.set(true));
 
-    let onuploaded = callback!(round; move |image| {
+    let onupload = callback!(round, onedit; move |files: Vec<web_sys::File>| {
+        let file = files[0].clone();
+        ywt::spawn!(round, onedit; async move {
+            let image = Image::from_web(file).await.unwrap();
+            onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
+        })
+    });
+    let ondone = callback!(round, cropper; move |base64| {
+        let image = Image::from_base64(base64, None);
         onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
-    });
-    let onupload = callback!(reader, onuploaded; move |files: Vec<web_sys::File>| {
-        let fr = Image::from_file(files[0].clone(), onuploaded.clone());
-        reader.set(Some(fr));
-    });
-    let ondone = callback!(cropper; move |base64| {
-        onuploaded.emit(Image::from_base64(base64, None));
         cropper.set(false);
     });
 
@@ -63,19 +63,19 @@ pub fn round_preview(props: &Props) -> Html {
         html! {
             <Buttons alignment={Alignment::Centered} class="mt-5">
             <Button onclick={onrunning.clone()} hidden={idx[0]}>
-                <Icon icon={Solid::Eye} /> <span> {"preview"} </span>
+                <Icon icon={fa::Solid::Eye} /> <span> {"preview"} </span>
             </Button>
             <Button onclick={oncropper} hidden={idx[1]}>
-                <Icon icon={Solid::Crop} /> <span> {"crop"} </span>
+                <Icon icon={fa::Solid::Crop} /> <span> {"crop"} </span>
             </Button>
             <Button onclick={onrevealing} hidden={idx[2]}>
-                <Icon icon={Solid::Forward} /> <span> {"reveal"} </span>
+                <Icon icon={fa::Solid::Forward} /> <span> {"reveal"} </span>
             </Button>
             <Button onclick={onpause} hidden={idx[3]}>
-                <Icon icon={Solid::Pause} /> <span> {"pause"} </span>
+                <Icon icon={fa::Solid::Pause} /> <span> {"pause"} </span>
             </Button>
             <Button onclick={onrunning} hidden={idx[4]}>
-                <Icon icon={Solid::Play} /> <span> {"continue"} </span>
+                <Icon icon={fa::Solid::Play} /> <span> {"continue"} </span>
             </Button>
             </Buttons>
         }
@@ -92,7 +92,7 @@ pub fn round_preview(props: &Props) -> Html {
     let image = HtmlImageElement::new().unwrap();
     image.set_src(&src);
 
-    let body = match (round.image.is_none(), *state, *cropper) {
+    let body = match (round.image.is_empty(), *state, *cropper) {
         (_, _, true) => html! {
             <Cropper {src} {ondone} {oncancel} height=450 width=600/>
         },

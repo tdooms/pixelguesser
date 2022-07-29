@@ -4,10 +4,9 @@ use futures::{select, SinkExt, StreamExt};
 use gloo_net::http::{Method, Request};
 use gloo_net::websocket::futures::WebSocket;
 use gloo_net::websocket::{Message, WebSocketError};
-use sessions::{Action, Response};
+use sessions::{Action, Session};
 use std::str::FromStr;
 use wasm_bindgen_futures::spawn_local;
-use yew::Callback;
 
 pub async fn create_session(quiz_id: u32) -> Result<u32, Error> {
     let endpoint = format!("{SESSION_CREATE_ENDPOINT}/{quiz_id}");
@@ -23,14 +22,14 @@ pub struct WebsocketTask {
 }
 
 impl WebsocketTask {
-    pub fn send(&mut self, action: &Action) {
+    pub fn send(&self, action: &Action) {
         log::trace!("ws request: {:?}", action);
 
         let (mut sender, action) = (self.sender.clone(), action.clone());
         spawn_local(async move { sender.send(action).await.unwrap() });
     }
 
-    pub fn handle(message: Option<Result<Message, WebSocketError>>) -> Result<Response, Error> {
+    pub fn handle(message: Option<Result<Message, WebSocketError>>) -> Result<Session, Error> {
         match message.ok_or(Error::WsClosed)?.map_err(|_| Error::WsFailure)? {
             Message::Bytes(_) => Err(Error::WsBytes),
             Message::Text(text) => Ok(serde_json::from_str(&text)?),
@@ -40,7 +39,7 @@ impl WebsocketTask {
     pub async fn run(
         mut actions: mpsc::Receiver<Action>,
         mut cancel: oneshot::Receiver<()>,
-        callback: Callback<Response>,
+        callback: impl Fn(Result<Session, Error>),
         ws: WebSocket,
     ) {
         let (mut sender, receiver) = ws.split();
@@ -48,12 +47,8 @@ impl WebsocketTask {
 
         loop {
             select! {
-                message = receiver.next() => match Self::handle(message) {
-                    Ok(response) => {
-                        log::trace!("ws response: {:?}", response);
-                        callback.emit(response);
-                    },
-                    Err(err) => log::error!("{}", err),
+                message = receiver.next() => {
+                    callback(Self::handle(message));
                 },
                 action = actions.next() => {
                     let message = Message::Text(serde_json::to_string(&action).unwrap());
@@ -67,7 +62,10 @@ impl WebsocketTask {
         ws.close(Some(1000), Some("session closed by user")).unwrap();
     }
 
-    pub fn new(session_id: u32, callback: Callback<Response>) -> Result<Self, Error> {
+    pub fn new(
+        session_id: u32,
+        callback: impl Fn(Result<Session, Error>) + 'static,
+    ) -> Result<Self, Error> {
         let endpoint = format!("{SESSION_WS_ENDPOINT}/{session_id}");
         let ws = WebSocket::open(&endpoint).map_err(|_| Error::WsConnection)?;
 

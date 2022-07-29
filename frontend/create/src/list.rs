@@ -73,7 +73,7 @@ pub fn round_elem(props: &ElemProps) -> Html {
 
     let class = classes!(background, "columns", "m-0", "p-0");
     let style = "border-width:thin";
-    let src = draft.rounds.data[index].image.src(Resolution::Thumbnail);
+    let src = draft.rounds.data[index].image.src(Resolution::Thumb);
 
     html! {
         <div {style} {class} draggable="true" tabindex="0" {onclick} {onkeydown} {ondragstart} {ondragover} {ondragend} {ondrop}>
@@ -136,7 +136,7 @@ pub fn round_list(props: &ListProps) -> Html {
             { draw_line(Some(max) != line_idx) }
             <hr class="my-0" />
             <Button fullwidth=true {onclick} class="ml-1">
-                <Icon icon={Solid::Plus} size={Size::Large}/>
+                <Icon icon={fa::Solid::Plus} size={Size::Large}/>
             </Button>
         </Sidebar>
     }
