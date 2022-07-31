@@ -49,7 +49,7 @@ pub fn round_preview(props: &Props) -> Html {
     let onupload = callback!(round, onedit; move |files: Vec<web_sys::File>| {
         let file = files[0].clone();
         ywt::spawn!(round, onedit; async move {
-            let image = Image::from_web(file).await.unwrap();
+            let image = Image::from_local(file).await.unwrap();
             onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
         })
     });

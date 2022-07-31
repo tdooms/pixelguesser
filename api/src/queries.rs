@@ -1,8 +1,5 @@
-use hasura::{
-    delete::*, insert::*, mutation, query, query::*, update::*, Conditions, Eq, Ilike, Object,
-};
-
 use crate::{DraftQuiz, Error, Quiz, QuizPk, Result, Round, Tag, User, GRAPHQL_ENDPOINT};
+use hasura::*;
 
 pub async fn query_quizzes(user: Option<User>, rounds: bool) -> Result<Vec<Quiz>> {
     let returning = match rounds {

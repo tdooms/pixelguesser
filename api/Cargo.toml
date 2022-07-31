@@ -4,34 +4,37 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-wasm = ["gloo-net", "gloo-file", "log", "web-sys", "hasura", "hasura/wasm"]
-native = ["reqwest", "hasura", "hasura/native", "base64"]
+auth = []
+graphql = ["validator", "image", "hasura", "auth"]
+queries = ["hasura"]
+session = ["gloo-net", "futures", "wasm-bindgen-futures", "reqwest", "sessions"]
+image = ["gloo-file", "web-sys", "reqwest", "images"]
+unsplash = ["reqwest"]
 default = []
 
 [dependencies]
-sessions = { path = "../backend/sessions", features = ["api"], default-features = false }
-images = { path = "../backend/images", features = ["api"], default-features = false }
-hasura = { git = "https://github.com/tdooms/hasura.git", default-features = false, optional = true }
+sessions = { path = "../backend/sessions", features = ["api"], default-features = false, optional = true }
+images = { path = "../backend/images", features = ["api"], default-features = false, optional = true }
+hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
 
 serde_json = "1.0"
 serde_repr = "0.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
 
-reqwest = { version = "0.11", optional = true }
+reqwest = { version = "0.11", features = ["json"], optional = true }
+futures = { version = "0.3", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+
+log = { version = "0.4", optional = true }
+validator = { version = "0.16", features = ["derive"], optional = true }
 
 web-sys = { version = "0.3", features = ["Url"], optional = true }
-log = { version = "0.4", optional = true }
-gloo-file = { version = "0.2", optional = true }
+gloo-file = { version = "0.2", features = ["futures"], optional = true }
 gloo-net = { version = "0.2", optional = true }
-base64 = { version = "0.13", optional = true }
 
 dotenv_codegen = "0.15"
 thiserror = "1.0"
 derive_more = "0.99"
 
-futures = "0.3"
-wasm-bindgen-futures = "0.4"
-
 chrono = { version = "0.4", features = ["serde"] }
-validator = { version = "0.16", features = ["derive"] }
 strum = { version = "0.24", features = ["derive"] }

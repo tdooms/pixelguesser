@@ -102,7 +102,7 @@ pub struct Quiz {
     pub explanation: String,
     pub created_at: DateTime<Utc>,
 
-    #[serde(flatten)]
+    #[serde(default)]
     pub image: Image,
 
     #[object(expand)]
@@ -130,7 +130,7 @@ pub struct DraftQuiz {
     pub explanation: String,
     pub public: bool,
 
-    #[serde(flatten)]
+    #[serde(default)]
     pub image: Image,
 
     #[serde(skip_serializing_if = "skip_empty")]
@@ -154,8 +154,6 @@ pub struct Round {
     pub answer: String,
     pub speed: u64,
     pub algorithm: Algorithm,
-
-    #[serde(flatten)]
     pub image: Image,
 }
 
@@ -177,7 +175,6 @@ pub struct DraftRound {
     #[serde(default)]
     pub algorithm: Algorithm,
 
-    #[serde(flatten)]
     #[validate(custom = "validate_image")]
     pub image: Image,
 }

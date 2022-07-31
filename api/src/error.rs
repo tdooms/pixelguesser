@@ -1,10 +1,5 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[cfg(feature = "wasm")]
-    #[error("Request error: {0}")]
-    Request(#[from] gloo_net::Error),
-
-    #[cfg(feature = "native")]
     #[error("Request error: {0}")]
     Request(#[from] reqwest::Error),
 
@@ -14,6 +9,7 @@ pub enum Error {
     #[error("Serde error: {0:?}")]
     Serde(#[from] serde_json::Error),
 
+    #[cfg(feature = "session")]
     #[error("Session error {0}")]
     Session(#[from] sessions::Error),
 

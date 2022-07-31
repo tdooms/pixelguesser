@@ -11,7 +11,7 @@ license = "GNU GPLv3"
 create = { path = "../create" }
 host = { path = "../host" }
 manage = { path = "../manage" }
-api = { path = "../../api", features=["wasm"] }
+api = { path = "../../api", features=["auth"] }
 shared = { path = "../shared" }
 components = { path = "../components" }
 

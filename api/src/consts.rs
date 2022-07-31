@@ -11,3 +11,5 @@ pub const SESSION_CREATE_ENDPOINT: &str = dotenv!("SESSION_CREATE_ENDPOINT");
 pub const SESSION_WS_ENDPOINT: &str = dotenv!("SESSION_WS_ENDPOINT");
 
 pub const IMAGE_PLACEHOLDER: &str = dotenv!("IMAGE_PLACEHOLDER");
+
+pub const UNSPLASH_KEY: &str = dotenv!("UNSPLASH_KEY");

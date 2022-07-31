@@ -53,7 +53,7 @@ pub fn quiz_page(props: &Props) -> Html {
     });
     let onupload = callback!(name, cropper; move |files: Vec<web_sys::File>| {
         ywt::spawn!(name, cropper; async move {
-            let image = Image::from_web(files[0].clone()).await.unwrap();
+            let image = Image::from_local(files[0].clone()).await.unwrap();
             cropper.set(Some(image.src(Resolution::Original)));
             name.set(image.name());
         })

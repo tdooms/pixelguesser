@@ -6,7 +6,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, Participant, Quiz, Result, Session, User, WebsocketTask};
-use shared::{Auth, EmitError, Error, Errors, Route};
+use shared::Auth;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {

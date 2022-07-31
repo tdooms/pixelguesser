@@ -1,7 +1,9 @@
 use crate::UPLOAD_ENDPOINT;
 use crate::{Error, Result};
 use images::Resolution;
-use serde::{Deserialize, Serialize};
+use serde::de::Error as DeError;
+use serde::{Deserialize, Deserializer, Serialize};
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -17,42 +19,22 @@ pub enum Service {
     Piximages,
 }
 
-#[cfg(feature = "wasm")]
-async fn upload(body: String, endpoint: String) -> Result<String> {
-    let response = gloo_net::http::Request::post(&endpoint).body(body).send().await?;
-    (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
-    Ok(response.text().await?)
-}
-
-#[cfg(feature = "native")]
 async fn upload(body: String, endpoint: String) -> Result<String> {
     let response = reqwest::Client::new().post(&endpoint).body(body).send().await?;
     (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
     Ok(response.text().await?)
 }
 
-#[cfg(feature = "wasm")]
-async fn download(endpoint: String) {
-    gloo_net::http::Request::get(&endpoint).send().await.unwrap();
-}
-
-#[cfg(feature = "native")]
 async fn download(endpoint: String) {
     reqwest::get(&endpoint).await.unwrap();
 }
 
-fn piximages_service() -> Option<Service> {
-    Some(Service::Piximages)
-}
-
-#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Default, Serialize, Clone, Debug, PartialEq)]
 pub struct Image {
-    #[serde(rename = "image")]
     url: Option<Rc<String>>,
     blurhash: Option<String>,
 
     #[serde(skip)]
-    #[serde(default = "piximages_service")]
     service: Option<Service>,
 
     #[serde(skip)]
@@ -62,25 +44,28 @@ pub struct Image {
     name: Option<String>,
 }
 
-impl Image {
-    #[cfg(feature = "native")]
-    pub fn from_native(path: impl AsRef<std::path::Path>) -> Result<Self> {
-        let name = path.as_ref().to_str().unwrap().to_owned();
-        let bytes = std::fs::read(path).map_err(|_| Error::ImageRead(name.clone()))?;
-        let base64 = base64::encode(&bytes);
+impl<'de> Deserialize<'de> for Image {
+    fn deserialize<D: Deserializer<'de>>(deser: D) -> std::result::Result<Self, D::Error> {
+        let mut map: HashMap<String, Option<String>> = HashMap::deserialize(deser)?;
+        let url = map.remove("url").ok_or(D::Error::custom("image must have a url"))?.unwrap();
+        let blurhash = map.remove("blurhash").flatten();
 
-        Ok(Self { local: Some(Rc::new(base64)), name: Some(name), ..Default::default() })
+        let service = match url.contains("unsplash") {
+            true => Some(Service::Unsplash { meta: None }),
+            false => Some(Service::Piximages),
+        };
+        Ok(Self { url: Some(Rc::new(url)), blurhash, service, ..Default::default() })
     }
+}
 
-    #[cfg(feature = "wasm")]
-    pub async fn from_web(file: web_sys::File) -> Result<Self> {
+impl Image {
+    pub async fn from_local(file: web_sys::File) -> Result<Self> {
         let blob = gloo_file::Blob::from(file.clone());
         let local = gloo_file::futures::read_as_data_url(&blob).await.unwrap();
 
         Ok(Self { local: Some(Rc::new(local)), name: Some(file.name()), ..Default::default() })
     }
 
-    #[cfg(feature = "wasm")]
     pub fn from_base64(base64: String, name: Option<String>) -> Self {
         Self { local: Some(Rc::new(base64)), name, ..Default::default() }
     }

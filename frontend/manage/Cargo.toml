@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-api = { path = "../../api", features=["wasm"] }
+api = { path = "../../api", features=["session"] }
 shared = { path = "../shared" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
 
