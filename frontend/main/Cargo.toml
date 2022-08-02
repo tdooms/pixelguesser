@@ -11,9 +11,14 @@ license = "GNU GPLv3"
 create = { path = "../create" }
 host = { path = "../host" }
 manage = { path = "../manage" }
-api = { path = "../../api", features=["auth"] }
+api = { path = "../../api", features = ["auth"] }
 shared = { path = "../shared" }
 components = { path = "../components" }
+
+wgpu = { version = "0.13", features = ["webgl"] }
+web-sys = { version = "0.3", features = ["Document", "Window", "Element", "HtmlCanvasElement"] }
+winit = { version = "0.26" }
+wasm-bindgen = "0.2"
 
 cobul = { git = "https://github.com/tdooms/cobul.git" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }

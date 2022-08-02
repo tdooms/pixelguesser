@@ -13,16 +13,16 @@ use shared::{Auth, Error, Errors, Route};
 use ywt::callback;
 
 use crate::initializer::Initializer;
+use crate::lab::Test;
 use crate::overview::Overview;
-use crate::test::Test;
 
 mod dropdown;
 mod initializer;
+mod lab;
 mod navbar;
 mod overview;
 mod profile;
 mod search;
-mod test;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
