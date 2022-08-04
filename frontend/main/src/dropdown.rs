@@ -3,25 +3,27 @@ use yew::*;
 use yew_router::prelude::*;
 use ywt::callback;
 
-use shared::{Auth, Route};
+use shared::{use_auth, Route};
 
 #[function_component(ProfileDropdown)]
 pub fn profile_dropdown() -> Html {
     let focus = use_state(|| false);
     let navigator = use_navigator().unwrap();
-    let auth = use_context::<Auth>().unwrap();
+    let auth = use_auth();
 
     let onfocus = callback!(focus; move |new| focus.set(new));
     let oncreate = callback!(move |_| navigator.push(Route::Create));
 
     let trigger = |picture| {
-        html! {
-            <Image rounded=true src={picture} size={ImageSize::Is48x48}/>
-        }
+        html! { <Image rounded=true src={picture} size={ImageSize::Is48x48}/> }
     };
 
-    match use_context::<Auth>().unwrap().user() {
-        Ok(user) => html! {
+    let login = callback!(auth; move |_| auth.signup());
+    let signup = callback!(auth; move |_| auth.signup());
+    let logout = callback!(auth; move |_| auth.signup());
+
+    match (auth.user(), auth.loading()) {
+        (Some(user), false) => html! {
             <>
                 <Button color={Color::Primary} class="m-2" onclick={oncreate}>
                     <span>{"Create"}</span>
@@ -31,16 +33,16 @@ pub fn profile_dropdown() -> Html {
                     <DropdownItem> {"Profile"} </DropdownItem>
                     <DropdownItem> {"Library"} </DropdownItem>
                     <DropdownDivider/>
-                    <DropdownItem onclick={auth.logout()}> {"Log out"} </DropdownItem>
+                    <DropdownItem onclick={logout}> {"Log out"} </DropdownItem>
                 </Dropdown>
             </>
         },
-        Err(false) => html! {
+        (None, false) => html! {
             <Buttons class="mx-2">
-                <Button color={Color::Primary} onclick={auth.signup()}> <strong>{"Sign up"}</strong></Button>
-                <Button light={true} onclick={auth.login()}> {"Log in"} </Button>
+                <Button color={Color::Primary} onclick={signup}> <strong>{"Sign up"}</strong></Button>
+                <Button light={true} onclick={login}> {"Log in"} </Button>
             </Buttons>
         },
-        Err(true) => html! {},
+        _ => html! {},
     }
 }

@@ -1,20 +1,25 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 use std::str::FromStr;
 
 use cobul::Loader;
-use cobul::{Button, Color, ModalCard, Notification};
+use cobul::{Button, Color};
 
 use yew::*;
 use yew_router::prelude::*;
 
 use api::Code;
 use create::Create;
-use shared::{Auth, Error, Errors, Route};
+use shared::{
+    use_auth, use_auth_manager, use_toast_manager, Route, Toast, UseAuthManagerHandle,
+    UseToastManagerHandle,
+};
 use ywt::callback;
 
 use crate::initializer::Initializer;
 use crate::lab::Test;
 use crate::overview::Overview;
+use components::Toasts;
 
 mod dropdown;
 mod initializer;
@@ -27,68 +32,25 @@ mod search;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-pub fn view_error(error: Option<Rc<Error>>, onexit: Callback<()>) -> Html {
-    let footer = html! { <Button> <p> {"Leave"} </p> </Button> };
-
-    let error = match error {
-        Some(error) => error,
-        None => return html! {},
-    };
-
-    match &*error {
-        Error::Internal(msg) => html! {
-            <ModalCard title="Internal error" {footer}>
-                <p> {msg.to_string()} </p>
-            </ModalCard>
-        },
-        Error::Api(msg) => html! {
-            <ModalCard title="Api error" {footer}>
-                <p> {msg.to_string()} </p>
-            </ModalCard>
-        },
-        Error::Warning(msg) => html! {
-            <div style="position:absolute; top:55px; left:55px; z-index: 10">
-                <Notification color={Color::Danger} light=true ondelete={onexit}>
-                { format!("{}", msg.clone()) }
-                </Notification>
-            </div>
-        },
-        Error::Info(msg) => html! {
-            <div style="position:absolute; top:55px; left:55px; z-index: 10">
-                <Notification color={Color::Info} light=true ondelete={onexit}>
-                { format!("{}", msg.clone()) }
-                </Notification>
-            </div>
-        },
-    }
-}
-
 #[function_component(App)]
 pub fn app() -> Html {
-    let error = use_state(|| None);
-    let trigger = use_state(|| ());
+    let toast = use_toast_manager();
+    let auth = use_auth_manager();
 
-    let auth = use_state(|| Auth::new(callback!(trigger; move |_| trigger.set(()))));
-
-    let inner = match &auth.user() {
-        Err(true) => html! { <Loader />},
-        _ => html! { <Switch<Route> render={Switch::render(switch)} /> },
-    };
-
-    let onexit = callback!(error; move |_| error.set(None));
-    let onadd = callback!(error; move |e| error.set(Some(Rc::new(e))));
-
-    let notification = view_error((*error).clone(), onexit);
+    if use_auth().loading() {
+        return html! { <Loader />};
+    }
 
     html! {
         <main>
             <BrowserRouter>
-                { notification }
-                <ContextProvider<Errors> context={onadd}>
-                <ContextProvider<Auth> context={(*auth).clone()}>
-                    { inner }
-                </ContextProvider<Auth>>
-                </ContextProvider<Errors>>
+                <Toasts />
+
+                <ContextProvider<UseAuthManagerHandle> context={auth}>
+                <ContextProvider<UseToastManagerHandle> context={toast}>
+                    <Switch<Route> render={Switch::render(switch)} />
+                </ContextProvider<UseToastManagerHandle>>
+                </ContextProvider<UseAuthManagerHandle>>
             </BrowserRouter>
         </main>
     }
@@ -122,5 +84,5 @@ fn switch(route: &Route) -> Html {
 
 pub fn main() {
     wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
-    yew::Renderer::<App>::new().render();
+    Renderer::<App>::new().render();
 }

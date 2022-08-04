@@ -1,11 +1,9 @@
-use api::{DraftQuiz, DraftRound, User};
-use shared::{EmitError, Errors};
+use api::{DraftQuiz, DraftRound, Error, Quiz, Result, User};
 use std::rc::Rc;
 
-use wasm_bindgen_futures::spawn_local;
+use shared::{use_auth, use_toast, Kind, Toast, UseToastHandle};
 use yew::{hook, use_effect_with_deps};
 use yew::{use_state, Callback, UseStateHandle};
-use ywt::spawn;
 
 pub enum Action {
     Quiz(Rc<DraftQuiz>),
@@ -18,17 +16,25 @@ pub enum Action {
 }
 
 #[derive(Clone)]
-pub struct CreateState {
+pub struct UseQuizCreateHandle {
     prev_quiz: UseStateHandle<Rc<DraftQuiz>>,
     quiz: UseStateHandle<Rc<DraftQuiz>>,
 
     quiz_id: UseStateHandle<Option<u32>>,
     loading: UseStateHandle<bool>,
+    toast: UseToastHandle,
 }
 
-impl CreateState {
-    async fn load(self, quiz_id: u32, user: Option<User>, err: Errors) -> Option<()> {
-        let quiz = api::query_quiz(user, quiz_id).await.emit(&err)?;
+impl UseQuizCreateHandle {
+    fn notify<T>(&self, result: Result<T>) -> Option<T> {
+        result.map_err(|err| self.toast.add(err)).ok()
+    }
+
+    async fn load(self, quiz_id: u32, user: Option<Rc<User>>) {
+        let quiz = match self.notify(api::query_quiz(user, quiz_id).await) {
+            Some(quiz) => quiz,
+            None => return,
+        };
 
         let mut draft: DraftQuiz = quiz.into();
         draft.rounds.data.extend(draft.rounds.data.is_empty().then(|| DraftRound::default()));
@@ -38,36 +44,35 @@ impl CreateState {
         self.quiz.set(draft);
 
         self.loading.set(false);
-        Some(())
     }
 
-    async fn upload(self, draft: Rc<DraftQuiz>, user: User, err: Errors) {
+    async fn upload(self, draft: Rc<DraftQuiz>, user: Rc<User>) {
         self.quiz.set(draft.clone());
         self.prev_quiz.set(draft.clone());
 
         let mut inner = (*draft).clone();
 
         inner.creator_id = user.sub.clone();
-        inner.image.upload(user.sub.clone()).await.emit(&err);
+        let _ = self.notify(inner.image.upload(user.sub.clone()).await);
 
         for (index, round) in inner.rounds.data.iter_mut().enumerate() {
-            round.image.upload(user.sub.clone()).await.emit(&err);
+            let _ = self.notify(round.image.upload(user.sub.clone()).await);
             round.index = index as u32
         }
 
         match *self.quiz_id {
             Some(quiz_id) => {
-                api::update_quiz(user, quiz_id, inner).await.emit(&err);
+                let _ = self.notify(api::update_quiz(user, quiz_id, inner).await);
             }
             None => {
-                let quiz = api::create_quiz(user, inner).await.emit(&err);
+                let quiz = self.notify(api::create_quiz(user, inner).await);
                 self.quiz_id.set(quiz.map(|x| x.id));
             }
         };
     }
 
-    async fn delete(self, user: User, err: Errors) {
-        api::delete_quiz(user, self.quiz_id.unwrap()).await.emit(&err);
+    async fn delete(self, user: Rc<User>) {
+        let _ = self.notify(api::delete_quiz(user, self.quiz_id.unwrap()).await);
     }
 
     pub fn quiz(&self) -> Rc<DraftQuiz> {
@@ -80,7 +85,7 @@ impl CreateState {
         self.prev_quiz != self.quiz
     }
 
-    pub fn action(&self, action: Action, user: User, err: Errors) {
+    pub fn action(&self, action: Action, user: Rc<User>) {
         let mut new = (**self.quiz).clone();
         let rounds = &mut new.rounds.data;
         let state = self.clone();
@@ -108,15 +113,15 @@ impl CreateState {
                 self.quiz.set(Rc::new(new));
             }
             Action::Delete => {
-                spawn!(state.delete(user, err));
+                ywt::spawn!(state.delete(user));
             }
             Action::Submit if self.changed() => {
                 self.loading.set(true);
                 let loading = self.loading.clone();
 
-                spawn!(state; async move {
+                ywt::spawn!(state; async move {
                     let quiz = state.quiz();
-                    state.upload(quiz, user, err).await;
+                    state.upload(quiz, user).await;
                     loading.set(false);
                 });
             }
@@ -126,12 +131,7 @@ impl CreateState {
 }
 
 #[hook]
-pub fn use_create_state(
-    callback: Callback<api::Error>,
-    quiz_id: Option<u32>,
-    user: Option<User>,
-    err: Errors,
-) -> CreateState {
+pub fn use_quiz_create(quiz_id: Option<u32>) -> UseQuizCreateHandle {
     let mut default = DraftQuiz::default();
     default.rounds.data.extend(default.rounds.data.is_empty().then(|| DraftRound::default()));
 
@@ -141,17 +141,16 @@ pub fn use_create_state(
     let loading = use_state(|| quiz_id.is_some());
     let quiz_id = use_state(|| quiz_id);
 
-    let res = CreateState { prev_quiz, quiz, loading, quiz_id };
+    let toast = use_toast();
 
+    let res = UseQuizCreateHandle { prev_quiz, quiz, loading, quiz_id, toast };
+
+    let user = use_auth().user();
     let cloned = res.clone();
     use_effect_with_deps(
         move |_| {
             if let Some(quiz_id) = *cloned.quiz_id {
-                spawn_local(async move {
-                    if let None = cloned.load(quiz_id, user, err).await {
-                        callback.emit(api::Error::EmptyResponse);
-                    }
-                })
+                ywt::spawn!(cloned.load(quiz_id, user))
             }
             || ()
         },

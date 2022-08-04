@@ -1,22 +1,39 @@
 use api::Stage;
 use gloo::timers::callback::Timeout;
 use shared::pixelation::*;
-use shared::{Error, Internal};
+use shared::{Kind, Toast};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
 use ywt::clone;
 
+#[derive(derive_more::Display, Debug)]
+#[display(fmt = "Internal javascript draw error")]
+enum Error {
+    Js,
+    Cast,
+    Draw,
+}
+
+impl Toast for Error {
+    fn kind(&self) -> Kind {
+        Kind::Error
+    }
+    fn leave(&self) -> bool {
+        false
+    }
+}
+
 fn canvas_context(element: &HtmlCanvasElement) -> Result<CanvasRenderingContext2d, Error> {
     Ok(element
         .get_context("2d")
-        .map_err(|_| Internal::JsError)?
-        .ok_or(Internal::InvalidCast)?
+        .map_err(|_| Error::Js)?
+        .ok_or(Error::Cast)?
         .dyn_into::<CanvasRenderingContext2d>()
-        .map_err(|_| Internal::InvalidCast)?)
+        .map_err(|_| Error::Cast)?)
 }
 
-pub fn draw_pixelated(
+fn draw_pixelated(
     pixels: u32,
     width: u32,
     height: u32,
@@ -44,7 +61,7 @@ pub fn draw_pixelated(
 
     offscreen_ctx
         .draw_image_with_html_image_element_and_dw_and_dh(&image, 0.0, 0.0, x_pixels, y_pixels)
-        .map_err(|_| Internal::DrawError)?;
+        .map_err(|_| Error::Draw)?;
 
     canvas_ctx.set_image_smoothing_enabled(pixels > height);
     canvas_ctx.clear_rect(0.0, 0.0, c_width, c_height);
@@ -61,7 +78,7 @@ pub fn draw_pixelated(
             i_width * scale,
             i_height * scale,
         )
-        .map_err(|_| Internal::DrawError)?)
+        .map_err(|_| Error::Draw)?)
 }
 
 fn update_duration(stage: Stage, pixels: u32, max: u32) -> Option<(f64, u32)> {

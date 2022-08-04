@@ -1,6 +1,6 @@
 use api::{DraftQuiz, DraftTag, Quiz, Resolution, IMAGE_PLACEHOLDER};
 use cobul::*;
-use shared::Auth;
+use shared::use_auth;
 use std::rc::Rc;
 use yew::*;
 
@@ -39,8 +39,8 @@ pub fn quiz_card(props: &Props) -> Html {
         }
     };
 
-    let right = match (&props.view, use_context::<Auth>().unwrap().user()) {
-        (View::Normal { quiz, onedit, .. }, Ok(user)) if user.sub == quiz.creator.id => {
+    let right = match (&props.view, use_auth().user()) {
+        (View::Normal { quiz, onedit, .. }, Some(user)) if user.sub == quiz.creator.id => {
             html! { <Button onclick={onedit} color={Color::White}> <Icon icon={fa::Solid::PenToSquare}/> </Button> }
         }
         _ => html! {},

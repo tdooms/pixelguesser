@@ -1,16 +1,21 @@
 use crate::{DraftQuiz, Error, Quiz, QuizPk, Result, Round, Tag, User, GRAPHQL_ENDPOINT};
 use hasura::*;
+use std::rc::Rc;
 
-pub async fn query_quizzes(user: Option<User>, rounds: bool) -> Result<Vec<Quiz>> {
+pub async fn query_quizzes(user: Option<Rc<User>>, rounds: bool) -> Result<Vec<Quiz>> {
     let returning = match rounds {
         false => Quiz::except(&[Quiz::rounds(Round::all())]),
         true => Quiz::all(),
     };
     let body = QueryBuilder::default().returning(returning).build().unwrap();
-    Ok(query!(body).token(user.map(|x| x.token)).send(GRAPHQL_ENDPOINT).await?)
+    Ok(query!(body).token(user.map(|x| x.token.clone())).send(GRAPHQL_ENDPOINT).await?)
 }
 
-pub async fn search_quizzes(user: Option<User>, query: String, rounds: bool) -> Result<Vec<Quiz>> {
+pub async fn search_quizzes(
+    user: Option<Rc<User>>,
+    query: String,
+    rounds: bool,
+) -> Result<Vec<Quiz>> {
     let condition = Ilike(format!("%{}%", query));
     let conditions = Conditions::single(Quiz::title(), condition);
 
@@ -22,17 +27,17 @@ pub async fn search_quizzes(user: Option<User>, query: String, rounds: bool) -> 
     let body =
         QueryBuilder::default().conditions(vec![conditions]).returning(returning).build().unwrap();
 
-    Ok(query!(body).token(user.map(|x| x.token)).send(GRAPHQL_ENDPOINT).await?)
+    Ok(query!(body).token(user.map(|x| x.token.clone())).send(GRAPHQL_ENDPOINT).await?)
 }
 
-pub async fn query_quiz(user: Option<User>, quiz_id: u32) -> Result<Quiz> {
+pub async fn query_quiz(user: Option<Rc<User>>, quiz_id: u32) -> Result<Quiz> {
     let first = QueryByPkBuilder::default()
         .pk(QuizPk { id: quiz_id.into() })
         .returning(Quiz::all())
         .build()
         .unwrap();
 
-    let token = user.map(|x| x.token);
+    let token = user.map(|x| x.token.clone());
     let fut = query!(first).token(token).send(GRAPHQL_ENDPOINT);
     let mut res = fut.await?.ok_or(Error::EmptyResponse)?;
 
@@ -41,14 +46,14 @@ pub async fn query_quiz(user: Option<User>, quiz_id: u32) -> Result<Quiz> {
     Ok(res)
 }
 
-pub async fn create_quiz(user: User, draft: DraftQuiz) -> Result<Quiz> {
+pub async fn create_quiz(user: Rc<User>, draft: DraftQuiz) -> Result<Quiz> {
     let first = InsertOneBuilder::default().returning(Quiz::all()).object(draft).build().unwrap();
 
-    let fut = mutation!(first).token(Some(user.token)).send(GRAPHQL_ENDPOINT);
+    let fut = mutation!(first).token(Some(user.token.clone())).send(GRAPHQL_ENDPOINT);
     fut.await?.ok_or(Error::EmptyResponse)
 }
 
-pub async fn update_quiz(user: User, quiz_id: u32, mut draft: DraftQuiz) -> Result<Quiz> {
+pub async fn update_quiz(user: Rc<User>, quiz_id: u32, mut draft: DraftQuiz) -> Result<Quiz> {
     let tags = std::mem::take(&mut draft.tags.data);
     let tags: Vec<_> = tags.into_iter().map(|x| Tag { value: x.value.clone(), quiz_id }).collect();
 
@@ -91,7 +96,7 @@ pub async fn update_quiz(user: User, quiz_id: u32, mut draft: DraftQuiz) -> Resu
     fut.await?.0.ok_or(Error::EmptyResponse)
 }
 
-pub async fn delete_quiz(user: User, quiz_id: u32) -> Result<Quiz> {
+pub async fn delete_quiz(user: Rc<User>, quiz_id: u32) -> Result<Quiz> {
     let first = DeleteByPkBuilder::default()
         .pk(QuizPk { id: quiz_id })
         .returning(Quiz::all())

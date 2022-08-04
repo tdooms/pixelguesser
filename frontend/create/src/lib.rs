@@ -1,12 +1,12 @@
 use cobul::Loader;
-use shared::{Auth, Error, Errors, Route};
+use shared::{use_auth, use_toast, Route};
 use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
 
 use crate::quiz::QuizPage;
 use crate::rounds::RoundPage;
-use crate::state::use_create_state;
+use crate::state::use_quiz_create;
 use crate::summary::Summary;
 
 mod edit;
@@ -33,20 +33,19 @@ pub enum Stage {
 
 #[function_component(Create)]
 pub fn create(props: &Props) -> Html {
-    let user = use_context::<Auth>().unwrap().user();
-    let errors = use_context::<Errors>().unwrap();
+    let user = use_auth().user();
+    let toast = use_toast();
 
     let user = match user {
-        Ok(user) => user,
-        Err(_err) => return html! { <Redirect<Route> to={Route::Overview} /> },
+        Some(user) => user,
+        None => return html! { "not allowed" },
     };
 
-    let callback = callback!(errors; move |err| errors.emit(Error::Api(err)));
-    let state = use_create_state(callback, props.quiz_id, Some(user.clone()), errors.clone());
+    let state = use_quiz_create(props.quiz_id);
     let stage = use_state(|| Stage::Quiz);
 
     let onstage = callback!(stage; move |new| stage.set(new));
-    let onaction = callback!(state, user, errors; move |action| state.action(action, user.clone(), errors.clone()));
+    let onaction = callback!(state, user; move |action| state.action(action, user.clone()));
 
     let draft = state.quiz();
     let has_delete = props.quiz_id.is_some();

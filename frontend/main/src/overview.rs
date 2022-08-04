@@ -3,7 +3,7 @@ use crate::search::{Search, Sort};
 use api::Quiz;
 use cobul::*;
 use components::{QuizCard, View};
-use shared::{Auth, EmitError, Errors, Route};
+use shared::{use_auth, use_toast, Route};
 use wasm_bindgen_futures::spawn_local;
 use yew::HtmlResult;
 use yew::*;
@@ -43,8 +43,9 @@ pub fn empty_column() -> Html {
 
 #[function_component(Overview)]
 pub fn overview() -> HtmlResult {
-    let user = use_context::<Auth>().unwrap().user().ok();
-    let errors = use_context::<Errors>().unwrap();
+    let user = use_auth().user();
+    let toasts = use_toast();
+
     let filter = use_state_eq(|| String::new());
     let sort = use_state_eq(|| Sort::Relevance);
 
@@ -59,7 +60,10 @@ pub fn overview() -> HtmlResult {
                     true => api::query_quizzes(user, false).await,
                     false => api::search_quizzes(user, filter, false).await,
                 };
-                cloned.set(result.emit(&errors));
+                match result {
+                    Ok(quizzes) => cloned.set(Some(quizzes)),
+                    Err(err) => toasts.add(err),
+                }
             });
             || ()
         },

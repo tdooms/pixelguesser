@@ -27,6 +27,7 @@ yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996", features = ["csr"] }
 
+gloo-timers = "0.2"
 strum = { version = "0.24", features = ["derive"] }
 derive_more = "*"
 

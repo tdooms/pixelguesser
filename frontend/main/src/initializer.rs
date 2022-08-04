@@ -6,7 +6,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, Participant, Quiz, Result, Session, User, WebsocketTask};
-use shared::Auth;
+use shared::use_auth;
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -21,7 +21,7 @@ struct State {
     quiz: Rc<Quiz>,
 }
 
-async fn create_session(props: &Props, user: Option<User>) -> Result<State> {
+async fn create_session(props: &Props, user: Option<Rc<User>>) -> Result<State> {
     let (session_id, participant) = match props.session_id {
         Some(id) => (id, Participant::Manager),
         None => (api::create_session(props.quiz_id).await?, Participant::Host),
@@ -43,13 +43,13 @@ pub fn initializer(props: &Props) -> Html {
         Err(err) => log::error!("{err}"),
     };
 
-    let auth = use_context::<Auth>().unwrap();
+    let user = use_auth().user();
     let (props_c, ws_c, state_c) = (props.clone(), websocket.clone(), state.clone());
 
     use_effect_with_deps(
         move |_| {
             ywt::spawn!(async move {
-                let res = create_session(&props_c, auth.user().ok()).await.unwrap();
+                let res = create_session(&props_c, user).await.unwrap();
 
                 let task = WebsocketTask::new(res.session_id, callback).unwrap();
                 task.send(&Action::Join(res.participant.clone()));
