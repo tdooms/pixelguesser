@@ -1,7 +1,6 @@
-use api::{Image, Photo, UNSPLASH_KEY};
+use crate::unsplash::Unsplash;
+use api::Image;
 use cobul::*;
-use futures::future::FutureExt;
-use shared::use_search;
 use strum::IntoEnumIterator;
 use yew::html::IntoPropValue;
 use yew::*;
@@ -36,15 +35,9 @@ pub struct Props {
 }
 
 #[function_component(Picker)]
-pub fn picker(props: &Props) -> Html {
-    let query = use_state(|| String::new());
-    let oninput = callback!(query; move |string| query.set(string));
-
-    let func =
-        |query: String| api::search_photos(query, UNSPLASH_KEY.to_owned()).map(|x| x.unwrap());
-    let photos = use_search((*query).clone(), func);
-
+pub fn picker(_props: &Props) -> Html {
     let selected = use_state(|| Tab::Upload);
+
     let onclick = callback!(selected; move |tab| selected.set(tab));
 
     let view_tab = |tab| {
@@ -54,27 +47,17 @@ pub fn picker(props: &Props) -> Html {
         html! { <li class={active} {onclick}> <a> <Icon icon={tab.icon()}/> <span> {tab.to_string()} </span> </a> </li> }
     };
 
-    let view_photo = |photo: &Photo| {
-        html! { photo.user.first_name.clone() }
-    };
-
-    let body = match (*selected, photos.clone()) {
-        (Tab::Upload, _) => html! {
+    let body = match *selected {
+        Tab::Upload => html! {
             <Box style="height: 20%"/>
         },
-        (Tab::Url, _) => html! {
+        Tab::Url => html! {
             "tesst"
         },
-        (Tab::Unsplash, Some(photos)) => html! {
-            <>
-            <Input {oninput} value={(*query).clone()}/>
-            { for photos.iter().map(view_photo) }
-            </>
+        Tab::Unsplash => html! {
+            <Unsplash />
         },
-        (Tab::Unsplash, None) => html! {
-            "loading"
-        },
-        (Tab::Other, _) => html! {
+        Tab::Other => html! {
             "Other stuffz"
         },
     };

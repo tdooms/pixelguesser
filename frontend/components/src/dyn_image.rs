@@ -36,9 +36,9 @@ pub struct Props {
 
 #[derive(derive_more::Display, Debug, PartialEq, Clone, Copy, Default)]
 pub enum Fit {
-    #[default]
     #[display(fmt = "none")]
     None,
+    #[default]
     #[display(fmt = "contain")]
     Contain,
     #[display(fmt = "cover")]

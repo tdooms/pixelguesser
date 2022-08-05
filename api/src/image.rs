@@ -1,5 +1,5 @@
-use crate::UPLOAD_ENDPOINT;
 use crate::{Error, Result};
+use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 use images::Resolution;
 use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -80,7 +80,7 @@ impl Image {
         match (&self.local, &self.url, &self.blurhash) {
             (Some(local), _, _) => Rc::clone(local),
             (None, Some(url), _) => Rc::new(format!("{}{suffix}", url.as_ref())),
-            (None, None, _) => Rc::new(String::new()),
+            (None, None, _) => Rc::new(IMAGE_PLACEHOLDER.to_owned()),
             // TODO: https://github.com/vaalentin/array-to-image/blob/master/src/index.js
             // Uint8ClampedArray
         }

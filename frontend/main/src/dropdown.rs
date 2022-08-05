@@ -7,16 +7,14 @@ use shared::{use_auth, Route};
 
 #[function_component(ProfileDropdown)]
 pub fn profile_dropdown() -> Html {
-    let focus = use_state(|| false);
+    let active = use_state(|| false);
     let navigator = use_navigator().unwrap();
     let auth = use_auth();
 
-    let onfocus = callback!(focus; move |new| focus.set(new));
+    let onfocus = callback!(active; move |new| active.set(new));
     let oncreate = callback!(move |_| navigator.push(Route::Create));
 
-    let trigger = |picture| {
-        html! { <Image rounded=true src={picture} size={ImageSize::Is48x48}/> }
-    };
+    let trigger = |src| html! { <Image rounded=true {src} size={ImageSize::Is48x48}/> };
 
     let login = callback!(auth; move |_| auth.signup());
     let signup = callback!(auth; move |_| auth.signup());
@@ -29,7 +27,7 @@ pub fn profile_dropdown() -> Html {
                     <span>{"Create"}</span>
                 </Button>
 
-                <Dropdown class="m-1 mr-2" trigger={trigger(user.picture.clone())} {onfocus} active={*focus} right=true>
+                <Dropdown class="m-1 mr-2" trigger={trigger(user.picture.clone())} {onfocus} active={*active} right=true>
                     <DropdownItem> {"Profile"} </DropdownItem>
                     <DropdownItem> {"Library"} </DropdownItem>
                     <DropdownDivider/>

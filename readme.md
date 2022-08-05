@@ -52,6 +52,7 @@ it will be released on the website www.pixelguesser.com.
   - ~~Generalised state diffing manager (medium)~~ (indirectly fixed with round/quiz merge)
   - Search web for images (google/unsplash/pixabay) (medium)
   - Drag and drop image, copy paste url, ... (medium)
+  - Attribute and download (Photo by <a href="https://unsplash.com/@anniespratt?utm_source=your_app_name&utm_medium=referral">Annie Spratt</a> on <a href="https://unsplash.com/?utm_source=your_app_name&utm_medium=referral">Unsplash</a>)
 - Auth
   - ~~Keep logged in (medium)~~
   - Rusty API calls instead of JS SDK (low)

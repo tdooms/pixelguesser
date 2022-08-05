@@ -1,5 +1,5 @@
 use cobul::Loader;
-use shared::{use_auth, use_toast, Route};
+use shared::{use_auth, use_toast, Forbidden, Route};
 use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
@@ -17,6 +17,7 @@ mod quiz;
 mod rounds;
 mod state;
 mod summary;
+mod unsplash;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -36,9 +37,9 @@ pub fn create(props: &Props) -> Html {
     let user = use_auth().user();
     let toast = use_toast();
 
-    let user = match user {
+    let user = match toast.maybe(user.ok_or(Forbidden)) {
         Some(user) => user,
-        None => return html! { "not allowed" },
+        None => return html! {},
     };
 
     let state = use_quiz_create(props.quiz_id);

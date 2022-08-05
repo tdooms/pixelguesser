@@ -86,7 +86,7 @@ impl Session {
             (Action::Join(participant), _) => {
                 match (self.participants.contains_key(&participant), participant) {
                     (true, Participant::Manager) => return Err(Error::DuplicateManager),
-                    (true, Participant::Host) => return Err(Error::DuplicateManager),
+                    (true, Participant::Host) => return Err(Error::DuplicateHost),
                     (_, participant) => self.participants.insert(participant, id),
                 };
             }

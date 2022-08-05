@@ -25,13 +25,14 @@ reqwest = { version = "0.11", features = ["json"], optional = true }
 futures = { version = "0.3", optional = true }
 wasm-bindgen-futures = { version = "0.4", optional = true }
 
-log = { version = "0.4", optional = true }
+
 validator = { version = "0.16", features = ["derive"], optional = true }
 
 web-sys = { version = "0.3", features = ["Url"], optional = true }
 gloo-file = { version = "0.2", features = ["futures"], optional = true }
 gloo-net = { version = "0.2", optional = true }
 
+log = "0.4"
 dotenv_codegen = "0.15"
 thiserror = "1.0"
 derive_more = "0.99"

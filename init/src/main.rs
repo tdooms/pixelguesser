@@ -1,4 +1,4 @@
-use api::{DraftQuiz, Error, Image, Quiz, GRAPHQL_ENDPOINT};
+use api::{DraftQuiz, Image, Quiz, GRAPHQL_ENDPOINT};
 use hasura::{mutation, DeleteBuilder, InsertBuilder, Object};
 use std::fs::File;
 

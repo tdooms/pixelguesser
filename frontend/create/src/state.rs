@@ -1,9 +1,9 @@
-use api::{DraftQuiz, DraftRound, Error, Quiz, Result, User};
+use api::{DraftQuiz, DraftRound, Result, User};
 use std::rc::Rc;
 
-use shared::{use_auth, use_toast, Kind, Toast, UseToastHandle};
-use yew::{hook, use_effect_with_deps};
-use yew::{use_state, Callback, UseStateHandle};
+use shared::{use_auth, use_startup, use_toast, UseToastHandle};
+use yew::hook;
+use yew::{use_state, UseStateHandle};
 
 pub enum Action {
     Quiz(Rc<DraftQuiz>),
@@ -147,15 +147,13 @@ pub fn use_quiz_create(quiz_id: Option<u32>) -> UseQuizCreateHandle {
 
     let user = use_auth().user();
     let cloned = res.clone();
-    use_effect_with_deps(
-        move |_| {
-            if let Some(quiz_id) = *cloned.quiz_id {
-                ywt::spawn!(cloned.load(quiz_id, user))
-            }
-            || ()
-        },
-        (),
-    );
+
+    let startup = || {
+        if let Some(quiz_id) = *cloned.quiz_id {
+            ywt::spawn!(cloned.load(quiz_id, user))
+        }
+    };
+    use_startup(startup);
 
     res
 }

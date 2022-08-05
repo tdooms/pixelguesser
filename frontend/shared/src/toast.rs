@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use yew::{hook, use_context, use_state, UseStateHandle};
 
+#[derive(Clone, Debug, Copy, PartialEq)]
 pub enum Kind {
     Error,
     Warning,
@@ -21,7 +22,7 @@ pub struct Forbidden;
 
 impl Toast for Forbidden {
     fn kind(&self) -> Kind {
-        Kind::Error
+        Kind::Warning
     }
     fn leave(&self) -> bool {
         true
@@ -34,6 +35,38 @@ impl Toast for api::Error {
     }
     fn leave(&self) -> bool {
         false
+    }
+}
+
+#[derive(derive_more::Display)]
+#[display(fmt = "{}", message)]
+pub struct Generic {
+    pub message: String,
+    pub leave: bool,
+    pub kind: Kind,
+}
+
+impl Toast for Generic {
+    fn kind(&self) -> Kind {
+        self.kind
+    }
+    fn leave(&self) -> bool {
+        self.leave
+    }
+}
+
+impl Generic {
+    pub fn error(message: impl ToString, leave: bool) -> Self {
+        Self { message: message.to_string(), leave, kind: Kind::Error }
+    }
+    pub fn warning(message: impl ToString, leave: bool) -> Self {
+        Self { message: message.to_string(), leave, kind: Kind::Warning }
+    }
+    pub fn info(message: impl ToString, leave: bool) -> Self {
+        Self { message: message.to_string(), leave, kind: Kind::Info }
+    }
+    pub fn success(message: impl ToString, leave: bool) -> Self {
+        Self { message: message.to_string(), leave, kind: Kind::Success }
     }
 }
 
@@ -60,7 +93,7 @@ impl UseToastManagerHandle {
         self.counter.set(id + 1);
 
         let cloned = self.clone();
-        let timer = Timeout::new(3000, move || cloned.remove(id));
+        let timer = Timeout::new(4_000, move || cloned.remove(id));
 
         new.0.insert(id, Rc::new((Box::new(toast), timer)));
         self.state.set(Rc::new(new));
@@ -83,6 +116,10 @@ pub struct UseToastHandle {
 }
 
 impl UseToastHandle {
+    pub fn maybe<V, T: Toast + 'static>(&self, result: Result<V, T>) -> Option<V> {
+        result.map_err(|toast| self.add(toast)).ok()
+    }
+
     pub fn add(&self, toast: impl Toast + 'static) {
         self.manager.add(toast)
     }

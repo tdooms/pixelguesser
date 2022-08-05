@@ -1,6 +1,10 @@
-use cobul::{fa::Solid, Color, Column, Columns, Delete, Icon, Message, TextColor};
+use cobul::{
+    fa::Solid, Button, Color, Column, ColumnSize, Columns, Icon, Message, Size, TextColor,
+};
+use shared::Route;
 use shared::{Kind, Toast, UseToastManagerHandle};
 use yew::*;
+use yew_router::prelude::Redirect;
 
 pub fn toast_view(toast: &dyn Toast, onremove: Callback<()>) -> Html {
     let (icon, color, text_color) = match toast.kind() {
@@ -10,12 +14,24 @@ pub fn toast_view(toast: &dyn Toast, onremove: Callback<()>) -> Html {
         Kind::Success => (Solid::Check, Color::Success, TextColor::Success),
     };
 
+    let redirect = match toast.leave() {
+        true => html! { <Redirect<Route> to={Route::Overview} />},
+        false => html! {},
+    };
+
     html! {
         <Message {color}>
-        <Columns>
-        <Column> <Icon {icon} color={text_color}/> </Column>
-        <Column> {toast.to_string()} </Column>
-        <Column> <Delete onclick={onremove} /> </Column>
+        { redirect }
+        <Columns vcentered=true>
+            <Column size={ColumnSize::IsNarrow}>
+                <Icon {icon} color={text_color}/>
+            </Column>
+            <Column>
+                {toast.to_string()}
+            </Column>
+            <Column size={ColumnSize::IsNarrow} class="p-0">
+                <Button onclick={onremove} {color} light=true> <Icon icon={Solid::Xmark} size={Size::Large} /> </Button>
+            </Column>
         </Columns>
         </Message>
     }

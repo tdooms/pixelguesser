@@ -10,7 +10,7 @@ use ywt::callback;
 use crate::edit::RoundEdit;
 use crate::list::RoundList;
 use crate::picker::Picker;
-use crate::preview::RoundPreview;
+
 use crate::state::Action;
 use crate::Stage;
 
@@ -23,6 +23,7 @@ pub struct Props {
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
+    log::info!("round page");
     let Props { onstage, onaction, draft } = props.clone();
 
     let current = use_state(|| 0usize);

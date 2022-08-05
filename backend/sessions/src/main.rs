@@ -4,9 +4,8 @@ use tower_http::cors::{Any, CorsLayer};
 
 use axum::extract::ws::{Message, WebSocket};
 use axum::extract::{Path, WebSocketUpgrade};
-use axum::http::Method;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Extension, Router};
 use clap::Parser;
 use futures::{SinkExt, StreamExt};
@@ -56,7 +55,7 @@ async fn handle_message(message: Message, state: &mut State, conn_id: u32) -> Re
     let action: Action = serde_json::from_str(&message)?;
 
     state.session.update(action, conn_id)?;
-    notify(state, &Ok(state.session.clone())).await;
+    notify(state, &state.session.clone()).await;
 
     Ok(())
 }
@@ -67,25 +66,22 @@ async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> 
     Ok(lock.get(&session_id).cloned().ok_or(Error::SessionNotFound)?)
 }
 
-async fn notify(state: &mut State, response: &Result<Session, String>) {
-    let response = serde_json::to_string(&response).unwrap();
+async fn notify(state: &mut State, session: &Session) {
+    let response = serde_json::to_string(session).unwrap();
     for (_, sender) in &mut state.connections {
         let _ = sender.send(Message::Text(response.clone())).await;
     }
 }
 
 async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
-    let (mut sender, mut receiver) = stream.split();
+    let (sender, mut receiver) = stream.split();
     let conn_id = rand::thread_rng().gen::<u32>();
     log::info!("attempted connection to {session_id}");
 
     // Add the sender to the connections of the local state
-    let local = match handle_local(&global, session_id).await {
+    let local = match handle_local(&global, session_id).await.map_err(|e| log::error!("{e}")) {
         Ok(local) => local,
-        Err(err) => {
-            sender.send(Message::Text(format!("{err}"))).await.unwrap();
-            return;
-        }
+        Err(_) => return,
     };
 
     local.lock().await.connections.insert(conn_id, sender);
@@ -93,7 +89,7 @@ async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
     while let Some(Ok(message)) = receiver.next().await {
         let mut lock = local.lock().await;
         if let Err(err) = handle_message(message, &mut *lock, conn_id).await {
-            log::error!("{}", err);
+            log::error!("{err}");
         }
     }
 
@@ -116,7 +112,7 @@ async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
 
     // Notify the rest of the participants of the session change
     let session = lock.session.clone();
-    notify(&mut *lock, &Ok(session)).await;
+    notify(&mut *lock, &session).await;
 }
 
 #[tokio::main]
@@ -129,11 +125,11 @@ async fn main() {
 
     let global = Global::default();
 
-    let cors = CorsLayer::new().allow_origin(Any).allow_methods([Method::GET]);
+    let cors = CorsLayer::new().allow_origin(Any).allow_methods(Any);
 
     let app = Router::new()
         .route("/ws/:id", get(websocket))
-        .route("/create/:quiz", get(creator))
+        .route("/create/:quiz", post(creator))
         .layer(Extension(global))
         .layer(cors);
 

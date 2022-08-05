@@ -1,5 +1,7 @@
+use crate::{use_toast, Generic};
 use gloo::timers::callback::Timeout;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::future::Future;
 use std::hash::Hash;
 use std::rc::Rc;
@@ -7,32 +9,39 @@ use yew::*;
 
 #[hook]
 pub fn use_search<
-    Q: Hash + Eq + Clone + 'static,
-    T: 'static,
-    R: Future<Output = Vec<T>>,
+    Q: Hash + Eq + Clone + Default + Debug + 'static,
+    T: PartialEq + 'static,
+    R: Future<Output = Vec<T>> + 'static,
     F: Fn(Q) -> R + 'static,
 >(
     query: Q,
-    func: F,
+    gen: F,
 ) -> Option<Rc<Vec<T>>> {
-    let map = use_state(|| HashMap::new());
+    let map = use_state_eq(|| HashMap::new());
     let timer = use_state(|| None);
-
-    let cloned = map.clone();
-    let query_c = query.clone();
-    let onquery = move || {
-        ywt::spawn!(async move {
-            let result = func(query_c.clone()).await;
-            let mut new = (*cloned).clone();
-
-            new.insert(query_c, Rc::new(result));
-            cloned.set(new);
-        })
-    };
+    let prev = use_state(|| Q::default());
+    let toast = use_toast();
 
     match map.get(&query) {
         Some(result) => return Some(Rc::clone(result)),
-        None => timer.set(Some(Timeout::new(1_000, onquery))),
+        None if &*prev != &query => {
+            prev.set(query.clone());
+
+            let onquery = move || {
+                ywt::spawn!(async move {
+                    toast.add(Generic::info(format!("Query for {query:?}"), false));
+
+                    let result = gen(query.clone()).await;
+                    let mut new = (*map).clone();
+
+                    new.insert(query, Rc::new(result));
+                    map.set(new);
+                })
+            };
+
+            timer.set(Some(Timeout::new(1_000, onquery)));
+        }
+        _ => {}
     }
 
     None

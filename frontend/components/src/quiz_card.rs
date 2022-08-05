@@ -1,4 +1,4 @@
-use api::{DraftQuiz, DraftTag, Quiz, Resolution, IMAGE_PLACEHOLDER};
+use api::{DraftQuiz, Quiz, Resolution, IMAGE_PLACEHOLDER};
 use cobul::*;
 use shared::use_auth;
 use std::rc::Rc;
@@ -49,33 +49,17 @@ pub fn quiz_card(props: &Props) -> Html {
     let filler = |n| std::iter::repeat(" x").take(n).collect::<String>();
     let (small, large) = (filler(5), filler(15));
 
-    let (src, title, creator, description, tags) = match &props.view {
-        View::Normal { quiz, .. } => (
-            quiz.image.src(Resolution::Small),
-            &quiz.title,
-            &quiz.creator.name,
-            &quiz.description,
-            Rc::new(quiz.tags.iter().cloned().map(DraftTag::from).collect::<Vec<_>>()),
-        ),
-        View::Preview { draft, creator } => (
-            draft.image.src(Resolution::Small),
-            &draft.title,
-            creator,
-            &draft.description,
-            Rc::new(draft.tags.data.clone()),
-        ),
-        View::Empty => {
-            (Rc::from(IMAGE_PLACEHOLDER.to_owned()), &small, &small, &large, Rc::new(vec![]))
+    let (src, title, creator, description) = match &props.view {
+        View::Normal { quiz, .. } => {
+            (quiz.image.src(Resolution::Small), &quiz.title, &quiz.creator.name, &quiz.description)
         }
+        View::Preview { draft, creator } => {
+            (draft.image.src(Resolution::Small), &draft.title, creator, &draft.description)
+        }
+        View::Empty => (Rc::from(IMAGE_PLACEHOLDER.to_owned()), &small, &small, &large),
     };
     let style = (props.view == View::Empty).then(|| "visibility:hidden");
     let image = html! { <cobul::Image size={ImageSize::Is3by2} src={(*src).clone()} /> };
-
-    let view_tag = |tag: &DraftTag| {
-        html! {
-            <Tag color={Color::Info}> {tag.value.clone()} </Tag>
-        }
-    };
 
     html! {
         <Card {image} {footer} fullheight=true>
@@ -83,10 +67,6 @@ pub fn quiz_card(props: &Props) -> Html {
                 <p class="title is-4" {style}> { title } </p>
                 <p class="subtitle is-6" {style}> { creator } </p>
             </Media>
-
-            <Tags>
-            { for tags.iter().map(view_tag) }
-            </Tags>
 
             <Content>
                 <p {style}> { description } </p>

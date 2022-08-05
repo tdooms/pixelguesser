@@ -6,7 +6,7 @@ use api::{DraftQuiz, Image, Resolution};
 use components::{QuizCard, TagsField, View};
 use cropper::Cropper;
 use hasura::Data;
-use shared::use_auth;
+use shared::{use_auth, use_toast, Forbidden};
 use ywt::callback;
 
 use crate::state::Action;
@@ -30,9 +30,12 @@ pub struct Props {
 pub fn quiz_page(props: &Props) -> Html {
     let Props { onstage, onaction, draft, has_delete } = props.clone();
 
-    let creator = match use_auth().user() {
+    let user = use_auth().user();
+    let toast = use_toast();
+
+    let creator = match toast.maybe(user.ok_or(Forbidden)) {
         Some(user) => user.nickname.clone(),
-        None => return html! { "not allowed" },
+        None => return html! {},
     };
 
     let cropper = use_state(|| None);

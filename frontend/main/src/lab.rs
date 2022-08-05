@@ -1,13 +1,14 @@
-use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
-use yew::{function_component, html, use_effect_with_deps, use_node_ref, use_state, Html};
-
-use winit::{
-    event::*,
-    event_loop::{ControlFlow, EventLoop},
-    platform::web::WindowBuilderExtWebSys,
-    window::{Window, WindowBuilder},
-};
-
+// use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlImageElement};
+// use yew::{function_component, html, use_effect_with_deps, use_node_ref, use_state, Html};
+use yew::*;
+//
+// use winit::{
+//     event::*,
+//     event_loop::{ControlFlow, EventLoop},
+//     platform::web::WindowBuilderExtWebSys,
+//     window::{Window, WindowBuilder},
+// };
+//
 // fn compute_work_group_count((image_dims): (u32, u32), (workgroup_dims): (u32, u32)) -> (u32, u32) {
 //     let x = (image_dims.0 + workgroup_dims.0 - 1) / workgroup_dims.0;
 //     let y = (image_dims.1 + workgroup_dims.1 - 1) / workgroup_dims.1;

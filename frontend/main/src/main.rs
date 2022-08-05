@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-use std::rc::Rc;
 use std::str::FromStr;
 
 use cobul::Loader;
-use cobul::{Button, Color};
 
 use yew::*;
 use yew_router::prelude::*;
@@ -11,10 +8,8 @@ use yew_router::prelude::*;
 use api::Code;
 use create::Create;
 use shared::{
-    use_auth, use_auth_manager, use_toast_manager, Route, Toast, UseAuthManagerHandle,
-    UseToastManagerHandle,
+    use_auth_manager, use_toast_manager, Route, UseAuthManagerHandle, UseToastManagerHandle,
 };
-use ywt::callback;
 
 use crate::initializer::Initializer;
 use crate::lab::Test;
@@ -37,17 +32,17 @@ pub fn app() -> Html {
     let toast = use_toast_manager();
     let auth = use_auth_manager();
 
-    if use_auth().loading() {
+    if auth.loading() {
         return html! { <Loader />};
     }
+    log::trace!("rendering main page");
 
     html! {
         <main>
             <BrowserRouter>
-                <Toasts />
-
                 <ContextProvider<UseAuthManagerHandle> context={auth}>
                 <ContextProvider<UseToastManagerHandle> context={toast}>
+                    <Toasts />
                     <Switch<Route> render={Switch::render(switch)} />
                 </ContextProvider<UseToastManagerHandle>>
                 </ContextProvider<UseAuthManagerHandle>>

@@ -10,6 +10,7 @@ use tokio::sync::Mutex;
 pub enum Mode {
     Couch,
     Online,
+    Solo,
 }
 
 impl Default for Mode {

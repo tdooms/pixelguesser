@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use api::{Action, Participant, Phase, Quiz, Session, Stage};
 use cobul::*;
-use shared::Route;
+use shared::{use_toast, Generic, Route};
 use yew::*;
 use yew_router::prelude::*;
 
@@ -30,6 +30,13 @@ pub struct Props {
 pub fn manage(props: &Props) -> Html {
     let Props { session, quiz, callback } = props;
 
+    log::info!("{session:?}");
+
+    let toast = use_toast();
+    if !session.participants.contains_key(&Participant::Host) {
+        toast.add(Generic::warning("Host left the session", true));
+    }
+
     let onsubmit = callback.reform(Action::Add);
     let onremove = callback.reform(Action::Remove);
 
@@ -37,10 +44,6 @@ pub fn manage(props: &Props) -> Html {
         let points = quiz.rounds[round].points as i64;
         callback.reform(move |name| Action::Score(name, points))
     };
-
-    if !session.participants.contains_key(&Participant::Host) {
-        log::error!("host has left")
-    }
 
     let onleave = {
         let navigator = use_navigator().unwrap().clone();
@@ -100,11 +103,5 @@ pub fn manage(props: &Props) -> Html {
         },
     };
 
-    html! {
-        <Section>
-            <Container>
-                { body }
-            </Container>
-        </Section>
-    }
+    html! { <Section> <Container> { body } </Container> </Section> }
 }

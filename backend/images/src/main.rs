@@ -5,7 +5,7 @@ use base64::URL_SAFE;
 use clap::Parser;
 use images::Resolution;
 use rocket::data::ToByteUnit;
-use rocket::fs::{FileServer, NamedFile, Options};
+use rocket::fs::{NamedFile};
 use rocket::http::Status;
 use rocket::response::Responder;
 use rocket::{response, Data, Request, State};
@@ -150,7 +150,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for resolution in res {
         let _ = std::fs::create_dir(&format!("{}/{}", opts.folder, resolution));
     }
-    let vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
+    let _vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
 
     if !std::path::Path::new(&opts.database).exists() {
         std::fs::File::create(&opts.database)?;

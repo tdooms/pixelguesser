@@ -3,7 +3,7 @@ use qrcode::QrCode;
 use std::rc::Rc;
 use yew::*;
 
-use api::{Player, Quiz, Session, SELF_ENDPOINT};
+use api::{Participant, Player, Quiz, Session, SELF_ENDPOINT};
 use image::Rgba;
 use photon_rs::PhotonImage;
 
@@ -41,6 +41,11 @@ pub fn lobby(props: &Props) -> Html {
 
     let image = use_state(generate_qr);
 
+    let subtitle = match session.participants.contains_key(&Participant::Manager) {
+        true => "Quiz master present",
+        false => "Scan me to become the quiz master",
+    };
+
     html! {
         <>
         <Hero>
@@ -50,7 +55,7 @@ pub fn lobby(props: &Props) -> Html {
 
         <Hero color={Color::Primary} size={HeroSize::Small}>
             <Container class="has-text-centered">
-                <Subtitle> {"Scan me to become the quiz master"} </Subtitle>
+                <Subtitle> {subtitle} </Subtitle>
                 <img src={(*image).clone()} />
                 <p><a class="title is-3" href={url} target="_blank"> {code} </a></p>
             </Container>

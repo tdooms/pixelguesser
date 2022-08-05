@@ -5,8 +5,24 @@ use yew::*;
 use host::Host;
 use manage::Manage;
 
-use api::{Action, Participant, Quiz, Result, Session, User, WebsocketTask};
-use shared::use_auth;
+use api::{Action, Participant, Quiz, Session, User, WebsocketTask};
+use shared::{use_async_startup, use_auth, Kind, Toast};
+
+#[derive(derive_more::Display, Clone, Copy)]
+pub enum Error {
+    #[display(fmt = "Unable to start a quiz, please try again later")]
+    Unreachable,
+}
+
+impl Toast for Error {
+    fn kind(&self) -> Kind {
+        Kind::Error
+    }
+
+    fn leave(&self) -> bool {
+        true
+    }
+}
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -21,7 +37,7 @@ struct State {
     quiz: Rc<Quiz>,
 }
 
-async fn create_session(props: &Props, user: Option<Rc<User>>) -> Result<State> {
+async fn create_session(props: &Props, user: Option<Rc<User>>) -> Result<State, api::Error> {
     let (session_id, participant) = match props.session_id {
         Some(id) => (id, Participant::Manager),
         None => (api::create_session(props.quiz_id).await?, Participant::Host),
@@ -31,47 +47,48 @@ async fn create_session(props: &Props, user: Option<Rc<User>>) -> Result<State> 
     Ok(State { session_id, participant, quiz })
 }
 
+async fn init(
+    ws: UseStateHandle<Option<WebsocketTask>>,
+    state: UseStateHandle<Option<State>>,
+    session: UseStateHandle<Option<Rc<Session>>>,
+    props: Props,
+    user: Option<Rc<User>>,
+) -> Result<(), Error> {
+    let mapper = |_| Error::Unreachable;
+
+    let callback = move |response| match response {
+        Ok(new) => session.set(Some(Rc::new(new))),
+        Err(err) => log::error!("{err}"),
+    };
+
+    let created = create_session(&props, user).await.map_err(mapper)?;
+    let task = WebsocketTask::new(created.session_id, callback).map_err(mapper)?;
+
+    task.send(&Action::Join(created.participant.clone()));
+
+    ws.set(Some(task));
+    state.set(Some(created));
+    Ok(())
+}
+
 #[function_component(Initializer)]
 pub fn initializer(props: &Props) -> Html {
     let websocket = use_state(|| None);
     let state = use_state(|| None);
-    let session = use_state(|| Rc::new(Session::default()));
-
-    let cloned = session.clone();
-    let callback = move |response| match response {
-        Ok(new) => cloned.set(Rc::new(new)),
-        Err(err) => log::error!("{err}"),
-    };
-
+    let session = use_state(|| None);
     let user = use_auth().user();
-    let (props_c, ws_c, state_c) = (props.clone(), websocket.clone(), state.clone());
 
-    use_effect_with_deps(
-        move |_| {
-            ywt::spawn!(async move {
-                let res = create_session(&props_c, user).await.unwrap();
-
-                let task = WebsocketTask::new(res.session_id, callback).unwrap();
-                task.send(&Action::Join(res.participant.clone()));
-
-                ws_c.set(Some(task));
-                state_c.set(Some(res));
-            });
-            || ()
-        },
-        (),
-    );
+    use_async_startup(init(websocket.clone(), state.clone(), session.clone(), props.clone(), user));
 
     let callback = ywt::callback!(websocket; move |action| {
         websocket.as_ref().unwrap().send(&action)
     });
-    let session = (*session).clone();
 
-    match (props.session_id, (*state).clone()) {
-        (Some(_), Some(State { quiz, .. })) => html! {
+    match (props.session_id, (*state).clone(), (*session).clone()) {
+        (Some(_), Some(State { quiz, .. }), Some(session)) => html! {
             <Manage {session} {quiz} {callback}/>
         },
-        (None, Some(State { session_id, quiz, .. })) => html! {
+        (None, Some(State { session_id, quiz, .. }), Some(session)) => html! {
             <Host {session_id} {session} {quiz} {callback}/>
         },
         _ => html! { <Loader/> },
