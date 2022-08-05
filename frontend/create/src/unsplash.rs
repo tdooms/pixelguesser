@@ -31,6 +31,9 @@ pub fn unsplash() -> Html {
 
     let active = use_state(|| false);
 
+    let FilterBy { query, page, per_page, order_by, content_filter, orientation } =
+        (*filter).clone();
+
     let view_photo = |(index, photo): (usize, &Photo)| {
         let onmouseover = callback!(hovered; move |_| hovered.set(Some(index)));
         let onmouseout = callback!(hovered; move |_| hovered.set(None));
@@ -71,13 +74,13 @@ pub fn unsplash() -> Html {
         <Dropdown {trigger} active={*active} right=true {onfocus}>
         <div class="m-3">
         <simple::Field label="Orientation">
-            <simple::Tabs<Orientation> fullwidth=true toggle=true value={Orientation::Landscape} onclick={onorientation}/>
+            <simple::Tabs<Orientation> fullwidth=true toggle=true value={orientation} onclick={onorientation}/>
         </simple::Field>
         <simple::Field label="Order By">
-            <simple::Tabs<OrderBy> fullwidth=true toggle=true value={OrderBy::Relevant} onclick={onorderby}/>
+            <simple::Tabs<OrderBy> fullwidth=true toggle=true value={order_by} onclick={onorderby}/>
         </simple::Field>
         <simple::Field label="Content Filter">
-            <simple::Tabs<ContentFilter> fullwidth=true toggle=true value={ContentFilter::SFW} onclick={oncontentfilter}/>
+            <simple::Tabs<ContentFilter> fullwidth=true toggle=true value={content_filter} onclick={oncontentfilter}/>
         </simple::Field>
         </div>
         </Dropdown>

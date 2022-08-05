@@ -157,7 +157,7 @@ impl Default for FilterBy {
             // collections: vec![],
             content_filter: ContentFilter::default(),
             // color: None,
-            orientation: Some(Orientation::Landscape),
+            orientation: Orientation::Landscape,
         }
     }
 }
