@@ -2,26 +2,17 @@ use api::{ContentFilter, FilterBy, OrderBy, Orientation, Photo};
 use cobul::*;
 use components::{DynImage, Height};
 use futures::FutureExt;
-use shared::use_search;
+use shared::{use_search, use_toast};
 use std::rc::Rc;
 use yew::*;
 use ywt::callback;
 
-#[derive(Properties, PartialEq)]
-pub struct Props {
-    filter: FilterBy,
-}
-
-#[function_component(Filter)]
-pub fn filter(Props { filter }: &Props) -> Html {
-    html! {
-        <simple::Tabs<Orientation> fullwidth=true toggle=true value={Orientation::Landscape} onclick={Callback::noop()}/>
-    }
-}
-
 #[function_component(Unsplash)]
 pub fn unsplash() -> Html {
-    let func = |filter: FilterBy| api::search_photos(filter).map(|x| x.unwrap());
+    let toast = use_toast();
+    let func = move |filter: FilterBy| async move {
+        toast.maybe(api::search_photos(filter).await).unwrap_or_default()
+    };
 
     let filter = use_state(|| FilterBy::default());
     let photos = use_search((*filter).clone(), func);
@@ -31,8 +22,7 @@ pub fn unsplash() -> Html {
 
     let active = use_state(|| false);
 
-    let FilterBy { query, page, per_page, order_by, content_filter, orientation } =
-        (*filter).clone();
+    let FilterBy { order_by, content_filter, orientation, .. } = (*filter).clone();
 
     let view_photo = |(index, photo): (usize, &Photo)| {
         let onmouseover = callback!(hovered; move |_| hovered.set(Some(index)));
@@ -68,8 +58,13 @@ pub fn unsplash() -> Html {
     let oncontentfilter = callback!(filter; move |content_filter| {
         filter.set(FilterBy { content_filter, ..(*filter).clone() })
     });
+    let onclick = callback!(active; move |_| active.set(!*active));
 
-    let trigger = html! { <Button color={Color::Info}><Icon icon={fa::Solid::Filter} /></Button> };
+    let trigger = html! {
+        <Button color={Color::Info} {onclick}>
+            <Icon icon={fa::Solid::Filter} />
+        </Button>
+    };
     let dropdown = html! {
         <Dropdown {trigger} active={*active} right=true {onfocus}>
         <div class="m-3">
@@ -98,10 +93,14 @@ pub fn unsplash() -> Html {
     };
 
     let body = match photos {
+        Some(photos) if photos.0.is_empty() => html! {
+            "No images found, try broadening your query"
+        },
         Some(photos) => html! {
             <>
-            <Columns multiline=true> { for photos.iter().enumerate().map(view_photo) } </Columns>
+            <Columns multiline=true> { for photos.0.iter().enumerate().map(view_photo) } </Columns>
             <Button color={Color::Info}> <span> {"Confirm"} </span> </Button>
+            <>
             </>
         },
         None => html! {},

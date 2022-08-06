@@ -174,14 +174,14 @@ pub fn author_link(photo: &Photo) -> String {
     format!("{}?utm_source=pixelguesser&utm_medium=referral", photo.user.links.html)
 }
 
-pub async fn search_photos(filter: FilterBy) -> Result<Vec<Photo>> {
+pub async fn search_photos(filter: FilterBy) -> Result<(Vec<Photo>, u64)> {
     let key = UNSPLASH_KEY.to_owned();
     let base = "https://api.unsplash.com/";
     let url = format!("{base}/search/photos?{filter}");
 
     // TODO: no query if query field is empty
     log::info!("{url}");
-    Ok(vec![])
+    Ok((vec![], 4))
 
     // let response: Response = reqwest::Client::new()
     //     .get(url)
