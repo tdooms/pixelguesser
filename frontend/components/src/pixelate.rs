@@ -1,7 +1,7 @@
 use api::Stage;
 use gloo::timers::callback::Timeout;
 use shared::pixelation::*;
-use shared::{Kind, Toast};
+use shared::{Level, Toast};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
@@ -16,8 +16,8 @@ enum Error {
 }
 
 impl Toast for Error {
-    fn kind(&self) -> Kind {
-        Kind::Error
+    fn level(&self) -> Level {
+        Level::Error
     }
     fn leave(&self) -> bool {
         false
@@ -96,7 +96,6 @@ fn update_duration(stage: Stage, pixels: u32, max: u32) -> Option<(f64, u32)> {
             return Some((delay, new));
         }
     }
-    log::info!("{} {}", (max as f64 / pixels as f64).log(speed), max);
     Some(((max as f64 / pixels as f64).log(speed), max))
 }
 
@@ -129,8 +128,6 @@ pub fn pixelate(props: &Props) -> Html {
         // effect which initialises the canvas and state when the image is changed
         use_effect_with_deps(
             move |_| {
-                log::info!("changing images");
-
                 let offscreen = offscreen_ref.cast::<HtmlCanvasElement>().unwrap();
                 let (width, height) = (image.width(), image.height());
 
@@ -153,12 +150,10 @@ pub fn pixelate(props: &Props) -> Html {
                 match update_duration(*stage, **size, image.height()) {
                     Some((_, x)) if x == image.height() => {
                         onreveal.emit(());
-                        log::info!("emitting revealed");
                     }
                     Some((time, new)) => {
                         let cloned = size.clone();
                         timer.set(Timeout::new(time as u32, move || cloned.set(new)));
-                        log::info!("from {} to {} in {time:.0} ms", **size, new);
                     }
                     None => {
                         timer.set(Timeout::new(0, || ()));
@@ -183,7 +178,6 @@ pub fn pixelate(props: &Props) -> Html {
                 let width = container.offset_width() as u32;
                 let height = container.offset_height() as u32;
 
-                log::info!("drawing with size {}", **size);
                 draw_pixelated(**size, width, height, &image, &canvas, &offscreen).unwrap();
                 || ()
             },

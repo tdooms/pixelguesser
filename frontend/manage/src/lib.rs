@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use api::{Action, Participant, Phase, Quiz, Session, Stage};
 use cobul::*;
-use shared::{use_toast, Generic, Route};
+use shared::{use_toast, Route};
 use yew::*;
 use yew_router::prelude::*;
 
@@ -30,11 +30,9 @@ pub struct Props {
 pub fn manage(props: &Props) -> Html {
     let Props { session, quiz, callback } = props;
 
-    log::info!("{session:?}");
-
     let toast = use_toast();
     if !session.participants.contains_key(&Participant::Host) {
-        toast.add(Generic::warning("Host left the session", true));
+        toast.warning("Host left the session", true);
     }
 
     let onsubmit = callback.reform(Action::Add);

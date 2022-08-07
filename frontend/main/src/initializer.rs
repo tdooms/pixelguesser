@@ -6,7 +6,7 @@ use host::Host;
 use manage::Manage;
 
 use api::{Action, Participant, Quiz, Session, User, WebsocketTask};
-use shared::{use_async_startup, use_auth, Kind, Toast};
+use shared::{use_async_startup, use_auth, Level, Toast};
 
 #[derive(derive_more::Display, Clone, Copy)]
 pub enum Error {
@@ -15,8 +15,8 @@ pub enum Error {
 }
 
 impl Toast for Error {
-    fn kind(&self) -> Kind {
-        Kind::Error
+    fn level(&self) -> Level {
+        Level::Error
     }
 
     fn leave(&self) -> bool {

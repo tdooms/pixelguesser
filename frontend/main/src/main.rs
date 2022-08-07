@@ -29,19 +29,18 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let toast = use_toast_manager();
-    let auth = use_auth_manager();
+    let (manager, toast) = use_toast_manager();
+    let auth = use_auth_manager(toast);
 
     if auth.loading() {
         return html! { <Loader />};
     }
-    log::trace!("rendering main page");
 
     html! {
         <main>
             <BrowserRouter>
                 <ContextProvider<UseAuthManagerHandle> context={auth}>
-                <ContextProvider<UseToastManagerHandle> context={toast}>
+                <ContextProvider<UseToastManagerHandle> context={manager}>
                     <Toasts />
                     <Switch<Route> render={Switch::render(switch)} />
                 </ContextProvider<UseToastManagerHandle>>

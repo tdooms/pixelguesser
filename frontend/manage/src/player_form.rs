@@ -1,4 +1,5 @@
 use cobul::*;
+use shared::use_form;
 use std::rc::Rc;
 use validator::Validate;
 use yew::*;
@@ -21,22 +22,20 @@ pub fn player_form(props: &Props) -> Html {
 
     let player = Rc::new(Player { name: (*state).clone() });
 
-    let onsubmit = callback!(state, onsubmit; move |player: Rc<Player>| {
+    let onsubmit = callback!(state, onsubmit; move |_| {
+        onsubmit.emit((*state).clone());
         state.set(String::new());
-        onsubmit.emit(player.name.clone());
     });
     let onchange = callback!(state; move |player: Rc<Player>| {
         state.set(player.name.clone());
     });
 
-    let actions = Actions::new().submit(onsubmit.clone()).change(onchange);
-
-    let form = use_form(player.clone(), actions);
+    let form = use_form(player.clone(), onchange);
     let value = player.name.clone();
 
-    let onkeypress = Callback::from(move |e: KeyboardEvent| {
+    let onkeypress = callback!(onsubmit; move |e: KeyboardEvent| {
         if e.key() == "Enter" {
-            onsubmit.emit(player.clone());
+            onsubmit.emit(());
         }
     });
 
@@ -44,10 +43,10 @@ pub fn player_form(props: &Props) -> Html {
         <div {onkeypress}>
         <Field grouped=true>
             <Control expanded=true>
-                <Input oninput={form.field(|x| &mut x.name)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} {value}/>
+                <Input oninput={form.change(|x| &mut x.name)} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} {value}/>
             </Control>
             <Control>
-                <Button size={Size::Large} color={Color::Info} onclick={form.submit()}>
+                <Button size={Size::Large} color={Color::Info} onclick={onsubmit}>
                     <Icon icon={fa::Solid::Plus}> </Icon>
                 </Button>
             </Control>

@@ -1,4 +1,3 @@
-use crate::{use_toast, Generic};
 use gloo::timers::callback::Timeout;
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -9,7 +8,7 @@ use yew::*;
 
 #[hook]
 pub fn use_search<
-    Q: Hash + Eq + Clone + Default + Debug + 'static,
+    Q: Hash + Eq + Clone + Debug + 'static,
     T: PartialEq + 'static,
     R: Future<Output = (Vec<T>, Option<u64>)> + 'static,
     F: FnOnce(Q) -> R + 'static,
@@ -19,18 +18,15 @@ pub fn use_search<
 ) -> Option<Rc<(Vec<T>, Option<u64>)>> {
     let map = use_state_eq(|| HashMap::new());
     let timer = use_state(|| None);
-    let prev = use_state(|| Q::default());
-    let toast = use_toast();
+    let prev = use_state(|| None);
 
     match map.get(&query) {
         Some(result) => return Some(Rc::clone(result)),
-        None if &*prev != &query => {
-            prev.set(query.clone());
+        None if (&*prev).as_ref() != Some(&query) => {
+            prev.set(Some(query.clone()));
 
             let onquery = move || {
                 ywt::spawn!(async move {
-                    toast.add(Generic::info(format!("Query for {query:?}"), false));
-
                     let result = gen(query.clone()).await;
                     let mut new = (*map).clone();
 

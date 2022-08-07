@@ -4,15 +4,26 @@ use std::rc::Rc;
 use yew::{hook, use_context, use_state, UseStateHandle};
 
 #[derive(Clone, Debug, Copy, PartialEq)]
-pub enum Kind {
+pub enum Level {
     Error,
     Warning,
     Info,
     Success,
 }
 
+impl From<Level> for log::Level {
+    fn from(level: Level) -> Self {
+        match level {
+            Level::Error => log::Level::Error,
+            Level::Warning => log::Level::Warn,
+            Level::Info => log::Level::Info,
+            Level::Success => log::Level::Debug,
+        }
+    }
+}
+
 pub trait Toast: ToString {
-    fn kind(&self) -> Kind;
+    fn level(&self) -> Level;
     fn leave(&self) -> bool;
 }
 
@@ -21,8 +32,8 @@ pub trait Toast: ToString {
 pub struct Forbidden;
 
 impl Toast for Forbidden {
-    fn kind(&self) -> Kind {
-        Kind::Warning
+    fn level(&self) -> Level {
+        Level::Warning
     }
     fn leave(&self) -> bool {
         true
@@ -30,8 +41,8 @@ impl Toast for Forbidden {
 }
 
 impl Toast for api::Error {
-    fn kind(&self) -> Kind {
-        Kind::Error
+    fn level(&self) -> Level {
+        Level::Error
     }
     fn leave(&self) -> bool {
         false
@@ -40,33 +51,19 @@ impl Toast for api::Error {
 
 #[derive(derive_more::Display)]
 #[display(fmt = "{}", message)]
-pub struct Generic {
+struct Generic {
     pub message: String,
+    pub kind: Level,
     pub leave: bool,
-    pub kind: Kind,
 }
 
 impl Toast for Generic {
-    fn kind(&self) -> Kind {
+    fn level(&self) -> Level {
         self.kind
     }
+
     fn leave(&self) -> bool {
         self.leave
-    }
-}
-
-impl Generic {
-    pub fn error(message: impl ToString, leave: bool) -> Self {
-        Self { message: message.to_string(), leave, kind: Kind::Error }
-    }
-    pub fn warning(message: impl ToString, leave: bool) -> Self {
-        Self { message: message.to_string(), leave, kind: Kind::Warning }
-    }
-    pub fn info(message: impl ToString, leave: bool) -> Self {
-        Self { message: message.to_string(), leave, kind: Kind::Info }
-    }
-    pub fn success(message: impl ToString, leave: bool) -> Self {
-        Self { message: message.to_string(), leave, kind: Kind::Success }
     }
 }
 
@@ -91,6 +88,8 @@ impl UseToastManagerHandle {
 
         let id = *self.counter;
         self.counter.set(id + 1);
+
+        log::log!(toast.level().into(), "{}", toast.to_string());
 
         let cloned = self.clone();
         let timer = Timeout::new(4_000, move || cloned.remove(id));
@@ -123,6 +122,19 @@ impl UseToastHandle {
     pub fn add(&self, toast: impl Toast + 'static) {
         self.manager.add(toast)
     }
+
+    pub fn error(&self, message: impl ToString, leave: bool) {
+        self.manager.add(Generic { message: message.to_string(), leave, kind: Level::Error })
+    }
+    pub fn warning(&self, message: impl ToString, leave: bool) {
+        self.manager.add(Generic { message: message.to_string(), leave, kind: Level::Warning })
+    }
+    pub fn info(&self, message: impl ToString, leave: bool) {
+        self.manager.add(Generic { message: message.to_string(), leave, kind: Level::Info })
+    }
+    pub fn success(&self, message: impl ToString, leave: bool) {
+        self.manager.add(Generic { message: message.to_string(), leave, kind: Level::Success })
+    }
 }
 
 #[hook]
@@ -132,8 +144,10 @@ pub fn use_toast() -> UseToastHandle {
 }
 
 #[hook]
-pub fn use_toast_manager() -> UseToastManagerHandle {
+pub fn use_toast_manager() -> (UseToastManagerHandle, UseToastHandle) {
     let state = use_state(|| Rc::new(Toasts::default()));
     let counter = use_state(|| 0);
-    UseToastManagerHandle { state, counter }
+
+    let manager = UseToastManagerHandle { state, counter };
+    (manager.clone(), UseToastHandle { manager })
 }

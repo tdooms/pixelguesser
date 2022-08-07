@@ -3,27 +3,9 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use yew::{use_context, use_state, UseStateHandle};
 
-use crate::{use_startup, Kind};
+use crate::{use_startup, UseToastHandle};
 use api::{User, AUTH0_CLIENT_ID, AUTH0_DOMAIN};
 use yew::hook;
-
-use crate::Toast;
-
-#[derive(derive_more::Display)]
-#[display(fmt = "Something went wrong with the authentication")]
-pub enum AuthError {
-    Unreachable,
-    Error,
-}
-
-impl Toast for AuthError {
-    fn kind(&self) -> Kind {
-        Kind::Error
-    }
-    fn leave(&self) -> bool {
-        true
-    }
-}
 
 #[wasm_bindgen]
 extern "C" {
@@ -99,28 +81,29 @@ pub fn use_auth() -> UseAuthHandle {
     UseAuthHandle { manager }
 }
 
-fn init(state: UseStateHandle<AuthState>) {
+fn init(state: UseStateHandle<AuthState>, toast: UseToastHandle) {
     ywt::spawn!(async move {
-        // Unreachable
-        let result = init_auth(AUTH0_DOMAIN.to_owned(), AUTH0_CLIENT_ID.to_owned()).await.unwrap();
+        let result = init_auth(AUTH0_DOMAIN.to_owned(), AUTH0_CLIENT_ID.to_owned()).await;
 
-        // Auth Error
-        match serde_wasm_bindgen::from_value::<User>(result) {
-            Ok(user) => {
-                log::info!("{}", user.token.clone());
-                state.set(AuthState::Authenticated(Rc::new(user)))
-            }
-            Err(_) => (),
+        if let Err(_) = result {
+            toast.error("Auth0 is unreachable, please try again later", true);
+            return;
+        }
+
+        // SAFETY: result has been checked in the lines above
+        match serde_wasm_bindgen::from_value::<User>(result.unwrap()) {
+            Ok(user) => state.set(AuthState::Authenticated(Rc::new(user))),
+            Err(_) => state.set(AuthState::Anonymous),
         }
     });
 }
 
 #[hook]
-pub fn use_auth_manager() -> UseAuthManagerHandle {
-    let state = use_state(|| AuthState::Anonymous);
+pub fn use_auth_manager(toast: UseToastHandle) -> UseAuthManagerHandle {
+    let state = use_state(|| AuthState::Loading);
     let cloned = state.clone();
 
-    use_startup(move || init(cloned));
+    use_startup(move || init(cloned, toast));
 
     UseAuthManagerHandle { state }
 }

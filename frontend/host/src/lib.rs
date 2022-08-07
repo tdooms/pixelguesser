@@ -10,6 +10,7 @@ use crate::play::Play;
 use crate::ranking::Ranking;
 
 use api::{Action, Code, Phase, Quiz, Session};
+use shared::use_toast;
 use std::rc::Rc;
 use yew::*;
 
@@ -27,6 +28,7 @@ pub fn host(props: &Props) -> Html {
     let Props { session_id, session, quiz, callback } = props.clone();
     let code = Code { session_id, quiz_id: quiz.id as u32 }.to_string();
 
+    let toast = use_toast();
     let rounds = quiz.rounds.len();
 
     match session.phase {
@@ -34,7 +36,7 @@ pub fn host(props: &Props) -> Html {
             html! {<Lobby {code} {session} {quiz} /> }
         }
         Phase::Playing { round, .. } if round > rounds => {
-            log::error!("empty quiz");
+            toast.warning("This quiz is empty", true);
             html! {}
         }
         Phase::Playing { round: index, stage } => {

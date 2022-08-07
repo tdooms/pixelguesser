@@ -1,14 +1,18 @@
-use api::{ContentFilter, FilterBy, OrderBy, Orientation, Photo};
+use api::{ContentFilter, FilterBy, Image, OrderBy, Orientation, Photo};
 use cobul::*;
 use components::{DynImage, Height};
-use futures::FutureExt;
 use shared::{use_search, use_toast};
 use std::rc::Rc;
 use yew::*;
 use ywt::callback;
 
+#[derive(Properties, PartialEq, Clone, Debug)]
+pub struct Props {
+    pub onselect: Callback<Image>,
+}
+
 #[function_component(Unsplash)]
-pub fn unsplash() -> Html {
+pub fn unsplash(props: &Props) -> Html {
     let toast = use_toast();
     let func = move |filter: FilterBy| async move {
         toast.maybe(api::search_photos(filter).await).unwrap_or_default()
@@ -18,9 +22,7 @@ pub fn unsplash() -> Html {
     let photos = use_search((*filter).clone(), func);
 
     let hovered = use_state_eq(|| None);
-    let selected = use_state_eq(|| None);
-
-    let active = use_state(|| false);
+    let active = use_state_eq(|| false);
 
     let FilterBy { order_by, content_filter, orientation, .. } = (*filter).clone();
 
@@ -28,17 +30,21 @@ pub fn unsplash() -> Html {
         let onmouseover = callback!(hovered; move |_| hovered.set(Some(index)));
         let onmouseout = callback!(hovered; move |_| hovered.set(None));
 
-        let selected = selected.clone();
-        let onclick = callback!(move |_| match Some(index) == *selected {
-            true => selected.set(None),
-            false => selected.set(Some(index)),
-        });
+        let image = Image::from_unsplash(photo);
+        let onclick = props.onselect.reform(move |_| image.clone());
+
+        let class = classes!(
+            "has-text-centered",
+            "px-0",
+            "is-clickable",
+            (*hovered == Some(index)).then(|| "has-background-white-ter")
+        );
 
         html! {
-            <Column size={ColumnSize::IsOneFifth} class={"has-text-centered"} >
+            <Column size={ColumnSize::IsOneFifth} {class} >
                 <div {onmouseover} {onmouseout} {onclick}>
                 <DynImage height={Height::Px(100)} src={Rc::new(photo.urls.thumb.clone())} border=true />
-                <a href={api::author_link(photo)}> {photo.user.username.clone()} </a>
+                <a href={api::author_link(photo)} target="_blank" onclick={Callback::noop()}> {&photo.user.name} </a>
                 </div>
             </Column>
         }
@@ -57,6 +63,9 @@ pub fn unsplash() -> Html {
     });
     let oncontentfilter = callback!(filter; move |content_filter| {
         filter.set(FilterBy { content_filter, ..(*filter).clone() })
+    });
+    let onpage = callback!(filter; move |page| {
+        filter.set(FilterBy { page, ..(*filter).clone() })
     });
     let onclick = callback!(active; move |_| active.set(!*active));
 
@@ -88,19 +97,27 @@ pub fn unsplash() -> Html {
             <Control expanded=true> <Input {oninput} value={filter.query.clone()}/> </Control>
             <Control> {dropdown} </Control>
         </Field>
-        <Help> {"Powered by "} <a href={api::unsplash_link()}> {"Unsplash"} </a> </Help>
         </>
     };
 
     let body = match photos {
+        Some(_) if filter.query.is_empty() => html! {},
         Some(photos) if photos.0.is_empty() => html! {
             "No images found, try broadening your query"
         },
         Some(photos) => html! {
             <>
             <Columns multiline=true> { for photos.0.iter().enumerate().map(view_photo) } </Columns>
-            <Button color={Color::Info}> <span> {"Confirm"} </span> </Button>
-            <>
+
+            <Columns>
+                <Column>
+                    <p>{"Powered by "} <a href={api::unsplash_link()} target="_blank"> {"Unsplash"} </a></p>
+                </Column>
+                <Column size={ColumnSize::IsNarrow}>
+                    <simple::Pagination total={photos.1.unwrap()} page={filter.page} onchange={onpage}/>
+                </Column>
+                <Column/>
+            </Columns>
             </>
         },
         None => html! {},
@@ -108,7 +125,7 @@ pub fn unsplash() -> Html {
 
     html! {
         <>
-        {search}
+        <Block> {search} </Block>
         {body}
         </>
     }

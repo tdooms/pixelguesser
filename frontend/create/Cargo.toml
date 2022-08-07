@@ -13,7 +13,7 @@ hasura = { git = "https://github.com/tdooms/hasura.git" }
 
 cropper = { git = "https://github.com/tdooms/cropper.git" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "forms", "simple", "extensions"] }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "simple", "extensions"] }
 
 yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }

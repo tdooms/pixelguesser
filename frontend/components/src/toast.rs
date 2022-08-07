@@ -2,16 +2,16 @@ use cobul::{
     fa::Solid, Button, Color, Column, ColumnSize, Columns, Icon, Message, Size, TextColor,
 };
 use shared::Route;
-use shared::{Kind, Toast, UseToastManagerHandle};
+use shared::{Level, Toast, UseToastManagerHandle};
 use yew::*;
 use yew_router::prelude::Redirect;
 
 pub fn toast_view(toast: &dyn Toast, onremove: Callback<()>) -> Html {
-    let (icon, color, text_color) = match toast.kind() {
-        Kind::Error => (Solid::BoltLightning, Color::Danger, TextColor::Danger),
-        Kind::Warning => (Solid::CircleExclamation, Color::Warning, TextColor::Warning),
-        Kind::Info => (Solid::Info, Color::Info, TextColor::Info),
-        Kind::Success => (Solid::Check, Color::Success, TextColor::Success),
+    let (icon, color, text_color) = match toast.level() {
+        Level::Error => (Solid::BoltLightning, Color::Danger, TextColor::Danger),
+        Level::Warning => (Solid::CircleExclamation, Color::Warning, TextColor::Warning),
+        Level::Info => (Solid::Info, Color::Info, TextColor::Info),
+        Level::Success => (Solid::Check, Color::Success, TextColor::Success),
     };
 
     let redirect = match toast.leave() {

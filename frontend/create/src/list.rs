@@ -136,7 +136,7 @@ pub fn round_list(props: &ListProps) -> Html {
             { draw_line(Some(max) != line_idx) }
             <hr class="my-0" />
             <Button fullwidth=true {onclick} class="ml-1">
-                <Icon icon={fa::Solid::Plus} size={Size::Large}/>
+                <Icon icon={fa::Solid::Plus} class="mx-2"/>
             </Button>
         </Sidebar>
     }

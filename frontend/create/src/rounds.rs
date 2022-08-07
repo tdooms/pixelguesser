@@ -10,6 +10,7 @@ use ywt::callback;
 use crate::edit::RoundEdit;
 use crate::list::RoundList;
 use crate::picker::Picker;
+use crate::preview::RoundPreview;
 
 use crate::state::Action;
 use crate::Stage;
@@ -23,7 +24,6 @@ pub struct Props {
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
-    log::info!("round page");
     let Props { onstage, onaction, draft } = props.clone();
 
     let current = use_state(|| 0usize);
@@ -64,11 +64,19 @@ pub fn round_page(props: &Props) -> Html {
         current.set(idx);
     });
 
+    let onchange = callback!(round, onedit; move |image| {
+        onedit.emit(Rc::new(DraftRound { image, ..(*round).clone() }));
+    });
+
+    let center = match round.image.is_empty() {
+        true => html! { <Picker {onchange} /> },
+        false => html! { <RoundPreview round={round.clone()} onedit={onedit.clone()}/> },
+    };
+
     html! {
         <Columns>
             <RoundList {onselect} {onaction} {draft} current={*current} errors={errors.clone()}/>
-            // <RoundPreview round={round.clone()} onedit={onedit.clone()}/>
-            <Picker onchange={Callback::noop()} />
+            {center}
             <RoundEdit {round} {onback} {ondone} {onedit} {errors}/>
         </Columns>
     }

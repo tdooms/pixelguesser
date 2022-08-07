@@ -6,6 +6,7 @@ use yew::*;
 use ywt::callback;
 
 use api::{Algorithm, DraftRound, Guesses, Image, Points};
+use shared::use_form;
 
 fn generate_error_message(errors: &[Option<ValidationErrors>]) -> Option<String> {
     let sum: usize = errors.iter().filter_map(|x| x.as_ref().map(|y| y.errors().len())).sum();
@@ -38,8 +39,7 @@ pub fn round_edit(props: &Props) -> Html {
         onedit.emit(Rc::new(DraftRound { image: Image::default(), ..(*round).clone() }));
     });
 
-    let actions = Actions::new().change(onedit.clone());
-    let form = use_form(round.clone(), actions);
+    let form = use_form(round.clone(), onedit);
 
     let color = {
         let form = form.clone();
@@ -65,23 +65,23 @@ pub fn round_edit(props: &Props) -> Html {
     let form_body = html! {
         <div class="pt-5 pl-4 pr-5">
         <simple::Field label="Answer" help={form.error("answer")} >
-            <Input oninput={form.field(|x| &mut x.answer)} value={answer} color={color("answer")}/>
+            <Input oninput={form.change(|x| &mut x.answer)} value={answer} color={color("answer")}/>
         </simple::Field>
 
         <simple::Field label="Points" help={form.error("points")} >
-            <simple::Tabs<Points> fullwidth=true toggle=true onclick={form.field(|x| &mut x.points)} value={points}/>
+            <simple::Tabs<Points> onclick={form.change(|x| &mut x.points)} value={points} fullwidth=true toggle=true/>
         </simple::Field>
 
         <simple::Field label="Guesses" help={form.error("guesses")}>
-            <simple::Tabs<Guesses> fullwidth=true toggle=true onclick={form.field(|x| &mut x.guesses)} value={guesses}/>
+            <simple::Tabs<Guesses> onclick={form.change(|x| &mut x.guesses)} value={guesses} fullwidth=true toggle=true/>
         </simple::Field>
 
         <simple::Field label="Algorithm">
-            <simple::Dropdown<Algorithm> onchange={form.field(|x| &mut x.algorithm)} value={algorithm} fullwidth=true/>
+            <simple::Dropdown<Algorithm> onchange={form.change(|x| &mut x.algorithm)} value={algorithm} fullwidth=true/>
         </simple::Field>
 
         <simple::Field label="Speed">
-            <Slider<u64> class="mb-0" range={50..200} id="456" step=5 value={speed} oninput={form.field(|x| &mut x.speed)} fullwidth=true tooltip=true fmt="{}%" labelwidth=3.5/>
+            <Slider<u64> class="mb-0" range={50..200} id="456" step=5 value={speed} oninput={form.change(|x| &mut x.speed)} fullwidth=true tooltip=true fmt="{}%" labelwidth=3.5/>
             <div class="is-flex is-justify-content-space-between">
                 <p> {"Slow"} </p>
                 <p> {"Normal"} </p>

@@ -6,7 +6,7 @@ use api::{DraftQuiz, Image, Resolution};
 use components::{QuizCard, TagsField, View};
 use cropper::Cropper;
 use hasura::Data;
-use shared::{use_auth, use_toast, Forbidden};
+use shared::{use_auth, use_form, use_toast, Forbidden};
 use ywt::callback;
 
 use crate::state::Action;
@@ -41,11 +41,7 @@ pub fn quiz_page(props: &Props) -> Html {
     let cropper = use_state(|| None);
     let name = use_state(|| None);
 
-    let actions = Actions::new()
-        .submit(onstage.reform(|_| Stage::Rounds))
-        .change(onaction.reform(Action::Quiz));
-
-    let form = use_form(draft.clone(), actions);
+    let form = use_form(draft.clone(), onaction.reform(Action::Quiz));
 
     let ondelete = callback!(onaction, onstage; move |_| {
         onaction.emit(Action::Delete);
@@ -63,7 +59,7 @@ pub fn quiz_page(props: &Props) -> Html {
     });
     let ondone = callback!(form, cropper, name; move |base64| {
         let image = Image::from_base64(base64, (*name).clone());
-        form.field(|x| &mut x.image).emit(image);
+        form.change(|x| &mut x.image).emit(image);
 
         cropper.set(None);
         name.set(None);
@@ -96,15 +92,15 @@ pub fn quiz_page(props: &Props) -> Html {
         <Level {left} {right} />
 
         <simple::Field label="Quiz Title" help={form.error("title")}>
-            <Input oninput={form.field(|x| &mut x.title)} value={title.clone()} placeholder={TITLE}/>
+            <Input oninput={form.change(|x| &mut x.title)} value={title.clone()} placeholder={TITLE}/>
         </simple::Field>
 
         <simple::Field label="Description" help={form.error("description")}>
-            <Input oninput={form.field(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION} />
+            <Input oninput={form.change(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION} />
         </simple::Field>
 
         <simple::Field label="Explanation">
-            <Input oninput={form.field(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION}/>
+            <Input oninput={form.change(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION}/>
         </simple::Field>
 
         <TagsField onchange={ontags} placeholder={TAGS}/>
@@ -120,7 +116,7 @@ pub fn quiz_page(props: &Props) -> Html {
             <Button color={Color::Info} light=true onclick={onback}>
             <span> {"Back"} </span>
             </Button>
-            <Button color={Color::Info} disabled={!form.can_submit()} onclick={form.submit()}>
+            <Button color={Color::Info} disabled={!form.errors().is_empty()} onclick={onstage.reform(|_| Stage::Rounds)}>
             <span> {"Rounds"} </span>
             </Button>
         </Buttons>

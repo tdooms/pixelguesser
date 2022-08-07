@@ -1,7 +1,6 @@
-use crate::{Error, Result};
+use crate::{download, Error, Photo, Result};
 use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 use images::Resolution;
-use serde::de::Error as DeError;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -25,10 +24,6 @@ async fn upload(body: String, endpoint: String) -> Result<String> {
     Ok(response.text().await?)
 }
 
-async fn download(endpoint: String) {
-    reqwest::get(&endpoint).await.unwrap();
-}
-
 #[derive(Default, Serialize, Clone, Debug, PartialEq)]
 pub struct Image {
     url: Option<Rc<String>>,
@@ -47,14 +42,15 @@ pub struct Image {
 impl<'de> Deserialize<'de> for Image {
     fn deserialize<D: Deserializer<'de>>(deser: D) -> std::result::Result<Self, D::Error> {
         let mut map: HashMap<String, Option<String>> = HashMap::deserialize(deser)?;
-        let url = map.remove("url").ok_or(D::Error::custom("image must have a url"))?.unwrap();
+        let url = map.remove("url").flatten();
         let blurhash = map.remove("blurhash").flatten();
 
-        let service = match url.contains("unsplash") {
-            true => Some(Service::Unsplash { meta: None }),
-            false => Some(Service::Piximages),
+        let service = match &url {
+            Some(url) if url.contains("unsplash") => Some(Service::Unsplash { meta: None }),
+            _ => Some(Service::Piximages),
         };
-        Ok(Self { url: Some(Rc::new(url)), blurhash, service, ..Default::default() })
+
+        Ok(Self { url: url.map(Rc::new), blurhash, service, ..Default::default() })
     }
 }
 
@@ -64,6 +60,21 @@ impl Image {
         let local = gloo_file::futures::read_as_data_url(&blob).await.unwrap();
 
         Ok(Self { local: Some(Rc::new(local)), name: Some(file.name()), ..Default::default() })
+    }
+
+    pub fn from_unsplash(photo: &Photo) -> Self {
+        let meta = Some(Unsplash {
+            name: photo.user.name.clone(),
+            profile: photo.user.links.html.clone(),
+            download: photo.links.download_location.clone(),
+        });
+
+        let url = Some(Rc::new(photo.urls.full.clone()));
+        let service = Some(Service::Unsplash { meta });
+        let blurhash = Some(photo.blur_hash.clone());
+        let name = photo.description.clone();
+
+        Self { url, service, blurhash, name, ..Default::default() }
     }
 
     pub fn from_base64(base64: String, name: Option<String>) -> Self {
@@ -102,7 +113,7 @@ impl Image {
         // https://help.unsplash.com/en/articles/2511258-guideline-triggering-a-download
         if let Some(Service::Unsplash { meta: Some(meta) }) = &self.service {
             download(meta.download.clone()).await;
-            // Once the crediting is done, we can ignore the crediting toa void duplicates
+            // Once the crediting is done, we can ignore the crediting to avoid duplicates
             self.service = None
         }
 

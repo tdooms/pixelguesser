@@ -10,7 +10,7 @@ api = { path = "../../api", features=["session"] }
 shared = { path = "../shared" }
 components = { path = "../components" }
 
-cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "forms"] }
+cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa"] }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
 
