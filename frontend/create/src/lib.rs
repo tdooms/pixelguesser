@@ -34,19 +34,21 @@ pub enum Stage {
 
 #[function_component(Create)]
 pub fn create(props: &Props) -> Html {
-    let user = use_auth().user();
+    let auth = use_auth();
     let toast = use_toast();
 
-    let user = match toast.maybe(user.ok_or(Forbidden)) {
-        Some(user) => user,
-        None => return html! {},
+    let zipped = auth.user().zip(auth.token());
+    let (user, token) = match toast.maybe(zipped.ok_or(Forbidden)) {
+        Some((user, token)) => (user, token),
+        _ => return html! {},
     };
 
     let state = use_quiz_create(props.quiz_id);
     let stage = use_state(|| Stage::Quiz);
 
     let onstage = callback!(stage; move |new| stage.set(new));
-    let onaction = callback!(state, user; move |action| state.action(action, user.clone()));
+    let onaction =
+        callback!(state, user; move |action| state.action(action, token.clone(), user.id));
 
     let draft = state.quiz();
     let has_delete = props.quiz_id.is_some();

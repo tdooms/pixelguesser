@@ -1,6 +1,7 @@
 use crate::{download, Error, Photo, Result};
 use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 use images::Resolution;
+use reqwest::Client;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -16,12 +17,6 @@ pub struct Unsplash {
 pub enum Service {
     Unsplash { meta: Option<Unsplash> },
     Piximages,
-}
-
-async fn upload(body: String, endpoint: String) -> Result<String> {
-    let response = reqwest::Client::new().post(&endpoint).body(body).send().await?;
-    (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
-    Ok(response.text().await?)
 }
 
 #[derive(Default, Serialize, Clone, Debug, PartialEq)]
@@ -109,7 +104,7 @@ impl Image {
         self.local.is_none() && self.url.is_none()
     }
 
-    pub async fn upload(&mut self, creator: String) -> Result<()> {
+    pub async fn upload(&mut self, token: String) -> Result<()> {
         // https://help.unsplash.com/en/articles/2511258-guideline-triggering-a-download
         if let Some(Service::Unsplash { meta: Some(meta) }) = &self.service {
             download(meta.download.clone()).await;
@@ -118,12 +113,23 @@ impl Image {
         }
 
         if let (Some(local), None) = (&self.local, &self.url) {
-            let endpoint = format!("{UPLOAD_ENDPOINT}/upload/{creator}");
-            let string = match local.split(',').nth(1) {
+            let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
+
+            let body = match local.split(',').nth(1) {
                 None => (**local).clone(),
                 Some(split) => split.to_owned(),
             };
-            let url = upload(string, endpoint).await?;
+
+            let response = Client::new()
+                .post(&endpoint)
+                .header("Authorization", token)
+                .body(body)
+                .send()
+                .await?;
+
+            (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
+            let url = response.text().await?;
+
             self.url = Some(Rc::new(url));
             self.service = Some(Service::Piximages);
         }

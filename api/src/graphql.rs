@@ -75,7 +75,7 @@ pub enum Algorithm {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk)]
 #[object(name = "users", pk = "id")]
 pub struct Creator {
-    pub id: String,
+    pub id: u64,
     pub name: String,
 }
 
@@ -124,7 +124,7 @@ pub struct DraftQuiz {
     pub title: String,
 
     #[serde(default)]
-    pub creator_id: String,
+    pub creator_id: Option<u64>,
 
     pub description: String,
     pub explanation: String,
@@ -208,7 +208,7 @@ impl From<Quiz> for DraftQuiz {
             description: quiz.description,
             explanation: quiz.explanation,
             image: quiz.image,
-            creator_id: quiz.creator.id,
+            creator_id: Some(quiz.creator.id),
             tags: Data { data: quiz.tags.into_iter().map(DraftTag::from).collect() },
             rounds: Data { data: quiz.rounds.into_iter().map(DraftRound::from).collect() },
         }

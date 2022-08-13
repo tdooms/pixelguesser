@@ -5,7 +5,7 @@ use yew::*;
 use host::Host;
 use manage::Manage;
 
-use api::{Action, Participant, Quiz, Session, User, WebsocketTask};
+use api::{Action, Participant, Quiz, Session, WebsocketTask};
 use shared::{use_async_startup, use_auth, Level, Toast};
 
 #[derive(derive_more::Display, Clone, Copy)]
@@ -37,12 +37,12 @@ struct State {
     quiz: Rc<Quiz>,
 }
 
-async fn create_session(props: &Props, user: Option<Rc<User>>) -> Result<State, api::Error> {
+async fn create_session(props: &Props, token: Option<Rc<String>>) -> Result<State, api::Error> {
     let (session_id, participant) = match props.session_id {
         Some(id) => (id, Participant::Manager),
         None => (api::create_session(props.quiz_id).await?, Participant::Host),
     };
-    let quiz = Rc::new(api::query_quiz(user, props.quiz_id).await?);
+    let quiz = Rc::new(api::query_quiz(token, props.quiz_id).await?);
 
     Ok(State { session_id, participant, quiz })
 }
@@ -52,7 +52,7 @@ async fn init(
     state: UseStateHandle<Option<State>>,
     session: UseStateHandle<Option<Rc<Session>>>,
     props: Props,
-    user: Option<Rc<User>>,
+    token: Option<Rc<String>>,
 ) -> Result<(), Error> {
     let mapper = |_| Error::Unreachable;
 
@@ -61,7 +61,7 @@ async fn init(
         Err(err) => log::error!("{err}"),
     };
 
-    let created = create_session(&props, user).await.map_err(mapper)?;
+    let created = create_session(&props, token).await.map_err(mapper)?;
     let task = WebsocketTask::new(created.session_id, callback).map_err(mapper)?;
 
     task.send(&Action::Join(created.participant.clone()));
@@ -76,9 +76,15 @@ pub fn initializer(props: &Props) -> Html {
     let websocket = use_state(|| None);
     let state = use_state(|| None);
     let session = use_state(|| None);
-    let user = use_auth().user();
+    let token = use_auth().token();
 
-    use_async_startup(init(websocket.clone(), state.clone(), session.clone(), props.clone(), user));
+    use_async_startup(init(
+        websocket.clone(),
+        state.clone(),
+        session.clone(),
+        props.clone(),
+        token,
+    ));
 
     let callback = ywt::callback!(websocket; move |action| {
         websocket.as_ref().unwrap().send(&action)

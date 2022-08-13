@@ -144,10 +144,9 @@ pub fn use_toast() -> UseToastHandle {
 }
 
 #[hook]
-pub fn use_toast_manager() -> (UseToastManagerHandle, UseToastHandle) {
+pub fn use_toast_manager() -> UseToastManagerHandle {
     let state = use_state(|| Rc::new(Toasts::default()));
     let counter = use_state(|| 0);
 
-    let manager = UseToastManagerHandle { state, counter };
-    (manager.clone(), UseToastHandle { manager })
+    UseToastManagerHandle { state, counter }
 }

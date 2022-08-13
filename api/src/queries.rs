@@ -37,7 +37,7 @@ pub async fn query_quiz(token: Option<Rc<String>>, quiz_id: u32) -> Result<Quiz>
         .build()
         .unwrap();
 
-    let token = user.map(|x| x.token.clone());
+    let token = token.map(|x| (*x).clone());
     let fut = query!(first).token(token).send(GRAPHQL_ENDPOINT);
     let mut res = fut.await?.ok_or(Error::EmptyResponse)?;
 
@@ -49,7 +49,7 @@ pub async fn query_quiz(token: Option<Rc<String>>, quiz_id: u32) -> Result<Quiz>
 pub async fn create_quiz(token: String, draft: DraftQuiz) -> Result<Quiz> {
     let first = InsertOneBuilder::default().returning(Quiz::all()).object(draft).build().unwrap();
 
-    let fut = mutation!(first).token(Some(user.token.clone())).send(GRAPHQL_ENDPOINT);
+    let fut = mutation!(first).token(Some(token.clone())).send(GRAPHQL_ENDPOINT);
     fut.await?.ok_or(Error::EmptyResponse)
 }
 

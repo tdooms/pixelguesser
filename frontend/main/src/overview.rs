@@ -43,7 +43,7 @@ pub fn empty_column() -> Html {
 
 #[function_component(Overview)]
 pub fn overview() -> HtmlResult {
-    let user = use_auth().user();
+    let token = use_auth().token();
     let toasts = use_toast();
 
     let filter = use_state_eq(|| String::new());
@@ -57,8 +57,8 @@ pub fn overview() -> HtmlResult {
             let filter = (**deps).clone();
             spawn_local(async move {
                 let result = match filter.is_empty() {
-                    true => api::query_quizzes(user, false).await,
-                    false => api::search_quizzes(user, filter, false).await,
+                    true => api::query_quizzes(token, false).await,
+                    false => api::search_quizzes(token, filter, false).await,
                 };
                 match result {
                     Ok(quizzes) => cloned.set(Some(quizzes)),

@@ -5,7 +5,7 @@ use base64::URL_SAFE;
 use clap::Parser;
 use images::Resolution;
 use rocket::data::ToByteUnit;
-use rocket::fs::{NamedFile};
+use rocket::fs::NamedFile;
 use rocket::http::Status;
 use rocket::response::Responder;
 use rocket::{response, Data, Request, State};
@@ -31,7 +31,6 @@ pub enum Error {
     Sqlx(#[from] sqlx::Error),
 }
 
-// This is ugly
 impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'o> {
         println!("{:?}", self);

@@ -1,10 +1,7 @@
 use std::rc::Rc;
-use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsValue;
 use yew::{use_context, use_state, UseStateHandle};
 
-use crate::{use_startup, UseToastHandle};
-use api::{Error, Login, Signup, User, AUTH0_CLIENT_ID, AUTH0_DOMAIN};
+use api::{Error, Login, Signup, User};
 use yew::hook;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -23,18 +20,25 @@ impl UseAuthHandle {
     pub fn user(&self) -> Option<Rc<User>> {
         self.manager.user()
     }
+    pub fn token(&self) -> Option<Rc<String>> {
+        self.manager.token()
+    }
     pub fn loading(&self) -> bool {
         self.manager.loading()
     }
 
     pub async fn login(&self, credentials: Login) -> Result<(), Error> {
-        let (user, token) = api::login(credentials)?;
-        self.manager.state.set(State::Authenticated { user, token });
+        let (user, token) = api::login(credentials).await?;
+        let state = State::Authenticated { user: Rc::new(user), token: Rc::new(token) };
+
+        self.manager.state.set(state);
         Ok(())
     }
-    pub fn signup(&self, credentials: Signup) -> Result<(), Error> {
-        let (user, token) = api::signup(credentials)?;
-        self.manager.state.set(State::Authenticated { user, token });
+    pub async fn signup(&self, credentials: Signup) -> Result<(), Error> {
+        let (user, token) = api::signup(credentials).await?;
+        let state = State::Authenticated { user: Rc::new(user), token: Rc::new(token) };
+
+        self.manager.state.set(state);
         Ok(())
     }
     pub fn logout(&self) {
@@ -74,7 +78,7 @@ pub fn use_auth() -> UseAuthHandle {
 }
 
 #[hook]
-pub fn use_auth_manager(toast: UseToastHandle) -> UseAuthManagerHandle {
+pub fn use_auth_manager() -> UseAuthManagerHandle {
     let state = use_state(|| State::Anonymous); // TODO: change this once init
 
     // let cloned = state.clone();

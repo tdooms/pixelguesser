@@ -29,8 +29,8 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[function_component(App)]
 pub fn app() -> Html {
-    let (manager, toast) = use_toast_manager();
-    let auth = use_auth_manager(toast);
+    let manager = use_toast_manager();
+    let auth = use_auth_manager();
 
     if auth.loading() {
         return html! { <Loader />};

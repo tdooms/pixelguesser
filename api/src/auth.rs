@@ -3,6 +3,7 @@ use reqwest::Client;
 
 #[derive(serde::Deserialize, Clone, Debug, PartialEq, Default)]
 pub struct User {
+    pub id: u64,
     pub nickname: String,
     pub name: String,
     pub picture: String,

@@ -16,9 +16,9 @@ pub fn profile_dropdown() -> Html {
 
     let trigger = |src| html! { <Image rounded=true {src} size={ImageSize::Is48x48}/> };
 
-    let login = callback!(auth; move |_| auth.signup());
-    let signup = callback!(auth; move |_| auth.signup());
-    let logout = callback!(auth; move |_| auth.signup());
+    let logout = Callback::noop();
+    let login = Callback::noop();
+    let signup = Callback::noop();
 
     match (auth.user(), auth.loading()) {
         (Some(user), false) => html! {

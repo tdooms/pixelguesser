@@ -40,7 +40,7 @@ pub fn quiz_card(props: &Props) -> Html {
     };
 
     let right = match (&props.view, use_auth().user()) {
-        (View::Normal { quiz, onedit, .. }, Some(user)) if user.sub == quiz.creator.id => {
+        (View::Normal { quiz, onedit, .. }, Some(user)) if user.id == quiz.creator.id => {
             html! { <Button onclick={onedit} color={Color::White}> <Icon icon={fa::Solid::PenToSquare}/> </Button> }
         }
         _ => html! {},

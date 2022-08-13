@@ -7,7 +7,7 @@ pub fn login() -> Html {
         <Columns centered=true vcentered=true>
             <Column>
                 <Box>
-                    {"Hello there"}
+                    {"Hello there, login"}
                 </Box>
             </Column>
         </Columns>

@@ -11,6 +11,7 @@ license = "GNU GPLv3"
 create = { path = "../create" }
 host = { path = "../host" }
 manage = { path = "../manage" }
+auth = { path = "../auth" }
 api = { path = "../../api", features = ["auth"] }
 shared = { path = "../shared" }
 components = { path = "../components" }

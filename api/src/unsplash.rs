@@ -13,7 +13,7 @@ pub struct Urls {
 }
 
 #[derive(serde::Deserialize, Debug, PartialEq)]
-pub struct User {
+pub struct UnsplashUser {
     pub id: String,
     pub username: String,
     pub name: String,
@@ -67,7 +67,7 @@ pub struct Photo {
     pub current_user_collections: Vec<String>,
     pub sponsorship: Option<String>,
 
-    pub user: User,
+    pub user: UnsplashUser,
 }
 
 #[derive(Default, Debug, PartialEq, Clone, Copy, Hash, Eq, Display, EnumIter)]
