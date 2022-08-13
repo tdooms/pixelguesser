@@ -1,4 +1,4 @@
-use crate::{Image, User};
+use crate::Image;
 
 use chrono::{DateTime, Utc};
 use derive_more::Display;
@@ -212,12 +212,6 @@ impl From<Quiz> for DraftQuiz {
             tags: Data { data: quiz.tags.into_iter().map(DraftTag::from).collect() },
             rounds: Data { data: quiz.rounds.into_iter().map(DraftRound::from).collect() },
         }
-    }
-}
-
-impl From<User> for Creator {
-    fn from(user: User) -> Self {
-        Self { id: user.sub, name: user.nickname }
     }
 }
 

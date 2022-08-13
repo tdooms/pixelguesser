@@ -9,6 +9,7 @@ use ywt::callback;
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
     pub onselect: Callback<Image>,
+    pub narrow: bool,
 }
 
 #[function_component(Unsplash)]
@@ -19,6 +20,19 @@ pub fn unsplash(props: &Props) -> Html {
     };
 
     let filter = use_state(|| FilterBy::default());
+
+    let cloned = filter.clone();
+    use_effect_with_deps(
+        move |narrow| {
+            match narrow {
+                true => cloned.set(FilterBy { per_page: 8, ..(*cloned).clone() }),
+                false => cloned.set(FilterBy { per_page: 10, ..(*cloned).clone() }),
+            };
+            || ()
+        },
+        props.narrow,
+    );
+
     let photos = use_search((*filter).clone(), func);
 
     let hovered = use_state_eq(|| None);
@@ -40,10 +54,15 @@ pub fn unsplash(props: &Props) -> Html {
             (*hovered == Some(index)).then(|| "has-background-white-ter")
         );
 
+        let (size, height) = match props.narrow {
+            true => (ColumnSize::IsOneQuarter, Height::Px(90)),
+            false => (ColumnSize::IsOneFifth, Height::Px(100)),
+        };
+
         html! {
-            <Column size={ColumnSize::IsOneFifth} {class} >
+            <Column {size} {class} >
                 <div {onmouseover} {onmouseout} {onclick}>
-                <DynImage height={Height::Px(100)} src={Rc::new(photo.urls.thumb.clone())} border=true />
+                <DynImage {height} src={Rc::new(photo.urls.thumb.clone())} border=true />
                 <a href={api::author_link(photo)} target="_blank" onclick={Callback::noop()}> {&photo.user.name} </a>
                 </div>
             </Column>

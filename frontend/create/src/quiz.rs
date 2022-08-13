@@ -1,3 +1,4 @@
+use crate::picker::Picker;
 use cobul::*;
 use std::rc::Rc;
 use yew::*;
@@ -40,6 +41,7 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let cropper = use_state(|| None);
     let name = use_state(|| None);
+    let active = use_state(|| false);
 
     let form = use_form(draft.clone(), onaction.reform(Action::Quiz));
 
@@ -73,6 +75,8 @@ pub fn quiz_page(props: &Props) -> Html {
         name.set(None);
     });
 
+    let onactive = callback!(active; move |_| active.set(!*active));
+
     let DraftQuiz { title, explanation, description, image, .. } = (*draft).clone();
     let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
     let filename = (!image.is_empty()).then(move || name);
@@ -89,6 +93,10 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let form_body = html! {
         <>
+        <ModalContent active={*active} >
+            <Picker onchange={Callback::noop()} narrow=true />
+        </ModalContent>
+
         <Level {left} {right} />
 
         <simple::Field label="Quiz Title" help={form.error("title")}>
@@ -105,9 +113,10 @@ pub fn quiz_page(props: &Props) -> Html {
 
         <TagsField onchange={ontags} placeholder={TAGS}/>
 
-        <simple::Field label="Image" help={form.error("image")}>
-            <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
-        </simple::Field>
+        // <simple::Field label="Image" help={form.error("image")}>
+        //     <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
+        // </simple::Field>
+        <Button onclick={onactive}> {"Image"} </Button>
         </>
     };
 

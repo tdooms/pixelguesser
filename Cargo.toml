@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
-members = ["backend/sessions", "backend/images", "api", "init",
+members = ["backend/sessions", "backend/images", "backend/auth", "api", "init",
     "frontend/components", "frontend/create", "frontend/host",
     "frontend/shared", "frontend/manage", "frontend/main"]

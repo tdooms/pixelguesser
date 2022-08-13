@@ -6,6 +6,7 @@ use yew::*;
 use yew_router::prelude::*;
 
 use api::Code;
+use auth::{Login, Profile, Signup};
 use create::Create;
 use shared::{
     use_auth_manager, use_toast_manager, Route, UseAuthManagerHandle, UseToastManagerHandle,
@@ -21,7 +22,6 @@ mod initializer;
 mod lab;
 mod navbar;
 mod overview;
-mod profile;
 mod search;
 
 #[global_allocator]
@@ -66,6 +66,15 @@ fn switch(route: &Route) -> Html {
         }
         Route::Update { quiz_id } => {
             html! { <Create quiz_id={*quiz_id}/> }
+        }
+        Route::Login => {
+            html! { <Login/> }
+        }
+        Route::Signup => {
+            html! { <Signup/> }
+        }
+        Route::Profile => {
+            html! { <Profile/> }
         }
         Route::Test => {
             html! { <Test/> }

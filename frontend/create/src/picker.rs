@@ -29,6 +29,7 @@ impl Tab {
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
     pub onchange: Callback<Image>,
+    pub narrow: bool,
 }
 
 #[function_component(Picker)]
@@ -40,8 +41,17 @@ pub fn picker(props: &Props) -> Html {
     let onselect = callback!(selected; move |tab| selected.set(tab));
     let onurl = callback!(url; move |string| url.set(string));
 
-    let ondragover = callback!(hovered; move |_| hovered.set(true));
-    let ondragleave = callback!(hovered; move |_| hovered.set(false));
+    let ondragenter = callback!(hovered; move |ev: DragEvent| {
+        ev.prevent_default();
+        hovered.set(true)
+    });
+    let ondragover = callback!(hovered; move |ev: DragEvent| {
+        ev.prevent_default();
+    });
+    let ondragleave = callback!(hovered; move |ev: DragEvent| {
+        ev.prevent_default();
+        hovered.set(false)
+    });
 
     let onchange = props.onchange.clone();
     let onupload = callback!(move |files: Vec<web_sys::File>| {
@@ -60,6 +70,8 @@ pub fn picker(props: &Props) -> Html {
         onupload.emit(vec);
     });
 
+    let ondragend = callback!(|ev: DragEvent| ev.prevent_default());
+
     let view_tab = |tab| {
         let active = (tab == *selected).then(|| "is-active");
         let onclick = onselect.reform(move |_| tab);
@@ -72,19 +84,31 @@ pub fn picker(props: &Props) -> Html {
     };
 
     let body = match *selected {
-        Tab::Upload if *hovered => html! {
-            <div class="box has-text-centered" style="height:30%" {ondragover} {ondrop} {ondragleave}>
-                <Icon icon={fa::Solid::Download} size={Size::Large}/>
-            </div>
-        },
-        Tab::Upload => html! {
-            <div class="box has-text-centered" style="height:30%" {ondragover} {ondrop} {ondragleave}>
-            <Icon icon={fa::Solid::Upload} size={Size::Large}/>
-            <p> {"Select a file or drag here"} </p>
-            <Block/>
-            <File {onupload} alignment={Alignment::Centered}/>
-            </div>
-        },
+        Tab::Upload => {
+            let body = match *hovered {
+                true => html! {
+                    <Column>
+                        <Icon icon={fa::Solid::Download} size={Size::Large}/>
+                    </Column>
+                },
+                false => html! {
+                    <Column>
+                        <Icon icon={fa::Regular::FileLines} size={Size::Large}/>
+                        <p> {"Select a file or drag here"} </p>
+                        <Block/>
+                        <File {onupload} alignment={Alignment::Centered}/>
+                    </Column>
+                },
+            };
+            let class = "columns is-vcentered has-text-centered";
+            let style = "height:12rem;border-style:dashed";
+
+            html! {
+                <div {class} {style} {ondragover} {ondrop} {ondragleave} {ondragend} {ondragenter}>
+                    {body}
+                </div>
+            }
+        }
         Tab::Url => html! {
             <>
             <Label> {"Paste your image url here"} </Label>
@@ -99,7 +123,7 @@ pub fn picker(props: &Props) -> Html {
             </>
         },
         Tab::Unsplash => html! {
-            <Unsplash onselect={props.onchange.clone()}/>
+            <Unsplash onselect={props.onchange.clone()} narrow={props.narrow}/>
         },
     };
 

@@ -2,7 +2,7 @@ pub use consts::*;
 pub use error::{Error, Result};
 
 #[cfg(feature = "auth")]
-pub use auth::User;
+pub use auth::*;
 
 #[cfg(feature = "graphql")]
 pub use graphql::*;

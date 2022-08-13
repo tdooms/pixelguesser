@@ -69,7 +69,7 @@ pub fn round_page(props: &Props) -> Html {
     });
 
     let center = match round.image.is_empty() {
-        true => html! { <Picker {onchange} /> },
+        true => html! { <Picker {onchange} narrow=false/> },
         false => html! { <RoundPreview round={round.clone()} onedit={onedit.clone()}/> },
     };
 
