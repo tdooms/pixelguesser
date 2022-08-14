@@ -1,8 +1,6 @@
-#[macro_use]
-extern crate rocket;
-
 use base64::URL_SAFE;
 use clap::Parser;
+use image::ImageFormat;
 use images::Resolution;
 use rocket::data::ToByteUnit;
 use rocket::fs::NamedFile;
@@ -38,17 +36,26 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     }
 }
 
+fn precompute_image(buffer: Vec<u8>, format: ImageFormat) {
+    let original = image::load_from_memory_with_format(&buffer, format)?;
+    original.save(&format!("{base}/original/{filename}.jpg")).unwrap();
+
+    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
+        let img = original.thumbnail(1_000_000, res as u32);
+        img.save(&format!("{base}/{res}/{filename}.jpg")).unwrap();
+    }
+}
+
 #[get("/<img>/<kind>")]
 pub async fn download(img: &str, kind: &str) -> Option<NamedFile> {
     let path = format!("backend/images/data/{kind}/{img}.jpg");
-    println!("{path}");
     NamedFile::open(Path::new(&path)).await.ok()
 }
 
-#[post("/upload/<user>", data = "<data>")]
+#[post("/upload", data = "<data>")]
 pub async fn upload(
     data: Data<'_>,
-    user: &str,
+    token: &auth::Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
 ) -> Result<String, Error> {
@@ -64,17 +71,11 @@ pub async fn upload(
     let base = &path.inner().0;
 
     println!("{base}/original/{filename}.{extension}");
-    let original = image::load_from_memory_with_format(&buffer, format)?;
-    original.save(&format!("{base}/original/{filename}.jpg"))?;
-
-    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
-        let img = original.thumbnail(1_000_000, res as u32);
-        img.save(&format!("{base}/{res}/{filename}.jpg"))?;
-    }
+    tokio::task::spawn_blocking(precompute_image(buffer, format));
 
     sqlx::query("insert into owners (image, user) values (?1, ?2)")
         .bind(&filename)
-        .bind(&user)
+        .bind(token.sub)
         .execute(&**db)
         .await?;
 
@@ -82,10 +83,10 @@ pub async fn upload(
     Ok(format!("{endpoint}/{filename}"))
 }
 
-#[post("/delete/<file>/<user>")]
+#[post("/delete/<file>")]
 pub async fn delete(
     file: &str,
-    user: &str,
+    token: &auth::Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
 ) -> Result<(), Error> {

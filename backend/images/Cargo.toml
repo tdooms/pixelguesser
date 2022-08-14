@@ -12,6 +12,8 @@ full = ["api", "server"]
 default = ["full"]
 
 [dependencies]
+auth = { path = "../auth" }
+
 rocket = { version = "0.5.0-rc.2", optional = true }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", optional = true }
 

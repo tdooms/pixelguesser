@@ -1,6 +1,6 @@
-use rocket::{Request, response};
 use rocket::http::Status;
 use rocket::response::Responder;
+use rocket::{response, Request};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -15,6 +15,9 @@ pub enum Error {
 
     #[error("{0}")]
     VarError(#[from] std::env::VarError),
+
+    #[error("invalid role")]
+    InvalidRole,
 
     #[error("malformed jwt")]
     MalformedJwt,
@@ -35,3 +38,5 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
         Status::InternalServerError.respond_to(req)
     }
 }
+
+pub type Result<T> = std::result::Result<T, Error>;

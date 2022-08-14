@@ -1,16 +1,12 @@
-mod jwt;
-mod test;
-mod routes;
 mod error;
+mod routes;
+mod test;
 
-use rocket::http::Status;
-
-use sqlx::SqlitePool;
-use rocket_cors::CorsOptions;
 use clap::Parser;
-use rocket::{Build, Rocket, routes};
-use crate::jwt::{Claims, User};
+use rocket::{routes, Build, Rocket};
+use rocket_cors::CorsOptions;
 use routes::*;
+use sqlx::SqlitePool;
 
 #[derive(clap::Parser)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
