@@ -48,7 +48,7 @@ pub fn create(props: &Props) -> Html {
 
     let onstage = callback!(stage; move |new| stage.set(new));
     let onaction =
-        callback!(state, user; move |action| state.action(action, token.clone(), user.id));
+        callback!(state, user; move |action| state.action(action, token.clone(), user.id.clone()));
 
     let draft = state.quiz();
     let has_delete = props.quiz_id.is_some();

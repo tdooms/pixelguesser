@@ -11,7 +11,7 @@ pub use auth::*;
 pub use consts::{host, pixelation};
 pub use form::*;
 pub use hooks::*;
-pub use resize::{Dimensions, Resizer};
+// pub use resize::{use_resizer, Dimensions};
 pub use route::Route;
 pub use search::use_search;
 pub use toast::*;

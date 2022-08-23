@@ -15,7 +15,7 @@ main {
     min-height: 100vh !important;
 }
 
-/*dirty hack as bulma doesn't support colors for tabs*/
+/* dirty hack as bulma doesn't support colors for tabs */
 .tabs.is-toggle li.is-active a {
     background-color: #2793da !important;
     border-color: #2793da !important;

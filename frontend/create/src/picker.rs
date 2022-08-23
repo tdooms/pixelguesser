@@ -45,7 +45,7 @@ pub fn picker(props: &Props) -> Html {
         ev.prevent_default();
         hovered.set(true)
     });
-    let ondragover = callback!(hovered; move |ev: DragEvent| {
+    let ondragover = callback!(move |ev: DragEvent| {
         ev.prevent_default();
     });
     let ondragleave = callback!(hovered; move |ev: DragEvent| {

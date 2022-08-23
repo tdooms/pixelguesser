@@ -1,18 +1,16 @@
 [package]
-name = "images"
+name = "piximages"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-server = ["rocket", "rocket_cors", "tokio", "sha3", "clap", "image", "base64", "thiserror", "sqlx"]
-api = []
-full = ["api", "server"]
-default = ["full"]
+server = ["rocket", "rocket_cors", "tokio", "sha3", "clap", "image", "base64", "thiserror", "sqlx", "pixauth"]
+default = []
 
 [dependencies]
-auth = { path = "../auth" }
+pixauth = { path = "../pixauth", features = ["verify"], optional = true }
 
 rocket = { version = "0.5.0-rc.2", optional = true }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", optional = true }
@@ -21,10 +19,11 @@ tokio = { version = "1.9", features = ["full"], optional = true }
 sqlx = { version = "0.6", features = ["sqlite", "runtime-tokio-native-tls"], optional = true }
 
 sha3 = { version = "0.10", optional = true }
-clap = { version = "3.0.0-rc.7", features = ["derive"], optional = true }
+clap = { version = "3.2", features = ["derive"], optional = true }
 image = { version = "*", optional = true }
 base64 = { version = "*", optional = true }
 thiserror = { version = "1.0", optional = true }
 
 derive_more = "0.99"
 strum = { version = "0.24", features = ["derive"] }
+dotenv = "0.15"

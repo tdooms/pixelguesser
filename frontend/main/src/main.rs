@@ -6,8 +6,8 @@ use yew::*;
 use yew_router::prelude::*;
 
 use api::Code;
-use auth::{Login, Profile, Signup};
 use create::Create;
+use profile::Profile;
 use shared::{
     use_auth_manager, use_toast_manager, Route, UseAuthManagerHandle, UseToastManagerHandle,
 };
@@ -17,7 +17,6 @@ use crate::lab::Test;
 use crate::overview::Overview;
 use components::Toasts;
 
-mod dropdown;
 mod initializer;
 mod lab;
 mod navbar;
@@ -29,6 +28,8 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[function_component(App)]
 pub fn app() -> Html {
+    log::debug!("render main");
+
     let manager = use_toast_manager();
     let auth = use_auth_manager();
 
@@ -66,12 +67,6 @@ fn switch(route: &Route) -> Html {
         }
         Route::Update { quiz_id } => {
             html! { <Create quiz_id={*quiz_id}/> }
-        }
-        Route::Login => {
-            html! { <Login/> }
-        }
-        Route::Signup => {
-            html! { <Signup/> }
         }
         Route::Profile => {
             html! { <Profile/> }

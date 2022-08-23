@@ -1,8 +1,8 @@
 use yew::*;
 use yew_router::prelude::Link;
 
-use crate::dropdown::ProfileDropdown;
 use cobul::*;
+use profile::Menu;
 
 use shared::Route;
 
@@ -14,7 +14,7 @@ pub fn main_navbar() -> Html {
         </Link<Route>>
     };
 
-    let end = html! { <ProfileDropdown/> };
+    let end = html! { <Menu/> };
 
     html! {
         <Navbar brand={brand} burger=true end={end} onclick={Callback::noop()}/>

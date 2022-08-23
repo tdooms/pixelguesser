@@ -1,6 +1,24 @@
-use crate::{DraftQuiz, Error, Quiz, QuizPk, Result, Round, Tag, GRAPHQL_ENDPOINT};
+use crate::{DraftQuiz, Error, Quiz, QuizPk, Result, Round, Tag, User, UserPk, GRAPHQL_ENDPOINT};
 use hasura::*;
 use std::rc::Rc;
+
+pub async fn query_user(token: Option<Rc<String>>, user_id: String) -> Result<Option<User>> {
+    let body = QueryByPkBuilder::default()
+        .pk(UserPk { id: user_id })
+        .returning(User::all())
+        .build()
+        .unwrap();
+
+    let token = token.map(|x| (*x).clone());
+    Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+}
+
+pub async fn create_user(token: Option<Rc<String>>, user: User) -> Result<User> {
+    let body = InsertOneBuilder::default().object(user).returning(User::all()).build().unwrap();
+
+    let token = token.map(|x| (*x).clone());
+    Ok(mutation!(body).token(token).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)?)
+}
 
 pub async fn query_quizzes(token: Option<Rc<String>>, rounds: bool) -> Result<Vec<Quiz>> {
     let returning = match rounds {

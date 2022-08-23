@@ -1,7 +1,13 @@
-mod login;
+mod additional;
+mod credentials;
+mod menu;
+mod popup;
 mod profile;
-mod signup;
 
-pub use login::Login;
+pub use additional::Additional;
+pub use credentials::Credentials;
+pub use menu::Menu;
+pub use popup::Popup;
 pub use profile::Profile;
-pub use signup::Signup;
+
+use menu::Page;

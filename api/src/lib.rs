@@ -4,6 +4,9 @@ pub use error::{Error, Result};
 #[cfg(feature = "auth")]
 pub use auth::*;
 
+#[cfg(feature = "auth")]
+pub use pixauth::*;
+
 #[cfg(feature = "graphql")]
 pub use graphql::*;
 
@@ -11,13 +14,13 @@ pub use graphql::*;
 pub use image::Image;
 
 #[cfg(feature = "image")]
-pub use images::Resolution;
+pub use piximages::Resolution;
 
 #[cfg(feature = "queries")]
 pub use queries::*;
 
 #[cfg(feature = "session")]
-pub use sessions::*;
+pub use pixessions::*;
 
 #[cfg(feature = "session")]
 pub use session::*;

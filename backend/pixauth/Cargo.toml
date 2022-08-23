@@ -1,0 +1,27 @@
+[package]
+name = "pixauth"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+server = ["rocket", "rocket/json", "rocket_cors", "tokio", "jsonwebtoken", "dotenv", "clap", "sha3", "base64", "sqlx", "thiserror", "serde_json", "rand"]
+verify = ["rocket", "jsonwebtoken"]
+default = []
+
+[dependencies]
+rocket = { version = "0.5.0-rc.2", features = ["json"], optional = true }
+rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", optional = true }
+
+rand = { version = "0.8", optional = true }
+tokio = { version = "1.20", features = ["full"], optional = true }
+jsonwebtoken = { version = "8.1", optional = true }
+dotenv = { version = "0.15", optional = true }
+clap = { version = "3.2", features = ["derive"], optional = true }
+sha3 = { version = "0.10", optional = true }
+base64 = { version = "0.13", optional = true }
+sqlx = { version = "0.6", features = ["sqlite", "runtime-tokio-rustls"], optional = true }
+thiserror = { version = "1.0", optional = true }
+serde_json = { version = "1.0", optional = true }
+
+validator = { version = "0.16", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }

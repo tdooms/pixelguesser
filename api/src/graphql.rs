@@ -72,13 +72,6 @@ pub enum Algorithm {
     Blur = 2,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Object, Pk)]
-#[object(name = "users", pk = "id")]
-pub struct Creator {
-    pub id: u64,
-    pub name: String,
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct DraftTag {
     pub value: String,
@@ -106,7 +99,7 @@ pub struct Quiz {
     pub image: Image,
 
     #[object(expand)]
-    pub creator: Creator,
+    pub creator: User,
 
     #[object(expand)]
     #[serde(default)]
@@ -124,7 +117,7 @@ pub struct DraftQuiz {
     pub title: String,
 
     #[serde(default)]
-    pub creator_id: Option<u64>,
+    pub creator_id: Option<String>,
 
     pub description: String,
     pub explanation: String,
@@ -177,6 +170,16 @@ pub struct DraftRound {
 
     #[validate(custom = "validate_image")]
     pub image: Image,
+}
+
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Default, Object, Pk)]
+#[object(name = "users", pk = "id")]
+pub struct User {
+    pub id: String,
+    pub nickname: String,
+    pub picture: String,
+    pub email: String,
+    pub email_verified: bool,
 }
 
 impl From<Tag> for DraftTag {

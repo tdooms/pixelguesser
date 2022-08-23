@@ -11,7 +11,7 @@ pub enum Error {
 
     #[cfg(feature = "session")]
     #[error("Session error {0}")]
-    Session(#[from] sessions::Error),
+    Session(#[from] pixessions::Error),
 
     #[error("invalid session id")]
     InvalidSession,

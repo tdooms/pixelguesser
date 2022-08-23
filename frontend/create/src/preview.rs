@@ -21,6 +21,7 @@ pub fn round_preview(props: &Props) -> Html {
 
     let stage = use_state(|| Stage::Revealed);
     let cropper = use_state(|| false);
+    let pixels = use_state(|| 0);
 
     let cloned = stage.clone();
     use_effect_with_deps(
@@ -30,6 +31,9 @@ pub fn round_preview(props: &Props) -> Html {
         },
         props.round.image.clone(),
     );
+
+    let onpixel = callback!(pixels; move |new| pixels.set(new));
+    let onslider = callback!(pixels; move |new| pixels.set(new));
 
     let onpause = callback!(stage; move |_| stage.set(Stage::Paused));
     let onrunning = callback!(stage; move |_| stage.set(Stage::Running));
@@ -57,24 +61,38 @@ pub fn round_preview(props: &Props) -> Html {
 
     let buttons = match *stage {
         Stage::Running => html! {
-            <Buttons alignment={Alignment::Centered} class="mt-5">
+            <Buttons alignment={Alignment::Centered} class="mt-4">
             {button(onrevealing, fa::Solid::Forward, "reveal")}
             {button(onpause, fa::Solid::Pause, "pause")}
             </Buttons>
         },
         Stage::Paused => html! {
-            <Buttons alignment={Alignment::Centered} class="mt-5">
+            <Buttons alignment={Alignment::Centered} class="mt-4">
             {button(onrevealing, fa::Solid::Forward, "reveal")}
-            {button(onrunning, fa::Solid::Play, "continue")}
+            {button(onrunning, fa::Solid::Play, "play")}
             </Buttons>
         },
         Stage::Revealed => html! {
-            <Buttons alignment={Alignment::Centered} class="mt-5">
+            <Buttons alignment={Alignment::Centered} class="mt-4">
             {button(onrunning, fa::Solid::Eye, "preview")}
             {button(oncropper, fa::Solid::Crop, "crop")}
             </Buttons>
         },
         _ => html! {},
+    };
+
+    let slider = match *stage {
+        Stage::Running | Stage::Paused | Stage::Revealing => html! {
+            <Columns>
+            <Column size={ColumnSize::IsNarrow}>
+                {buttons}
+            </Column>
+            <Column>
+                <Slider<u32> id="slideru" fullwidth=true value={*pixels} oninput={onslider} step=1 range={4..1000} label=true />
+            </Column>
+            </Columns>
+        },
+        _ => html! { buttons },
     };
 
     let src = round.image.src(Resolution::HD);
@@ -88,13 +106,13 @@ pub fn round_preview(props: &Props) -> Html {
         (false, Stage::Revealed, false) => html! {
             <div>
                 <DynImage {src} height={Height::Vh(85)} fit={Fit::Contain}/>
-                {buttons}
+                {slider}
             </div>
         },
         (false, _, false) => html! {
             <div>
-                <Pixelate {image} stage={*stage} {onreveal} height=85/>
-                {buttons}
+                <Pixelate {image} stage={*stage} {onreveal} height=85 {onpixel} pixels={*pixels}/>
+                {slider}
             </div>
         },
         (true, _, false) => html! {

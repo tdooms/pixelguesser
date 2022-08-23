@@ -3,7 +3,7 @@ use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket;
 use gloo_net::websocket::{Message, WebSocketError};
-use sessions::{Action, Session};
+use pixessions::{Action, Session};
 use std::str::FromStr;
 use wasm_bindgen_futures::spawn_local;
 

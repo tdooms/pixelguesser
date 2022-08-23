@@ -7,12 +7,14 @@ edition = "2021"
 
 [dependencies]
 hasura = { git = "https://github.com/tdooms/hasura.git" }
-api = { path = "../api", features = ["graphql"] }
+api = { path = "../api", features = ["graphql", "unsplash", "auth"] }
+reqwest = "0.11"
 
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0" }
 
-base64 = "*"
+dotenv = "0.15"
+base64 = "0.13"
 tokio = {version = "1.20", features = ["full"]}
 
 log = "0.4"

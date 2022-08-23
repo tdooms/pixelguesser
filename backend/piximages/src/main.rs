@@ -1,12 +1,13 @@
 use base64::URL_SAFE;
 use clap::Parser;
 use image::ImageFormat;
-use images::Resolution;
+use pixauth::Claims;
+use piximages::Resolution;
 use rocket::data::ToByteUnit;
 use rocket::fs::NamedFile;
 use rocket::http::Status;
 use rocket::response::Responder;
-use rocket::{response, Data, Request, State};
+use rocket::{get, post, response, routes, Data, Request, State};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
 use sqlx::{Row, SqlitePool};
@@ -36,8 +37,8 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     }
 }
 
-fn precompute_image(buffer: Vec<u8>, format: ImageFormat) {
-    let original = image::load_from_memory_with_format(&buffer, format)?;
+fn precompute_image(base: &str, filename: &str, buffer: Vec<u8>, format: ImageFormat) {
+    let original = image::load_from_memory_with_format(&buffer, format).unwrap();
     original.save(&format!("{base}/original/{filename}.jpg")).unwrap();
 
     for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
@@ -48,14 +49,14 @@ fn precompute_image(buffer: Vec<u8>, format: ImageFormat) {
 
 #[get("/<img>/<kind>")]
 pub async fn download(img: &str, kind: &str) -> Option<NamedFile> {
-    let path = format!("backend/images/data/{kind}/{img}.jpg");
+    let path = format!("backend/piximages/data/{kind}/{img}.jpg");
     NamedFile::open(Path::new(&path)).await.ok()
 }
 
 #[post("/upload", data = "<data>")]
 pub async fn upload(
     data: Data<'_>,
-    token: &auth::Claims,
+    token: Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
 ) -> Result<String, Error> {
@@ -66,27 +67,25 @@ pub async fn upload(
 
     let hash = &sha3::Sha3_256::new_with_prefix(&buffer).finalize();
     let filename = base64::encode_config(&hash, URL_SAFE);
-    let extension = format.extensions_str().first().unwrap();
-
-    let base = &path.inner().0;
-
-    println!("{base}/original/{filename}.{extension}");
-    tokio::task::spawn_blocking(precompute_image(buffer, format));
 
     sqlx::query("insert into owners (image, user) values (?1, ?2)")
         .bind(&filename)
-        .bind(token.sub)
+        .bind(&token.sub)
         .execute(&**db)
         .await?;
 
-    let endpoint = "http://localhost:8901";
-    Ok(format!("{endpoint}/{filename}"))
+    let result = format!("http://localhost:8901/{filename}");
+
+    let base = path.inner().0.clone();
+    tokio::task::spawn_blocking(move || precompute_image(&base, &filename, buffer, format));
+
+    Ok(result)
 }
 
 #[post("/delete/<file>")]
 pub async fn delete(
     file: &str,
-    token: &auth::Claims,
+    token: Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
 ) -> Result<(), Error> {
@@ -95,7 +94,7 @@ pub async fn delete(
 
     sqlx::query("delete from owners where image = ?1 and user = ?2")
         .bind(&filename)
-        .bind(&user)
+        .bind(&token.sub)
         .execute(&**db)
         .await?;
 
@@ -119,11 +118,11 @@ pub async fn delete(
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
 struct Opts {
     /// Sets the folder to be served
-    #[clap(short, long, default_value = "./backend/images/data")]
+    #[clap(short, long, default_value = "./backend/piximages/data")]
     folder: String,
 
-    /// Sets the folder to be served
-    #[clap(short, long, default_value = "./backend/images/data/db.sqlite")]
+    /// Sets the database to be used
+    #[clap(short, long, default_value = "./backend/piximages/db.sqlite")]
     database: String,
 
     /// Sets the port to be used
@@ -137,6 +136,7 @@ struct Opts {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv::dotenv().unwrap();
     let opts: Opts = Opts::parse();
 
     let address = opts.address.parse()?;
@@ -152,14 +152,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let _vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
 
-    if !std::path::Path::new(&opts.database).exists() {
-        std::fs::File::create(&opts.database)?;
-    }
+    std::fs::OpenOptions::new().write(true).create(true).open(&opts.database)?;
 
     let url = format!("file:{}", opts.database);
     let db = SqlitePool::connect(&url).await?;
 
-    sqlx::query("create table if not exists owners (image text, user text)").execute(&db).await?;
+    sqlx::query(include_str!("create.sql")).execute(&db).await?;
 
     let _ = rocket::custom(config)
         .mount("/", routes![upload, download])

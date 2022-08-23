@@ -1,5 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["backend/sessions", "backend/images", "backend/auth", "api", "init",
-    "frontend/components", "frontend/create", "frontend/host",
-    "frontend/shared", "frontend/manage", "frontend/main", "frontend/profile"]
+members = ["backend/*", "frontend/*", "api", "init"]

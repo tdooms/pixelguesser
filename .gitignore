@@ -1,5 +1,5 @@
 /target
-/backend/images/data
+/backend/piximages/data
 /frontend/main/dist
 
 *.lock

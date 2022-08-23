@@ -93,9 +93,9 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let form_body = html! {
         <>
-        <ModalContent active={*active} >
+        <Modal active={*active} >
             <Picker onchange={Callback::noop()} narrow=true />
-        </ModalContent>
+        </Modal>
 
         <Level {left} {right} />
 

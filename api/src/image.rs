@@ -1,6 +1,6 @@
 use crate::{download, Error, Photo, Result};
 use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
-use images::Resolution;
+use piximages::Resolution;
 use reqwest::Client;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;

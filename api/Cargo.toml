@@ -4,17 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-auth = []
-graphql = ["validator", "image", "hasura", "auth"]
+auth = ["validator", "pixauth"]
+graphql = ["validator", "image", "hasura"]
 queries = ["hasura"]
-session = ["gloo-net", "futures", "wasm-bindgen-futures", "reqwest", "sessions"]
-image = ["gloo-file", "web-sys", "reqwest", "images"]
+session = ["gloo-net", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
+image = ["gloo-file", "web-sys", "reqwest", "piximages"]
 unsplash = ["reqwest"]
 default = []
 
 [dependencies]
-sessions = { path = "../backend/sessions", features = ["api"], default-features = false, optional = true }
-images = { path = "../backend/images", features = ["api"], default-features = false, optional = true }
+pixessions = { path = "../backend/pixessions", optional = true }
+piximages = { path = "../backend/piximages", optional = true }
+pixauth = { path = "../backend/pixauth", optional = true }
 hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
 
 serde_json = "1.0"
@@ -25,9 +26,7 @@ reqwest = { version = "0.11", features = ["json"], optional = true }
 futures = { version = "0.3", optional = true }
 wasm-bindgen-futures = { version = "0.4", optional = true }
 
-
 validator = { version = "0.16", features = ["derive"], optional = true }
-
 web-sys = { version = "0.3", features = ["Url"], optional = true }
 gloo-file = { version = "0.2", features = ["futures"], optional = true }
 gloo-net = { version = "0.2", optional = true }
@@ -39,3 +38,4 @@ derive_more = "0.99"
 
 chrono = { version = "0.4", features = ["serde"] }
 strum = { version = "0.24", features = ["derive"] }
+

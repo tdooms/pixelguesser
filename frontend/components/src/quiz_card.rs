@@ -50,9 +50,12 @@ pub fn quiz_card(props: &Props) -> Html {
     let (small, large) = (filler(5), filler(15));
 
     let (src, title, creator, description) = match &props.view {
-        View::Normal { quiz, .. } => {
-            (quiz.image.src(Resolution::Small), &quiz.title, &quiz.creator.name, &quiz.description)
-        }
+        View::Normal { quiz, .. } => (
+            quiz.image.src(Resolution::Small),
+            &quiz.title,
+            &quiz.creator.nickname,
+            &quiz.description,
+        ),
         View::Preview { draft, creator } => {
             (draft.image.src(Resolution::Small), &draft.title, creator, &draft.description)
         }
