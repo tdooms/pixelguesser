@@ -47,6 +47,7 @@ pub struct Credentials {
 pub struct Tokens {
     pub bearer: String,
     pub refresh: String,
+    pub id: String,
 }
 
 #[cfg(any(feature = "verify", feature = "server"))]
@@ -61,8 +62,8 @@ mod verify {
         let header = option.ok_or(())?;
         let mut iter = header.split(' ');
 
-        let (bearer, token) = (iter.next().ok_or(())?, iter.next().ok_or(())?);
-        (bearer == "Bearer").then_some(()).ok_or(())?;
+        let (prefix, bearer) = (iter.next().ok_or(())?, iter.next().ok_or(())?);
+        (prefix == "Bearer").then_some(()).ok_or(())?;
 
         let secret = std::env::var("AUTH_SECRET").map_err(|_| ())?;
         let key = DecodingKey::from_secret(secret.as_bytes());

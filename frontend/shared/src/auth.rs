@@ -3,8 +3,7 @@ use std::rc::Rc;
 use yew::{use_context, use_state, UseStateHandle};
 
 use crate::use_startup;
-use api::{create_user, query_user, Credentials, Error, Response, Tokens, User};
-use jsonwebtoken::*;
+use api::{create_user, query_user, Claims, Credentials, Error, Response, Tokens, User};
 use yew::hook;
 
 #[derive(PartialEq, Debug, Clone)]
@@ -13,11 +12,6 @@ enum State {
     Anonymous,
     Partial { id: Rc<String>, bearer: Rc<String> },
     Authenticated { user: Rc<User>, bearer: Rc<String> },
-}
-
-fn decode_bearer(response: &str) {
-    let secret = "1234567890123456789012345678901234567890"; // Shhh this is secret
-    let key = DecodingKey::from_secret(secret.as_bytes());
 }
 
 #[derive(Clone, PartialEq)]
@@ -37,14 +31,14 @@ impl UseAuthHandle {
     }
 
     pub async fn login(&self, credentials: Rc<Credentials>) -> Result<(), Error> {
-        let response = api::login(credentials).await?;
-        LocalStorage::set("pixauth", &response).unwrap();
+        let tokens = api::login(credentials).await?;
+        LocalStorage::set("pixauth", &tokens).unwrap();
 
-        let token = Rc::new(format!("Bearer {}", response.bearer));
+        let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
 
-        let state = match query_user(Some(token.clone()), response.id.clone()).await? {
-            Some(user) => State::Authenticated { user: Rc::new(user), bearer: token },
-            None => State::Partial { id: Rc::new(response.id), bearer: token },
+        let state = match query_user(Some(bearer.clone()), tokens.id.clone()).await? {
+            Some(user) => State::Authenticated { user: Rc::new(user), bearer },
+            None => State::Partial { id: Rc::new(tokens.id), bearer },
         };
 
         self.manager.state.set(state);
@@ -56,12 +50,15 @@ impl UseAuthHandle {
     }
 
     pub async fn signup(&self, credentials: Rc<Credentials>) -> Result<(), Error> {
-        let response = api::signup(credentials).await?;
+        let tokens = api::signup(credentials).await?;
+        LocalStorage::set("pixauth", &tokens).unwrap();
 
-        let token = Rc::new(format!("Bearer {}", response.token));
-        self.manager.state.set(State::Partial { id: Rc::new(response.id), bearer: token });
+        let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
+
+        self.manager.state.set(State::Partial { id: Rc::new(tokens.id), bearer });
         Ok(())
     }
+
     pub fn logout(&self) {
         self.manager.state.set(State::Anonymous);
     }
@@ -82,9 +79,7 @@ impl UseAuthManagerHandle {
 
     pub fn token(&self) -> Option<Rc<String>> {
         match (*self.state).clone() {
-            State::Authenticated { bearer: token, .. } | State::Partial { bearer: token, .. } => {
-                Some(token)
-            }
+            State::Authenticated { bearer, .. } | State::Partial { bearer, .. } => Some(bearer),
             _ => None,
         }
     }
@@ -101,12 +96,10 @@ pub fn use_auth() -> UseAuthHandle {
 }
 
 fn init(state: UseStateHandle<State>) {
-    let response: Result<Tokens, _> = LocalStorage::get("pixauth");
-    let new = if let Ok(response) = response {
-        let id = decode(bearer, &key, &Validation::default()).unwrap();
-
-        let bearer = Rc::new(response.bearer);
-        State::Partial { id, bearer }
+    let tokens: Result<Tokens, _> = LocalStorage::get("pixauth");
+    let new = if let Ok(tokens) = tokens {
+        let bearer = Rc::new(tokens.bearer);
+        State::Partial { id: Rc::new(tokens.id), bearer }
     } else {
         State::Anonymous
     };

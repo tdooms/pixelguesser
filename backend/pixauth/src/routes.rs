@@ -69,7 +69,7 @@ pub async fn signup(
 
     let refresh = generate_refresh();
     let id = format!("pixelguesser|{}", user.rowid);
-    Ok(Json(Tokens { token: create_jwt(&user)?, refresh, id }))
+    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
 }
 
 #[post("/login", data = "<body>")]
@@ -89,7 +89,7 @@ pub async fn login(
 
     let refresh = generate_refresh();
     let id = format!("pixelguesser|{}", user.rowid);
-    Ok(Json(Tokens { token: create_jwt(&user)?, refresh, id }))
+    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
 }
 
 #[post("/refresh", data = "<body>")]
@@ -103,7 +103,8 @@ pub async fn refresh(body: &str, pool: &State<SqlitePool>) -> Result<Json<Tokens
             .await?;
 
     println!("{user:?}");
-    Ok(Json(Tokens { token: create_jwt(&user)?, refresh, id: user.rowid.to_string() }))
+    let id = format!("pixelguesser|{}", user.rowid);
+    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
 }
 
 // #[put("/update", data = "<body>")]
