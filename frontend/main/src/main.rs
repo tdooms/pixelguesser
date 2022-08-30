@@ -14,11 +14,13 @@ use shared::{
 
 use crate::initializer::Initializer;
 use crate::lab::Test;
+use crate::library::Library;
 use crate::overview::Overview;
 use components::Toasts;
 
 mod initializer;
 mod lab;
+mod library;
 mod navbar;
 mod overview;
 mod search;
@@ -70,6 +72,9 @@ fn switch(route: &Route) -> Html {
         }
         Route::Profile => {
             html! { <Profile/> }
+        }
+        Route::Library => {
+            html! { <Library/> }
         }
         Route::Test => {
             html! { <Test/> }

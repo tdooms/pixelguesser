@@ -44,23 +44,34 @@ pub struct UserProps {
 }
 
 #[function_component(UserMenu)]
-pub fn user_menu(props: &UserProps) -> Html {
+pub fn user_menu(UserProps { oncreate, onlogout }: &UserProps) -> Html {
     let focus = use_state(|| false);
-    let onfocus = callback!(focus; move |new| focus.set(new));
+    let navigator = use_navigator().unwrap();
 
-    let trigger = |src| html! { <Image rounded=true {src} size={ImageSize::Is48x48}/> };
+    let onfocus = callback!(focus; move |new| focus.set(new));
+    let ontrigger = callback!(focus; move |_| focus.set(!*focus));
+    let onprofile = callback!(navigator; move |_| navigator.push(Route::Profile));
+    let onlibrary = callback!(navigator; move |_| navigator.push(Route::Library));
+
+    let trigger = |src| {
+        html! {
+            <div onclick={ontrigger}>
+            <Image rounded=true {src} size={ImageSize::Is48x48} />
+            </div>
+        }
+    };
 
     html! {
         <Buttons>
-            <Button color={Color::Primary} class="m-2" onclick={&props.oncreate}>
+            <Button color={Color::Primary} class="m-2" onclick={oncreate}>
                 <span>{"Create"}</span>
             </Button>
 
             <Dropdown class="m-1 mr-2" trigger={trigger(Some("yo"))} {onfocus} active={*focus} right=true>
-                <DropdownItem> {"Profile"} </DropdownItem>
-                <DropdownItem> {"Library"} </DropdownItem>
+                <DropdownItem onclick={onprofile}> {"Profile"} </DropdownItem>
+                <DropdownItem onclick={onlibrary}> {"Library"} </DropdownItem>
                 <DropdownDivider/>
-                <DropdownItem onclick={&props.onlogout}> {"Log out"} </DropdownItem>
+                <DropdownItem onclick={onlogout}> {"Log out"} </DropdownItem>
             </Dropdown>
         </Buttons>
     }

@@ -25,7 +25,7 @@ pub struct HasuraClaims {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String,
-    pub exp: i64,
+    pub exp: u64,
 
     pub role: Role,
 
@@ -48,6 +48,7 @@ pub struct Tokens {
     pub bearer: String,
     pub refresh: String,
     pub id: String,
+    pub expiry: u64,
 }
 
 #[cfg(any(feature = "verify", feature = "server"))]

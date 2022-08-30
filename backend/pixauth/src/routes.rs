@@ -19,9 +19,9 @@ struct User {
     pub pw_hash: String,
 }
 
-fn create_jwt(user: &User) -> Result<String, Error> {
+fn create_jwt(user: &User) -> Result<(String, u64), Error> {
     let epoch = std::time::SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
-    let expiration = 60 * 60;
+    let exp = epoch + 60 * 60;
 
     let role = match user.role {
         0 => Role::User,
@@ -34,12 +34,12 @@ fn create_jwt(user: &User) -> Result<String, Error> {
     let default_role = Role::User;
 
     let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id: user_id.clone() };
-    let claims = Claims { sub: user_id, exp: epoch as i64 + expiration, role, hasura };
+    let claims = Claims { sub: user_id, exp, role, hasura };
 
     let secret = std::env::var("AUTH_SECRET")?;
     let encoding_key = EncodingKey::from_secret(secret.as_bytes());
 
-    Ok(encode(&Header::default(), &claims, &encoding_key)?)
+    Ok((encode(&Header::default(), &claims, &encoding_key)?, exp))
 }
 
 fn create_hash(password: &str) -> String {
@@ -57,19 +57,17 @@ pub async fn signup(
     pool: &State<SqlitePool>,
 ) -> Result<Json<Tokens>, Error> {
     let hash = create_hash(&body.password);
+    let query = "insert into users (email, pw_hash) values ($1, $2) returning rowid, *";
 
-    let user: User =
-        sqlx::query_as("insert into users (email, pw_hash) values ($1, $2) returning rowid, *")
-            .bind(&body.email)
-            .bind(&hash)
-            .fetch_one(&**pool)
-            .await?;
+    let user: User = sqlx::query_as(query).bind(&body.email).bind(&hash).fetch_one(&**pool).await?;
 
     println!("{user:?}");
 
     let refresh = generate_refresh();
     let id = format!("pixelguesser|{}", user.rowid);
-    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
+    let (bearer, expiry) = create_jwt(&user)?;
+
+    Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }
 
 #[post("/login", data = "<body>")]
@@ -78,33 +76,30 @@ pub async fn login(
     pool: &State<SqlitePool>,
 ) -> Result<Json<Tokens>, Error> {
     let hash = create_hash(&body.password);
+    let query = "select rowid, * from users where email=$1 and pw_hash=$2";
 
-    let user: User = sqlx::query_as("select rowid, * from users where email=$1 and pw_hash=$2")
-        .bind(&body.email)
-        .bind(&hash)
-        .fetch_one(&**pool)
-        .await?;
+    let user: User = sqlx::query_as(query).bind(&body.email).bind(&hash).fetch_one(&**pool).await?;
 
     println!("{user:?}");
 
     let refresh = generate_refresh();
     let id = format!("pixelguesser|{}", user.rowid);
-    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
+    let (bearer, expiry) = create_jwt(&user)?;
+
+    Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }
 
 #[post("/refresh", data = "<body>")]
 pub async fn refresh(body: &str, pool: &State<SqlitePool>) -> Result<Json<Tokens>, Error> {
     let refresh = generate_refresh();
-    let user: User =
-        sqlx::query_as("update users set refresh=$1 where refresh=$2 returning rowid, *")
-            .bind(&refresh)
-            .bind(body)
-            .fetch_one(&**pool)
-            .await?;
+    let query = "update users set refresh=$1 where refresh=$2 returning rowid, *";
 
-    println!("{user:?}");
+    let user: User = sqlx::query_as(query).bind(&refresh).bind(body).fetch_one(&**pool).await?;
+
     let id = format!("pixelguesser|{}", user.rowid);
-    Ok(Json(Tokens { bearer: create_jwt(&user)?, refresh, id }))
+    let (bearer, expiry) = create_jwt(&user)?;
+
+    Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }
 
 // #[put("/update", data = "<body>")]

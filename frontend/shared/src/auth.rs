@@ -1,16 +1,18 @@
+use chrono::Utc;
 use gloo::storage::{LocalStorage, Storage};
 use std::rc::Rc;
 use yew::{use_context, use_state, UseStateHandle};
 
 use crate::use_startup;
-use api::{create_user, query_user, Claims, Credentials, Error, Response, Tokens, User};
+use api::{create_user, query_user, Credentials, Error, Tokens, User};
 use yew::hook;
+use ywt::spawn;
 
 #[derive(PartialEq, Debug, Clone)]
 enum State {
     Loading,
     Anonymous,
-    Partial { id: Rc<String>, bearer: Rc<String> },
+    Partial { id: Rc<String>, bearer: Rc<String>, loading: bool },
     Authenticated { user: Rc<User>, bearer: Rc<String> },
 }
 
@@ -38,7 +40,7 @@ impl UseAuthHandle {
 
         let state = match query_user(Some(bearer.clone()), tokens.id.clone()).await? {
             Some(user) => State::Authenticated { user: Rc::new(user), bearer },
-            None => State::Partial { id: Rc::new(tokens.id), bearer },
+            None => State::Partial { id: Rc::new(tokens.id), bearer, loading: false },
         };
 
         self.manager.state.set(state);
@@ -55,7 +57,7 @@ impl UseAuthHandle {
 
         let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
 
-        self.manager.state.set(State::Partial { id: Rc::new(tokens.id), bearer });
+        self.manager.state.set(State::Partial { id: Rc::new(tokens.id), bearer, loading: false });
         Ok(())
     }
 
@@ -95,16 +97,27 @@ pub fn use_auth() -> UseAuthHandle {
     UseAuthHandle { manager }
 }
 
-fn init(state: UseStateHandle<State>) {
-    let tokens: Result<Tokens, _> = LocalStorage::get("pixauth");
-    let new = if let Ok(tokens) = tokens {
-        let bearer = Rc::new(tokens.bearer);
-        State::Partial { id: Rc::new(tokens.id), bearer }
-    } else {
-        State::Anonymous
+async fn init(state: UseStateHandle<State>) {
+    let tokens: Tokens = match LocalStorage::get("pixauth") {
+        Ok(tokens) => tokens,
+        Err(_) => return state.set(State::Anonymous),
     };
 
-    state.set(new)
+    // We are after the year 1970 so this cast is safe.
+    let now = Utc::now().timestamp() as u64;
+    if now >= tokens.expiry {
+        // TODO: refresh token stuff
+        return state.set(State::Anonymous);
+    }
+
+    let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
+    let new = match query_user(Some(bearer.clone()), tokens.id.clone()).await {
+        Ok(Some(user)) => State::Authenticated { user: Rc::new(user), bearer },
+        Ok(None) => State::Partial { id: Rc::new(tokens.id), bearer, loading: false },
+        Err(_) => return state.set(State::Anonymous),
+    };
+
+    state.set(new);
 }
 
 #[hook]
@@ -113,7 +126,7 @@ pub fn use_auth_manager() -> UseAuthManagerHandle {
     log::info!("{:?}", *state);
 
     let cloned = state.clone();
-    use_startup(move || init(cloned));
+    use_startup(move || spawn!(init(cloned)));
 
     UseAuthManagerHandle { state }
 }

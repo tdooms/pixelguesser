@@ -112,8 +112,8 @@ pub struct Quiz {
 
 #[derive(Validate, Default, Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DraftQuiz {
-    #[validate(length(min = 1, message = "Quiz must have a name."))]
-    #[validate(length(max = 32, message = "Name cannot exceed 32 characters."))]
+    #[validate(length(min = 1, message = "Quiz must have a title."))]
+    #[validate(length(max = 32, message = "Title cannot exceed 32 characters."))]
     pub title: String,
 
     #[serde(default)]

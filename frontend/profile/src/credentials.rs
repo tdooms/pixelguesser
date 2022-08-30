@@ -31,7 +31,7 @@ pub fn credentials(Props { onsubmit, onpage, signup }: &Props) -> Html {
         false => (InputType::Password, Solid::Eye),
     };
 
-    let onclick = callback!(onsubmit, form, dirty; move |_| {
+    let onclick = callback!(onsubmit, form, dirty, loading; move |_| {
         if form.errors().is_empty() {
             onsubmit.emit((*state).clone());
             loading.set(true)
@@ -99,7 +99,7 @@ pub fn credentials(Props { onsubmit, onpage, signup }: &Props) -> Html {
             </Field>
             { help("password") }
 
-            <Button {onclick} fullwidth=true color={Color::Info}> {"Continue"} </Button>
+            <Button {onclick} loading={*loading} fullwidth=true color={Color::Info}> {"Continue"} </Button>
 
             {forgot}
             <hr class="mb-2"/>

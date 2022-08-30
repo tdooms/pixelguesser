@@ -1,16 +1,10 @@
-use api::{Credentials, DraftQuiz, Image, Quiz, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
+use api::{Credentials, DraftQuiz, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
 use hasura::{mutation, DeleteBuilder, InsertBuilder, InsertOneBuilder, Object};
 use std::fs::File;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct Quizzes {
     quizzes: Vec<DraftQuiz>,
-}
-
-#[derive(Debug, serde::Deserialize)]
-struct Response {
-    token: String,
-    id: String,
 }
 
 async fn convert_image(image: &mut Image, token: String) {
@@ -68,7 +62,7 @@ async fn main() {
     let password = std::env::var("ADMIN_PASSWORD").unwrap();
     let credentials = Credentials { email: email.clone(), password };
 
-    let response: Response = reqwest::Client::new()
+    let tokens: Tokens = reqwest::Client::new()
         .post(format!("{AUTH_ENDPOINT}/login"))
         .json(&credentials)
         .send()
@@ -78,10 +72,10 @@ async fn main() {
         .await
         .unwrap();
 
-    let token = format!("Bearer {}", response.token);
+    let bearer = format!("Bearer {}", tokens.bearer);
 
     let user = User {
-        id: response.id.clone(),
+        id: tokens.id.clone(),
         nickname: "thomas".to_string(),
         picture: "".to_string(),
         email,
@@ -89,9 +83,8 @@ async fn main() {
     };
 
     let body = InsertOneBuilder::default().object(user).returning(User::all()).build().unwrap();
-    let result = mutation!(body).token(Some(token.clone())).send(GRAPHQL_ENDPOINT).await;
-    log::info!("{result:?}");
+    let _ = mutation!(body).token(Some(bearer.clone())).send(GRAPHQL_ENDPOINT).await;
 
-    delete(token.clone()).await;
-    upload(token, response.id).await;
+    delete(bearer.clone()).await;
+    upload(bearer, tokens.id).await;
 }
