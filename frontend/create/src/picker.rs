@@ -28,7 +28,7 @@ impl Tab {
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<Image>,
+    pub change: Callback<Image>,
     pub narrow: bool,
 }
 

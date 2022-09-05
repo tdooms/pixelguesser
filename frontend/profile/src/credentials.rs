@@ -8,8 +8,8 @@ use ywt::callback;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub onsubmit: Callback<Rc<api::Credentials>>,
-    pub onpage: Callback<Page>,
+    pub submit: Callback<Rc<api::Credentials>>,
+    pub page: Callback<Page>,
     pub signup: bool,
 }
 

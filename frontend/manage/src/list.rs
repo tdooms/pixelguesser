@@ -6,24 +6,20 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub onclick: Callback<String>,
+    pub select: Callback<String>,
     pub session: Rc<Session>,
     pub title: String,
 }
 
 #[function_component(PlayerList)]
 pub fn player_list(props: &Props) -> Html {
-    let Props { onclick, session, title } = props;
+    let Props { select, session, title } = props;
 
     let view_player = |(name, _): (&String, &Player)| {
         let cloned = name.clone();
-        let onclick = onclick.reform(move |_| cloned.clone());
+        let click = select.reform(move |_| cloned.clone());
 
-        html! {
-            <Button outlined=true size={Size::Large} fullwidth=true {onclick}>
-                {name.clone()}
-            </Button>
-        }
+        html! { <Button outlined=true size={Size::Large} fullwidth=true {click}> {name.clone()} </Button> }
     };
 
     let title = match session.players.len() {

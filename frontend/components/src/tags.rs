@@ -6,7 +6,7 @@ use ywt::*;
 #[derive(Properties, Clone, PartialEq)]
 pub struct TagProps {
     pub name: String,
-    pub onremove: Callback<()>,
+    pub remove: Callback<()>,
 }
 
 #[function_component(TagField)]
@@ -23,7 +23,7 @@ pub fn tag_field(props: &TagProps) -> Html {
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub onchange: Callback<Vec<DraftTag>>,
+    pub change: Callback<Vec<DraftTag>>,
 
     #[prop_or_default]
     pub placeholder: String,

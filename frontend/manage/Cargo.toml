@@ -7,6 +7,7 @@ edition = "2021"
 api = { path = "../../api", features=["session"] }
 shared = { path = "../shared" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
+honey = { git = "https://github.com/tdooms/honey.git" }
 
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa"] }
 yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }

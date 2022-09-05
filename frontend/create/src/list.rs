@@ -11,8 +11,8 @@ use ywt::{callback, clone};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ElemProps {
-    pub onaction: Callback<Action>,
-    pub onselect: Callback<usize>,
+    pub action: Callback<Action>,
+    pub select: Callback<usize>,
 
     pub error: bool,
 
@@ -90,8 +90,8 @@ pub fn round_elem(props: &ElemProps) -> Html {
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ListProps {
-    pub onaction: Callback<Action>,
-    pub onselect: Callback<usize>,
+    pub action: Callback<Action>,
+    pub select: Callback<usize>,
 
     pub draft: Rc<DraftQuiz>,
     pub errors: Rc<Vec<Option<ValidationErrors>>>,

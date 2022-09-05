@@ -8,7 +8,7 @@ use cobul::*;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct AlertsProps<T: Clone + Display + PartialEq + 'static> {
     pub entries: Vec<T>,
-    pub onremove: Callback<usize>,
+    pub remove: Callback<usize>,
 }
 
 #[derive(Default)]

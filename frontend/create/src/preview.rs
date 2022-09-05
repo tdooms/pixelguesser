@@ -12,7 +12,7 @@ use ywt::callback;
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     pub round: Rc<DraftRound>,
-    pub onedit: Callback<Rc<DraftRound>>,
+    pub edit: Callback<Rc<DraftRound>>,
 }
 
 #[function_component(RoundPreview)]

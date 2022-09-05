@@ -26,9 +26,9 @@ pub struct Props {
     pub round: Rc<DraftRound>,
     pub errors: Rc<Vec<Option<ValidationErrors>>>,
 
-    pub onback: Callback<()>,
-    pub ondone: Callback<()>,
-    pub onedit: Callback<Rc<DraftRound>>,
+    pub back: Callback<()>,
+    pub done: Callback<()>,
+    pub edit: Callback<Rc<DraftRound>>,
 }
 
 #[function_component(RoundEdit)]

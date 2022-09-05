@@ -16,8 +16,8 @@ pub struct Props {
     pub sort: Sort,
     pub filter: String,
 
-    pub onsort: Callback<Sort>,
-    pub onfilter: Callback<String>,
+    pub input: Callback<Sort>,
+    pub change: Callback<String>,
 }
 
 #[function_component(Search)]

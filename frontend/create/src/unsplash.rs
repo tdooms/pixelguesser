@@ -8,7 +8,7 @@ use ywt::callback;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
-    pub onselect: Callback<Image>,
+    pub select: Callback<Image>,
     pub narrow: bool,
 }
 

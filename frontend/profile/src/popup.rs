@@ -8,7 +8,7 @@ use ywt::{callback, spawn};
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub page: Page,
-    pub onpage: Callback<Page>,
+    pub click: Callback<Page>,
 }
 
 async fn authenticate(

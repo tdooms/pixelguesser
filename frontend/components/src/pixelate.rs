@@ -106,10 +106,10 @@ pub struct Props {
 
     pub stage: Stage,
 
-    pub onreveal: Callback<()>,
+    pub reveal: Callback<()>,
 
     #[prop_or_default]
-    pub onpixel: Callback<u32>,
+    pub pixelate: Callback<u32>,
 
     #[prop_or_default]
     pub pixels: Option<u32>,

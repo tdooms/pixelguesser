@@ -17,8 +17,8 @@ use crate::Stage;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub onstage: Callback<Stage>,
-    pub onaction: Callback<Action>,
+    pub change: Callback<Stage>,
+    pub action: Callback<Action>,
     pub draft: Rc<DraftQuiz>,
 }
 

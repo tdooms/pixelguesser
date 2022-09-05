@@ -20,8 +20,8 @@ const TAGS: &str = "Europe/Geography/Movies";
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub onstage: Callback<Stage>,
-    pub onaction: Callback<Action>,
+    pub stage: Callback<Stage>,
+    pub action: Callback<Action>,
 
     pub draft: Rc<DraftQuiz>,
     pub has_delete: bool,
@@ -29,7 +29,7 @@ pub struct Props {
 
 #[function_component(QuizPage)]
 pub fn quiz_page(props: &Props) -> Html {
-    let Props { onstage, onaction, draft, has_delete } = props.clone();
+    let Props { stage, action, draft, has_delete } = props.clone();
 
     let user = use_auth().user();
     let toast = use_toast();
