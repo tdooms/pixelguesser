@@ -18,7 +18,7 @@ mod navigate;
 mod rating;
 
 #[function_component(NameField)]
-pub fn name_field(props: &honey::CustomProps) -> Html {
+pub fn name_field(props: &honey::CustomProps<Player>) -> Html {
     honey::CustomProps { submit, input, value, .. } = props.clone();
 
     html! {
@@ -35,7 +35,7 @@ pub fn name_field(props: &honey::CustomProps) -> Html {
     }
 }
 
-#[derive(Form, Default, Clone)]
+#[derive(honey::Form, Default, Clone)]
 #[form(enter)]
 pub struct Player {
     #[form(custom = "name_field")]

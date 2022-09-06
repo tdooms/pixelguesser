@@ -1,7 +1,6 @@
 use crate::Page;
 use cobul::fa::Solid;
 use cobul::*;
-use shared::use_form;
 use std::rc::Rc;
 use yew::*;
 use ywt::callback;
@@ -14,7 +13,7 @@ pub struct Props {
 }
 
 #[function_component(Credentials)]
-pub fn credentials(Props { onsubmit, onpage, signup }: &Props) -> Html {
+pub fn credentials(Props { submit, page, signup }: &Props) -> Html {
     let state = use_state(|| Rc::new(api::Credentials::default()));
     let shown = use_state(|| false);
     let dirty = use_state(|| false);

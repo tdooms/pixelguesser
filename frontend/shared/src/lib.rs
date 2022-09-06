@@ -1,6 +1,5 @@
 mod auth;
 mod consts;
-mod form;
 mod hooks;
 mod resize;
 mod route;
@@ -9,7 +8,6 @@ mod toast;
 
 pub use auth::*;
 pub use consts::{host, pixelation};
-pub use form::*;
 pub use hooks::*;
 // pub use resize::{use_resizer, Dimensions};
 pub use route::Route;

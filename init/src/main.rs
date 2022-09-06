@@ -1,10 +1,12 @@
 use api::{Credentials, DraftQuiz, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
-use hasura::{mutation, DeleteBuilder, InsertBuilder, InsertOneBuilder, Object};
+use hasura::{
+    mutation, Delete, DeleteBuilder, Insert, InsertBuilder, InsertOne, InsertOneBuilder, Object,
+};
 use std::fs::File;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct Quizzes {
-    quizzes: Vec<DraftQuiz>,
+    quizzes: Vec<Quiz>,
 }
 
 async fn convert_image(image: &mut Image, token: String) {
@@ -17,39 +19,37 @@ async fn convert_image(image: &mut Image, token: String) {
 
     *image = Image::from_base64(base64, Some(path));
     image.upload(token).await.unwrap();
+    log::error!("{:?}", image.url());
 }
 
-async fn upload(token: String, creator: String) {
+async fn upload(token: String, creator_id: String) {
     let file = File::open("init/create.json").unwrap();
     let Quizzes { mut quizzes } = serde_json::from_reader(file).unwrap();
 
-    for draft in &mut quizzes {
-        draft.creator_id = Some(creator.clone());
-        convert_image(&mut draft.image, token.clone()).await;
-        log::error!("{:?}", draft.image.url());
+    for quiz in &mut quizzes {
+        quiz.creator_id = Some(creator_id.clone());
+        convert_image(&mut quiz.image, token.clone()).await;
 
-        for (index, round) in &mut draft.rounds.data.iter_mut().enumerate() {
+        for (index, round) in &mut quiz.rounds.iter_mut().enumerate() {
             convert_image(&mut round.image, token.clone()).await;
-            round.index = index as u32
+            round.index = index as u64
         }
     }
 
-    log::info!("uploading quizzes");
-
-    let insert = InsertBuilder::default().returning(Quiz::all()).objects(quizzes).build().unwrap();
-    log::warn!("{}", insert);
+    let insert = Insert::new(quizzes);
     let inserted = mutation!(insert).token(Some(token)).send(GRAPHQL_ENDPOINT).await.unwrap();
 
-    let quiz_ids: Vec<_> = inserted.into_iter().map(|x| x.id).collect();
-    log::info!("uploaded the following quizzes: {:?}", quiz_ids);
+    let info: Vec<_> = inserted.into_iter().map(|x| x.title).collect();
+    log::info!("uploaded the following quizzes: {:?}", info);
 }
 
 async fn delete(token: String) {
     // TODO: also remove images from storage
-    let delete = DeleteBuilder::default().returning(Quiz::all()).build().unwrap();
-    let quizzes = mutation!(delete).token(Some(token)).send(GRAPHQL_ENDPOINT).await.unwrap();
 
-    let info: Vec<_> = quizzes.into_iter().map(|x| x.title).collect();
+    let delete = Delete::new();
+    let deleted = mutation!(delete).token(Some(token)).send(GRAPHQL_ENDPOINT).await.unwrap();
+
+    let info: Vec<_> = deleted.into_iter().map(|x| x.title).collect();
     log::warn!("deleted the following quizzes: {info:?}");
 }
 
@@ -82,7 +82,7 @@ async fn main() {
         email_verified: true,
     };
 
-    let body = InsertOneBuilder::default().object(user).returning(User::all()).build().unwrap();
+    let body = InsertOne::new(user);
     let _ = mutation!(body).token(Some(bearer.clone())).send(GRAPHQL_ENDPOINT).await;
 
     delete(bearer.clone()).await;

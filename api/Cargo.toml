@@ -6,7 +6,6 @@ edition = "2021"
 [features]
 auth = ["validator", "pixauth"]
 graphql = ["validator", "image", "hasura"]
-queries = ["hasura"]
 session = ["gloo-net", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
 image = ["gloo-file", "web-sys", "reqwest", "piximages"]
 unsplash = ["reqwest"]

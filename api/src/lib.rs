@@ -8,16 +8,19 @@ pub use auth::*;
 pub use pixauth::*;
 
 #[cfg(feature = "graphql")]
-pub use graphql::*;
+pub use quiz::*;
+
+#[cfg(feature = "graphql")]
+pub use round::*;
+
+#[cfg(feature = "graphql")]
+pub use user::*;
 
 #[cfg(feature = "image")]
 pub use image::Image;
 
 #[cfg(feature = "image")]
 pub use piximages::Resolution;
-
-#[cfg(feature = "queries")]
-pub use queries::*;
 
 #[cfg(feature = "session")]
 pub use pixessions::*;
@@ -33,13 +36,16 @@ mod error;
 
 #[cfg(feature = "auth")]
 mod auth;
-#[cfg(feature = "graphql")]
-mod graphql;
 #[cfg(feature = "image")]
 mod image;
-#[cfg(feature = "queries")]
-mod queries;
 #[cfg(feature = "session")]
 mod session;
 #[cfg(feature = "unsplash")]
 mod unsplash;
+
+#[cfg(feature = "graphql")]
+mod quiz;
+#[cfg(feature = "graphql")]
+mod round;
+#[cfg(feature = "graphql")]
+mod user;
