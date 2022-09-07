@@ -19,7 +19,7 @@ mod rating;
 
 #[function_component(NameField)]
 pub fn name_field(props: &honey::CustomProps<Player>) -> Html {
-    honey::CustomProps { submit, input, value, .. } = props.clone();
+    // honey::CustomProps { submit, input, value, .. } = props.clone();
 
     html! {
         <Field grouped=true>

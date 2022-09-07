@@ -1,4 +1,5 @@
 use crate::Page;
+use api::Credentials;
 use cobul::fa::Solid;
 use cobul::*;
 use std::rc::Rc;
@@ -7,14 +8,16 @@ use ywt::callback;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub submit: Callback<Rc<api::Credentials>>,
+    pub submit: Callback<Rc<Credentials>>,
     pub page: Callback<Page>,
+
     pub signup: bool,
 }
 
-#[function_component(Credentials)]
-pub fn credentials(Props { submit, page, signup }: &Props) -> Html {
-    let state = use_state(|| Rc::new(api::Credentials::default()));
+#[function_component(Authenticate)]
+pub fn authenticate(Props { submit, page, signup }: &Props) -> Html {
+    let credentials = use_state(|| Rc::new(Credentials::default()));
+
     let shown = use_state(|| false);
     let dirty = use_state(|| false);
     let loading = use_state(|| false);

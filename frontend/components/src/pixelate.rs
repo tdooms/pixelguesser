@@ -103,13 +103,13 @@ fn update_duration(stage: Stage, pixels: u32, max: u32) -> Option<(f64, u32)> {
 #[derive(Properties, PartialEq, Debug, Clone)]
 pub struct Props {
     pub image: HtmlImageElement,
-
     pub stage: Stage,
 
+    #[prop_or_default]
     pub reveal: Callback<()>,
 
     #[prop_or_default]
-    pub pixelate: Callback<u32>,
+    pub change: Callback<u32>,
 
     #[prop_or_default]
     pub pixels: Option<u32>,
@@ -120,7 +120,7 @@ pub struct Props {
 
 #[function_component(Pixelate)]
 pub fn pixelate(props: &Props) -> Html {
-    let Props { image, stage, onreveal, height, onpixel, pixels } = props.clone();
+    let Props { image, stage, reveal, height, change, pixels } = props.clone();
 
     let window = web_sys::window().unwrap();
     let resizer = use_state(|| EventListener::new(&window, "resize", |_| ()));
@@ -160,7 +160,7 @@ pub fn pixelate(props: &Props) -> Html {
     }
 
     {
-        clone!(size, offscreen_ref, image, onpixel);
+        clone!(size, offscreen_ref, image, change);
         let src = image.src();
         // effect which initialises the canvas and state when the image is changed
         use_effect_with_deps(
@@ -171,7 +171,7 @@ pub fn pixelate(props: &Props) -> Html {
                 offscreen.set_width(width);
                 offscreen.set_height(height);
 
-                onpixel.emit(START_PIXELS);
+                change.emit(START_PIXELS);
                 size.set(START_PIXELS);
 
                 || ()
@@ -181,19 +181,19 @@ pub fn pixelate(props: &Props) -> Html {
     }
 
     {
-        clone!(timer, image, onpixel);
+        clone!(timer, image, change);
         // effect which resets the timer when the size/stage changes
         use_effect_with_deps(
             move |(size, stage)| {
                 match update_duration(*stage, **size, image.height()) {
                     Some((_, x)) if x == image.height() => {
-                        onreveal.emit(());
+                        reveal.emit(());
                     }
                     Some((time, new)) => {
-                        clone!(size, onpixel);
+                        clone!(size, change);
                         let cb = move || {
                             size.set(new);
-                            onpixel.emit(new)
+                            change.emit(new)
                         };
                         timer.set(Timeout::new(time as u32, cb));
                     }

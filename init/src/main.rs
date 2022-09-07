@@ -1,7 +1,5 @@
-use api::{Credentials, DraftQuiz, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
-use hasura::{
-    mutation, Delete, DeleteBuilder, Insert, InsertBuilder, InsertOne, InsertOneBuilder, Object,
-};
+use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
+use hasura::{mutation, Delete, Insert, InsertOne};
 use std::fs::File;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]

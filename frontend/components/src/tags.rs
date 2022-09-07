@@ -1,4 +1,4 @@
-use api::DraftTag;
+use api::Tag;
 use cobul::*;
 use yew::*;
 use ywt::*;
@@ -14,8 +14,8 @@ pub fn tag_field(props: &TagProps) -> Html {
     html! {
         <Control>
         <Tags addons=true>
-            <Tag color={Color::Info}> {props.name.clone()} </Tag>
-            <Tag delete=true onclick={props.onremove.clone()} tag="a"/>
+            <cobul::Tag color={Color::Info}> {props.name.clone()} </cobul::Tag>
+            <cobul::Tag delete=true click={props.remove.clone()} tag="a"/>
         </Tags>
         </Control>
     }
@@ -23,7 +23,8 @@ pub fn tag_field(props: &TagProps) -> Html {
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub change: Callback<Vec<DraftTag>>,
+    #[prop_or_default]
+    pub input: Callback<Vec<Tag>>,
 
     #[prop_or_default]
     pub placeholder: String,
@@ -33,39 +34,40 @@ pub struct Props {
 pub fn tags_field(props: &Props) -> Html {
     let tags = use_state(|| vec![]);
     let current = use_state(|| String::new());
-    let onchange = props.onchange.clone();
 
-    let ontag = callback!(current; move |string| {
+    let input = props.input.clone();
+
+    let change = callback!(current; move |string| {
         current.set(string);
     });
-    let onadd = callback!(tags, current, onchange; move |_| {
+    let add = callback!(tags, current, input; move |_| {
         let mut new = (*tags).clone();
-        new.push(DraftTag{ value: (*current).clone() });
-        onchange.emit(new.clone());
+        new.push(Tag{ value: (*current).clone(), quiz_id: None });
+        input.emit(new.clone());
 
         tags.set(new);
         current.set(String::new());
     });
-    let onkeypress = callback!(onadd; move |e: KeyboardEvent| {
-        (e.key() == "Enter").then(|| onadd.emit(()));
+    let keypress = callback!(add; move |e: KeyboardEvent| {
+        (e.key() == "Enter").then(|| add.emit(()));
     });
-    let onremove = callback!(tags; move |index| {
+    let remove = callback!(tags; move |index| {
         let mut new = (*tags).clone();
         new.remove(index);
-        onchange.emit(new.clone());
+        input.emit(new.clone());
         tags.set(new);
     });
 
-    let view = |(index, tag): (usize, &DraftTag)| {
-        let onremove = callback!(onremove; move |_| onremove.emit(index));
-        html! { <TagField {onremove} name={tag.value.clone()}/> }
+    let view = |(index, tag): (usize, &Tag)| {
+        let remove = callback!(remove; move |_| remove.emit(index));
+        html! { <TagField {remove} name={tag.value.clone()}/> }
     };
 
     html! {
         <>
         <simple::Field label="Tags">
-            <div {onkeypress}>
-            <Input oninput={ontag} value={(*current).clone()} placeholder={props.placeholder.clone()}/>
+            <div onkeypress={keypress}>
+            <Input input={change} value={(*current).clone()} placeholder={props.placeholder.clone()}/>
             </div>
         </simple::Field>
 

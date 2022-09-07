@@ -1,6 +1,5 @@
 mod center;
 mod dyn_image;
-mod errors;
 mod pixelate;
 mod quiz_card;
 mod sidebar;
@@ -9,9 +8,8 @@ mod toast;
 
 pub use center::Center;
 pub use dyn_image::{DynImage, Fit, Height};
-pub use errors::Alerts;
 pub use pixelate::Pixelate;
-pub use quiz_card::{QuizCard, View};
+pub use quiz_card::QuizCard;
 pub use sidebar::{Sidebar, SidebarAlignment};
 pub use tags::TagsField;
 pub use toast::Toasts;

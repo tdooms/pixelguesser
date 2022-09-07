@@ -1,67 +1,72 @@
-use api::{DraftQuiz, Quiz, Resolution, IMAGE_PLACEHOLDER};
+use api::{Quiz, Resolution, IMAGE_PLACEHOLDER};
+use cobul::fa::Solid;
+use cobul::simple::Button;
 use cobul::*;
 use shared::use_auth;
 use std::rc::Rc;
 use yew::*;
 
-#[derive(PartialEq, Debug)]
-pub enum View {
-    Normal { quiz: Quiz, onclick: Callback<()>, onedit: Callback<()> },
-    Preview { draft: Rc<DraftQuiz>, creator: String },
-    Empty,
-}
-
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
-    pub view: View,
+    #[prop_or_default]
+    quiz: Option<Rc<Quiz>>,
+
+    #[prop_or_default]
+    creator: Option<String>,
+
+    #[prop_or_default]
+    play: Callback<()>,
+
+    #[prop_or_default]
+    edit: Callback<()>,
+}
+
+#[derive(Properties, PartialEq, Debug, Clone)]
+pub struct ButtonProps {
+    color: Color,
+    pointer: bool,
+    text: String,
+    icon: String,
+    click: Callback<()>,
+}
+
+#[function_component(QuizButton)]
+pub fn quiz_button(props: &ButtonProps) -> Html {
+    let ButtonProps { color, pointer, text, icon, click } = props.clone();
+
+    let radius = "border-top-left-radius: 0 !important;border-top-right-radius: 0 !important";
+    let style = format!("{radius};{}", (!pointer).then(|| "cursor: unset").unwrap_or_default());
+
+    html! { <Button {color} fullwidth=true {style} {click} {icon} {text} /> }
 }
 
 #[function_component(QuizCard)]
 pub fn quiz_card(props: &Props) -> Html {
-    let button = |color, pointer: bool, icon, text, onclick: Option<&Callback<()>>| {
-        let radius = "border-top-left-radius: 0 !important;border-top-right-radius: 0 !important";
-        let style = format!("{radius};{}", (!pointer).then(|| "cursor: unset").unwrap_or_default());
-        let onclick = onclick.cloned().unwrap_or_default();
+    let Props { quiz, play, edit, .. } = props;
 
-        html! {
-            <Button {color} fullwidth=true {style} {onclick}>
-                <Icon {icon}/> <span>{text}</span>
-            </Button>
-        }
-    };
+    let creator = quiz.as_ref().map(|x| x.creator.clone()).flatten();
 
-    let footer = match &props.view {
-        View::Normal { onclick, .. } => {
-            button(Color::Success, true, fa::Solid::Play, "Play", Some(onclick))
-        }
-        View::Preview { .. } | View::Empty => {
-            button(Color::Success, false, fa::Solid::Play, "Play", None)
-        }
-    };
+    let creator_id = creator.as_ref().map(|x| x.id.clone()).flatten();
+    let user_id = use_auth().user().map(|x| x.id.clone()).flatten();
 
-    let right = match (&props.view, use_auth().user()) {
-        (View::Normal { quiz, onedit, .. }, Some(user)) if user.id == quiz.creator.id => {
-            html! { <Button onclick={onedit} color={Color::White}> <Icon icon={fa::Solid::PenToSquare}/> </Button> }
-        }
-        _ => html! {},
+    let footer = html! { <QuizButton color={Color::Success} pointer=true icon={Solid::Play} text={"Play"} click={play} /> };
+
+    let right = match creator_id == user_id {
+        true => html! { <Button click={edit} color={Color::White} icon={Solid::PenToSquare} /> },
+        false => html! {},
     };
 
     let filler = |n| std::iter::repeat(" x").take(n).collect::<String>();
-    let (small, large) = (filler(5), filler(15));
 
-    let (src, title, creator, description) = match &props.view {
-        View::Normal { quiz, .. } => (
-            quiz.image.src(Resolution::Small),
-            &quiz.title,
-            &quiz.creator.nickname,
-            &quiz.description,
-        ),
-        View::Preview { draft, creator } => {
-            (draft.image.src(Resolution::Small), &draft.title, creator, &draft.description)
-        }
-        View::Empty => (Rc::from(IMAGE_PLACEHOLDER.to_owned()), &small, &small, &large),
-    };
-    let style = (props.view == View::Empty).then(|| "visibility:hidden");
+    let title = quiz.as_ref().map(|x| x.title.clone()).unwrap_or_else(|| filler(5));
+    let description = quiz.as_ref().map(|x| x.description.clone()).unwrap_or_else(|| filler(15));
+    let creator = creator.map(|x| x.nickname).unwrap_or_else(|| filler(5));
+    let src = quiz
+        .as_ref()
+        .map(|x| x.image.src(Resolution::Small))
+        .unwrap_or_else(|| Rc::from(IMAGE_PLACEHOLDER.to_owned()));
+
+    let style = props.quiz.is_none().then(|| "visibility:hidden");
     let image = html! { <cobul::Image size={ImageSize::Is3by2} src={(*src).clone()} /> };
 
     html! {

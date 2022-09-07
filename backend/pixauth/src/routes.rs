@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::SqlitePool;
 use jsonwebtoken::{encode, EncodingKey, Header};
-use pixauth::{Claims, Credentials, HasuraClaims, Role, Tokens};
+use pixauth::{Claims, HasuraClaims, Role, Tokens};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use rocket::serde::json::Json;
@@ -9,6 +9,12 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, post, put, State};
 use sha3::Digest;
 use std::time::UNIX_EPOCH;
+
+#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq)]
+struct Credentials {
+    pub email: String,
+    pub password: String,
+}
 
 #[derive(sqlx::FromRow, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]

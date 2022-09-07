@@ -6,7 +6,7 @@ use shared::{Level, Toast, UseToastManagerHandle};
 use yew::*;
 use yew_router::prelude::Redirect;
 
-pub fn toast_view(toast: &dyn Toast, onremove: Callback<()>) -> Html {
+pub fn toast_view(toast: &dyn Toast, remove: Callback<()>) -> Html {
     let (icon, color, text_color) = match toast.level() {
         Level::Error => (Solid::BoltLightning, Color::Danger, TextColor::Danger),
         Level::Warning => (Solid::CircleExclamation, Color::Warning, TextColor::Warning),
@@ -30,7 +30,7 @@ pub fn toast_view(toast: &dyn Toast, onremove: Callback<()>) -> Html {
                 {toast.to_string()}
             </Column>
             <Column size={ColumnSize::IsNarrow} class="p-0">
-                <Button onclick={onremove} {color} light=true> <Icon icon={Solid::Xmark} size={Size::Large} /> </Button>
+                <Button click={remove} {color} light=true> <Icon icon={Solid::Xmark} size={Size::Large} /> </Button>
             </Column>
         </Columns>
         </Message>

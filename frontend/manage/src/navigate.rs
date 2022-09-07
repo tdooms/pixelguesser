@@ -16,8 +16,8 @@ pub fn navigate(props: &Props) -> Html {
     let Props { callback, session, rounds } = props;
 
     let button = |action: Action, color: Color, light: bool, icon: fa::Solid, text: &str| {
-        let onclick = callback.reform(move |_| action.clone());
-        html! {<Button size={Size::Large} {onclick} {color} {light}><Icon {icon}/> <span>{text}</span> </Button> }
+        let click = callback.reform(move |_| action.clone());
+        html! {<Button size={Size::Large} {click} {color} {light}><Icon {icon}/> <span>{text}</span> </Button> }
     };
 
     let buttons = match session.phase {

@@ -33,16 +33,6 @@ pub struct Claims {
     pub hasura: HasuraClaims,
 }
 
-#[derive(Serialize, Deserialize, Clone, validator::Validate, Default, Debug, PartialEq)]
-pub struct Credentials {
-    #[validate(email(message = "Must be a valid email address"))]
-    pub email: String,
-
-    #[validate(length(min = 8, message = "Password must be longer than 8 characters"))]
-    #[validate(length(max = 32, message = "Password must be shorter than 32 characters"))]
-    pub password: String,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Tokens {
     pub bearer: String,

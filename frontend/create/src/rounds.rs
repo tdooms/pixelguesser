@@ -2,9 +2,8 @@ use cobul::Columns;
 use std::rc::Rc;
 use validator::Validate;
 
+use api::{Quiz, Round};
 use yew::*;
-
-use api::{DraftQuiz, DraftRound};
 use ywt::callback;
 
 use crate::edit::RoundEdit;
@@ -17,67 +16,67 @@ use crate::Stage;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub change: Callback<Stage>,
+    pub stage: Callback<Stage>,
     pub action: Callback<Action>,
-    pub draft: Rc<DraftQuiz>,
+    pub quiz: Rc<Quiz>,
 }
 
 #[function_component(RoundPage)]
 pub fn round_page(props: &Props) -> Html {
-    let Props { onstage, onaction, draft } = props.clone();
+    let Props { stage, action, quiz } = props.clone();
 
     let current = use_state(|| 0usize);
-    let round = Rc::new(draft.rounds.data[*current].clone());
+    let round = Rc::new(quiz.rounds[*current].clone());
 
-    let validate = |round: &DraftRound| match round.validate() {
+    let validate = |round: &Round| match round.validate() {
         Ok(_) => None,
         Err(err) => Some(err),
     };
 
-    let errors: Rc<Vec<_>> = Rc::new(draft.rounds.data.iter().map(validate).collect());
+    let errors: Rc<Vec<_>> = Rc::new(quiz.rounds.iter().map(validate).collect());
     let complete = errors.iter().all(|x| x.is_none());
 
-    let ondone = callback!(onstage, complete; move |_| {
+    let ondone = callback!(stage, complete; move |_| {
         if !complete {return}
-        onstage.emit(Stage::Summary);
+        stage.emit(Stage::Summary);
     });
 
-    let onback = callback!(onstage; move |_| {
-        onstage.emit(Stage::Quiz)
+    let back = callback!(stage; move |_| {
+        stage.emit(Stage::Quiz)
     });
 
-    let onedit = callback!(onaction, current; move |round| {
-        onaction.emit(Action::Round(*current, round));
+    let edit = callback!(action, current; move |round| {
+        action.emit(Action::Round(*current, round));
     });
 
-    let onaction = callback!(current, onaction; move |action| {
-        match action {
+    let onaction = callback!(current, action; move |new| {
+        match new {
             Action::Add(_) => current.set(*current + 1),
             Action::Remove(idx) => current.set(*current - current.min((idx <= *current) as usize)),
-            Action::Swap(from, to) => onaction.emit(Action::Swap(from, to)),
+            Action::Swap(from, to) => action.emit(Action::Swap(from, to)),
             _ => ()
         }
-        onaction.emit(action);
+        action.emit(new);
     });
 
-    let onselect = callback!(current; move |idx| {
+    let select = callback!(current; move |idx| {
         current.set(idx);
     });
 
-    let onchange = callback!(round, onedit; move |image| {
-        onedit.emit(Rc::new(DraftRound { image, ..(*round).clone() }));
+    let change = callback!(round, edit; move |image| {
+        edit.emit(Rc::new(DraftRound { image, ..(*round).clone() }));
     });
 
     let center = match round.image.is_empty() {
-        true => html! { <Picker {onchange} narrow=false/> },
-        false => html! { <RoundPreview round={round.clone()} onedit={onedit.clone()}/> },
+        true => html! { <Picker {change} narrow=false/> },
+        false => html! { <RoundPreview round={round.clone()} edit={edit.clone()}/> },
     };
 
     html! {
         <Columns>
-            <RoundList {onselect} {onaction} {draft} current={*current} errors={errors.clone()}/>
+            <RoundList {onselect} {action} {draft} current={*current} errors={errors.clone()}/>
             {center}
-            <RoundEdit {round} {onback} {ondone} {onedit} {errors}/>
+            <RoundEdit {round} {back} {done} {edit} {errors}/>
         </Columns>
     }
 }
