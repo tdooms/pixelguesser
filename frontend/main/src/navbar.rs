@@ -17,6 +17,6 @@ pub fn main_navbar() -> Html {
     let end = html! { <Menu/> };
 
     html! {
-        <Navbar brand={brand} burger=true end={end} onclick={Callback::noop()}/>
+        <Navbar {brand} burger=true {end} click={Callback::noop()}/>
     }
 }

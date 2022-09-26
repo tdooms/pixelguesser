@@ -4,7 +4,7 @@ use std::rc::Rc;
 use validator::ValidationErrors;
 
 use crate::state::Action;
-use api::{DraftQuiz, Resolution};
+use api::{Quiz, Resolution};
 use web_sys::DragEvent;
 use yew::*;
 use ywt::{callback, clone};
@@ -20,7 +20,7 @@ pub struct ElemProps {
     pub current: usize,
     pub max: usize,
 
-    pub draft: Rc<DraftQuiz>,
+    pub quiz: Rc<Quiz>,
 
     pub start: UseStateHandle<Option<usize>>,
     pub hover: UseStateHandle<Option<usize>>,
@@ -28,10 +28,10 @@ pub struct ElemProps {
 
 #[function_component(RoundElem)]
 pub fn round_elem(props: &ElemProps) -> Html {
-    let ElemProps { onaction, onselect, error, index, current, max, draft, start, hover } =
+    let ElemProps { action, select, error, index, current, max, quiz, start, hover } =
         props.clone();
 
-    let onclick = onselect.reform(move |_| index);
+    let onclick = select.reform(move |_| index);
 
     let ondragstart = callback!(start; move |event: DragEvent| {
         event.data_transfer().unwrap().set_drop_effect("move");

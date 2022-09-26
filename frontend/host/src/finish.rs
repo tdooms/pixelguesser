@@ -17,7 +17,7 @@ pub struct Props {
 pub fn finish(props: &Props) -> Html {
     let Props { session, quiz } = &props;
     let navigator = use_navigator().unwrap().clone();
-    let onleave = { Callback::from(move |_| navigator.push(Route::Overview)) };
+    let leave = { Callback::from(move |_| navigator.push(Route::Overview)) };
 
     html! {
         <>
@@ -31,9 +31,7 @@ pub fn finish(props: &Props) -> Html {
             </Hero>
 
         <Buttons alignment={Alignment::Centered} class="mt-5">
-            <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
-                <Icon icon={fa::Solid::RightFromBracket}/> <span> {"leave"} </span>
-            </Button>
+            <simple::Button color={Color::Primary} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="leave" />
         </Buttons>
         </>
     }

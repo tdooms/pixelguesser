@@ -6,18 +6,18 @@ use std::rc::Rc;
 use web_sys::HtmlImageElement;
 use yew::*;
 
-use api::{DraftRound, Image, Resolution, Stage};
+use api::{Image, Resolution, Round, Stage};
 use ywt::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub round: Rc<DraftRound>,
-    pub edit: Callback<Rc<DraftRound>>,
+    pub round: Rc<Round>,
+    pub edit: Callback<Rc<Round>>,
 }
 
 #[function_component(RoundPreview)]
 pub fn round_preview(props: &Props) -> Html {
-    let Props { round, onedit } = props.clone();
+    let Props { round, edit } = props.clone();
 
     let stage = use_state(|| Stage::Revealed);
     let cropper = use_state(|| false);
@@ -62,20 +62,20 @@ pub fn round_preview(props: &Props) -> Html {
     let buttons = match *stage {
         Stage::Running => html! {
             <Buttons alignment={Alignment::Centered} class="mt-4">
-            {button(onrevealing, fa::Solid::Forward, "reveal")}
-            {button(onpause, fa::Solid::Pause, "pause")}
+            <simple::Button click={onrevealing} icon={fa::Solid::Forward} text="Reveal" />
+            <simple::Button click={onpause} icon={fa::Solid::Pause} text="Pause" />
             </Buttons>
         },
         Stage::Paused => html! {
             <Buttons alignment={Alignment::Centered} class="mt-4">
-            {button(onrevealing, fa::Solid::Forward, "reveal")}
-            {button(onrunning, fa::Solid::Play, "play")}
+            <simple::Button click={onrevealing} icon={fa::Solid::Forward} text="Reveal" />
+            <simple::Button click={onrunning} icon={fa::Solid::Play} text="Play" />
             </Buttons>
         },
         Stage::Revealed => html! {
             <Buttons alignment={Alignment::Centered} class="mt-4">
-            {button(onrunning, fa::Solid::Eye, "preview")}
-            {button(oncropper, fa::Solid::Crop, "crop")}
+            <simple::Button click={onrunning} icon={fa::Solid::Eye} text="Preview" />
+            <simple::Button click={oncropper} icon={fa::Solid::Crop} text="Crop" />
             </Buttons>
         },
         _ => html! {},
@@ -88,7 +88,7 @@ pub fn round_preview(props: &Props) -> Html {
                 {buttons}
             </Column>
             <Column>
-                <Slider<u32> id="slideru" fullwidth=true value={*pixels} oninput={onslider} step=1 range={4..1000} label=true />
+                <Slider<u32> fullwidth=true value={*pixels} input={onslider} step=1 range={4..1000} label=true />
             </Column>
             </Columns>
         },

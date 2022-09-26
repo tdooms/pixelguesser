@@ -3,10 +3,9 @@ use cobul::*;
 use std::rc::Rc;
 use yew::*;
 
-use api::{DraftQuiz, Image, Resolution};
-use components::{QuizCard, TagsField, View};
+use api::{Image, Quiz, Resolution};
+use components::{QuizCard, TagsField};
 use cropper::Cropper;
-use hasura::Data;
 use shared::{use_auth, use_form, use_toast, Forbidden};
 use ywt::callback;
 
@@ -22,14 +21,12 @@ const TAGS: &str = "Europe/Geography/Movies";
 pub struct Props {
     pub stage: Callback<Stage>,
     pub action: Callback<Action>,
-
-    pub draft: Rc<DraftQuiz>,
-    pub has_delete: bool,
+    pub quiz: Rc<Quiz>,
 }
 
 #[function_component(QuizPage)]
 pub fn quiz_page(props: &Props) -> Html {
-    let Props { stage, action, draft, has_delete } = props.clone();
+    let Props { stage, action, quiz } = props.clone();
 
     let user = use_auth().user();
     let toast = use_toast();
@@ -77,7 +74,7 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let onactive = callback!(active; move |_| active.set(!*active));
 
-    let DraftQuiz { title, explanation, description, image, .. } = (*draft).clone();
+    let Quiz { id, title, explanation, description, image, .. } = (*draft).clone();
     let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
     let filename = (!image.is_empty()).then(move || name);
     let fullwidth = !image.is_empty();
@@ -87,11 +84,12 @@ pub fn quiz_page(props: &Props) -> Html {
         None => html! {},
     };
 
-    let delete = || html! {<Button color={Color::Danger} onclick={ondelete}> {"Delete"} </Button>};
     let left = html! {<Title> {"Overview"} </Title>};
-    let right = has_delete.then(|| delete()).unwrap_or_default();
+    let right = id
+        .map(|_| html! {<simple::Button color={Color::Danger} click={ondelete} text="Delete" /> })
+        .unwrap_or_default();
 
-    let form_body = html! {
+    let body = html! {
         <>
         <Modal active={*active} >
             <Picker onchange={Callback::noop()} narrow=true />
@@ -100,23 +98,23 @@ pub fn quiz_page(props: &Props) -> Html {
         <Level {left} {right} />
 
         <simple::Field label="Quiz Title" help={form.error("title")}>
-            <Input oninput={form.change(|x| &mut x.title)} value={title.clone()} placeholder={TITLE}/>
+            <Input model={form.title()} placeholder={TITLE}/>
         </simple::Field>
 
         <simple::Field label="Description" help={form.error("description")}>
-            <Input oninput={form.change(|x| &mut x.description)} value={description.clone()} placeholder={DESCRIPTION} />
+            <Input model={form.description()} placeholder={DESCRIPTION} />
         </simple::Field>
 
         <simple::Field label="Explanation">
-            <Input oninput={form.change(|x| &mut x.explanation)} value={explanation.clone()} placeholder={EXPLANATION}/>
+            <Input model={form.explanation()} placeholder={EXPLANATION}/>
         </simple::Field>
 
-        <TagsField onchange={ontags} placeholder={TAGS}/>
+        <TagsField model={form.tags()} placeholder={TAGS}/>
 
         // <simple::Field label="Image" help={form.error("image")}>
         //     <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
         // </simple::Field>
-        <Button onclick={onactive}> {"Image"} </Button>
+        // <Button click={onactive}> {"Image"} </Button>
         </>
     };
 
@@ -136,9 +134,9 @@ pub fn quiz_page(props: &Props) -> Html {
         <Container>
             {modal}
             <Columns>
-                <Column> {form_body} </Column>
+                <Column> {body} </Column>
                 <Column size={ColumnSize::Is1} />
-                <Column size={ColumnSize::Is4}> <QuizCard view={View::Preview{draft, creator}}/> </Column>
+                <Column size={ColumnSize::Is4}> <QuizCard {quiz} {creator}/> </Column>
             </Columns>
             {buttons}
         </Container>

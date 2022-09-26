@@ -1,10 +1,11 @@
 use crate::Image;
 use derive_more::Display;
+use hasura::Hasura;
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr as Derepr;
 use serde_repr::Serialize_repr as Serepr;
 use strum::EnumIter;
-use validator::ValidationError;
+use validator::{Validate, ValidationError};
 
 fn validate(image: &Image) -> Result<(), ValidationError> {
     match image.is_empty() {
@@ -59,7 +60,7 @@ pub enum Algorithm {
     Blur = 2,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, hasura::Hasura, validator::Validate)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hasura, Validate, Default)]
 #[hasura(table = "rounds")]
 pub struct Round {
     #[hasura(pk = "u64")]

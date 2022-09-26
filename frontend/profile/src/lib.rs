@@ -1,13 +1,13 @@
 mod additional;
-mod authenticate;
+mod credentials;
+mod dialog;
 mod menu;
-mod popup;
 mod profile;
 
 pub use additional::Additional;
-pub use authenticate::Credentials;
+pub use credentials::Credentials;
+pub use dialog::Dialog;
 pub use menu::Menu;
-pub use popup::Popup;
 pub use profile::Profile;
 
 use menu::Page;

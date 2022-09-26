@@ -3,7 +3,7 @@ use components::{DynImage, Fit, Height};
 use std::rc::Rc;
 use yew::*;
 
-use api::{DraftQuiz, DraftRound, Resolution};
+use api::{Quiz, Resolution, Round};
 
 use crate::state::Action;
 use crate::Stage;
@@ -14,10 +14,10 @@ use ywt::callback;
 pub struct Props {
     pub change: Callback<Stage>,
     pub action: Callback<Action>,
-    pub draft: Rc<DraftQuiz>,
+    pub quiz: Rc<Quiz>,
 }
 
-pub fn view_round(round: &DraftRound) -> Html {
+pub fn view_round(round: &Round) -> Html {
     let style = "border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
     html! {
         <Column size={ColumnSize::Is3}>
@@ -29,10 +29,10 @@ pub fn view_round(round: &DraftRound) -> Html {
 
 #[function_component(Summary)]
 pub fn summary(props: &Props) -> Html {
-    let Props { onstage, onaction, draft } = props.clone();
-    let DraftQuiz { public, .. } = *draft;
+    let Props { change, action, quiz } = props.clone();
+    let Quiz { public, .. } = *quiz;
 
-    let onchange = props.onaction.reform(Action::Quiz);
+    let onchange = action.reform(Action::Quiz);
     let form = use_form(draft.clone(), onchange);
 
     let ondone = callback!(onstage, onaction; move |_| {
@@ -52,23 +52,19 @@ pub fn summary(props: &Props) -> Html {
 
         <Box class="mt-5">
             <simple::Field label="Public">
-                <Checkbox id="1" label="public" onchange={form.change(|x| &mut x.public)} checked={public}/>
+                <Checkbox label="public" model={form.public()} />
             </simple::Field>
         </Box>
 
         <Box class="mt-5">
         <Columns multiline=true>
-            { for draft.rounds.data.iter().map(view_round) }
+            { for draft.rounds.iter().map(view_round) }
         </Columns>
         </Box>
 
         <Buttons>
-            <Button color={Color::Info} light=true onclick={onback}>
-                <span> {"Rounds"} </span>
-            </Button>
-            <Button color={Color::Info} onclick={ondone}>
-                <span> {"Submit"} </span>
-            </Button>
+            <simple::Button color={Color::Info} light=true onclick={onback} text="Rounds" />
+            <simple::Button color={Color::Info} onclick={ondone} text="Submit" />
         </Buttons>
 
         </Container>

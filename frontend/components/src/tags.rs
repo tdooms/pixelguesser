@@ -26,36 +26,42 @@ pub struct Props {
     #[prop_or_default]
     pub input: Callback<Vec<Tag>>,
 
+    pub value: Vec<Tag>,
+
     #[prop_or_default]
-    pub placeholder: String,
+    pub model: Option<Model<Vec<Tag>>>,
+
+    #[prop_or_default]
+    pub placeholder: Option<AttrValue>,
 }
 
 #[function_component(TagsField)]
 pub fn tags_field(props: &Props) -> Html {
-    let tags = use_state(|| vec![]);
     let current = use_state(|| String::new());
 
-    let input = props.input.clone();
+    let (callback, tags) = match props.model.clone() {
+        Some(Model { input, value }) => (input, value),
+        None => (props.input.clone(), props.value.clone()),
+    };
 
-    let change = callback!(current; move |string| {
+    let input = callback!(current; move |string| {
         current.set(string);
     });
-    let add = callback!(tags, current, input; move |_| {
-        let mut new = (*tags).clone();
+    let add = callback!(tags, current, callback; move |_| {
+        let mut new = tags.clone();
         new.push(Tag{ value: (*current).clone(), quiz_id: None });
-        input.emit(new.clone());
 
-        tags.set(new);
+        callback.emit(new.clone());
         current.set(String::new());
+    });
+    let remove = callback!(tags; move |index| {
+        let mut new = tags.clone();
+        new.remove(index);
+
+        callback.emit(new.clone());
     });
     let keypress = callback!(add; move |e: KeyboardEvent| {
         (e.key() == "Enter").then(|| add.emit(()));
-    });
-    let remove = callback!(tags; move |index| {
-        let mut new = (*tags).clone();
-        new.remove(index);
-        input.emit(new.clone());
-        tags.set(new);
     });
 
     let view = |(index, tag): (usize, &Tag)| {
@@ -67,7 +73,7 @@ pub fn tags_field(props: &Props) -> Html {
         <>
         <simple::Field label="Tags">
             <div onkeypress={keypress}>
-            <Input input={change} value={(*current).clone()} placeholder={props.placeholder.clone()}/>
+            <Input {input} value={(*current).clone()} placeholder={props.placeholder.clone()}/>
             </div>
         </simple::Field>
 

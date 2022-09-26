@@ -5,7 +5,7 @@ use validator::ValidationErrors;
 use yew::*;
 use ywt::callback;
 
-use api::{Algorithm, DraftRound, Guesses, Image, Points};
+use api::{Algorithm, Guesses, Image, Points, Round};
 use shared::use_form;
 
 fn generate_error_message(errors: &[Option<ValidationErrors>]) -> Option<String> {
@@ -23,28 +23,24 @@ fn generate_error_message(errors: &[Option<ValidationErrors>]) -> Option<String>
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub round: Rc<DraftRound>,
-    pub errors: Rc<Vec<Option<ValidationErrors>>>,
+    pub round: Rc<Round>,
+    pub input: Callback<Rc<Round>>,
 
     pub back: Callback<()>,
     pub done: Callback<()>,
-    pub edit: Callback<Rc<DraftRound>>,
+
+    pub errors: Rc<Vec<Option<ValidationErrors>>>,
 }
 
 #[function_component(RoundEdit)]
 pub fn round_edit(props: &Props) -> Html {
-    let Props { round, onback, ondone, onedit, errors } = props.clone();
+    let Props { round, back, done, input, errors } = props.clone();
 
-    let onclick = callback!(round, onedit; move |_| {
-        onedit.emit(Rc::new(DraftRound { image: Image::default(), ..(*round).clone() }));
+    let click = callback!(round, edit; move |_| {
+        edit.emit(Rc::new(Round { image: Image::default(), ..(*round).clone() }));
     });
 
     let form = use_form(round.clone(), onedit);
-
-    let color = {
-        let form = form.clone();
-        move |name: &str| form.error(name).map(|_| Color::Danger)
-    };
 
     let DraftRound { answer, points, guesses, speed, algorithm, .. } = (*round).clone();
     let has_image = !props.round.image.is_empty();
@@ -52,36 +48,32 @@ pub fn round_edit(props: &Props) -> Html {
     let tooltip = generate_error_message(&&errors);
 
     let footer = html! {
-        <Buttons class="mt-auto pr-5 pl-4 py-2">
-            <Button fullwidth=true color={Color::Info} onclick={ondone} {disabled} {tooltip} style="cursor:pointer" class="mr-1">
-                <span> {"Overview"} </span>
-            </Button>
-            <Button fullwidth=true color={Color::Info} light=true onclick={onback} class="mr-1">
-                <span> {"Quiz"} </span>
-            </Button>
+        <Buttons class="mt-auto pr-5 pl-4 py-2 mr-1">
+            <simple::Button fullwidth=true color={Color::Info} onclick={ondone} {disabled} {tooltip} style="cursor:pointer" label={"Overview"} />
+            <simple::Button fullwidth=true color={Color::Info} light=true onclick={onback} label={"Quiz"} />
         </Buttons>
     };
 
-    let form_body = html! {
+    let body = html! {
         <div class="pt-5 pl-4 pr-5">
         <simple::Field label="Answer" help={form.error("answer")} >
-            <Input oninput={form.change(|x| &mut x.answer)} value={answer} color={color("answer")}/>
+            <Input model={form.answer()} />
         </simple::Field>
 
         <simple::Field label="Points" help={form.error("points")} >
-            <simple::Tabs<Points> onclick={form.change(|x| &mut x.points)} value={points} fullwidth=true toggle=true/>
+            <simple::Tabs<Points> model={form.points()} fullwidth=true toggle=true />
         </simple::Field>
 
         <simple::Field label="Guesses" help={form.error("guesses")}>
-            <simple::Tabs<Guesses> onclick={form.change(|x| &mut x.guesses)} value={guesses} fullwidth=true toggle=true/>
+            <simple::Tabs<Guesses> model={form.guesses()} fullwidth=true toggle=true />
         </simple::Field>
 
         <simple::Field label="Algorithm">
-            <simple::Dropdown<Algorithm> onchange={form.change(|x| &mut x.algorithm)} value={algorithm} fullwidth=true/>
+            <simple::Dropdown<Algorithm> model={form.algorithm()} fullwidth=true />
         </simple::Field>
 
         <simple::Field label="Speed">
-            <Slider<u64> class="mb-0" range={50..200} id="456" step=5 value={speed} oninput={form.change(|x| &mut x.speed)} fullwidth=true tooltip=true fmt="{}%" labelwidth=3.5/>
+            <Slider<u64> class="mb-0" range={50..200} step=5 model={form.speed()} fullwidth=true tooltip=true fmt="{}%" labelwidth=3.5/>
             <div class="is-flex is-justify-content-space-between">
                 <p> {"Slow"} </p>
                 <p> {"Normal"} </p>
@@ -90,16 +82,13 @@ pub fn round_edit(props: &Props) -> Html {
         </simple::Field>
 
         <Block/>
-        <Button fullwidth=true {onclick} light=true color={Color::Danger} hidden={!has_image}>
-        {"Remove image"}
-        </Button>
-
+        <simple::Button fullwidth=true {click} light=true color={Color::Danger} hidden={!has_image} label="Remove image" />
         </div>
     };
 
     html! {
         <Sidebar size={ColumnSize::IsNarrow} alignment={SidebarAlignment::Right} class="p-0" overflow=false {footer}>
-            {form_body}
+            {body}
         </Sidebar>
     }
 }

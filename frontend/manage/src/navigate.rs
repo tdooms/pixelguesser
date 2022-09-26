@@ -6,45 +6,41 @@ use cobul::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub callback: Callback<Action>,
+    pub click: Callback<Action>,
     pub session: Rc<Session>,
     pub rounds: usize,
 }
 
 #[function_component(Navigate)]
 pub fn navigate(props: &Props) -> Html {
-    let Props { callback, session, rounds } = props;
-
-    let button = |action: Action, color: Color, light: bool, icon: fa::Solid, text: &str| {
-        let click = callback.reform(move |_| action.clone());
-        html! {<Button size={Size::Large} {click} {color} {light}><Icon {icon}/> <span>{text}</span> </Button> }
-    };
+    let Props { click, session, rounds } = props;
+    let cb = |action: Action| click.reform(move |_| action.clone());
 
     let buttons = match session.phase {
         Phase::Playing { stage: Stage::Revealing | Stage::Revealed, round }
             if round >= rounds - 1 =>
         {
-            html! { button(Action::Finish, Color::Primary, true, fa::Solid::FlagCheckered, "Final Scores") }
+            html! { <simple::Button click={cb(Action::Finish)} size={Size::Large} color={Color::Primary} light=true icon={fa::Solid::FlagCheckered} text="Final Scores" /> }
         }
         Phase::Lobby => {
-            html! { button(Action::Start, Color::Primary, false, fa::Solid::Play, "Start") }
+            html! { <simple::Button click={cb(Action::Start)} size={Size::Large} color={Color::Primary} icon={fa::Solid::Play} text="Start" /> }
         }
         Phase::Playing { stage: Stage::Revealing | Stage::Revealed, .. } => {
-            html! {button(Action::Stage(Stage::Scores), Color::Info, true, fa::Solid::ListOl, "Scores")}
+            html! { <simple::Button click={cb(Action::Stage(Stage::Scores))} size={Size::Large} color={Color::Info} icon={fa::Solid::ListOl} text="Scores" /> }
         }
         Phase::Playing { stage: Stage::Scores, .. } => {
-            html! {button(Action::Next, Color::Success, true, fa::Solid::Forward, "Next")}
+            html! { <simple::Button click={cb(Action::Next)} size={Size::Large} color={Color::Success} light=true icon={fa::Solid::Forward} text="Next" /> }
         }
         Phase::Playing { stage: Stage::Paused, .. } => html! {
             <>
-            { button(Action::Stage(Stage::Running), Color::Light, false, fa::Solid::Play, "Resume") }
-            { button(Action::Stage(Stage::Revealing), Color::Danger, true, fa::Solid::Eye, "Reveal") }
+            <simple::Button click={cb(Action::Stage(Stage::Running))} size={Size::Large} color={Color::Light} icon={fa::Solid::Play} text="Resume" />
+            <simple::Button click={cb(Action::Stage(Stage::Revealing))} size={Size::Large} color={Color::Danger} light=true icon={fa::Solid::Eye} text="Reveal" />
             </>
         },
         Phase::Playing { stage: Stage::Running, .. } => html! {
             <>
-            { button(Action::Stage(Stage::Paused), Color::Light, false, fa::Solid::Pause, "Pause") }
-            { button(Action::Stage(Stage::Revealing), Color::Danger, true, fa::Solid::Eye, "Reveal") }
+            <simple::Button click={cb(Action::Stage(Stage::Paused))} size={Size::Large} color={Color::Danger} icon={fa::Solid::Pause} text="Pause" />
+            <simple::Button click={cb(Action::Stage(Stage::Revealing))} size={Size::Large} color={Color::Danger} light=true icon={fa::Solid::Eye} text="Reveal" />
             </>
         },
         _ => html! {},

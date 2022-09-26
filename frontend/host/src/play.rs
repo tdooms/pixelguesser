@@ -26,7 +26,7 @@ pub struct Props {
 #[function_component(Play)]
 pub fn play(props: &Props) -> Html {
     let Props { round, index, rounds, stage, players, callback } = props.clone();
-    let onreveal = callback.reform(|_| Action::Stage(Stage::Revealed));
+    let reveal = callback.reform(|_| Action::Stage(Stage::Revealed));
 
     let timer = use_state(|| Timeout::new(0, || ()));
     let image = use_state(|| None);
@@ -56,9 +56,11 @@ pub fn play(props: &Props) -> Html {
         (Stage::Info, _) => html! {
             <Info {index} {rounds} {round}/>
         },
-        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, Some(img)) => html! {
-            <Pixelate {stage} image={img} {onreveal}/>
-        },
+        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, Some(image)) => {
+            html! {
+                <Pixelate {stage} {image} {reveal}/>
+            }
+        }
         (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, None) => html! {
             "image not loaded"
         },

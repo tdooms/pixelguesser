@@ -6,19 +6,17 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
-    pub select: Callback<String>,
+    pub click: Callback<String>,
     pub session: Rc<Session>,
-    pub title: String,
+    pub title: AttrValue,
 }
 
 #[function_component(PlayerList)]
 pub fn player_list(props: &Props) -> Html {
-    let Props { select, session, title } = props;
+    let Props { click, session, title } = props.clone();
 
     let view_player = |(name, _): (&String, &Player)| {
-        let cloned = name.clone();
-        let click = select.reform(move |_| cloned.clone());
-
+        let click = ywt::callback!(name, click; move |_| click.emit(name.clone()));
         html! { <Button outlined=true size={Size::Large} fullwidth=true {click}> {name.clone()} </Button> }
     };
 

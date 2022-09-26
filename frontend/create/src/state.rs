@@ -1,4 +1,4 @@
-use api::{DraftQuiz, DraftRound, Result};
+use api::{Quiz, Result, Round};
 use std::rc::Rc;
 
 use shared::{use_auth, use_startup, use_toast, UseToastHandle};
@@ -6,8 +6,8 @@ use yew::hook;
 use yew::{use_state, UseStateHandle};
 
 pub enum Action {
-    Quiz(Rc<DraftQuiz>),
-    Round(usize, Rc<DraftRound>),
+    Quiz(Rc<Quiz>),
+    Round(usize, Rc<Round>),
     Remove(usize),
     Add(usize),
     Swap(usize, usize),
@@ -17,10 +17,9 @@ pub enum Action {
 
 #[derive(Clone)]
 pub struct UseQuizCreateHandle {
-    prev_quiz: UseStateHandle<Rc<DraftQuiz>>,
-    quiz: UseStateHandle<Rc<DraftQuiz>>,
+    prev: UseStateHandle<Rc<Quiz>>,
+    quiz: UseStateHandle<Rc<Quiz>>,
 
-    quiz_id: UseStateHandle<Option<u32>>,
     loading: UseStateHandle<bool>,
     toast: UseToastHandle,
 }
@@ -30,27 +29,26 @@ impl UseQuizCreateHandle {
         result.map_err(|err| self.toast.add(err)).ok()
     }
 
-    async fn load(self, quiz_id: u32, token: Option<Rc<String>>) {
-        let quiz = match self.notify(api::query_quiz(token, quiz_id).await) {
+    async fn load(self, quiz_id: u64, token: Option<String>) {
+        let mut quiz = match self.notify(api::query_quiz(token, quiz_id).await) {
             Some(quiz) => quiz,
             None => return,
         };
 
-        let mut draft: DraftQuiz = quiz.into();
-        draft.rounds.data.extend(draft.rounds.data.is_empty().then(|| DraftRound::default()));
-        let draft = Rc::new(draft);
+        quiz.rounds.resize(quiz.rounds.len().min(1), Default::default());
+        let quiz = Rc::new(draft);
 
-        self.prev_quiz.set(draft.clone());
-        self.quiz.set(draft);
+        self.prev.set(quiz.clone());
+        self.quiz.set(quiz);
 
         self.loading.set(false);
     }
 
-    async fn upload(self, draft: Rc<DraftQuiz>, token: Rc<String>, creator_id: String) {
-        self.quiz.set(draft.clone());
-        self.prev_quiz.set(draft.clone());
+    async fn upload(self, quiz: Rc<Quiz>, token: Rc<String>, creator_id: String) {
+        self.quiz.set(quiz.clone());
+        self.prev.set(quiz.clone());
 
-        let mut new = (*draft).clone();
+        let mut new = (*quiz).clone();
         new.creator_id = Some(creator_id);
         let _ = self.notify(new.image.upload((*token).clone()).await);
 
@@ -59,9 +57,9 @@ impl UseQuizCreateHandle {
             round.index = index as u32
         }
 
-        match *self.quiz_id {
-            Some(quiz_id) => {
-                let _ = self.notify(api::update_quiz((*token).clone(), quiz_id, new).await);
+        match quiz.id {
+            Some(_) => {
+                let _ = self.notify(api::update_quiz((*token).clone(), new).await);
             }
             None => {
                 let quiz = self.notify(api::create_quiz((*token).clone(), new).await);
@@ -131,18 +129,16 @@ impl UseQuizCreateHandle {
 
 #[hook]
 pub fn use_quiz_create(quiz_id: Option<u32>) -> UseQuizCreateHandle {
-    let mut default = DraftQuiz::default();
-    default.rounds.data.extend(default.rounds.data.is_empty().then(|| DraftRound::default()));
+    let mut new = Quiz::default();
+    new.rounds.push(Round::default());
 
-    let prev_quiz = use_state(|| Rc::new(default.clone()));
-    let quiz = use_state(|| Rc::new(default));
+    let prev = use_state(|| Rc::new(new.clone()));
+    let quiz = use_state(|| Rc::new(new));
 
     let loading = use_state(|| quiz_id.is_some());
-    let quiz_id = use_state(|| quiz_id);
-
     let toast = use_toast();
 
-    let res = UseQuizCreateHandle { prev_quiz, quiz, loading, quiz_id, toast };
+    let res = UseQuizCreateHandle { prev, quiz, loading, toast };
 
     let token = use_auth().token();
     let cloned = res.clone();

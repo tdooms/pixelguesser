@@ -9,7 +9,6 @@ use yew_router::prelude::*;
 use crate::info::RoundInfo;
 use crate::list::PlayerList;
 use crate::navigate::Navigate;
-use crate::player_form::PlayerForm;
 use crate::rating::Rating;
 
 mod info;
@@ -17,29 +16,32 @@ mod list;
 mod navigate;
 mod rating;
 
-#[function_component(NameField)]
-pub fn name_field(props: &honey::CustomProps<Player>) -> Html {
-    // honey::CustomProps { submit, input, value, .. } = props.clone();
+#[derive(Default, Clone, PartialEq)]
+pub struct Player {
+    pub name: String,
+}
+
+#[derive(Properties, Clone, PartialEq)]
+pub struct PlayerProps {
+    pub value: String,
+    pub input: Callback<String>,
+    pub submit: Callback<()>,
+}
+
+#[function_component(PlayerForm)]
+pub fn name_field(props: &PlayerProps) -> Html {
+    let PlayerProps { value, input, submit } = props.clone();
 
     html! {
         <Field grouped=true>
             <Control expanded=true>
-                <Input {input} size={Size::Large} r#type={InputType::Text} placeholder={"eg. Alex"} {value}/>
+            <Input {input} {value} size={Size::Large} placeholder={"eg. Alex"} />
             </Control>
             <Control>
-                <Button click={submit} size={Size::Large} color={Color::Info}>
-                    <Icon icon={fa::Solid::Plus}> </Icon>
-                </Button>
+            <simple::Button click={submit} size={Size::Large} color={Color::Info} icon={fa::Solid::Plus} />
             </Control>
         </Field>
     }
-}
-
-#[derive(honey::Form, Default, Clone)]
-#[form(enter)]
-pub struct Player {
-    #[form(custom = "name_field")]
-    pub name: String,
 }
 
 #[derive(Clone, Properties, PartialEq)]
@@ -52,43 +54,40 @@ pub struct Props {
 
 #[function_component(Manage)]
 pub fn manage(props: &Props) -> Html {
-    let Props { session, quiz, action } = props;
+    let Props { session, quiz, action } = props.clone();
 
     let toast = use_toast();
     let player = use_state(|| Player::default());
+    let rounds = quiz.rounds.len();
 
     if !session.participants.contains_key(&Participant::Host) {
         toast.warning("Host left the session", true);
     }
 
-    let remove = callback.reform(Action::Remove);
-    let input = ywt::callback!(player; move |new| player.set(new));
+    let remove = action.reform(Action::Remove);
+    let input = ywt::callback!(player; move |new| player.set(Player{name: new}));
 
-    let submit = ywt::callback!(player; move |_| {
+    let submit = ywt::callback!(player, action; move |_| {
         action.emit(Action::Add(player.name.clone()));
         player.set(Player::default());
     });
     let guess = |round: usize, quiz: &Quiz| {
         let points = quiz.rounds[round].points as i64;
-        callback.reform(move |name| Action::Score(name, points))
+        action.reform(move |name| Action::Score(name, points))
     };
-
     let leave = {
         let navigator = use_navigator().unwrap().clone();
         Callback::from(move |_| navigator.push(Route::Overview))
     };
 
-    let rounds = quiz.rounds.len();
     let body = match session.phase {
-        Phase::Playing { round, .. } if round >= rounds => {
-            html! {}
-        }
+        Phase::Playing { round, .. } if round >= rounds => html! {},
         Phase::Lobby => html! {
             <>
-            <PlayerForm value={player} {input} {submit}/>
+            <PlayerForm value={player.name.clone()} {input} {submit}/>
             <Block/>
-            <PlayerList title={"Select a player to remove them."} {session} onclick={onremove}/>
-            <Navigate {session} rounds={quiz.rounds.len()} {callback}/>
+            <PlayerList title={"Select a player to remove them."} session={session.clone()} click={remove}/>
+            <Navigate click={action} {session} rounds={quiz.rounds.len()} />
             </>
         },
         Phase::Playing { stage: Stage::Info, round } => html! {
@@ -97,8 +96,8 @@ pub fn manage(props: &Props) -> Html {
         Phase::Playing { stage: Stage::Running | Stage::Paused, round } => html! {
             <>
             <RoundInfo index={round} rounds={quiz.rounds.len()} round={quiz.rounds[round].clone()}/>
-            <PlayerList title={"Select the player who guessed correctly."} {session} onclick={onguess(round, &quiz)}/>
-            <Navigate session={session.clone()} rounds={quiz.rounds.len()} {callback}/>
+            <PlayerList title={"Select the player who guessed correctly."} session={session.clone()} click={guess(round, &quiz)}/>
+            <Navigate click={action} {session} rounds={quiz.rounds.len()} />
             </>
         },
         Phase::Playing { stage: Stage::Revealing, .. } => html! {
@@ -107,24 +106,20 @@ pub fn manage(props: &Props) -> Html {
         Phase::Playing { stage: Stage::Scores, .. } => html! {
             <>
             <Hero color={Color::Primary}> <Title> {"Showing scores"} </Title> </Hero>
-            <Navigate session={session.clone()} rounds={quiz.rounds.len()} {callback}/>
+            <Navigate click={action} session={session.clone()} rounds={quiz.rounds.len()} />
             </>
         },
         Phase::Playing { round, stage: Stage::Revealed } => html! {
             <>
-            <Hero color={Color::Primary}>
-                <Title> {format!("End of round {}", round + 1)} </Title>
-            </Hero>
-            <Navigate session={session.clone()} rounds={quiz.rounds.len()} {callback}/>
+            <Hero color={Color::Primary}> <Title> {format!("End of round {}", round + 1)} </Title> </Hero>
+            <Navigate session={session.clone()} rounds={quiz.rounds.len()} click={action}/>
             </>
         },
         Phase::Finished => html! {
             <>
             <Rating {quiz} />
             <Buttons alignment={Alignment::Centered}>
-                <Button color={Color::Primary} light=true onclick={onleave} size={Size::Large}>
-                    <Icon icon={fa::Solid::RightFromBracket}/> <span> {"leave"} </span>
-                </Button>
+            <simple::Button color={Color::Primary} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="Leave"/>
             </Buttons>
             </>
         },

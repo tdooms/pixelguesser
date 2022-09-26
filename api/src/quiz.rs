@@ -14,7 +14,7 @@ pub struct Tag {
     pub value: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Validate, Hasura)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Validate, Hasura, Default)]
 #[hasura(table = "quizzes")]
 pub struct Quiz {
     #[hasura(pk = "u64")]

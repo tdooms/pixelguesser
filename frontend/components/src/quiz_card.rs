@@ -24,9 +24,10 @@ pub struct Props {
 #[derive(Properties, PartialEq, Debug, Clone)]
 pub struct ButtonProps {
     color: Color,
-    pointer: bool,
     text: String,
     icon: String,
+
+    pointer: bool,
     click: Callback<()>,
 }
 

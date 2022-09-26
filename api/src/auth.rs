@@ -1,5 +1,5 @@
-use crate::{Error, AUTH_ENDPOINT};
-use pixauth::{Credentials, Tokens};
+use crate::{Credentials, Error, AUTH_ENDPOINT};
+use pixauth::Tokens;
 use reqwest::Client;
 use std::rc::Rc;
 
