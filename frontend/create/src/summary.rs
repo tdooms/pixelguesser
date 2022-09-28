@@ -32,39 +32,38 @@ pub fn summary(props: &Props) -> Html {
     let Props { change, action, quiz } = props.clone();
     let Quiz { public, .. } = *quiz;
 
-    let onchange = action.reform(Action::Quiz);
-    let form = use_form(draft.clone(), onchange);
+    let form = use_form(quiz.clone(), action.reform(Action::Quiz));
 
-    let ondone = callback!(onstage, onaction; move |_| {
-        onaction.emit(Action::Submit);
-        onstage.emit(Stage::Done)
+    let done = callback!(change, action; move |_| {
+        action.emit(Action::Submit);
+        change.emit(Stage::Done)
     });
-    let onback = callback!(onstage; move |_| onstage.emit(Stage::Rounds));
+    let back = callback!(change; move |_| change.emit(Stage::Rounds));
 
     html! {
         <Section>
         <Container>
 
         <Hero color={Color::Primary}>
-            <Title> {&draft.title} </Title>
-            <Subtitle> {&draft.description} </Subtitle>
+            <Title> {&quiz.title} </Title>
+            <Subtitle> {&quiz.description} </Subtitle>
         </Hero>
 
         <Box class="mt-5">
             <simple::Field label="Public">
-                <Checkbox label="public" model={form.public()} />
+                // <Checkbox label="public" model={form.public()} />
             </simple::Field>
         </Box>
 
         <Box class="mt-5">
         <Columns multiline=true>
-            { for draft.rounds.iter().map(view_round) }
+            { for quiz.rounds.iter().map(view_round) }
         </Columns>
         </Box>
 
         <Buttons>
-            <simple::Button color={Color::Info} light=true onclick={onback} text="Rounds" />
-            <simple::Button color={Color::Info} onclick={ondone} text="Submit" />
+            <simple::Button color={Color::Info} click={back} text="Rounds" light=true />
+            <simple::Button color={Color::Info} click={done} text="Submit" />
         </Buttons>
 
         </Container>

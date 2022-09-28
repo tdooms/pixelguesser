@@ -5,7 +5,7 @@ use yew_router::prelude::Redirect;
 use ywt::callback;
 
 use crate::quiz::QuizPage;
-use crate::rounds::RoundPage;
+use crate::round::RoundPage;
 use crate::state::use_quiz_create;
 use crate::summary::Summary;
 
@@ -14,14 +14,14 @@ mod list;
 mod picker;
 mod preview;
 mod quiz;
-mod rounds;
+mod round;
 mod state;
 mod summary;
 mod unsplash;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub quiz_id: Option<u32>,
+    pub quiz_id: Option<u64>,
 }
 
 pub enum Stage {
@@ -46,17 +46,15 @@ pub fn create(props: &Props) -> Html {
     let state = use_quiz_create(props.quiz_id);
     let stage = use_state(|| Stage::Quiz);
 
-    let onstage = callback!(stage; move |new| stage.set(new));
-    let onaction =
-        callback!(state, user; move |action| state.action(action, token.clone(), user.id.clone()));
+    let change = callback!(stage; move |new| stage.set(new));
+    let action = callback!(state, user; move |action| state.action(action, token.clone(), user.id.clone().unwrap()));
 
-    let draft = state.quiz();
-    let has_delete = props.quiz_id.is_some();
+    let quiz = state.quiz();
 
     let inner = match *stage {
-        Stage::Quiz => html! { <QuizPage {onstage} {onaction} {draft} {has_delete}/> },
-        Stage::Rounds => html! { <RoundPage {onstage} {onaction} {draft} /> },
-        Stage::Summary => html! { <Summary {onstage} {draft} {onaction}/> },
+        Stage::Quiz => html! { <QuizPage {change} {action} {quiz} /> },
+        Stage::Rounds => html! { <RoundPage {change} {action} {quiz} /> },
+        Stage::Summary => html! { <Summary {change} {action} {quiz} /> },
         Stage::Back | Stage::Done => html! {<Redirect<Route> to={Route::Overview}/>},
     };
 

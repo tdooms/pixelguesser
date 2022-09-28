@@ -2,6 +2,7 @@ use crate::{Result, UNSPLASH_KEY};
 use derive_more::Display;
 use std::fmt::Formatter;
 use strum::EnumIter;
+use validator::Validate;
 
 #[derive(serde::Deserialize, Debug, PartialEq)]
 pub struct Urls {
@@ -115,7 +116,7 @@ pub enum Orientation {
     All,
 }
 
-#[derive(Debug, PartialEq, Clone, Hash, Eq)]
+#[derive(Debug, PartialEq, Clone, Hash, Eq, Validate)]
 pub struct FilterBy {
     pub query: String,
     pub page: u64,

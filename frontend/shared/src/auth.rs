@@ -4,7 +4,7 @@ use std::rc::Rc;
 use yew::{use_context, use_state, UseStateHandle};
 
 use crate::use_startup;
-use api::{create_user, query_user, Credentials, Error, Tokens, User};
+use api::{Credentials, Error, Tokens, User};
 use yew::hook;
 use ywt::spawn;
 
@@ -38,7 +38,7 @@ impl UseAuthHandle {
 
         let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
 
-        let state = match query_user(Some((*bearer).clone()), tokens.id.clone()).await? {
+        let state = match User::query_one(Some((*bearer).clone()), tokens.id.clone()).await? {
             Some(user) => State::Authenticated { user: Rc::new(user), bearer },
             None => State::Partial { id: Rc::new(tokens.id), bearer, loading: false },
         };
@@ -111,7 +111,7 @@ async fn init(state: UseStateHandle<State>) {
     }
 
     let bearer = Rc::new(format!("Bearer {}", tokens.bearer));
-    let new = match query_user(Some((*bearer).clone()), tokens.id.clone()).await {
+    let new = match User::query_one(Some((*bearer).clone()), tokens.id.clone()).await {
         Ok(Some(user)) => State::Authenticated { user: Rc::new(user), bearer },
         Ok(None) => State::Partial { id: Rc::new(tokens.id), bearer, loading: false },
         Err(_) => return state.set(State::Anonymous),

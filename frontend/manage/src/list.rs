@@ -17,7 +17,7 @@ pub fn player_list(props: &Props) -> Html {
 
     let view_player = |(name, _): (&String, &Player)| {
         let click = ywt::callback!(name, click; move |_| click.emit(name.clone()));
-        html! { <Button outlined=true size={Size::Large} fullwidth=true {click}> {name.clone()} </Button> }
+        html! { <simple::Button outlined=true size={Size::Large} fullwidth=true {click} text={name.clone()} /> }
     };
 
     let title = match session.players.len() {

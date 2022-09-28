@@ -32,32 +32,28 @@ pub fn round_preview(props: &Props) -> Html {
         props.round.image.clone(),
     );
 
-    let onpixel = callback!(pixels; move |new| pixels.set(new));
+    let change = callback!(pixels; move |new| pixels.set(new));
     let onslider = callback!(pixels; move |new| pixels.set(new));
 
     let onpause = callback!(stage; move |_| stage.set(Stage::Paused));
     let onrunning = callback!(stage; move |_| stage.set(Stage::Running));
-    let onreveal = callback!(stage; move |_| stage.set(Stage::Revealed));
+    let reveal = callback!(stage; move |_| stage.set(Stage::Revealed));
     let onrevealing = callback!(stage; move |_| stage.set(Stage::Revealing));
-    let oncancel = callback!(cropper; move |_| cropper.set(false));
+    let cancel = callback!(cropper; move |_| cropper.set(false));
     let oncropper = callback!(cropper; move |_| cropper.set(true));
 
-    let onupload = callback!(round, onedit; move |files: Vec<web_sys::File>| {
+    let upload = callback!(round, edit; move |files: Vec<web_sys::File>| {
         let file = files[0].clone();
-        ywt::spawn!(round, onedit; async move {
+        ywt::spawn!(round, edit; async move {
             let image = Image::from_local(file).await.unwrap();
-            onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
+            edit.emit(Rc::new(Round{image, ..(*round).clone()}));
         })
     });
-    let ondone = callback!(round, cropper; move |base64| {
+    let done = callback!(round, cropper; move |base64| {
         let image = Image::from_base64(base64, None);
-        onedit.emit(Rc::new(DraftRound{image, ..(*round).clone()}));
+        edit.emit(Rc::new(Round{image, ..(*round).clone()}));
         cropper.set(false);
     });
-
-    let button = |onclick, icon, label| {
-        html! {<Button {onclick}> <Icon {icon} /> <span> {label} </span> </Button>}
-    };
 
     let buttons = match *stage {
         Stage::Running => html! {
@@ -101,7 +97,7 @@ pub fn round_preview(props: &Props) -> Html {
 
     let body = match (round.image.is_empty(), *stage, *cropper) {
         (_, _, true) => html! {
-            <Cropper {src} {ondone} {oncancel} height=450 width=600/>
+            <Cropper {src} {done} {cancel} height=450 width=600/>
         },
         (false, Stage::Revealed, false) => html! {
             <div>
@@ -111,13 +107,13 @@ pub fn round_preview(props: &Props) -> Html {
         },
         (false, _, false) => html! {
             <div>
-                <Pixelate {image} stage={*stage} {onreveal} height=85 {onpixel} pixels={*pixels}/>
+                <Pixelate {image} stage={*stage} {reveal} height=85 {change} pixels={*pixels}/>
                 {slider}
             </div>
         },
         (true, _, false) => html! {
             <Center>
-                <File accept={"image/*"} boxed=true alignment={Alignment::Centered} {onupload} />
+                <File accept={"image/*"} boxed=true alignment={Alignment::Centered} input={upload} />
             </Center>
         },
     };

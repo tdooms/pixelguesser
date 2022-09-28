@@ -1,6 +1,5 @@
 use api::{Quiz, Resolution, IMAGE_PLACEHOLDER};
 use cobul::fa::Solid;
-use cobul::simple::Button;
 use cobul::*;
 use shared::use_auth;
 use std::rc::Rc;
@@ -9,26 +8,26 @@ use yew::*;
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
     #[prop_or_default]
-    quiz: Option<Rc<Quiz>>,
+    pub quiz: Option<Rc<Quiz>>,
 
     #[prop_or_default]
-    creator: Option<String>,
+    pub creator: Option<String>,
 
     #[prop_or_default]
-    play: Callback<()>,
+    pub play: Callback<()>,
 
     #[prop_or_default]
-    edit: Callback<()>,
+    pub edit: Callback<()>,
 }
 
 #[derive(Properties, PartialEq, Debug, Clone)]
 pub struct ButtonProps {
-    color: Color,
-    text: String,
-    icon: String,
+    pub color: Color,
+    pub text: String,
+    pub icon: String,
 
-    pointer: bool,
-    click: Callback<()>,
+    pub pointer: bool,
+    pub click: Callback<()>,
 }
 
 #[function_component(QuizButton)]
@@ -38,7 +37,7 @@ pub fn quiz_button(props: &ButtonProps) -> Html {
     let radius = "border-top-left-radius: 0 !important;border-top-right-radius: 0 !important";
     let style = format!("{radius};{}", (!pointer).then(|| "cursor: unset").unwrap_or_default());
 
-    html! { <Button {color} fullwidth=true {style} {click} {icon} {text} /> }
+    html! { <simple::Button {color} fullwidth=true {style} {click} {icon} {text} /> }
 }
 
 #[function_component(QuizCard)]
@@ -53,7 +52,9 @@ pub fn quiz_card(props: &Props) -> Html {
     let footer = html! { <QuizButton color={Color::Success} pointer=true icon={Solid::Play} text={"Play"} click={play} /> };
 
     let right = match creator_id == user_id {
-        true => html! { <Button click={edit} color={Color::White} icon={Solid::PenToSquare} /> },
+        true => {
+            html! { <simple::Button click={edit} color={Color::White} icon={Solid::PenToSquare} /> }
+        }
         false => html! {},
     };
 

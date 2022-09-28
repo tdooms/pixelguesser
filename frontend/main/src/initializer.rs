@@ -26,23 +26,23 @@ impl Toast for Error {
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
-    pub session_id: Option<u32>, // Having a session_id implies being a manager
-    pub quiz_id: u32,
+    pub session_id: Option<u64>, // Having a session_id implies being a manager
+    pub quiz_id: u64,
 }
 
 #[derive(Clone)]
 struct State {
-    session_id: u32,
+    session_id: u64,
     participant: Participant,
     quiz: Rc<Quiz>,
 }
 
-async fn create_session(props: &Props, token: Option<Rc<String>>) -> Result<State, api::Error> {
+async fn create_session(props: &Props, token: Option<String>) -> Result<State, api::Error> {
     let (session_id, participant) = match props.session_id {
         Some(id) => (id, Participant::Manager),
         None => (api::create_session(props.quiz_id).await?, Participant::Host),
     };
-    let quiz = Rc::new(api::query_quiz(token, props.quiz_id).await?);
+    let quiz = Rc::new(Quiz::query_one(token, props.quiz_id).await?);
 
     Ok(State { session_id, participant, quiz })
 }
@@ -52,7 +52,7 @@ async fn init(
     state: UseStateHandle<Option<State>>,
     session: UseStateHandle<Option<Rc<Session>>>,
     props: Props,
-    token: Option<Rc<String>>,
+    token: Option<String>,
 ) -> Result<(), Error> {
     let mapper = |_| Error::Unreachable;
 
@@ -76,7 +76,7 @@ pub fn initializer(props: &Props) -> Html {
     let websocket = use_state(|| None);
     let state = use_state(|| None);
     let session = use_state(|| None);
-    let token = use_auth().token();
+    let token = use_auth().token().map(|x| (*x).clone());
 
     use_async_startup(init(
         websocket.clone(),
@@ -86,16 +86,16 @@ pub fn initializer(props: &Props) -> Html {
         token,
     ));
 
-    let callback = ywt::callback!(websocket; move |action| {
+    let action = ywt::callback!(websocket; move |action| {
         websocket.as_ref().unwrap().send(&action)
     });
 
     match (props.session_id, (*state).clone(), (*session).clone()) {
         (Some(_), Some(State { quiz, .. }), Some(session)) => html! {
-            <Manage {session} {quiz} {callback}/>
+            <Manage {session} {quiz} {action} />
         },
         (None, Some(State { session_id, quiz, .. }), Some(session)) => html! {
-            <Host {session_id} {session} {quiz} {callback}/>
+            <Host {session_id} {session} {quiz} {action}/>
         },
         _ => html! { <Loader/> },
     }

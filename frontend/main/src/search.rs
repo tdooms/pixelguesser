@@ -13,16 +13,13 @@ pub enum Sort {
 
 #[derive(Debug, Clone, PartialEq, Properties)]
 pub struct Props {
-    pub sort: Sort,
-    pub filter: String,
-
-    pub input: Callback<Sort>,
-    pub change: Callback<String>,
+    pub sort: Model<Sort>,
+    pub filter: Model<String>,
 }
 
 #[function_component(Search)]
 pub fn search(props: &Props) -> Html {
-    let Props { sort, filter, onsort, onfilter } = props.clone();
+    let Props { sort, filter } = props.clone();
 
     html! {
         <Columns centered=true class="py-3">
@@ -30,10 +27,10 @@ pub fn search(props: &Props) -> Html {
 
         <Field grouped=true>
             <Control expanded=true>
-                <Input placeholder="Find a quiz" value={filter} oninput={onfilter}/>
+                // <Input placeholder="Find a quiz" model={filter} />
             </Control>
             <Control>
-                <simple::Dropdown<Sort> value={sort} onchange={onsort}/>
+                // <simple::Dropdown<Sort> model={sort} />
             </Control>
         </Field>
 

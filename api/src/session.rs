@@ -13,46 +13,46 @@ static CHARS: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Code {
-    pub session_id: u32,
-    pub quiz_id: u32,
+    pub session_id: u64,
+    pub quiz_id: u64,
 }
 
-impl std::str::FromStr for Code {
+impl FromStr for Code {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut code = 0u64;
+        let mut code = 0u128;
 
         for char in s.chars() {
             let index = CHARS.iter().position(|c| char::from(*c) == char).ok_or(())?;
-            code = code * (CHARS.len() as u64) + (index as u64);
+            code = code * (CHARS.len() as u128) + (index as u128);
         }
 
         // It is important the quiz id is the last part of the code in binary (most significant bits)
         // As quiz id's are usually small, this reduces the length of the ascii code.
-        Ok(Code { session_id: (code & 0x00000000FFFFFFFF) as u32, quiz_id: (code >> 32) as u32 })
+        Ok(Code { session_id: (code & 0xFFFFFFFFFFFFFFFF) as u64, quiz_id: (code >> 64) as u64 })
     }
 }
 
 impl ToString for Code {
     fn to_string(&self) -> String {
         let mut string = String::new();
-        let mut code = self.session_id as u64 + ((self.quiz_id as u64) << 32);
+        let mut code = self.session_id as u128 + ((self.quiz_id as u128) << 64);
 
         while code != 0 {
-            let rem = code % CHARS.len() as u64;
+            let rem = code % CHARS.len() as u128;
             string.insert(0, char::from(CHARS[rem as usize]));
-            code /= CHARS.len() as u64;
+            code /= CHARS.len() as u128;
         }
         string
     }
 }
 
-pub async fn create_session(quiz_id: u32) -> Result<u32, Error> {
+pub async fn create_session(quiz_id: u64) -> Result<u64, Error> {
     let endpoint = format!("{SESSION_CREATE_ENDPOINT}/{quiz_id}");
     let text = reqwest::Client::new().post(&endpoint).send().await?.text().await?;
 
-    u32::from_str(&text).map_err(|_| Error::InvalidSession)
+    u64::from_str(&text).map_err(|_| Error::InvalidSession)
 }
 
 pub struct WebsocketTask {
@@ -100,7 +100,7 @@ impl WebsocketTask {
     }
 
     pub fn new(
-        session_id: u32,
+        session_id: u64,
         callback: impl Fn(Result<Session, Error>) + 'static,
     ) -> Result<Self, Error> {
         let endpoint = format!("{SESSION_WS_ENDPOINT}/{session_id}");

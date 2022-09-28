@@ -8,7 +8,7 @@ pub use yew::*;
 pub struct UseFormHandle<T: Clone> {
     errors: HashMap<String, String>,
     state: Rc<T>,
-    onchange: Callback<Rc<T>>,
+    change: Callback<Rc<T>>,
 }
 
 impl<T: Clone> Deref for UseFormHandle<T> {
@@ -31,7 +31,7 @@ impl<T: Clone + 'static> UseFormHandle<T> {
     pub fn change<F>(&self, mapper: impl Fn(&mut T) -> &mut F + 'static) -> Callback<F> {
         let state = self.state.clone();
 
-        self.onchange.reform(move |value| {
+        self.change.reform(move |value| {
             let mut new = (*state).clone();
             *mapper(&mut new) = value;
             Rc::new(new)
@@ -40,9 +40,9 @@ impl<T: Clone + 'static> UseFormHandle<T> {
 }
 
 #[hook]
-pub fn use_form<T: Clone + Validate>(state: Rc<T>, onchange: Callback<Rc<T>>) -> UseFormHandle<T> {
+pub fn use_form<T: Clone + Validate>(state: Rc<T>, change: Callback<Rc<T>>) -> UseFormHandle<T> {
     let errors = match state.as_ref().validate() {
-        Ok(_) => return UseFormHandle { errors: HashMap::new(), state, onchange },
+        Ok(_) => return UseFormHandle { errors: HashMap::new(), state, change },
         Err(errors) => errors,
     };
 
@@ -53,5 +53,5 @@ pub fn use_form<T: Clone + Validate>(state: Rc<T>, onchange: Callback<Rc<T>>) ->
         .map(|(field, vec)| (field.to_owned(), vec.first().unwrap().to_string()))
         .collect();
 
-    UseFormHandle { errors, state, onchange }
+    UseFormHandle { errors, state, change }
 }

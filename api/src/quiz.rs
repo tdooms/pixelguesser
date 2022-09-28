@@ -2,6 +2,7 @@ use crate::{Error, Image, Result, Round, User, GRAPHQL_ENDPOINT};
 use chrono::{DateTime, Utc};
 use hasura::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use validator::Validate;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hasura)]
@@ -54,57 +55,63 @@ pub struct Quiz {
     pub rounds: Vec<Round>,
 }
 
-pub async fn query_quizzes(token: Option<String>, rounds: bool) -> Result<Vec<Quiz>> {
-    let returning = match rounds {
-        false => Quiz::except(&[Quiz::rounds(Round::all())]),
-        true => Quiz::all(),
-    };
-    let body = Query::new().returning(returning);
-    Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
-}
+impl Quiz {
+    pub async fn query_many(token: Option<String>, rounds: bool) -> Result<Vec<Quiz>> {
+        let returning = match rounds {
+            false => Quiz::except(&[Quiz::rounds(Round::all())]),
+            true => Quiz::all(),
+        };
+        let body = Query::new().returning(returning);
+        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+    }
 
-pub async fn search_quizzes(token: Option<String>, query: String) -> Result<Vec<Quiz>> {
-    let conditions = Conditions::single(Quiz::title(), Ilike(format!("%{}%", query)));
-    let returning = Quiz::except(&[Quiz::rounds(Round::all())]);
+    pub async fn query_one(token: Option<String>, quiz_id: u64) -> Result<Quiz> {
+        let body = QueryByPk::new(QuizPk { id: quiz_id.into() });
 
-    let body = Query::new().conditions(conditions).returning(returning);
-    Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
-}
+        let fut = query!(body).token(token).send(GRAPHQL_ENDPOINT);
+        let mut res: Quiz = fut.await?.ok_or(Error::EmptyResponse)?;
 
-pub async fn query_quiz(token: Option<String>, quiz_id: u64) -> Result<Quiz> {
-    let body = QueryByPk::new(QuizPk { id: quiz_id.into() });
+        res.rounds.sort_by_key(|x| x.index);
 
-    let fut = query!(body).token(token).send(GRAPHQL_ENDPOINT);
-    let mut res: Quiz = fut.await?.ok_or(Error::EmptyResponse)?;
+        Ok(res)
+    }
 
-    res.rounds.sort_by_key(|x| x.index);
+    pub async fn search(token: Option<String>, query: String) -> Result<Vec<Quiz>> {
+        let conditions = Conditions::single(Quiz::title(), Ilike(format!("%{}%", query)));
+        let returning = Quiz::except(&[Quiz::rounds(Round::all())]);
 
-    Ok(res)
-}
+        let body = Query::new().conditions(conditions).returning(returning);
+        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+    }
 
-pub async fn create_quiz(token: String, quiz: Quiz) -> Result<Quiz> {
-    let body = InsertOne::new(quiz);
-    let fut = mutation!(body).token(Some(token)).send(GRAPHQL_ENDPOINT);
+    pub async fn create(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
+        let body = InsertOne::new(quiz.as_ref());
+        let fut = mutation!(body).token(Some(token)).send(GRAPHQL_ENDPOINT);
 
-    fut.await?.ok_or(Error::EmptyResponse)
-}
+        fut.await?.ok_or(Error::EmptyResponse)
+    }
 
-pub async fn update_quiz(token: String, quiz: Quiz) -> Result<Quiz> {
-    let id = quiz.id.unwrap();
+    pub async fn update(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
+        let id = quiz.id.unwrap();
 
-    let conditions = Conditions::single(Tag::quiz_id(), Eq(id.to_string()));
-    let tags = Delete::new().conditions(conditions);
+        let conditions = Conditions::single(Tag::quiz_id(), Eq(id.to_string()));
+        let tags = Delete::new().conditions(conditions);
 
-    let conditions = Conditions::single(Round::quiz_id(), Eq(id.to_string()));
-    let rounds = Delete::new().conditions(conditions);
+        let conditions = Conditions::single(Round::quiz_id(), Eq(id.to_string()));
+        let rounds = Delete::new().conditions(conditions);
 
-    let quiz = UpdateByPk::new(QuizPk { id }, quiz);
+        let quiz = UpdateByPk::new(QuizPk { id }, quiz.as_ref());
 
-    let res = mutation!(tags, rounds, quiz).token(Some(token)).send(GRAPHQL_ENDPOINT).await?;
-    res.2.ok_or(Error::EmptyResponse)
-}
+        let res = mutation!(tags, rounds, quiz).token(Some(token)).send(GRAPHQL_ENDPOINT).await?;
+        res.2.ok_or(Error::EmptyResponse)
+    }
 
-pub async fn delete_quiz(token: String, quiz_id: u64) -> Result<Quiz> {
-    let first = DeleteByPk::new(QuizPk { id: quiz_id });
-    mutation!(first).token(Some(token)).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)
+    pub async fn delete(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
+        let first = DeleteByPk::new(QuizPk { id: quiz.id.unwrap() });
+        mutation!(first)
+            .token(Some(token))
+            .send(GRAPHQL_ENDPOINT)
+            .await?
+            .ok_or(Error::EmptyResponse)
+    }
 }

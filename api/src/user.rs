@@ -1,6 +1,7 @@
 use crate::{Error, Result, GRAPHQL_ENDPOINT};
 use hasura::*;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
 use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug, PartialEq)]
@@ -25,12 +26,14 @@ pub struct User {
     pub email_verified: bool,
 }
 
-pub async fn query_user(token: Option<String>, user_id: String) -> Result<Option<User>> {
-    let body = QueryByPk::new(UserPk { id: user_id });
-    Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
-}
+impl User {
+    pub async fn query_one(token: Option<String>, user_id: String) -> Result<Option<User>> {
+        let body = QueryByPk::new(UserPk { id: user_id });
+        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+    }
 
-pub async fn create_user(token: Option<String>, user: User) -> Result<User> {
-    let body = InsertOne::new(user);
-    mutation!(body).token(token).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)
+    pub async fn create(token: Option<String>, user: Rc<User>) -> Result<User> {
+        let body = InsertOne::new(user.as_ref());
+        mutation!(body).token(token).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)
+    }
 }

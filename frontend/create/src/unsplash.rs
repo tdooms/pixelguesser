@@ -1,7 +1,7 @@
 use api::{ContentFilter, FilterBy, Image, OrderBy, Orientation, Photo};
 use cobul::*;
 use components::{DynImage, Height};
-use shared::{use_search, use_toast};
+use shared::{use_form, use_search, use_toast};
 use std::rc::Rc;
 use yew::*;
 use ywt::callback;
@@ -19,33 +19,21 @@ pub fn unsplash(props: &Props) -> Html {
         toast.maybe(api::search_photos(filter).await).unwrap_or_default()
     };
 
-    let filter = use_state(|| FilterBy::default());
+    let filter = use_state(|| Rc::new(FilterBy { per_page: 10, ..Default::default() }));
+    let change = callback!(filter; move |new| filter.set(new));
 
-    let cloned = filter.clone();
-    use_effect_with_deps(
-        move |narrow| {
-            match narrow {
-                true => cloned.set(FilterBy { per_page: 8, ..(*cloned).clone() }),
-                false => cloned.set(FilterBy { per_page: 10, ..(*cloned).clone() }),
-            };
-            || ()
-        },
-        props.narrow,
-    );
-
-    let photos = use_search((*filter).clone(), func);
+    let form = use_form((*filter).clone(), change);
+    let photos = use_search((**filter).clone(), func);
 
     let hovered = use_state_eq(|| None);
     let active = use_state_eq(|| false);
-
-    let FilterBy { order_by, content_filter, orientation, .. } = (*filter).clone();
 
     let view_photo = |(index, photo): (usize, &Photo)| {
         let onmouseover = callback!(hovered; move |_| hovered.set(Some(index)));
         let onmouseout = callback!(hovered; move |_| hovered.set(None));
 
         let image = Image::from_unsplash(photo);
-        let onclick = props.onselect.reform(move |_| image.clone());
+        let onclick = props.select.reform(move |_| image.clone());
 
         let class = classes!(
             "has-text-centered",
@@ -69,41 +57,20 @@ pub fn unsplash(props: &Props) -> Html {
         }
     };
 
-    let oninput = callback!(filter; move |query| {
-        filter.set(FilterBy { query, ..(*filter).clone() })
-    });
+    let click = callback!(active; move |_| active.set(!*active));
+    let trigger = html! { <simple::Button color={Color::Info} {click} icon={fa::Solid::Filter} /> };
 
-    let onfocus = callback!(active; move |bool| active.set(bool));
-    let onorientation = callback!(filter; move |orientation| {
-        filter.set(FilterBy { orientation, ..(*filter).clone() })
-    });
-    let onorderby = callback!(filter; move |order_by| {
-        filter.set(FilterBy { order_by, ..(*filter).clone() })
-    });
-    let oncontentfilter = callback!(filter; move |content_filter| {
-        filter.set(FilterBy { content_filter, ..(*filter).clone() })
-    });
-    let onpage = callback!(filter; move |page| {
-        filter.set(FilterBy { page, ..(*filter).clone() })
-    });
-    let onclick = callback!(active; move |_| active.set(!*active));
-
-    let trigger = html! {
-        <Button color={Color::Info} {onclick}>
-            <Icon icon={fa::Solid::Filter} />
-        </Button>
-    };
     let dropdown = html! {
-        <Dropdown {trigger} active={*active} right=true {onfocus}>
+        <Dropdown {trigger} active={*active} right=true>
         <div class="m-3">
         <simple::Field label="Orientation">
-            <simple::Tabs<Orientation> fullwidth=true toggle=true value={orientation} onclick={onorientation}/>
+            // <simple::Tabs<Orientation> fullwidth=true toggle=true model={form.orientation()} />
         </simple::Field>
         <simple::Field label="Order By">
-            <simple::Tabs<OrderBy> fullwidth=true toggle=true value={order_by} onclick={onorderby}/>
+            // <simple::Tabs<OrderBy> fullwidth=true toggle=true model={form.order_by()} />
         </simple::Field>
         <simple::Field label="Content Filter">
-            <simple::Tabs<ContentFilter> fullwidth=true toggle=true value={content_filter} onclick={oncontentfilter}/>
+            // <simple::Tabs<ContentFilter> fullwidth=true toggle=true model={form.content_filter()} />
         </simple::Field>
         </div>
         </Dropdown>
@@ -113,7 +80,7 @@ pub fn unsplash(props: &Props) -> Html {
         <>
         <Label> {"Search for images"} </Label>
         <Field grouped=true>
-            <Control expanded=true> <Input {oninput} value={filter.query.clone()}/> </Control>
+            <Control expanded=true> /*<Input model={form.query()} />*/ </Control>
             <Control> {dropdown} </Control>
         </Field>
         </>
@@ -133,7 +100,7 @@ pub fn unsplash(props: &Props) -> Html {
                     <p>{"Powered by "} <a href={api::unsplash_link()} target="_blank"> {"Unsplash"} </a></p>
                 </Column>
                 <Column size={ColumnSize::IsNarrow}>
-                    <simple::Pagination total={photos.1.unwrap()} page={filter.page} onchange={onpage}/>
+                    // <simple::Pagination total={photos.1.unwrap()} model={filter.page()} />
                 </Column>
                 <Column/>
             </Columns>

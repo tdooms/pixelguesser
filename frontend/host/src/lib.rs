@@ -16,17 +16,17 @@ use yew::*;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
-    pub session_id: u32,
+    pub session_id: u64,
     pub session: Rc<Session>,
     pub quiz: Rc<Quiz>,
 
-    pub callback: Callback<Action>,
+    pub action: Callback<Action>,
 }
 
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
-    let Props { session_id, session, quiz, callback } = props.clone();
-    let code = Code { session_id, quiz_id: quiz.id.unwrap() as u32 }.to_string();
+    let Props { session_id, session, quiz, action } = props.clone();
+    let code = Code { session_id, quiz_id: quiz.id.unwrap() }.to_string();
 
     let toast = use_toast();
     let rounds = quiz.rounds.len();
@@ -42,7 +42,7 @@ pub fn host(props: &Props) -> Html {
         Phase::Playing { round: index, stage } => {
             let round = quiz.rounds[index].clone();
             let players = session.players.clone();
-            html! { <Play {round} {rounds} {stage} {players} {callback} {index}/> }
+            html! { <Play {round} {rounds} {stage} {players} {action} {index}/> }
         }
         Phase::Finished => {
             html! {<Finish {session} {quiz} /> }

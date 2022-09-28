@@ -53,21 +53,21 @@ pub fn picker(props: &Props) -> Html {
         hovered.set(false)
     });
 
-    let onchange = props.onchange.clone();
-    let onupload = callback!(move |files: Vec<web_sys::File>| {
+    let onchange = props.change.clone();
+    let input = callback!(move |files: Vec<web_sys::File>| {
         ywt::spawn!(onchange; async move {
             let image = Image::from_local(files[0].clone()).await.unwrap();
             onchange.emit(image);
         })
     });
 
-    let ondrop = callback!(onupload; move |ev: DragEvent| {
+    let ondrop = callback!(input; move |ev: DragEvent| {
         ev.prevent_default();
 
         let files = ev.data_transfer().unwrap().files().unwrap();
         let vec = (0..files.length()).filter_map(|i| files.get(i)).collect();
 
-        onupload.emit(vec);
+        input.emit(vec);
     });
 
     let ondragend = callback!(|ev: DragEvent| ev.prevent_default());
@@ -96,7 +96,7 @@ pub fn picker(props: &Props) -> Html {
                         <Icon icon={fa::Regular::FileLines} size={Size::Large}/>
                         <p> {"Select a file or drag here"} </p>
                         <Block/>
-                        <File {onupload} alignment={Alignment::Centered}/>
+                        <File {input} alignment={Alignment::Centered}/>
                     </Column>
                 },
             };
@@ -114,16 +114,16 @@ pub fn picker(props: &Props) -> Html {
             <Label> {"Paste your image url here"} </Label>
             <Field grouped=true>
                 <Control expanded=true>
-                    <Input oninput={onurl} />
+                    <Input input={onurl} />
                 </Control>
                 <Control>
-                    <Button color={Color::Info}> <Icon icon={fa::Solid::ArrowRight} /> </Button>
+                    <simple::Button color={Color::Info} icon={fa::Solid::ArrowRight} />
                 </Control>
             </Field>
             </>
         },
         Tab::Unsplash => html! {
-            <Unsplash onselect={props.onchange.clone()} narrow={props.narrow}/>
+            <Unsplash select={props.change.clone()} narrow={props.narrow}/>
         },
     };
 

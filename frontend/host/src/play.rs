@@ -20,20 +20,20 @@ pub struct Props {
 
     pub stage: Stage,
     pub players: HashMap<String, Player>,
-    pub callback: Callback<Action>,
+    pub action: Callback<Action>,
 }
 
 #[function_component(Play)]
 pub fn play(props: &Props) -> Html {
-    let Props { round, index, rounds, stage, players, callback } = props.clone();
-    let reveal = callback.reform(|_| Action::Stage(Stage::Revealed));
+    let Props { round, index, rounds, stage, players, action } = props.clone();
+    let reveal = action.reform(|_| Action::Stage(Stage::Revealed));
 
     let timer = use_state(|| Timeout::new(0, || ()));
     let image = use_state(|| None);
 
     use_effect_with_deps(
         move |_| {
-            let cb = move || callback.emit(Action::Stage(Stage::Running));
+            let cb = move || action.emit(Action::Stage(Stage::Running));
             timer.set(Timeout::new(1_000 * INFO_DURATION, cb));
             || ()
         },
@@ -54,18 +54,16 @@ pub fn play(props: &Props) -> Html {
 
     match (stage, (*image).clone()) {
         (Stage::Info, _) => html! {
-            <Info {index} {rounds} {round}/>
+            <Info {index} {rounds} {round} />
         },
-        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, Some(image)) => {
-            html! {
-                <Pixelate {stage} {image} {reveal}/>
-            }
-        }
+        (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, Some(img)) => html! {
+            <Pixelate {stage} image={img} {reveal} />
+        },
         (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, None) => html! {
             "image not loaded"
         },
         (Stage::Scores, _) => html! {
-            <Ranking {players}/>
+            <Ranking {players} />
         },
     }
 }

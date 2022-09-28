@@ -2,8 +2,9 @@ use crate::navbar::MainNavbar;
 use crate::search::{Search, Sort};
 use api::Quiz;
 use cobul::*;
-use components::{QuizCard, View};
+use components::QuizCard;
 use shared::{use_auth, use_toast, Route};
+use std::rc::Rc;
 use wasm_bindgen_futures::spawn_local;
 use yew::HtmlResult;
 use yew::*;
@@ -12,38 +13,37 @@ use ywt::callback;
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct Props {
-    quiz: Quiz,
+    quiz: Rc<Quiz>,
 }
 
 #[function_component(QuizColumn)]
-pub fn quiz_column(props: &Props) -> Html {
-    let quiz = props.quiz.clone();
-    let quiz_id = quiz.id;
+pub fn quiz_column(Props { quiz }: &Props) -> Html {
+    let quiz_id = quiz.id.unwrap();
 
     let navigator = use_navigator().unwrap();
 
-    let onedit = callback!(navigator; move |_| {
+    let edit = callback!(navigator; move |_| {
         navigator.push(Route::Update{quiz_id})
     });
-    let onclick = callback!(navigator; move |_| {
+    let play = callback!(navigator; move |_| {
         navigator.push(Route::Host{quiz_id})
     });
 
     html! {
         <Column size={ColumnSize::Is3}>
-            <QuizCard view={View::Normal{quiz, onclick, onedit}}/>
+            <QuizCard {quiz} {play} {edit} />
         </Column>
     }
 }
 
 #[function_component(EmptyColumn)]
 pub fn empty_column() -> Html {
-    html! {<Column size={ColumnSize::Is3}><QuizCard view={View::Empty}/></Column>}
+    html! { <Column size={ColumnSize::Is3}> <QuizCard /> </Column> }
 }
 
 #[function_component(Overview)]
 pub fn overview() -> HtmlResult {
-    let token = use_auth().token();
+    let token = use_auth().token().map(|x| (*x).clone());
     let toasts = use_toast();
 
     let filter = use_state_eq(|| String::new());
@@ -57,12 +57,12 @@ pub fn overview() -> HtmlResult {
             let filter = (**deps).clone();
             spawn_local(async move {
                 let result = match filter.is_empty() {
-                    true => api::query_quizzes(token, false).await,
-                    false => api::search_quizzes(token, filter, false).await,
+                    true => Quiz::query_many(token, false).await,
+                    false => Quiz::search(token, filter).await,
                 };
-                match result {
-                    Ok(quizzes) => cloned.set(Some(quizzes)),
-                    Err(err) => toasts.add(err),
+                if let Some(quizzes) = toasts.maybe(result) {
+                    let rc: Vec<_> = quizzes.into_iter().map(Rc::new).collect();
+                    cloned.set(Some(rc));
                 }
             });
             || ()
@@ -70,20 +70,21 @@ pub fn overview() -> HtmlResult {
         filter.clone(),
     );
 
-    let onfilter = callback!(filter; move |x| filter.set(x));
-    let onsort = callback!(sort; move |x| sort.set(x));
-
     let list = match &*quizzes {
-        None => html! { for (0..8).map(|_| html!{<EmptyColumn/>}) },
-        Some(all) => html! { for all.iter().cloned().map(|quiz| html!{ <QuizColumn {quiz}/>}) },
+        None => html! { for (0..8).map(|_| html!{ <EmptyColumn /> }) },
+        Some(all) => html! { for all.iter().cloned().map(|quiz| html!{ <QuizColumn {quiz} />}) },
     };
+
+    let sort = Model { input: callback!(sort; move |x| sort.set(x)), value: *sort };
+    let filter =
+        Model { input: callback!(filter; move |x| filter.set(x)), value: (*filter).clone() };
 
     Ok(html! {
         <>
         <MainNavbar/>
         <Section class="pt-0">
         <Container>
-            <Search {onsort} {onfilter} sort={*sort} filter={(*filter).clone()}/>
+            <Search {sort} {filter} />
             <Columns multiline=true> {list} </Columns>
         </Container>
         </Section>

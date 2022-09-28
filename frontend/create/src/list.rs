@@ -42,25 +42,25 @@ pub fn round_elem(props: &ElemProps) -> Html {
         event.data_transfer().unwrap().set_drop_effect("move");
         hover.set(Some(index))
     });
-    let ondragend = callback!(start, hover, onaction; move |event: DragEvent| {
+    let ondragend = callback!(start, hover, action; move |event: DragEvent| {
         event.prevent_default();
 
         if let (Some(start), Some(hover), false) = (*start, *hover, *start == *hover) {
-            onaction.emit(Action::Swap(start, hover));
+            action.emit(Action::Swap(start, hover));
         }
 
         start.set(None);
         hover.set(None);
     });
-    let ondrop = callback!(; move |event: DragEvent| {
+    let ondrop = callback!(move |event: DragEvent| {
         event.prevent_default();
     });
 
-    let onkeydown = callback!(onaction, onselect; move |e: KeyboardEvent| {
+    let onkeydown = callback!(action, select; move |e: KeyboardEvent| {
         match (e.key().as_str(), index) {
-            ("Delete", _) => onaction.emit(Action::Remove(index)),
-            ("ArrowUp", idx) if idx >= max - 2 => onselect.emit(idx + 1),
-            ("ArrowDown", x) if x != 0 => onselect.emit(x - 1),
+            ("Delete", _) => action.emit(Action::Remove(index)),
+            ("ArrowUp", idx) if idx >= max - 2 => select.emit(idx + 1),
+            ("ArrowDown", x) if x != 0 => select.emit(x - 1),
             _ => ()
         }
     });
@@ -73,7 +73,7 @@ pub fn round_elem(props: &ElemProps) -> Html {
 
     let class = classes!(background, "columns", "m-0", "p-0");
     let style = "border-width:thin";
-    let src = draft.rounds.data[index].image.src(Resolution::Thumb);
+    let src = quiz.rounds[index].image.src(Resolution::Thumb);
 
     html! {
         <div {style} {class} draggable="true" tabindex="0" {onclick} {onkeydown} {ondragstart} {ondragover} {ondragend} {ondrop}>
@@ -93,15 +93,15 @@ pub struct ListProps {
     pub action: Callback<Action>,
     pub select: Callback<usize>,
 
-    pub draft: Rc<DraftQuiz>,
-    pub errors: Rc<Vec<Option<ValidationErrors>>>,
+    pub quiz: Rc<Quiz>,
+    pub errors: Rc<Vec<ValidationErrors>>,
 
     pub current: usize,
 }
 
 #[function_component(RoundList)]
 pub fn round_list(props: &ListProps) -> Html {
-    let ListProps { onaction, onselect, draft, current, errors } = props.clone();
+    let ListProps { action, select, quiz, current, errors } = props.clone();
     let start = use_state_eq(|| None);
     let hover = use_state_eq(|| None);
 
@@ -115,17 +115,17 @@ pub fn round_list(props: &ListProps) -> Html {
         _ => None,
     };
 
-    let max = draft.rounds.data.len();
-    let onclick = onaction.reform(move |_| Action::Add(current));
+    let max = quiz.rounds.len();
+    let click = action.reform(move |_| Action::Add(current));
 
-    let part = move |index| {
-        clone!(start, hover, onaction, onselect, draft);
-        let error = errors.get(index).is_none();
+    let part = move |index: usize| {
+        clone!(start, hover, action, select, quiz);
+        let error = errors.get(index) == Some(&ValidationErrors::default());
 
         html! {
             <>
             { draw_line(Some(index) != line_idx) }
-            <RoundElem {onaction} {onselect} {error} {index} {current} {max} {draft} {start} {hover}/>
+            <RoundElem {action} {select} {error} {index} {current} {max} {quiz} {start} {hover} />
             </>
         }
     };
@@ -135,9 +135,7 @@ pub fn round_list(props: &ListProps) -> Html {
             { for (0..max).map(part) }
             { draw_line(Some(max) != line_idx) }
             <hr class="my-0" />
-            <Button fullwidth=true {onclick} class="ml-1">
-                <Icon icon={fa::Solid::Plus} class="mx-2"/>
-            </Button>
+            <simple::Button fullwidth=true {click} class="ml-1" icon={fa::Solid::Plus} />
         </Sidebar>
     }
 }
