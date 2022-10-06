@@ -43,11 +43,12 @@ pub struct Tokens {
 
 #[cfg(any(feature = "verify", feature = "server"))]
 mod verify {
-    use crate::Claims;
     use jsonwebtoken::{decode, DecodingKey, Validation};
     use rocket::http::Status;
     use rocket::request::{FromRequest, Outcome};
     use rocket::*;
+
+    use crate::Claims;
 
     fn parse_token(option: Option<&str>) -> Result<Claims, ()> {
         let header = option.ok_or(())?;

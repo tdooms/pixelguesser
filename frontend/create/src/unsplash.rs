@@ -1,10 +1,12 @@
-use api::{ContentFilter, FilterBy, Image, OrderBy, Orientation, Photo};
-use cobul::*;
-use components::{DynImage, Height};
-use shared::{use_form, use_search, use_toast};
 use std::rc::Rc;
+
+use cobul::*;
 use yew::*;
 use ywt::callback;
+
+use api::{ContentFilter, FilterBy, Image, OrderBy, Orientation, Photo};
+use components::{DynImage, Height};
+use shared::{use_form, use_search, use_toast};
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {
@@ -19,11 +21,10 @@ pub fn unsplash(props: &Props) -> Html {
         toast.maybe(api::search_photos(filter).await).unwrap_or_default()
     };
 
-    let filter = use_state(|| Rc::new(FilterBy { per_page: 10, ..Default::default() }));
-    let change = callback!(filter; move |new| filter.set(new));
+    let filter = use_model(|| Rc::new(FilterBy { per_page: 10, ..Default::default() }));
 
-    let form = use_form((*filter).clone(), change);
-    let photos = use_search((**filter).clone(), func);
+    let form = use_form(filter.value.clone(), filter.input.clone());
+    let photos = use_search((*filter.value).clone(), func);
 
     let hovered = use_state_eq(|| None);
     let active = use_state_eq(|| false);
@@ -64,13 +65,13 @@ pub fn unsplash(props: &Props) -> Html {
         <Dropdown {trigger} active={*active} right=true>
         <div class="m-3">
         <simple::Field label="Orientation">
-            // <simple::Tabs<Orientation> fullwidth=true toggle=true model={form.orientation()} />
+            <simple::Tabs<Orientation> fullwidth=true toggle=true model={form.orientation()} />
         </simple::Field>
         <simple::Field label="Order By">
-            // <simple::Tabs<OrderBy> fullwidth=true toggle=true model={form.order_by()} />
+            <simple::Tabs<OrderBy> fullwidth=true toggle=true model={form.order_by()} />
         </simple::Field>
         <simple::Field label="Content Filter">
-            // <simple::Tabs<ContentFilter> fullwidth=true toggle=true model={form.content_filter()} />
+            <simple::Tabs<ContentFilter> fullwidth=true toggle=true model={form.content_filter()} />
         </simple::Field>
         </div>
         </Dropdown>
@@ -80,14 +81,14 @@ pub fn unsplash(props: &Props) -> Html {
         <>
         <Label> {"Search for images"} </Label>
         <Field grouped=true>
-            <Control expanded=true> /*<Input model={form.query()} />*/ </Control>
+            <Control expanded=true> <Input model={form.query()} /> </Control>
             <Control> {dropdown} </Control>
         </Field>
         </>
     };
 
     let body = match photos {
-        Some(_) if filter.query.is_empty() => html! {},
+        Some(_) if filter.value.query.is_empty() => html! {},
         Some(photos) if photos.0.is_empty() => html! {
             "No images found, try broadening your query"
         },

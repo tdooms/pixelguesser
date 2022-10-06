@@ -1,16 +1,15 @@
 use std::collections::HashMap;
 
+use gloo::timers::callback::Timeout;
+use web_sys::HtmlImageElement;
 use yew::*;
 
 use api::{Action, Player, Resolution, Round, Stage};
-
 use components::Pixelate;
 use shared::host::INFO_DURATION;
 
 use crate::info::Info;
 use crate::ranking::Ranking;
-use gloo::timers::callback::Timeout;
-use web_sys::HtmlImageElement;
 
 #[derive(Properties, Clone, Debug, PartialEq)]
 pub struct Props {
@@ -62,7 +61,7 @@ pub fn play(props: &Props) -> Html {
         (Stage::Running | Stage::Paused | Stage::Revealing | Stage::Revealed, None) => html! {
             "image not loaded"
         },
-        (Stage::Scores, _) => html! {
+        (Stage::Scores | Stage::Editing, _) => html! {
             <Ranking {players} />
         },
     }

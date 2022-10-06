@@ -1,14 +1,15 @@
-use cobul::*;
-use components::{DynImage, Fit, Height};
 use std::rc::Rc;
+
+use cobul::*;
 use yew::*;
+use ywt::callback;
 
 use api::{Quiz, Resolution, Round};
+use components::{DynImage, Fit, Height};
+use shared::use_form;
 
 use crate::state::Action;
 use crate::Stage;
-use shared::use_form;
-use ywt::callback;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
@@ -30,8 +31,6 @@ pub fn view_round(round: &Round) -> Html {
 #[function_component(Summary)]
 pub fn summary(props: &Props) -> Html {
     let Props { change, action, quiz } = props.clone();
-    let Quiz { public, .. } = *quiz;
-
     let form = use_form(quiz.clone(), action.reform(Action::Quiz));
 
     let done = callback!(change, action; move |_| {
@@ -44,14 +43,14 @@ pub fn summary(props: &Props) -> Html {
         <Section>
         <Container>
 
-        <Hero color={Color::Primary}>
+        <Hero color={Color::Info}>
             <Title> {&quiz.title} </Title>
             <Subtitle> {&quiz.description} </Subtitle>
         </Hero>
 
         <Box class="mt-5">
             <simple::Field label="Public">
-                // <Checkbox label="public" model={form.public()} />
+                <Checkbox label="public" model={form.public()} />
             </simple::Field>
         </Box>
 

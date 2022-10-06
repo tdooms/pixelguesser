@@ -1,9 +1,8 @@
+use cobul::*;
 use yew::*;
 use yew_router::prelude::Link;
 
-use cobul::*;
 use profile::Menu;
-
 use shared::Route;
 
 #[function_component(MainNavbar)]

@@ -4,6 +4,6 @@ use yew::*;
 pub struct Props {}
 
 #[function_component(Additional)]
-pub fn additional(props: &Props) -> Html {
+pub fn additional(_: &Props) -> Html {
     html! {}
 }

@@ -1,9 +1,10 @@
-use gloo::timers::callback::Timeout;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::future::Future;
 use std::hash::Hash;
 use std::rc::Rc;
+
+use gloo::timers::callback::Timeout;
 use yew::*;
 
 #[hook]

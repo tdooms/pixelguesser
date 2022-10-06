@@ -1,18 +1,20 @@
-mod finish;
-mod info;
-mod lobby;
-mod play;
-mod ranking;
+use std::rc::Rc;
+
+use yew::*;
+
+use api::{Action, Code, Phase, Quiz, Session};
+use shared::use_toast;
 
 use crate::finish::Finish;
 use crate::lobby::Lobby;
 use crate::play::Play;
 use crate::ranking::Ranking;
 
-use api::{Action, Code, Phase, Quiz, Session};
-use shared::use_toast;
-use std::rc::Rc;
-use yew::*;
+mod finish;
+mod info;
+mod lobby;
+mod play;
+mod ranking;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct Props {

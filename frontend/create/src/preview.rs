@@ -1,13 +1,14 @@
-use cobul::*;
-use components::Pixelate;
-use components::{Center, DynImage, Fit, Height};
-use cropper::Cropper;
 use std::rc::Rc;
+
+use cobul::*;
+use cropper::Cropper;
 use web_sys::HtmlImageElement;
 use yew::*;
+use ywt::callback;
 
 use api::{Image, Resolution, Round, Stage};
-use ywt::callback;
+use components::Pixelate;
+use components::{Center, DynImage, Fit, Height};
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

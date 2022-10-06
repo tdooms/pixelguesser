@@ -1,6 +1,8 @@
-use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
-use hasura::{mutation, Delete, Insert, InsertOne};
 use std::fs::File;
+
+use hasura::{mutation, Delete, Insert, InsertOne};
+
+use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct Quizzes {

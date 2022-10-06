@@ -1,11 +1,12 @@
-use cobul::*;
-use components::{Sidebar, SidebarAlignment};
 use std::rc::Rc;
+
+use cobul::*;
 use validator::ValidationErrors;
 use yew::*;
 use ywt::callback;
 
 use api::{Algorithm, Guesses, Image, Points, Round};
+use components::{Sidebar, SidebarAlignment};
 use shared::use_form;
 
 fn generate_error_message(errors: &[ValidationErrors]) -> Option<String> {
@@ -35,38 +36,36 @@ pub struct Props {
 #[function_component(RoundEdit)]
 pub fn round_edit(props: &Props) -> Html {
     let Props { round, back, done, input, errors } = props.clone();
+    let form = use_form(round.clone(), input.clone());
 
     let click = callback!(round, input; move |_| {
         input.emit(Rc::new(Round { image: Image::default(), ..(*round).clone() }));
     });
 
-    let form = use_form(round.clone(), input);
-
-    let Round { answer, points, guesses, speed, algorithm, .. } = (*round).clone();
-    let has_image = !props.round.image.is_empty();
+    let has_image = !round.image.is_empty();
     let disabled = !errors.iter().all(|x| x.is_empty());
     let tooltip = generate_error_message(&&errors);
 
     let body = html! {
         <div class="pt-5 pl-4 pr-5">
         <simple::Field label="Answer" help={form.error("answer")} >
-            // <Input model={form.answer()} />
+            <Input model={form.answer()} />
         </simple::Field>
 
         <simple::Field label="Points" help={form.error("points")} >
-            // <simple::Tabs<Points> model={form.points()} fullwidth=true toggle=true />
+            <simple::Tabs<Points> model={form.points()} fullwidth=true toggle=true />
         </simple::Field>
 
         <simple::Field label="Guesses" help={form.error("guesses")}>
-            // <simple::Tabs<Guesses> model={form.guesses()} fullwidth=true toggle=true />
+            <simple::Tabs<Guesses> model={form.guesses()} fullwidth=true toggle=true />
         </simple::Field>
 
         <simple::Field label="Algorithm">
-            // <simple::Dropdown<Algorithm> model={form.algorithm()} fullwidth=true />
+            <simple::Dropdown<Algorithm> model={form.algorithm()} fullwidth=true />
         </simple::Field>
 
         <simple::Field label="Speed">
-            // <Slider<u64> class="mb-0" range={50..200} step=5 model={form.speed()} fullwidth=true tooltip=true fmt="{}%" labelwidth=3.5/>
+            <Slider<u64> class="mb-0" range={50..200} step=5 model={form.speed()} fullwidth=true tooltip=true fmt="{}%" label_width=3.5 />
             <div class="is-flex is-justify-content-space-between">
                 <p> {"Slow"} </p> <p> {"Normal"} </p> <p> {"Fast"} </p>
             </div>

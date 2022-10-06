@@ -1,9 +1,11 @@
-use crate::Dialog;
 use cobul::*;
-use shared::{use_auth, Route};
 use yew::*;
 use yew_router::prelude::*;
 use ywt::callback;
+
+use shared::{use_auth, Route};
+
+use crate::Dialog;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Page {
@@ -30,7 +32,7 @@ pub fn anonymous_menu(props: &AnonymousProps) -> Html {
         <>
         {modal}
         <Buttons class="mx-2">
-            <Button color={Color::Primary} click={signup}> <strong>{"Sign up"}</strong> </Button>
+            <Button color={Color::Info} click={signup}> <strong>{"Sign up"}</strong> </Button>
             <Button light={true} click={login}> {"Log in"} </Button>
         </Buttons>
         </>
@@ -60,7 +62,7 @@ pub fn user_menu(UserProps { create, logout }: &UserProps) -> Html {
 
     html! {
         <Buttons>
-            <simple::Button color={Color::Primary} class="m-2" click={create} text="Create" />
+            <simple::Button color={Color::Info} class="m-2" click={create} text="Create" />
 
             // <Dropdown class="m-1 mr-2" {trigger} {focus} active={*focussed} right=true>
             //     <DropdownItem click={profile}> {"Profile"} </DropdownItem>

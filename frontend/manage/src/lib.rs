@@ -1,46 +1,47 @@
 use std::rc::Rc;
 
-use api::{Action, Participant, Phase, Quiz, Session, Stage};
 use cobul::*;
-use shared::{use_toast, Route};
 use yew::*;
 use yew_router::prelude::*;
+use ywt::callback;
 
+use api::{Action, Participant, Phase, Quiz, Session, Stage};
+use shared::{use_toast, Route};
+
+use crate::edit::PlayerEdit;
 use crate::info::RoundInfo;
 use crate::list::PlayerList;
 use crate::navigate::Navigate;
 use crate::rating::Rating;
 
+mod edit;
 mod info;
 mod list;
 mod navigate;
 mod rating;
 
-#[derive(Default, Clone, PartialEq)]
-pub struct Player {
-    pub name: String,
-}
-
 #[derive(Properties, Clone, PartialEq)]
 pub struct PlayerProps {
-    pub value: String,
-    pub input: Callback<String>,
+    pub model: Model<String>,
     pub submit: Callback<()>,
 }
 
 #[function_component(PlayerForm)]
-pub fn name_field(props: &PlayerProps) -> Html {
-    let PlayerProps { value, input, submit } = props.clone();
+pub fn player_form(props: &PlayerProps) -> Html {
+    let PlayerProps { model, submit } = props.clone();
 
     html! {
-        <Field grouped=true>
-            <Control expanded=true>
-            <Input {input} {value} size={Size::Large} placeholder={"eg. Alex"} />
-            </Control>
-            <Control>
+        <Columns>
+        <Column>
+        <Input {model} size={Size::Large} placeholder={"eg. Alex"} />
+        </Column>
+
+        <Column size={ColumnSize::IsNarrow}>
+        <simple::Field enter={submit.clone()}>
             <simple::Button click={submit} size={Size::Large} color={Color::Info} icon={fa::Solid::Plus} />
-            </Control>
-        </Field>
+        </simple::Field>
+        </Column>
+        </Columns>
     }
 }
 
@@ -57,7 +58,10 @@ pub fn manage(props: &Props) -> Html {
     let Props { session, quiz, action } = props.clone();
 
     let toast = use_toast();
-    let player = use_state(|| Player::default());
+
+    let name = use_state(|| String::default());
+    let model = Model { value: (*name).clone(), input: callback!(name; move |new| name.set(new)) };
+
     let rounds = quiz.rounds.len();
 
     if !session.participants.contains_key(&Participant::Host) {
@@ -65,11 +69,10 @@ pub fn manage(props: &Props) -> Html {
     }
 
     let remove = action.reform(Action::Remove);
-    let input = ywt::callback!(player; move |new| player.set(Player{name: new}));
 
-    let submit = ywt::callback!(player, action; move |_| {
-        action.emit(Action::Add(player.name.clone()));
-        player.set(Player::default());
+    let submit = callback!(name, action; move |_| {
+        action.emit(Action::Add((*name).clone()));
+        name.set(String::default());
     });
     let guess = |round: usize, quiz: &Quiz| {
         let points = quiz.rounds[round].points as i64;
@@ -84,7 +87,7 @@ pub fn manage(props: &Props) -> Html {
         Phase::Playing { round, .. } if round >= rounds => html! {},
         Phase::Lobby => html! {
             <>
-            <PlayerForm value={player.name.clone()} {input} {submit}/>
+            <PlayerForm {model} {submit}/>
             <Block/>
             <PlayerList title={"Select a player to remove them."} session={session.clone()} click={remove}/>
             <Navigate click={action} {session} rounds={quiz.rounds.len()} />
@@ -96,22 +99,28 @@ pub fn manage(props: &Props) -> Html {
         Phase::Playing { stage: Stage::Running | Stage::Paused, round } => html! {
             <>
             <RoundInfo index={round} rounds={quiz.rounds.len()} round={quiz.rounds[round].clone()}/>
-            <PlayerList title={"Select the player who guessed correctly."} session={session.clone()} click={guess(round, &quiz)}/>
+            <PlayerList title="Select the player who guessed correctly." session={session.clone()} click={guess(round, &quiz)}/>
             <Navigate click={action} {session} rounds={quiz.rounds.len()} />
             </>
         },
         Phase::Playing { stage: Stage::Revealing, .. } => html! {
-            <Hero color={Color::Primary}> <Title> {"Revealing ..."} </Title> </Hero>
+            <Hero color={Color::Info}> <Title> {"Revealing ..."} </Title> </Hero>
         },
         Phase::Playing { stage: Stage::Scores, .. } => html! {
             <>
-            <Hero color={Color::Primary}> <Title> {"Showing scores"} </Title> </Hero>
+            <Hero color={Color::Info}> <Title> {"Showing scores"} </Title> </Hero>
+            <Navigate click={action} session={session.clone()} rounds={quiz.rounds.len()} />
+            </>
+        },
+        Phase::Playing { stage: Stage::Editing, .. } => html! {
+            <>
+            <PlayerEdit session={session.clone()} title="Edit players' score." submit={Callback::noop()} />
             <Navigate click={action} session={session.clone()} rounds={quiz.rounds.len()} />
             </>
         },
         Phase::Playing { round, stage: Stage::Revealed } => html! {
             <>
-            <Hero color={Color::Primary}> <Title> {format!("End of round {}", round + 1)} </Title> </Hero>
+            <Hero color={Color::Info}> <Title> {format!("End of round {}", round + 1)} </Title> </Hero>
             <Navigate session={session.clone()} rounds={quiz.rounds.len()} click={action}/>
             </>
         },
@@ -119,7 +128,7 @@ pub fn manage(props: &Props) -> Html {
             <>
             <Rating {quiz} />
             <Buttons alignment={Alignment::Centered}>
-            <simple::Button color={Color::Primary} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="Leave"/>
+            <simple::Button color={Color::Info} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="Leave"/>
             </Buttons>
             </>
         },

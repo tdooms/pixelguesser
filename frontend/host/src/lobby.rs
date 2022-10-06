@@ -1,11 +1,12 @@
-use cobul::*;
-use qrcode::QrCode;
 use std::rc::Rc;
+
+use cobul::*;
+use image::Rgba;
+use photon_rs::PhotonImage;
+use qrcode::QrCode;
 use yew::*;
 
 use api::{Participant, Player, Quiz, Session, SELF_ENDPOINT};
-use image::Rgba;
-use photon_rs::PhotonImage;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -53,7 +54,7 @@ pub fn lobby(props: &Props) -> Html {
             <Subtitle size={HeaderSize::Is4}> {quiz.explanation.clone()} </Subtitle>
         </Hero>
 
-        <Hero color={Color::Primary} size={HeroSize::Small}>
+        <Hero color={Color::Info} size={HeroSize::Small}>
             <Container class="has-text-centered">
                 <Subtitle> {subtitle} </Subtitle>
                 <img src={(*image).clone()} />

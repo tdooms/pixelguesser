@@ -1,8 +1,8 @@
+use cobul::*;
+use gloo::timers::callback::Timeout;
 use yew::*;
 
 use api::{Guesses, Round};
-use cobul::*;
-use gloo::timers::callback::Timeout;
 use shared::host::INFO_DURATION;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
@@ -43,7 +43,7 @@ pub fn info(props: &Props) -> Html {
 
     html! {
         <>
-        <Hero color={Color::Primary} size={HeroSize::Medium}>
+        <Hero color={Color::Info} size={HeroSize::Medium}>
             <Container class="has-text-centered">
                 <Title size={HeaderSize::Is1}> {format!("Starting round {}/{}", index + 1, rounds)} </Title>
                 <Block>

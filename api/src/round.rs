@@ -1,4 +1,3 @@
-use crate::Image;
 use derive_more::Display;
 use hasura::Hasura;
 use serde::{Deserialize, Serialize};
@@ -6,6 +5,8 @@ use serde_repr::Deserialize_repr as Derepr;
 use serde_repr::Serialize_repr as Serepr;
 use strum::EnumIter;
 use validator::{Validate, ValidationError};
+
+use crate::Image;
 
 fn validate(image: &Image) -> Result<(), ValidationError> {
     match image.is_empty() {

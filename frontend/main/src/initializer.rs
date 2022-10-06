@@ -1,11 +1,11 @@
-use cobul::Loader;
 use std::rc::Rc;
+
+use cobul::{Color, Loader};
 use yew::*;
 
+use api::{Action, Participant, Quiz, Session, WebsocketTask};
 use host::Host;
 use manage::Manage;
-
-use api::{Action, Participant, Quiz, Session, WebsocketTask};
 use shared::{use_async_startup, use_auth, Level, Toast};
 
 #[derive(derive_more::Display, Clone, Copy)]
@@ -26,7 +26,8 @@ impl Toast for Error {
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
-    pub session_id: Option<u64>, // Having a session_id implies being a manager
+    pub session_id: Option<u64>,
+    // Having a session_id implies being a manager
     pub quiz_id: u64,
 }
 
@@ -97,6 +98,6 @@ pub fn initializer(props: &Props) -> Html {
         (None, Some(State { session_id, quiz, .. }), Some(session)) => html! {
             <Host {session_id} {session} {quiz} {action}/>
         },
-        _ => html! { <Loader/> },
+        _ => html! { <Loader color={Color::Info} /> },
     }
 }

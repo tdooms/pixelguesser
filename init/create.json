@@ -4,179 +4,842 @@
             "title": "Cities",
             "description": "Popular monuments in popular cities",
             "explanation": "Guess the CITY where the popular monument is located",
-            "image": {"url": "city.jpg"},
+            "image": {
+                "url": "city.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Paris", "image": {"url": "paris.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Pisa", "image": {"url": "pisa.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "London", "image": {"url": "london.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Brussels", "image": {"url": "brussels.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Washington", "image": {"url": "washington.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Moscow", "image": {"url": "moscow.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Sydney", "image": {"url": "sydney.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Rio", "image": {"url": "rio.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Los Angeles", "image": {"url": "los_angeles.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Rome", "image": {"url": "rome.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "New York", "image": {"url": "new_york_liberty.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Giza (or Cairo)", "image": {"url": "giza.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Las Vegas", "image": {"url": "las_vegas.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Berlin", "image": {"url": "berlin.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Agra", "image": {"url": "agra.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Barcelona", "image": {"url": "barcelona.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "New York", "image": {"url": "new_york_times.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Paris",
+                    "image": {
+                        "url": "paris.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Pisa",
+                    "image": {
+                        "url": "pisa.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "London",
+                    "image": {
+                        "url": "london.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Brussels",
+                    "image": {
+                        "url": "brussels.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Washington",
+                    "image": {
+                        "url": "washington.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Moscow",
+                    "image": {
+                        "url": "moscow.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Sydney",
+                    "image": {
+                        "url": "sydney.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Rio",
+                    "image": {
+                        "url": "rio.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Los Angeles",
+                    "image": {
+                        "url": "los_angeles.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Rome",
+                    "image": {
+                        "url": "rome.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "New York",
+                    "image": {
+                        "url": "new_york_liberty.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Giza (or Cairo)",
+                    "image": {
+                        "url": "giza.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Las Vegas",
+                    "image": {
+                        "url": "las_vegas.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Berlin",
+                    "image": {
+                        "url": "berlin.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Agra",
+                    "image": {
+                        "url": "agra.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Barcelona",
+                    "image": {
+                        "url": "barcelona.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "New York",
+                    "image": {
+                        "url": "new_york_times.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "geography"}
+                {
+                    "value": "geography"
+                }
             ]
         },
         {
             "title": "Animals",
             "description": "Well-known animals",
             "explanation": "Guess the animal",
-            "image": {"url": "animal.jpg"},
+            "image": {
+                "url": "animal.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Elephant", "image": {"url": "elephant.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Panda", "image": {"url": "panda.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Dog", "image": {"url": "dog.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Penguin", "image": {"url": "penguin.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Giraffe", "image": {"url": "giraffe.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Bunny", "image": {"url": "bunny.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Lion", "image": {"url": "lion.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Rhino", "image": {"url": "rhino.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Pig", "image": {"url": "pig.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Fox", "image": {"url": "fox.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Elk", "image": {"url": "elk.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Cat", "image": {"url": "cat.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Tiger", "image": {"url": "tiger.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Snake", "image": {"url": "snake.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Gorilla", "image": {"url": "gorilla.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Owl", "image": {"url": "owl.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Peacock", "image": {"url": "peacock.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Elephant",
+                    "image": {
+                        "url": "elephant.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Panda",
+                    "image": {
+                        "url": "panda.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Dog",
+                    "image": {
+                        "url": "dog.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Penguin",
+                    "image": {
+                        "url": "penguin.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Giraffe",
+                    "image": {
+                        "url": "giraffe.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Bunny",
+                    "image": {
+                        "url": "bunny.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Lion",
+                    "image": {
+                        "url": "lion.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Rhino",
+                    "image": {
+                        "url": "rhino.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Pig",
+                    "image": {
+                        "url": "pig.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Fox",
+                    "image": {
+                        "url": "fox.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Elk",
+                    "image": {
+                        "url": "elk.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Cat",
+                    "image": {
+                        "url": "cat.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Tiger",
+                    "image": {
+                        "url": "tiger.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Snake",
+                    "image": {
+                        "url": "snake.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Gorilla",
+                    "image": {
+                        "url": "gorilla.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Owl",
+                    "image": {
+                        "url": "owl.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Peacock",
+                    "image": {
+                        "url": "peacock.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "nature"}
+                {
+                    "value": "nature"
+                }
             ]
         },
         {
             "title": "Celebrities",
             "description": "Famous people around the world",
             "explanation": "Guess the famous person",
-            "image": {"url": "celebrity.jpg"},
+            "image": {
+                "url": "celebrity.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Barack Obama", "image": {"url": "obama.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Charles Michel", "image": {"url": "michel.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Donald Trump", "image": {"url": "trump.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Queen Elizabeth", "image": {"url": "elizabeth.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Will Smith", "image": {"url": "smith.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Marc Zuckerberg", "image": {"url": "zuckerberg.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Vladimir Putin", "image": {"url": "putin.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Freddie Mercury", "image": {"url": "mercury.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Kim Jong Un", "image": {"url": "jong_un.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Elon Musk", "image": {"url": "musk.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Adolf Hitler", "image": {"url": "hitler.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Barack Obama",
+                    "image": {
+                        "url": "obama.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Charles Michel",
+                    "image": {
+                        "url": "michel.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Donald Trump",
+                    "image": {
+                        "url": "trump.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Queen Elizabeth",
+                    "image": {
+                        "url": "elizabeth.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Will Smith",
+                    "image": {
+                        "url": "smith.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Marc Zuckerberg",
+                    "image": {
+                        "url": "zuckerberg.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Vladimir Putin",
+                    "image": {
+                        "url": "putin.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Freddie Mercury",
+                    "image": {
+                        "url": "mercury.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Kim Jong Un",
+                    "image": {
+                        "url": "jong_un.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Elon Musk",
+                    "image": {
+                        "url": "musk.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Adolf Hitler",
+                    "image": {
+                        "url": "hitler.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "pop culture"}
+                {
+                    "value": "pop culture"
+                }
             ]
         },
         {
             "title": "Christmas",
             "description": "Anything and everything that involves christmas",
             "explanation": "Guess the typical christmas item",
-            "image": {"url": "christmas.jpg"},
+            "image": {
+                "url": "christmas.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Christmas tree", "image": {"url": "tree.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Christmas ball", "image": {"url": "ball.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Mistletoe", "image": {"url": "mistletoe.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Rudolph", "image": {"url": "rudolph.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Present", "image": {"url": "present.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Snowman", "image": {"url": "snowman.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Buche", "image": {"url": "buche.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Crib", "image": {"url": "crib.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Gluhwein", "image": {"url": "gluhwein.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Santa Claus", "image": {"url": "santa.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Christmas tree",
+                    "image": {
+                        "url": "tree.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Christmas ball",
+                    "image": {
+                        "url": "ball.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Mistletoe",
+                    "image": {
+                        "url": "mistletoe.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Rudolph",
+                    "image": {
+                        "url": "rudolph.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Present",
+                    "image": {
+                        "url": "present.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Snowman",
+                    "image": {
+                        "url": "snowman.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Buche",
+                    "image": {
+                        "url": "buche.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Crib",
+                    "image": {
+                        "url": "crib.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Gluhwein",
+                    "image": {
+                        "url": "gluhwein.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Santa Claus",
+                    "image": {
+                        "url": "santa.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "holidays"}
+                {
+                    "value": "holidays"
+                }
             ]
         },
         {
             "title": "Logos",
             "description": "Like logo quiz but better",
             "explanation": "Guess the company name that has this famous logo",
-            "image": {"url": "logo.jpg"},
+            "image": {
+                "url": "logo.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Ikea", "image": {"url": "ikea.jpg"}},
-                {"points": 1, "guesses": 1, "answer": "Volkswage", "image": {"url": "volkswagen.jpg"}},
-                {"points": 1, "guesses": 1, "answer": "Apple", "image": {"url": "appleco.jpg"}},
-                {"points": 1, "guesses": 1, "answer": "Facebook", "image": {"url": "facebook.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Tesla", "image": {"url": "tesla.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Coca Cola", "image": {"url": "cocacola.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Nutella", "image": {"url": "nutella.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Twitter", "image": {"url": "twitter.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Mc Donalds", "image": {"url": "mcdonalds.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "BMW", "image": {"url": "bmw.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Android", "image": {"url": "android.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Starbucks", "image": {"url": "starbucks.jpg"}},
-                {"points": 4, "guesses": 1, "answer": "Hard Rock Cafe", "image": {"url": "hardrock.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Ikea",
+                    "image": {
+                        "url": "ikea.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Volkswage",
+                    "image": {
+                        "url": "volkswagen.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Apple",
+                    "image": {
+                        "url": "appleco.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Facebook",
+                    "image": {
+                        "url": "facebook.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Tesla",
+                    "image": {
+                        "url": "tesla.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Coca Cola",
+                    "image": {
+                        "url": "cocacola.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Nutella",
+                    "image": {
+                        "url": "nutella.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Twitter",
+                    "image": {
+                        "url": "twitter.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Mc Donalds",
+                    "image": {
+                        "url": "mcdonalds.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "BMW",
+                    "image": {
+                        "url": "bmw.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Android",
+                    "image": {
+                        "url": "android.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Starbucks",
+                    "image": {
+                        "url": "starbucks.jpg"
+                    }
+                },
+                {
+                    "points": 4,
+                    "guesses": 1,
+                    "answer": "Hard Rock Cafe",
+                    "image": {
+                        "url": "hardrock.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "companies"}
+                {
+                    "value": "companies"
+                }
             ]
         },
         {
             "title": "Foods",
             "description": "tasty! But can you guess it quickly",
             "explanation": "Guess the food as quickly as possible",
-            "image": {"url": "food.jpg"},
+            "image": {
+                "url": "food.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Apple", "image": {"url": "apple.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Hamburger", "image": {"url": "hamburger.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Pizza", "image": {"url": "pizza.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Banana", "image": {"url": "banana.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Fries", "image": {"url": "fries.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Salad", "image": {"url": "salad.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Spaghetti", "image": {"url": "spaghetti.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Steak", "image": {"url": "steak.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Pancakes", "image": {"url": "pancakes.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Ice Cream", "image": {"url": "ice_cream.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "English breakfast", "image": {"url": "english.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Apple",
+                    "image": {
+                        "url": "apple.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Hamburger",
+                    "image": {
+                        "url": "hamburger.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Pizza",
+                    "image": {
+                        "url": "pizza.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Banana",
+                    "image": {
+                        "url": "banana.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Fries",
+                    "image": {
+                        "url": "fries.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Salad",
+                    "image": {
+                        "url": "salad.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Spaghetti",
+                    "image": {
+                        "url": "spaghetti.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Steak",
+                    "image": {
+                        "url": "steak.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Pancakes",
+                    "image": {
+                        "url": "pancakes.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Ice Cream",
+                    "image": {
+                        "url": "ice_cream.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "English breakfast",
+                    "image": {
+                        "url": "english.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "family friendly"}
+                {
+                    "value": "family friendly"
+                }
             ]
         },
         {
             "title": "Family",
             "description": "Who knows their family best?",
             "explanation": "Guess the name of the family member",
-            "image": {"url": "family.jpg"},
+            "image": {
+                "url": "family.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Silke", "image": {"url": "silke.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Micheline", "image": {"url": "micheline.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Luc", "image": {"url": "luc.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Mathias", "image": {"url": "mathias.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Christian", "image": {"url": "christian.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Ari", "image": {"url": "ari.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Catherine", "image": {"url": "catherine.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Thomas", "image": {"url": "thomas.jpg"}},
-                {"points": 2, "guesses": 1, "answer": "Anne-Sophie", "image": {"url": "anne_sophie.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "An", "image": {"url": "an.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Lucas", "image": {"url": "lucas.jpg"}},
-                {"points": 3, "guesses": 1, "answer": "Paul", "image": {"url": "paul.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Silke",
+                    "image": {
+                        "url": "silke.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Micheline",
+                    "image": {
+                        "url": "micheline.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Luc",
+                    "image": {
+                        "url": "luc.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Mathias",
+                    "image": {
+                        "url": "mathias.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Christian",
+                    "image": {
+                        "url": "christian.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Ari",
+                    "image": {
+                        "url": "ari.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Catherine",
+                    "image": {
+                        "url": "catherine.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Thomas",
+                    "image": {
+                        "url": "thomas.jpg"
+                    }
+                },
+                {
+                    "points": 2,
+                    "guesses": 1,
+                    "answer": "Anne-Sophie",
+                    "image": {
+                        "url": "anne_sophie.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "An",
+                    "image": {
+                        "url": "an.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Lucas",
+                    "image": {
+                        "url": "lucas.jpg"
+                    }
+                },
+                {
+                    "points": 3,
+                    "guesses": 1,
+                    "answer": "Paul",
+                    "image": {
+                        "url": "paul.jpg"
+                    }
+                }
             ]
         }
     ]

@@ -1,5 +1,6 @@
-use cobul::*;
 use std::rc::Rc;
+
+use cobul::*;
 use yew::*;
 
 use api::Quiz;

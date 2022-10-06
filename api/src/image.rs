@@ -1,10 +1,13 @@
-use crate::{download, Error, Photo, Result};
-use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
-use piximages::Resolution;
-use reqwest::Client;
-use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
+
+use reqwest::Client;
+use serde::{Deserialize, Deserializer, Serialize};
+
+use piximages::Resolution;
+
+use crate::{download, Error, Photo, Result};
+use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Unsplash {

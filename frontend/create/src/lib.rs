@@ -1,8 +1,9 @@
-use cobul::Loader;
-use shared::{use_auth, use_toast, Forbidden, Route};
+use cobul::{Color, Loader};
 use yew::*;
 use yew_router::prelude::Redirect;
 use ywt::callback;
+
+use shared::{use_auth, use_toast, Forbidden, Route};
 
 use crate::quiz::QuizPage;
 use crate::round::RoundPage;
@@ -59,7 +60,7 @@ pub fn create(props: &Props) -> Html {
     };
 
     match state.loading() {
-        true => html! { <Loader /> },
+        true => html! { <Loader color={Color::Info} /> },
         false => inner,
     }
 }

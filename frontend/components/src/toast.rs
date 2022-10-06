@@ -1,10 +1,11 @@
 use cobul::{
     fa::Solid, Button, Color, Column, ColumnSize, Columns, Icon, Message, Size, TextColor,
 };
-use shared::Route;
-use shared::{Level, Toast, UseToastManagerHandle};
 use yew::*;
 use yew_router::prelude::Redirect;
+
+use shared::Route;
+use shared::{Level, Toast, UseToastManagerHandle};
 
 pub fn toast_view(toast: &dyn Toast, remove: Callback<()>) -> Html {
     let (icon, color, text_color) = match toast.level() {

@@ -1,8 +1,8 @@
+use std::path::Path;
+
 use base64::URL_SAFE;
 use clap::Parser;
 use image::ImageFormat;
-use pixauth::Claims;
-use piximages::Resolution;
 use rocket::data::ToByteUnit;
 use rocket::fs::NamedFile;
 use rocket::http::Status;
@@ -11,7 +11,9 @@ use rocket::{get, post, response, routes, Data, Request, State};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
 use sqlx::{Row, SqlitePool};
-use std::path::Path;
+
+use pixauth::Claims;
+use piximages::Resolution;
 
 pub struct Folder(String);
 

@@ -1,6 +1,5 @@
 use cobul::*;
 use strum::EnumIter;
-use yew::Callback;
 use yew::*;
 
 #[derive(Clone, Copy, Debug, derive_more::Display, PartialEq, EnumIter)]
@@ -27,10 +26,10 @@ pub fn search(props: &Props) -> Html {
 
         <Field grouped=true>
             <Control expanded=true>
-                // <Input placeholder="Find a quiz" model={filter} />
+                <Input placeholder="Find a quiz" model={filter} />
             </Control>
             <Control>
-                // <simple::Dropdown<Sort> model={sort} />
+                <simple::Dropdown<Sort> model={sort} />
             </Control>
         </Field>
 

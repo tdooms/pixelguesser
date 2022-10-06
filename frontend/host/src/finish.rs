@@ -1,11 +1,13 @@
+use std::rc::Rc;
+
 use cobul::*;
 use yew::*;
+use yew_router::prelude::*;
 
-use super::Ranking;
 use api::{Quiz, Session};
 use shared::Route;
-use std::rc::Rc;
-use yew_router::prelude::*;
+
+use super::Ranking;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -21,17 +23,17 @@ pub fn finish(props: &Props) -> Html {
 
     html! {
         <>
-            <Hero color={Color::Primary}>
+            <Hero color={Color::Info}>
                 <Title> {quiz.title.clone()} </Title>
                 <Subtitle> {"finished"} </Subtitle>
             </Hero>
 
-            <Hero color={Color::Primary} size={HeroSize::Medium}>
+            <Hero color={Color::Info} size={HeroSize::Medium}>
                 <Ranking players={session.players.clone()} />
             </Hero>
 
         <Buttons alignment={Alignment::Centered} class="mt-5">
-            <simple::Button color={Color::Primary} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="leave" />
+            <simple::Button color={Color::Info} light=true click={leave} size={Size::Large} icon={fa::Solid::RightFromBracket} text="leave" />
         </Buttons>
         </>
     }

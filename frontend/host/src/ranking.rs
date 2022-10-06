@@ -1,8 +1,9 @@
 use std::collections::HashMap;
+
+use cobul::*;
 use yew::*;
 
 use api::Player;
-use cobul::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

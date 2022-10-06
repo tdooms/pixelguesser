@@ -1,8 +1,10 @@
-use crate::{Error, Result, GRAPHQL_ENDPOINT};
+use std::rc::Rc;
+
 use hasura::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use validator::Validate;
+
+use crate::{Error, Result, GRAPHQL_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug, PartialEq)]
 pub struct Credentials {

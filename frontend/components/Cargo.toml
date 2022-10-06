@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 shared = { path = "../shared" }
-api = { path = "../../api", features=["session"] }
+api = { path = "../../api", features = ["session"] }
 cobul = { git = "https://github.com/tdooms/cobul.git" }
 ywt = { git = "https://github.com/tdooms/ywt.git" }
 

@@ -1,11 +1,14 @@
-use crate::{Error, SESSION_CREATE_ENDPOINT, SESSION_WS_ENDPOINT};
+use std::str::FromStr;
+
 use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket;
 use gloo_net::websocket::{Message, WebSocketError};
-use pixessions::{Action, Session};
-use std::str::FromStr;
 use wasm_bindgen_futures::spawn_local;
+
+use pixessions::{Action, Session};
+
+use crate::{Error, SESSION_CREATE_ENDPOINT, SESSION_WS_ENDPOINT};
 
 // Removed i, I, o, O -> 48 chars
 // !! MUST be sorted by ascii values

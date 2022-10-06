@@ -4,14 +4,25 @@
             "title": "Cities",
             "description": "Popular monuments in popular cities",
             "explanation": "Guess the CITY where the popular monument is located",
-            "image": {"url": "city.jpg"},
+            "image": {
+                "url": "city.jpg"
+            },
             "public": true,
             "complete": true,
             "rounds": [
-                {"points": 1, "guesses": 1, "answer": "Paris", "image": {"url": "paris.jpg"}}
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Paris",
+                    "image": {
+                        "url": "paris.jpg"
+                    }
+                }
             ],
             "tags": [
-                {"value": "geography"}
+                {
+                    "value": "geography"
+                }
             ]
         }
     ]

@@ -1,12 +1,13 @@
-mod error;
-mod routes;
-
 use clap::Parser;
 use rocket::{routes, Build, Rocket};
 use rocket_cors::CorsOptions;
-use routes::*;
 use sha3::Digest;
 use sqlx::SqlitePool;
+
+use routes::*;
+
+mod error;
+mod routes;
 
 #[derive(clap::Parser)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]

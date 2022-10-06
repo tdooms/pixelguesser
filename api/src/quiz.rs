@@ -1,9 +1,11 @@
-use crate::{Error, Image, Result, Round, User, GRAPHQL_ENDPOINT};
+use std::rc::Rc;
+
 use chrono::{DateTime, Utc};
 use hasura::*;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use validator::Validate;
+
+use crate::{Error, Image, Result, Round, User, GRAPHQL_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hasura)]
 #[hasura(table = "tags")]
@@ -28,10 +30,10 @@ pub struct Quiz {
     #[validate(length(max = 32, message = "Title cannot exceed 32 characters."))]
     pub title: String,
 
-    #[validate(length(max = 64, message = "Description cannot exceed 32 characters."))]
+    #[validate(length(max = 64, message = "Description cannot exceed 64 characters."))]
     pub description: String,
 
-    #[validate(length(max = 128, message = "Explanation cannot exceed 32 characters."))]
+    #[validate(length(max = 128, message = "Explanation cannot exceed 128 characters."))]
     pub explanation: String,
 
     pub created_at: Option<DateTime<Utc>>,
@@ -57,6 +59,7 @@ pub struct Quiz {
 
 impl Quiz {
     pub async fn query_many(token: Option<String>, rounds: bool) -> Result<Vec<Quiz>> {
+        log::info!("querying many quiz");
         let returning = match rounds {
             false => Quiz::except(&[Quiz::rounds(Round::all())]),
             true => Quiz::all(),

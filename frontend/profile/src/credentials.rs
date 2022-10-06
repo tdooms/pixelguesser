@@ -1,10 +1,11 @@
-use crate::Page;
+use std::rc::Rc;
+
 use cobul::fa::Solid;
 use cobul::*;
-use shared::use_form;
-use std::rc::Rc;
 use yew::*;
 use ywt::callback;
+
+use shared::use_form;
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -14,27 +15,23 @@ pub struct Props {
 
 #[function_component(Credentials)]
 pub fn credentials(Props { submit, info }: &Props) -> Html {
-    let credentials = use_state(|| Rc::new(api::Credentials::default()));
+    let credentials = use_model(|| Rc::new(api::Credentials::default()));
 
     let shown = use_state(|| false);
     let loading = use_state(|| false);
+    let form = use_form(credentials.value.clone(), credentials.input.clone());
 
-    let input = callback!(credentials; move |new| credentials.set(new));
     let show = callback!(shown; move |_| shown.set(!*shown));
-
-    let form = use_form((*credentials).clone(), input);
+    let click = callback!(submit, form, loading; move |_| {
+        if !form.errors().is_empty() { return }
+        submit.emit(credentials.value.clone());
+        loading.set(true)
+    });
 
     let (kind, icon) = match *shown {
         true => ("text", Solid::EyeSlash),
         false => ("password", Solid::Eye),
     };
-
-    let click = callback!(submit, form, loading; move |_| {
-        if form.errors().is_empty() {
-            submit.emit((*credentials).clone());
-            loading.set(true)
-        }
-    });
 
     html! {
         <>
@@ -44,14 +41,14 @@ pub fn credentials(Props { submit, info }: &Props) -> Html {
             <p> {info} </p>
         </Block>
 
-        <simple::Field class="mb-0" icon_left={fa::Solid::Envelope} help={form.error("email")}>
-            // <Input kind="email" model={form.email()} placeholder="Email Address" />
+        <simple::Field icon_left={fa::Solid::Envelope} help={form.error("email")}>
+            <Input kind="email" model={form.email()} placeholder="Email Address" />
         </simple::Field>
 
         <Columns>
-            <Column>
-                <simple::Field class="mb-0" icon_left={fa::Solid::Envelope} help={form.error("password")}>
-                    // <Input kind="password" model={form.password()} placeholder="Email Address" />
+            <Column class="pr-0">
+                <simple::Field class="mb-0" icon_left={fa::Solid::Key} help={form.error("password")}>
+                    <Input {kind} model={form.password()} placeholder="Password" />
                 </simple::Field>
             </Column>
             <Column size={ColumnSize::IsNarrow}>

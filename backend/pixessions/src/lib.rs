@@ -1,7 +1,8 @@
 extern crate core;
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -56,6 +57,7 @@ pub enum Stage {
     Paused,
     Revealing,
     Revealed,
+    Editing,
     Scores,
 }
 

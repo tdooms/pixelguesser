@@ -1,6 +1,7 @@
+use rocket::local::blocking::Client;
+
 use crate::routes::Credentials;
 use crate::setup;
-use rocket::local::blocking::Client;
 
 #[test]
 fn test_login() {

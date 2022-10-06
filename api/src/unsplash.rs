@@ -1,8 +1,10 @@
-use crate::{Result, UNSPLASH_KEY};
-use derive_more::Display;
 use std::fmt::Formatter;
+
+use derive_more::Display;
 use strum::EnumIter;
 use validator::Validate;
+
+use crate::{Result, UNSPLASH_KEY};
 
 #[derive(serde::Deserialize, Debug, PartialEq)]
 pub struct Urls {
@@ -172,6 +174,7 @@ pub struct Response {
 pub fn unsplash_link() -> String {
     format!("https://unsplash.com/?utm_source=pixelguesser&utm_medium=referral")
 }
+
 pub fn author_link(photo: &Photo) -> String {
     format!("{}?utm_source=pixelguesser&utm_medium=referral", photo.user.links.html)
 }

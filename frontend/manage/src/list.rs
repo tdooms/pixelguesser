@@ -1,8 +1,9 @@
+use std::rc::Rc;
+
+use cobul::*;
 use yew::*;
 
 use api::{Player, Session};
-use cobul::*;
-use std::rc::Rc;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {

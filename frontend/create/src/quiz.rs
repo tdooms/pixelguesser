@@ -1,14 +1,15 @@
-use crate::picker::Picker;
-use cobul::*;
 use std::rc::Rc;
-use yew::*;
 
-use api::{Image, Quiz, Resolution};
-use components::{QuizCard, TagsField};
+use cobul::*;
 use cropper::Cropper;
-use shared::{use_auth, use_form, use_toast, Forbidden};
+use yew::*;
 use ywt::callback;
 
+use api::{Image, Quiz};
+use components::{QuizCard, TagsField};
+use shared::{use_auth, use_form, use_toast, Forbidden};
+
+use crate::picker::Picker;
 use crate::state::Action;
 use crate::Stage;
 
@@ -36,8 +37,8 @@ pub fn quiz_page(props: &Props) -> Html {
         None => return html! {},
     };
 
-    let cropper = use_state(|| None);
-    let name = use_state(|| None);
+    // let cropper: UseStateHandle<Option<Rc<String>>> = use_state(|| None);
+    // let name = use_state(|| None);
     let active = use_state(|| false);
 
     let form = use_form(quiz.clone(), action.reform(Action::Quiz));
@@ -49,39 +50,39 @@ pub fn quiz_page(props: &Props) -> Html {
     let back = callback!(change; move |_| {
         change.emit(Stage::Back)
     });
-    let upload = callback!(name, cropper; move |files: Vec<web_sys::File>| {
-        ywt::spawn!(name, cropper; async move {
-            let image = Image::from_local(files[0].clone()).await.unwrap();
-            cropper.set(Some(image.src(Resolution::Original)));
-            name.set(image.name());
-        })
-    });
-    let done = callback!(form, cropper, name; move |base64| {
-        let image = Image::from_base64(base64, (*name).clone());
-        form.change(|x| &mut x.image).emit(image);
-
-        cropper.set(None);
-        name.set(None);
-    });
-    let cancel = callback!(cropper, name; move |_| {
-        cropper.set(None);
-        name.set(None);
-    });
+    // let upload = callback!(name, cropper; move |files: Vec<web_sys::File>| {
+    //     ywt::spawn!(name, cropper; async move {
+    //         let image = Image::from_local(files[0].clone()).await.unwrap();
+    //         cropper.set(Some(image.src(Resolution::Original)));
+    //         name.set(image.name());
+    //     })
+    // });
+    // let done = callback!(form, cropper, name; move |base64| {
+    //     let image = Image::from_base64(base64, (*name).clone());
+    //     form.change(|x| &mut x.image).emit(image);
+    //
+    //     cropper.set(None);
+    //     name.set(None);
+    // });
+    // let cancel = callback!(cropper, name; move |_| {
+    //     cropper.set(None);
+    //     name.set(None);
+    // });
 
     // let activate = callback!(active; move |_| active.set(!*active));
 
-    let Quiz { id, title, explanation, description, image, .. } = (*quiz).clone();
-    let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
-    let filename = (!image.is_empty()).then(move || name);
-    let fullwidth = !image.is_empty();
+    // let name = image.name().unwrap_or(format!("{}.jpg", title.to_lowercase()));
+    // let filename = (!image.is_empty()).then(move || name);
+    // let fullwidth = !image.is_empty();
 
-    let modal = match (*cropper).clone() {
-        Some(src) => html! {<Cropper {src} {done} {cancel} height=450 width=600/>},
-        None => html! {},
-    };
+    // let modal = match (*cropper).clone() {
+    //     Some(src) => html! {<Cropper {src} {done} {cancel} height=450 width=600/>},
+    //     None => html! {},
+    // };
 
     let left = html! {<Title> {"Overview"} </Title>};
-    let right = id
+    let right = quiz
+        .id
         .map(|_| html! {<simple::Button color={Color::Danger} click={delete} text="Delete" /> })
         .unwrap_or_default();
 
@@ -94,18 +95,18 @@ pub fn quiz_page(props: &Props) -> Html {
         <Level {left} {right} />
 
         <simple::Field label="Quiz Title" help={form.error("title")}>
-            // <Input model={form.title()} placeholder={TITLE}/>
+            <Input model={form.title()} placeholder={TITLE}/>
         </simple::Field>
 
         <simple::Field label="Description" help={form.error("description")}>
-            // <Input model={form.description()} placeholder={DESCRIPTION} />
+            <Input model={form.description()} placeholder={DESCRIPTION} />
         </simple::Field>
 
         <simple::Field label="Explanation">
-            // <Input model={form.explanation()} placeholder={EXPLANATION}/>
+            <Input model={form.explanation()} placeholder={EXPLANATION}/>
         </simple::Field>
 
-        // <TagsField model={form.tags()} placeholder={TAGS}/>
+        <TagsField model={form.tags()} placeholder={TAGS}/>
 
         // <simple::Field label="Image" help={form.error("image")}>
         //     <File accept={"image/*"} {fullwidth} {filename} {onupload}/>
@@ -117,7 +118,7 @@ pub fn quiz_page(props: &Props) -> Html {
     html! {
         <Section>
         <Container>
-            {modal}
+            // {modal}
             <Columns>
                 <Column> {body} </Column>
                 <Column size={ColumnSize::Is1} />

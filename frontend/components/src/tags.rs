@@ -1,7 +1,8 @@
-use api::Tag;
 use cobul::*;
 use yew::*;
 use ywt::*;
+
+use api::Tag;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct TagProps {
@@ -26,6 +27,7 @@ pub struct Props {
     #[prop_or_default]
     pub input: Callback<Vec<Tag>>,
 
+    #[prop_or_default]
     pub value: Vec<Tag>,
 
     #[prop_or_default]

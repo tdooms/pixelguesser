@@ -1,12 +1,13 @@
-use api::Stage;
 use gloo::events::EventListener;
 use gloo::timers::callback::Timeout;
-use shared::pixelation::*;
-use shared::{Level, Toast};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
 use ywt::{callback, clone};
+
+use api::Stage;
+use shared::pixelation::*;
+use shared::{Level, Toast};
 
 #[derive(derive_more::Display, Debug)]
 #[display(fmt = "Internal javascript draw error")]

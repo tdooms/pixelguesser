@@ -1,10 +1,13 @@
-use crate::{Additional, Credentials, Page};
-use api::Result;
-use cobul::{Box, Modal};
-use shared::{use_auth, use_toast, UseAuthHandle, UseToastHandle};
 use std::rc::Rc;
+
+use cobul::{Box, Modal};
 use yew::*;
 use ywt::{callback, spawn};
+
+use api::Result;
+use shared::{use_auth, use_toast, UseAuthHandle};
+
+use crate::{Additional, Credentials, Page};
 
 async fn authenticate(cred: Rc<api::Credentials>, page: Page, auth: UseAuthHandle) -> Result<()> {
     match page {
@@ -69,7 +72,7 @@ pub fn dialog(Props { change, page }: &Props) -> Html {
 
     html! {
         <Modal active=true width=400>
-            {inner}
+            <Box> {inner} </Box>
         </Modal>
     }
 }

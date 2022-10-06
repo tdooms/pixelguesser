@@ -1,15 +1,17 @@
-use crate::navbar::MainNavbar;
-use crate::search::{Search, Sort};
-use api::Quiz;
-use cobul::*;
-use components::QuizCard;
-use shared::{use_auth, use_toast, Route};
 use std::rc::Rc;
+
+use cobul::*;
 use wasm_bindgen_futures::spawn_local;
-use yew::HtmlResult;
 use yew::*;
 use yew_router::hooks::use_navigator;
 use ywt::callback;
+
+use api::Quiz;
+use components::QuizCard;
+use shared::{use_auth, use_toast, Route};
+
+use crate::navbar::MainNavbar;
+use crate::search::{Search, Sort};
 
 #[derive(Properties, PartialEq, Clone)]
 pub struct Props {
@@ -42,19 +44,19 @@ pub fn empty_column() -> Html {
 }
 
 #[function_component(Overview)]
-pub fn overview() -> HtmlResult {
+pub fn overview() -> Html {
     let token = use_auth().token().map(|x| (*x).clone());
     let toasts = use_toast();
 
-    let filter = use_state_eq(|| String::new());
-    let sort = use_state_eq(|| Sort::Relevance);
+    let filter = use_model(|| String::new());
+    let sort = use_model(|| Sort::Relevance);
 
     let quizzes = use_state_eq(|| None);
     let cloned = quizzes.clone();
 
     use_effect_with_deps(
         move |deps| {
-            let filter = (**deps).clone();
+            let filter = (*deps).clone();
             spawn_local(async move {
                 let result = match filter.is_empty() {
                     true => Quiz::query_many(token, false).await,
@@ -67,7 +69,7 @@ pub fn overview() -> HtmlResult {
             });
             || ()
         },
-        filter.clone(),
+        filter.value.clone(),
     );
 
     let list = match &*quizzes {
@@ -75,11 +77,7 @@ pub fn overview() -> HtmlResult {
         Some(all) => html! { for all.iter().cloned().map(|quiz| html!{ <QuizColumn {quiz} />}) },
     };
 
-    let sort = Model { input: callback!(sort; move |x| sort.set(x)), value: *sort };
-    let filter =
-        Model { input: callback!(filter; move |x| filter.set(x)), value: (*filter).clone() };
-
-    Ok(html! {
+    html! {
         <>
         <MainNavbar/>
         <Section class="pt-0">
@@ -89,5 +87,5 @@ pub fn overview() -> HtmlResult {
         </Container>
         </Section>
         </>
-    })
+    }
 }

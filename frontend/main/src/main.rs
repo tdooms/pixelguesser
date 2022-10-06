@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
-use cobul::Loader;
-
+use cobul::{Color, Loader};
 use yew::*;
 use yew_router::prelude::*;
 
 use api::Code;
+use components::Toasts;
 use create::Create;
 use profile::Profile;
 use shared::{
@@ -16,7 +16,6 @@ use crate::initializer::Initializer;
 use crate::lab::Test;
 use crate::library::Library;
 use crate::overview::Overview;
-use components::Toasts;
 
 mod initializer;
 mod lab;
@@ -36,7 +35,7 @@ pub fn app() -> Html {
     let auth = use_auth_manager();
 
     if auth.loading() {
-        return html! { <Loader />};
+        return html! { <Loader color={Color::Info} />};
     }
 
     html! {
@@ -54,33 +53,31 @@ pub fn app() -> Html {
 }
 
 fn switch(route: &Route) -> Html {
-    let fallback = html! { <Loader/> };
-
     match route {
         Route::Host { quiz_id } => {
             html! { <Initializer quiz_id={*quiz_id}/> }
         }
         Route::Manage { code } => {
             let Code { session_id, quiz_id } = Code::from_str(&code).unwrap();
-            html! { <Initializer {quiz_id} {session_id}/> }
+            html! { <Initializer {quiz_id} {session_id} /> }
         }
         Route::Create => {
-            html! { <Create/> }
+            html! { <Create /> }
         }
         Route::Update { quiz_id } => {
-            html! { <Create quiz_id={*quiz_id}/> }
+            html! { <Create quiz_id={*quiz_id} /> }
         }
         Route::Profile => {
-            html! { <Profile/> }
+            html! { <Profile /> }
         }
         Route::Library => {
-            html! { <Library/> }
+            html! { <Library /> }
         }
         Route::Test => {
-            html! { <Test/> }
+            html! { <Test /> }
         }
         Route::Overview | Route::NotFound => {
-            html! {<Suspense {fallback}><Overview/></Suspense>}
+            html! { <Overview /> }
         }
     }
 }

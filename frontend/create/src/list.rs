@@ -1,13 +1,15 @@
-use cobul::*;
-use components::{DynImage, Fit, Height, Sidebar, SidebarAlignment};
 use std::rc::Rc;
-use validator::ValidationErrors;
 
-use crate::state::Action;
-use api::{Quiz, Resolution};
+use cobul::*;
+use validator::ValidationErrors;
 use web_sys::DragEvent;
 use yew::*;
 use ywt::{callback, clone};
+
+use api::{Quiz, Resolution};
+use components::{DynImage, Fit, Height, Sidebar, SidebarAlignment};
+
+use crate::state::Action;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct ElemProps {

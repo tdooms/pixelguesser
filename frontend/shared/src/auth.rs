@@ -1,12 +1,14 @@
+use std::rc::Rc;
+
 use chrono::Utc;
 use gloo::storage::{LocalStorage, Storage};
-use std::rc::Rc;
 use yew::{use_context, use_state, UseStateHandle};
-
-use crate::use_startup;
-use api::{Credentials, Error, Tokens, User};
 use yew::hook;
 use ywt::spawn;
+
+use api::{Credentials, Error, Tokens, User};
+
+use crate::use_startup;
 
 #[derive(PartialEq, Debug, Clone)]
 enum State {

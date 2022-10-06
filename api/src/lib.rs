@@ -1,35 +1,25 @@
-pub use consts::*;
-pub use error::{Error, Result};
-
 #[cfg(feature = "auth")]
 pub use auth::*;
-
-#[cfg(feature = "auth")]
-pub use pixauth::*;
-
-#[cfg(feature = "graphql")]
-pub use quiz::*;
-
-#[cfg(feature = "graphql")]
-pub use round::*;
-
-#[cfg(feature = "graphql")]
-pub use user::*;
-
+pub use consts::*;
+pub use error::{Error, Result};
 #[cfg(feature = "image")]
 pub use image::Image;
-
-#[cfg(feature = "image")]
-pub use piximages::Resolution;
-
+#[cfg(feature = "auth")]
+pub use pixauth::*;
 #[cfg(feature = "session")]
 pub use pixessions::*;
-
+#[cfg(feature = "image")]
+pub use piximages::Resolution;
+#[cfg(feature = "graphql")]
+pub use quiz::*;
+#[cfg(feature = "graphql")]
+pub use round::*;
 #[cfg(feature = "session")]
 pub use session::*;
-
 #[cfg(feature = "unsplash")]
 pub use unsplash::*;
+#[cfg(feature = "graphql")]
+pub use user::*;
 
 mod consts;
 mod error;

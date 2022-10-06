@@ -1,9 +1,10 @@
-use api::{Quiz, Result, Round};
 use std::rc::Rc;
 
-use shared::{use_auth, use_startup, use_toast, UseToastHandle};
-use yew::hook;
 use yew::{use_state, UseStateHandle};
+use yew::hook;
+
+use api::{Quiz, Result, Round};
+use shared::{use_auth, use_startup, use_toast, UseToastHandle};
 
 pub enum Action {
     Quiz(Rc<Quiz>),
@@ -30,10 +31,12 @@ impl UseQuizCreateHandle {
     }
 
     async fn load(self, quiz_id: u64, token: Option<String>) {
+        log::info!("querying");
         let mut quiz = match self.notify(Quiz::query_one(token, quiz_id).await) {
             Some(quiz) => quiz,
             None => return,
         };
+        log::info!("querying done");
 
         quiz.rounds.resize(quiz.rounds.len().min(1), Default::default());
         let rc = Rc::new(quiz);

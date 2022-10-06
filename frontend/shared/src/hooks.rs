@@ -1,7 +1,9 @@
-use crate::{use_toast, Toast};
 use std::future::Future;
+
 use yew::use_effect_with_deps;
 use yew::*;
+
+use crate::{use_toast, Toast};
 
 #[hook]
 pub fn use_startup(func: impl FnOnce() + 'static) {

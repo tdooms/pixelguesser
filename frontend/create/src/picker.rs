@@ -1,10 +1,12 @@
-use crate::unsplash::Unsplash;
-use api::Image;
 use cobul::*;
 use strum::IntoEnumIterator;
 use yew::html::IntoPropValue;
 use yew::*;
 use ywt::callback;
+
+use api::Image;
+
+use crate::unsplash::Unsplash;
 
 #[derive(derive_more::Display, Clone, Copy, Debug, PartialEq, strum::EnumIter)]
 pub enum Tab {
@@ -17,7 +19,7 @@ pub enum Tab {
 }
 
 impl Tab {
-    pub fn icon(&self) -> String {
+    pub fn icon(&self) -> AttrValue {
         match self {
             Tab::Upload => fa::Solid::Upload.into_prop_value(),
             Tab::Url => fa::Solid::Link.into_prop_value(),

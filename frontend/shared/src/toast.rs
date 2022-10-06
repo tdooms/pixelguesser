@@ -1,6 +1,7 @@
-use gloo::timers::callback::Timeout;
 use std::collections::HashMap;
 use std::rc::Rc;
+
+use gloo::timers::callback::Timeout;
 use yew::{hook, use_context, use_state, UseStateHandle};
 
 #[derive(Clone, Debug, Copy, PartialEq)]
