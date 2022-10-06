@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-auth = ["validator", "pixauth"]
-graphql = ["validator", "image", "hasura"]
+auth = ["validator", "pixauth", "honey"]
+graphql = ["validator", "image", "hasura", "honey"]
 session = ["gloo-net", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
 image = ["gloo-file", "web-sys", "reqwest", "piximages"]
 unsplash = ["reqwest"]
@@ -16,9 +16,10 @@ pixessions = { path = "../backend/pixessions", optional = true }
 piximages = { path = "../backend/piximages", optional = true }
 pixauth = { path = "../backend/pixauth", optional = true }
 hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
+honey = { git = "https://github.com/tdooms/honey.git", optional = true }
 
-cobul = { git = "https://github.com/tdooms/cobul.git" }
 yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+cobul = { git = "https://github.com/tdooms/cobul.git" }
 
 serde_json = "1.0"
 serde_repr = "0.1"

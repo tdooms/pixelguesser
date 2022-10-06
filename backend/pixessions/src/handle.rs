@@ -1,3 +1,9 @@
+use crate::lib::Session;
+use crate::{Global, Local, SinkExt, State, StreamExt};
+use axum::extract::ws::{Message, WebSocket};
+use pixessions::{Action, Error};
+use rand::Rng;
+
 async fn handle_message(message: Message, state: &mut State, conn_id: u32) -> Result<(), Error> {
     let message = message.into_text().map_err(|_| Error::NonText)?;
     let action: Action = serde_json::from_str(&message)?;
@@ -21,7 +27,7 @@ async fn notify(state: &mut State, session: &Session) {
     }
 }
 
-async fn handle_connection(stream: WebSocket, global: Global, session_id: u32) {
+async fn handle_session(stream: WebSocket, global: Global, session_id: u32) {
     let (sender, mut receiver) = stream.split();
     let conn_id = rand::thread_rng().gen::<u32>();
     log::info!("attempted connection to {session_id}");

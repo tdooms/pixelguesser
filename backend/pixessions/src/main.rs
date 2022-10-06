@@ -34,26 +34,34 @@ struct Opts {
     address: String,
 }
 
+async fn handle_sessions() {}
+
 async fn session_ws(
     ws: WebSocketUpgrade,
-    Extension(global): Extension<Global>,
+    ext: Extension<Global>,
     Path(session_id): Path<u32>,
 ) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_connection(socket, global, session_id))
+    ws.on_upgrade(move |socket| handle_session(socket, ext.0, session_id))
 }
 
-async fn creator(
-    Extension(global): Extension<Global>,
-    Path(quiz_id): Path<u32>,
-) -> impl IntoResponse {
+async fn create_session(ext: Extension<Global>, Path(quiz_id): Path<u32>) -> impl IntoResponse {
     let session_id = rand::thread_rng().gen::<u32>();
-    let mut lock = global.lock().await;
+    let mut lock = ext.0.lock().await;
 
     let state = State::new(Mode::default(), quiz);
     lock.insert(session_id, Arc::new(Mutex::new(state)));
 
     log::info!("created session {session_id}");
     session_id.to_string()
+}
+
+async fn get_sessions(ext: Extension<Global>) -> impl IntoResponse {
+    let mut sessions = Vec::new();
+    for session in ext.0.lock().await.values() {
+        let session = session.lock().await;
+        sessions.push(session.to_json());
+    }
+    sessions
 }
 
 #[tokio::main]
@@ -71,7 +79,6 @@ async fn main() {
     let app = Router::new()
         .route("/ws/:session_id", get(session_ws))
         .route("/:quiz_id", post(create_session))
-        .route("/ws", get(sessions_ws))
         .route("/", get(get_sessions))
         .layer(Extension(global))
         .layer(cors);
