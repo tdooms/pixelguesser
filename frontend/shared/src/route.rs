@@ -10,6 +10,10 @@ pub enum Route {
     Create,
     #[at("/update/:quiz_id")]
     Update { quiz_id: u64 },
+    #[at("/admin")]
+    Admin,
+    #[at("/sessions")]
+    Sessions,
     #[at("/profile")]
     Profile,
     #[at("/library")]

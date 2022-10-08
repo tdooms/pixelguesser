@@ -4,6 +4,7 @@ use cobul::{Color, Loader};
 use yew::*;
 use yew_router::prelude::*;
 
+use admin::{Admin, Sessions};
 use api::Code;
 use components::Toasts;
 use create::Create;
@@ -17,6 +18,7 @@ use crate::lab::Test;
 use crate::library::Library;
 use crate::overview::Overview;
 
+mod dialog;
 mod initializer;
 mod lab;
 mod library;
@@ -44,7 +46,7 @@ pub fn app() -> Html {
                 <ContextProvider<UseAuthManagerHandle> context={auth}>
                 <ContextProvider<UseToastManagerHandle> context={manager}>
                     <Toasts />
-                    <Switch<Route> render={Switch::render(switch)} />
+                    <Switch<Route> render={switch} />
                 </ContextProvider<UseToastManagerHandle>>
                 </ContextProvider<UseAuthManagerHandle>>
             </BrowserRouter>
@@ -52,10 +54,10 @@ pub fn app() -> Html {
     }
 }
 
-fn switch(route: &Route) -> Html {
-    match route {
+fn switch(routes: Route) -> Html {
+    match routes {
         Route::Host { quiz_id } => {
-            html! { <Initializer quiz_id={*quiz_id}/> }
+            html! { <Initializer {quiz_id} /> }
         }
         Route::Manage { code } => {
             let Code { session_id, quiz_id } = Code::from_str(&code).unwrap();
@@ -65,7 +67,14 @@ fn switch(route: &Route) -> Html {
             html! { <Create /> }
         }
         Route::Update { quiz_id } => {
-            html! { <Create quiz_id={*quiz_id} /> }
+            html! { <Create {quiz_id} /> }
+        }
+        Route::Admin => {
+            html! { <Admin /> }
+        }
+        Route::Sessions => {
+            let fallback = html! { <Loader /> };
+            html! { <Suspense {fallback}> <Sessions /> </Suspense> }
         }
         Route::Profile => {
             html! { <Profile /> }

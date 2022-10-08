@@ -8,6 +8,7 @@ repository = "https://github.com/Funkymaniac/pixelguesser"
 license = "GNU GPLv3"
 
 [dependencies]
+admin = { path = "../admin" }
 create = { path = "../create" }
 host = { path = "../host" }
 manage = { path = "../manage" }
@@ -16,17 +17,16 @@ api = { path = "../../api", features = ["auth"] }
 shared = { path = "../shared" }
 components = { path = "../components" }
 
-wgpu = { version = "0.13", features = ["webgl"] }
+wgpu = { version = "0.14", features = ["webgl"] }
 web-sys = { version = "0.3", features = ["Document", "Window", "Element", "HtmlCanvasElement"] }
-winit = { version = "0.26" }
+winit = { version = "0.27" }
 wasm-bindgen = "0.2"
 
 cobul = { git = "https://github.com/tdooms/cobul.git" }
-ywt = { git = "https://github.com/tdooms/ywt.git" }
 
-yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996", features = ["csr"] }
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c", features = ["csr"] }
 
 gloo-timers = "0.2"
 strum = { version = "0.24", features = ["derive"] }

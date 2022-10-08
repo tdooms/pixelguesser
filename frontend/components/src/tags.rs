@@ -1,6 +1,6 @@
 use cobul::*;
+use shared::callback;
 use yew::*;
-use ywt::*;
 
 use api::Tag;
 

@@ -1,7 +1,7 @@
 use cobul::*;
+use shared::callback;
 use yew::*;
 use yew_router::prelude::*;
-use ywt::callback;
 
 use shared::{use_auth, Route};
 
@@ -79,7 +79,7 @@ pub fn menu() -> Html {
     let navigator = use_navigator().unwrap();
     let auth = use_auth();
 
-    let create = callback!(navigator; move |_| navigator.push(Route::Create));
+    let create = callback!(navigator; move |_| navigator.push(&Route::Create));
     let logout = callback!(auth; move |_| auth.logout());
 
     match auth.token() {

@@ -1,7 +1,7 @@
 use cobul::{Color, Loader};
+use shared::callback;
 use yew::*;
 use yew_router::prelude::Redirect;
-use ywt::callback;
 
 use shared::{use_auth, use_toast, Forbidden, Route};
 

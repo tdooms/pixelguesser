@@ -8,9 +8,8 @@ edition = "2021"
 [dependencies]
 api = { path = "../../api", features = ["auth"] }
 
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-ywt = { git = "https://github.com/tdooms/ywt.git" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
 cobul = { git = "https://github.com/tdooms/cobul.git" }
 
 wasm-bindgen = "0.2"

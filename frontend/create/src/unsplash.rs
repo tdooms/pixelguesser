@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use cobul::*;
+use shared::callback;
 use yew::*;
-use ywt::callback;
 
 use api::{ContentFilter, FilterBy, Image, OrderBy, Orientation, Photo};
 use components::{DynImage, Height};

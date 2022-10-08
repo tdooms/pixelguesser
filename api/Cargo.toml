@@ -18,7 +18,7 @@ pixauth = { path = "../backend/pixauth", optional = true }
 hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
 honey = { git = "https://github.com/tdooms/honey.git", optional = true }
 
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
 cobul = { git = "https://github.com/tdooms/cobul.git" }
 
 serde_json = "1.0"

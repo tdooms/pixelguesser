@@ -1,8 +1,8 @@
 use cobul::*;
+use shared::{callback, spawn};
 use strum::IntoEnumIterator;
 use yew::html::IntoPropValue;
 use yew::*;
-use ywt::callback;
 
 use api::Image;
 
@@ -57,7 +57,7 @@ pub fn picker(props: &Props) -> Html {
 
     let onchange = props.change.clone();
     let input = callback!(move |files: Vec<web_sys::File>| {
-        ywt::spawn!(onchange; async move {
+        spawn!(onchange; async move {
             let image = Image::from_local(files[0].clone()).await.unwrap();
             onchange.emit(image);
         })

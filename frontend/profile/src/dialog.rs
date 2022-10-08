@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use cobul::{Box, Modal};
+use shared::{callback, spawn};
 use yew::*;
-use ywt::{callback, spawn};
 
 use api::Result;
 use shared::{use_auth, use_toast, UseAuthHandle};

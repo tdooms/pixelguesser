@@ -2,8 +2,8 @@ use std::rc::Rc;
 
 use cobul::*;
 use cropper::Cropper;
+use shared::callback;
 use yew::*;
-use ywt::callback;
 
 use api::{Image, Quiz};
 use components::{QuizCard, TagsField};

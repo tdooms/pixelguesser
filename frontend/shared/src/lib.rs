@@ -11,6 +11,7 @@ mod auth;
 mod consts;
 mod form;
 mod hooks;
+mod macros;
 mod resize;
 mod route;
 mod search;

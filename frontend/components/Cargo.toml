@@ -9,12 +9,11 @@ edition = "2021"
 shared = { path = "../shared" }
 api = { path = "../../api", features = ["session"] }
 cobul = { git = "https://github.com/tdooms/cobul.git" }
-ywt = { git = "https://github.com/tdooms/ywt.git" }
 
 derive_more = "0.99"
-yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
 
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }

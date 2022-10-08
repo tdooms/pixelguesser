@@ -2,11 +2,10 @@ use std::rc::Rc;
 
 use cobul::*;
 use yew::*;
-use ywt::callback;
 
 use api::{Quiz, Resolution, Round};
 use components::{DynImage, Fit, Height};
-use shared::use_form;
+use shared::{callback, use_form};
 
 use crate::state::Action;
 use crate::Stage;

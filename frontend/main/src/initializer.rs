@@ -6,7 +6,7 @@ use yew::*;
 use api::{Action, Participant, Quiz, Session, WebsocketTask};
 use host::Host;
 use manage::Manage;
-use shared::{use_async_startup, use_auth, Level, Toast};
+use shared::{callback, use_async_startup, use_auth, Level, Toast};
 
 #[derive(derive_more::Display, Clone, Copy)]
 pub enum Error {
@@ -87,7 +87,7 @@ pub fn initializer(props: &Props) -> Html {
         token,
     ));
 
-    let action = ywt::callback!(websocket; move |action| {
+    let action = callback!(websocket; move |action| {
         websocket.as_ref().unwrap().send(&action)
     });
 

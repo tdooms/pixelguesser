@@ -1,8 +1,14 @@
-use crate::lib::Session;
 use crate::{Global, Local, SinkExt, State, StreamExt};
 use axum::extract::ws::{Message, WebSocket};
-use pixessions::{Action, Error};
+use pixessions::{Action, Error, Session};
 use rand::Rng;
+
+async fn notify(state: &mut State, session: &Session) {
+    let response = serde_json::to_string(session).unwrap();
+    for (_, sender) in &mut state.connections {
+        let _ = sender.send(Message::Text(response.clone())).await;
+    }
+}
 
 async fn handle_message(message: Message, state: &mut State, conn_id: u32) -> Result<(), Error> {
     let message = message.into_text().map_err(|_| Error::NonText)?;
@@ -20,14 +26,7 @@ async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> 
     Ok(lock.get(&session_id).cloned().ok_or(Error::SessionNotFound)?)
 }
 
-async fn notify(state: &mut State, session: &Session) {
-    let response = serde_json::to_string(session).unwrap();
-    for (_, sender) in &mut state.connections {
-        let _ = sender.send(Message::Text(response.clone())).await;
-    }
-}
-
-async fn handle_session(stream: WebSocket, global: Global, session_id: u32) {
+pub async fn handle_session(stream: WebSocket, global: Global, session_id: u32) {
     let (sender, mut receiver) = stream.split();
     let conn_id = rand::thread_rng().gen::<u32>();
     log::info!("attempted connection to {session_id}");

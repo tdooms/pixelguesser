@@ -4,6 +4,7 @@ use std::future::Future;
 use std::hash::Hash;
 use std::rc::Rc;
 
+use crate::spawn;
 use gloo::timers::callback::Timeout;
 use yew::*;
 
@@ -27,7 +28,7 @@ pub fn use_search<
             prev.set(Some(query.clone()));
 
             let onquery = move || {
-                ywt::spawn!(async move {
+                spawn!(async move {
                     let result = gen(query.clone()).await;
                     let mut new = (*map).clone();
 

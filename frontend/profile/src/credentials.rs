@@ -3,9 +3,8 @@ use std::rc::Rc;
 use cobul::fa::Solid;
 use cobul::*;
 use yew::*;
-use ywt::callback;
 
-use shared::use_form;
+use shared::{callback, use_form};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {

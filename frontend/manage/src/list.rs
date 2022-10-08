@@ -4,6 +4,7 @@ use cobul::*;
 use yew::*;
 
 use api::{Player, Session};
+use shared::callback;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -17,7 +18,7 @@ pub fn player_list(props: &Props) -> Html {
     let Props { click, session, title } = props.clone();
 
     let view_player = |(name, _): (&String, &Player)| {
-        let click = ywt::callback!(name, click; move |_| click.emit(name.clone()));
+        let click = callback!(name, click; move |_| click.emit(name.clone()));
         html! { <simple::Button outlined=true size={Size::Large} fullwidth=true {click} text={name.clone()} /> }
     };
 

@@ -3,10 +3,9 @@ use std::rc::Rc;
 use cobul::*;
 use yew::*;
 use yew_router::prelude::*;
-use ywt::callback;
 
 use api::{Action, Participant, Phase, Quiz, Session, Stage};
-use shared::{use_toast, Route};
+use shared::{callback, use_toast, Route};
 
 use crate::edit::PlayerEdit;
 use crate::info::RoundInfo;
@@ -80,7 +79,7 @@ pub fn manage(props: &Props) -> Html {
     };
     let leave = {
         let navigator = use_navigator().unwrap().clone();
-        Callback::from(move |_| navigator.push(Route::Overview))
+        Callback::from(move |_| navigator.push(&Route::Overview))
     };
 
     let body = match session.phase {

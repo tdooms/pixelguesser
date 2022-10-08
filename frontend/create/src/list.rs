@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
 use cobul::*;
+use shared::{callback, clone};
 use validator::ValidationErrors;
 use web_sys::DragEvent;
 use yew::*;
-use ywt::{callback, clone};
 
 use api::{Quiz, Resolution};
 use components::{DynImage, Fit, Height, Sidebar, SidebarAlignment};

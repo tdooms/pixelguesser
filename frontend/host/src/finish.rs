@@ -19,7 +19,7 @@ pub struct Props {
 pub fn finish(props: &Props) -> Html {
     let Props { session, quiz } = &props;
     let navigator = use_navigator().unwrap().clone();
-    let leave = { Callback::from(move |_| navigator.push(Route::Overview)) };
+    let leave = { Callback::from(move |_| navigator.push(&Route::Overview)) };
 
     html! {
         <>

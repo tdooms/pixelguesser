@@ -8,29 +8,14 @@ use tokio::sync::Mutex;
 
 use pixessions::Session;
 
-pub enum Mode {
-    Couch,
-    Online,
-    Solo,
-}
-
-impl Default for Mode {
-    fn default() -> Self {
-        Mode::Couch
-    }
-}
-
-#[derive(Default)]
 pub struct State {
     pub session: Session,
-    pub mode: Mode,
-    pub quiz: u32,
     pub connections: HashMap<u32, SplitSink<WebSocket, Message>>,
 }
 
 impl State {
-    pub fn new(mode: Mode, quiz: u32) -> Self {
-        State { mode, quiz, ..Default::default() }
+    pub fn new(session: Session) -> Self {
+        Self { session, connections: HashMap::new() }
     }
 }
 

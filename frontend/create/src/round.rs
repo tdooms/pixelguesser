@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use cobul::Columns;
+use shared::callback;
 use validator::Validate;
 use yew::*;
-use ywt::callback;
 
 use api::{Quiz, Round};
 

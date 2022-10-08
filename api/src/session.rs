@@ -8,7 +8,7 @@ use wasm_bindgen_futures::spawn_local;
 
 use pixessions::{Action, Session};
 
-use crate::{Error, SESSION_CREATE_ENDPOINT, SESSION_WS_ENDPOINT};
+use crate::{Error, SESSION_ENDPOINT, SESSION_WS};
 
 // Removed i, I, o, O -> 48 chars
 // !! MUST be sorted by ascii values
@@ -52,10 +52,15 @@ impl ToString for Code {
 }
 
 pub async fn create_session(quiz_id: u64) -> Result<u64, Error> {
-    let endpoint = format!("{SESSION_CREATE_ENDPOINT}/{quiz_id}");
+    let endpoint = format!("{SESSION_ENDPOINT}/{quiz_id}");
     let text = reqwest::Client::new().post(&endpoint).send().await?.text().await?;
 
     u64::from_str(&text).map_err(|_| Error::InvalidSession)
+}
+
+pub async fn query_sessions() -> Result<Vec<Session>, Error> {
+    let endpoint = format!("{SESSION_ENDPOINT}");
+    Ok(reqwest::Client::new().get(&endpoint).send().await?.json().await?)
 }
 
 pub struct WebsocketTask {
@@ -106,7 +111,7 @@ impl WebsocketTask {
         session_id: u64,
         callback: impl Fn(Result<Session, Error>) + 'static,
     ) -> Result<Self, Error> {
-        let endpoint = format!("{SESSION_WS_ENDPOINT}/{session_id}");
+        let endpoint = format!("{SESSION_WS}/{session_id}");
         let ws = WebSocket::open(&endpoint).map_err(|_| Error::WsConnection)?;
 
         let (_marker, cancel) = oneshot::channel();

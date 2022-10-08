@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use cobul::*;
+use shared::callback;
 use validator::ValidationErrors;
 use yew::*;
-use ywt::callback;
 
 use api::{Algorithm, Guesses, Image, Points, Round};
 use components::{Sidebar, SidebarAlignment};

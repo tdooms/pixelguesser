@@ -1,9 +1,9 @@
 use gloo::events::EventListener;
 use gloo::timers::callback::Timeout;
+use shared::{callback, clone};
 use wasm_bindgen::JsCast;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, HtmlDivElement, HtmlImageElement};
 use yew::*;
-use ywt::{callback, clone};
 
 use api::Stage;
 use shared::pixelation::*;

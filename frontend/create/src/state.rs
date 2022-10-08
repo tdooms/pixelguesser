@@ -1,10 +1,10 @@
 use std::rc::Rc;
 
-use yew::{use_state, UseStateHandle};
 use yew::hook;
+use yew::{use_state, UseStateHandle};
 
 use api::{Quiz, Result, Round};
-use shared::{use_auth, use_startup, use_toast, UseToastHandle};
+use shared::{spawn, use_auth, use_startup, use_toast, UseToastHandle};
 
 pub enum Action {
     Quiz(Rc<Quiz>),
@@ -114,13 +114,13 @@ impl UseQuizCreateHandle {
                 self.quiz.set(Rc::new(new));
             }
             Action::Delete => {
-                ywt::spawn!(state.delete(token));
+                spawn!(state.delete(token));
             }
             Action::Submit if self.changed() => {
                 self.loading.set(true);
                 let loading = self.loading.clone();
 
-                ywt::spawn!(state; async move {
+                spawn!(state; async move {
                     let quiz = state.quiz();
                     state.upload(quiz, token, creator_id).await;
                     loading.set(false);
@@ -149,7 +149,7 @@ pub fn use_quiz_create(quiz_id: Option<u64>) -> UseQuizCreateHandle {
 
     let startup = move || {
         if let Some(quiz_id) = quiz_id {
-            ywt::spawn!(cloned.load(quiz_id, token))
+            spawn!(cloned.load(quiz_id, token))
         }
     };
     use_startup(startup);

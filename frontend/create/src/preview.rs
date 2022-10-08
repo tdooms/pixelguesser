@@ -2,9 +2,9 @@ use std::rc::Rc;
 
 use cobul::*;
 use cropper::Cropper;
+use shared::{callback, spawn};
 use web_sys::HtmlImageElement;
 use yew::*;
-use ywt::callback;
 
 use api::{Image, Resolution, Round, Stage};
 use components::Pixelate;
@@ -45,7 +45,7 @@ pub fn round_preview(props: &Props) -> Html {
 
     let upload = callback!(round, edit; move |files: Vec<web_sys::File>| {
         let file = files[0].clone();
-        ywt::spawn!(round, edit; async move {
+        spawn!(round, edit; async move {
             let image = Image::from_local(file).await.unwrap();
             edit.emit(Rc::new(Round{image, ..(*round).clone()}));
         })

@@ -23,6 +23,14 @@ pub enum Error {
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Mode {
+    #[default]
+    Couch,
+    Online,
+    Solo,
+}
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Player {
     pub score: i64,
     pub streak: i64,
@@ -61,21 +69,22 @@ pub enum Stage {
     Scores,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
 pub enum Phase {
+    #[default]
     Lobby,
-    Playing { round: usize, stage: Stage },
+    Playing {
+        round: usize,
+        stage: Stage,
+    },
     Finished,
 }
 
-impl Default for Phase {
-    fn default() -> Self {
-        Phase::Lobby
-    }
-}
-
-#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Session {
+    pub mode: Mode,
+    pub quiz: u32,
+
     pub players: HashMap<String, Player>,
     pub phase: Phase,
     pub round: Option<usize>,
@@ -83,6 +92,14 @@ pub struct Session {
 }
 
 impl Session {
+    pub fn new(quiz: u32, mode: Mode) -> Self {
+        let players = HashMap::new();
+        let phase = Phase::default();
+        let participants = HashMap::new();
+
+        Self { mode, quiz, players, phase, round: None, participants }
+    }
+
     pub fn update(&mut self, action: Action, id: u32) -> Result<(), Error> {
         match (action, self.phase) {
             (Action::Join(participant), _) => {

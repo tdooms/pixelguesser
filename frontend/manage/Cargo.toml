@@ -6,12 +6,11 @@ edition = "2021"
 [dependencies]
 api = { path = "../../api", features = ["session"] }
 shared = { path = "../shared" }
-ywt = { git = "https://github.com/tdooms/ywt.git" }
 honey = { git = "https://github.com/tdooms/honey.git" }
 
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa"] }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
 
 gloo-timers = "0.2.4"
 strum = { version = "0.24" }

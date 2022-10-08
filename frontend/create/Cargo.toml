@@ -12,12 +12,11 @@ shared = { path = "../shared" }
 hasura = { git = "https://github.com/tdooms/hasura.git" }
 
 cropper = { git = "https://github.com/tdooms/cropper.git" }
-ywt = { git = "https://github.com/tdooms/ywt.git" }
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "simple", "extensions"] }
 
-yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "421b4e1f608e6d648dcf571157b081fcbd886996" }
+yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
 
 gloo = "0.8"
 log = "0.4"
