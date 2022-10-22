@@ -1,6 +1,8 @@
 extern crate core;
 
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
+use strum::EnumIter;
 
 use serde::{Deserialize, Serialize};
 
@@ -22,12 +24,21 @@ pub enum Error {
     SessionNotFound,
 }
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(EnumIter, Copy, Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Mode {
-    #[default]
     Couch,
     Online,
     Solo,
+}
+
+impl Display for Mode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Mode::Couch => write!(f, "couch"),
+            Mode::Online => write!(f, "online"),
+            Mode::Solo => write!(f, "solo"),
+        }
+    }
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq)]

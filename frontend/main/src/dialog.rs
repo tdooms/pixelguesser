@@ -1,20 +1,21 @@
+use api::Mode;
 use cobul::*;
 use yew::*;
 
 #[function_component(PlayDialog)]
 pub fn play_dialog() -> Html {
+    let model = use_model(|| Mode::Couch);
+    let footer = html! {
+        <Buttons>
+            <Button> {"Cancel"} </Button>
+            <Button> {"Save"} </Button>
+        </Buttons>
+    };
+
     html! {
-        <Dialog>
-            <DialogHeader>
-                <DialogHeaderTitle>{"Play"}</DialogHeaderTitle>
-            </DialogHeader>
-            <DialogBody>
-                <p>{"This is a dialog"}</p>
-            </DialogBody>
-            <DialogFooter>
-                <Button>{"Cancel"}</Button>
-                <Button>{"Save"}</Button>
-            </DialogFooter>
-        </Dialog>
+        <ModalCard title="Play" {footer}>
+            <simple::Tabs<Mode> {model} />
+            <p> {"This is a dialog"} </p>
+        </ModalCard>
     }
 }

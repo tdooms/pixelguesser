@@ -41,11 +41,11 @@ async fn session_ws(
     ws.on_upgrade(move |socket| handle_session(socket, ext.0, session_id))
 }
 
-async fn create_session(ext: Extension<Global>, Path(quiz_id): Path<u32>) -> String {
+async fn create_session(ext: Extension<Global>, quiz_id: Path<u32>, mode: Path<Mode>) -> String {
     let session_id = rand::thread_rng().gen::<u32>();
     let mut lock = ext.0.lock().await;
 
-    let state = State::new(Session::new(quiz_id, Mode::default()));
+    let state = State::new(Session::new(quiz_id.0, mode.0));
     lock.insert(session_id, Arc::new(Mutex::new(state)));
 
     log::info!("created session {session_id}");

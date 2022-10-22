@@ -58,20 +58,35 @@ pub struct Quiz {
 }
 
 impl Quiz {
-    pub async fn query_many(token: Option<String>, rounds: bool) -> Result<Vec<Quiz>> {
+    pub async fn query_many(
+        token: Option<String>,
+        session: Option<u64>,
+        rounds: bool,
+    ) -> Result<Vec<Quiz>> {
         log::info!("querying many quiz");
         let returning = match rounds {
             false => Quiz::except(&[Quiz::rounds(Round::all())]),
             true => Quiz::all(),
         };
+
+        let key = "x-hasura-session-id";
+        let value = session.map(|x| x.to_string()).unwrap_or_default();
+
         let body = Query::new().returning(returning);
-        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+        Ok(query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT).await?)
     }
 
-    pub async fn query_one(token: Option<String>, quiz_id: u64) -> Result<Quiz> {
+    pub async fn query_one(
+        token: Option<String>,
+        quiz_id: u64,
+        session: Option<u64>,
+    ) -> Result<Quiz> {
         let body = QueryByPk::new(QuizPk { id: quiz_id.into() });
 
-        let fut = query!(body).token(token).send(GRAPHQL_ENDPOINT);
+        let key = "x-hasura-session-id";
+        let value = session.map(|x| x.to_string()).unwrap_or_default();
+
+        let fut = query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT);
         let mut res: Quiz = fut.await?.ok_or(Error::EmptyResponse)?;
 
         res.rounds.sort_by_key(|x| x.index);
