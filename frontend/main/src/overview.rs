@@ -25,7 +25,7 @@ pub struct InnerProps {
 
 async fn query(token: Option<String>, filter: String) -> Vec<Rc<Quiz>> {
     let quizzes: Vec<_> = match filter.is_empty() {
-        true => Quiz::query_many(token, false).await.unwrap(),
+        true => Quiz::query_many(token, None, false).await.unwrap(),
         false => Quiz::search(token, filter).await.unwrap(),
     };
 

@@ -43,7 +43,7 @@ async fn create_session(props: &Props, token: Option<String>) -> Result<State, a
         Some(id) => (id, Participant::Manager),
         None => (api::create_session(props.quiz_id).await?, Participant::Host),
     };
-    let quiz = Rc::new(Quiz::query_one(token, props.quiz_id).await?);
+    let quiz = Rc::new(Quiz::query_one(token, props.quiz_id, Some(session_id)).await?);
 
     Ok(State { session_id, participant, quiz })
 }

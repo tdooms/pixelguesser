@@ -30,13 +30,11 @@ impl UseQuizCreateHandle {
         result.map_err(|err| self.toast.add(err)).ok()
     }
 
-    async fn load(self, quiz_id: u64, token: Option<String>) {
-        log::info!("querying");
-        let mut quiz = match self.notify(Quiz::query_one(token, quiz_id).await) {
+    async fn load(self, token: Option<String>, quiz_id: u64) {
+        let mut quiz = match self.notify(Quiz::query_one(token, quiz_id, None).await) {
             Some(quiz) => quiz,
             None => return,
         };
-        log::info!("querying done");
 
         quiz.rounds.resize(quiz.rounds.len().min(1), Default::default());
         let rc = Rc::new(quiz);
@@ -149,7 +147,7 @@ pub fn use_quiz_create(quiz_id: Option<u64>) -> UseQuizCreateHandle {
 
     let startup = move || {
         if let Some(quiz_id) = quiz_id {
-            spawn!(cloned.load(quiz_id, token))
+            spawn!(cloned.load(token, quiz_id))
         }
     };
     use_startup(startup);

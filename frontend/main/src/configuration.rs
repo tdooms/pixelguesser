@@ -2,8 +2,8 @@ use api::Mode;
 use cobul::*;
 use yew::*;
 
-#[function_component(PlayDialog)]
-pub fn play_dialog() -> Html {
+#[function_component(PlayConfiguration)]
+pub fn play_configuration() -> Html {
     let model = use_model(|| Mode::Couch);
     let footer = html! {
         <Buttons>

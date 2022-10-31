@@ -63,7 +63,6 @@ impl Quiz {
         session: Option<u64>,
         rounds: bool,
     ) -> Result<Vec<Quiz>> {
-        log::info!("querying many quiz");
         let returning = match rounds {
             false => Quiz::except(&[Quiz::rounds(Round::all())]),
             true => Quiz::all(),

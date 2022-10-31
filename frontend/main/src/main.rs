@@ -18,16 +18,13 @@ use crate::lab::Test;
 use crate::library::Library;
 use crate::overview::Overview;
 
-mod dialog;
+mod configuration;
 mod initializer;
 mod lab;
 mod library;
 mod navbar;
 mod overview;
 mod search;
-
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[function_component(App)]
 pub fn app() -> Html {

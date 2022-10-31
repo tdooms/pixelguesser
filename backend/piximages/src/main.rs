@@ -49,9 +49,9 @@ fn precompute_image(base: &str, filename: &str, buffer: Vec<u8>, format: ImageFo
     }
 }
 
-#[get("/<img>/<kind>")]
-pub async fn download(img: &str, kind: &str) -> Option<NamedFile> {
-    let path = format!("backend/piximages/data/{kind}/{img}.jpg");
+#[get("/<img>/<resolution>")]
+pub async fn download(img: &str, resolution: &str) -> Option<NamedFile> {
+    let path = format!("backend/piximages/data/{resolution}/{img}.jpg");
     NamedFile::open(Path::new(&path)).await.ok()
 }
 
@@ -115,6 +115,20 @@ pub async fn delete(
     Ok(())
 }
 
+#[post("/reset")]
+pub async fn reset(token: Claims, path: &State<Folder>, db: &State<SqlitePool>) {
+    // TODO: verify admin
+    // token.sub = "admin".to_string();
+
+    let base = &path.inner().0;
+
+    sqlx::query("delete from owners").execute(&**db).await.unwrap();
+
+    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD, Resolution::Original] {
+        std::fs::remove_dir_all(&format!("{}/{}", base, res)).unwrap();
+    }
+}
+
 /// imager (IMAGE-serveR) is a program to efficiently serve images
 #[derive(Parser)]
 #[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
@@ -139,31 +153,28 @@ struct Opts {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().unwrap();
-    let opts: Opts = Opts::parse();
+    let Opts { database, port, address, folder } = Opts::parse();
 
-    let address = opts.address.parse()?;
-    let config = rocket::Config { port: opts.port, address, ..Default::default() };
-
+    let config = rocket::Config { port, address: address.parse()?, ..Default::default() };
     let cors = CorsOptions::default().to_cors()?;
 
-    let _ = std::fs::create_dir(&opts.folder);
+    let _ = std::fs::create_dir(&folder);
 
     let res = [Resolution::Thumb, Resolution::Small, Resolution::HD, Resolution::Original];
     for resolution in res {
-        let _ = std::fs::create_dir(&format!("{}/{}", opts.folder, resolution));
+        let _ = std::fs::create_dir(&format!("{folder}/{resolution}"));
     }
-    let _vec: Vec<_> = res.into_iter().map(|x| format!("{}/{x}", opts.folder)).collect();
 
-    std::fs::OpenOptions::new().write(true).create(true).open(&opts.database)?;
+    std::fs::OpenOptions::new().write(true).create(true).open(&database)?;
 
-    let url = format!("file:{}", opts.database);
+    let url = format!("file:{database}");
     let db = SqlitePool::connect(&url).await?;
 
     sqlx::query(include_str!("create.sql")).execute(&db).await?;
 
     let _ = rocket::custom(config)
         .mount("/", routes![upload, download])
-        .manage(Folder(opts.folder))
+        .manage(Folder(folder))
         .manage(db)
         .attach(cors)
         .launch()

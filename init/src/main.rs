@@ -1,6 +1,10 @@
+mod hasura;
+mod images;
+
 use std::fs::File;
 
 use hasura::{mutation, Delete, Insert, InsertOne};
+use reqwest::Client;
 
 use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
 
@@ -9,47 +13,37 @@ struct Quizzes {
     quizzes: Vec<Quiz>,
 }
 
-async fn convert_image(image: &mut Image, token: String) {
-    let filename = (*std::mem::take(image).url().unwrap()).clone();
-    let path = format!("init/images/{filename}");
-    log::info!("uploading image: {path}");
-
-    let bytes = std::fs::read(&path).unwrap();
-    let base64 = base64::encode(&bytes);
-
-    *image = Image::from_base64(base64, Some(path));
-    image.upload(token).await.unwrap();
-    log::error!("{:?}", image.url());
-}
-
-async fn upload(token: String, creator_id: String) {
+async fn create_quizzes(bearer: String, creator_id: String) {
     let file = File::open("init/create.json").unwrap();
     let Quizzes { mut quizzes } = serde_json::from_reader(file).unwrap();
 
     for quiz in &mut quizzes {
         quiz.creator_id = Some(creator_id.clone());
-        convert_image(&mut quiz.image, token.clone()).await;
+        convert_image(&mut quiz.image, bearer.clone()).await;
 
         for (index, round) in &mut quiz.rounds.iter_mut().enumerate() {
-            convert_image(&mut round.image, token.clone()).await;
+            convert_image(&mut round.image, bearer.clone()).await;
             round.index = index as u64
         }
     }
-
-    let insert = Insert::new(quizzes);
-    let inserted = mutation!(insert).token(Some(token)).send(GRAPHQL_ENDPOINT).await.unwrap();
-
-    let info: Vec<_> = inserted.into_iter().map(|x| x.title).collect();
-    log::info!("uploaded the following quizzes: {:?}", info);
 }
 
-async fn delete(token: String) {
+async fn create_user(bearer: String) {
+    let user = User {
+        id: tokens.id.clone(),
+        nickname: "admin".to_string(),
+        picture: "".to_string(),
+        email,
+        email_verified: true,
+    };
+
+    let body = InsertOne::new(user);
+    let _ = mutation!(body).token(Some(bearer.clone())).send(GRAPHQL_ENDPOINT).await;
+}
+
+async fn delete_hasura(token: String) {
     // TODO: also remove images from storage
 
-    let delete = Delete::new();
-    let deleted = mutation!(delete).token(Some(token)).send(GRAPHQL_ENDPOINT).await.unwrap();
-
-    let info: Vec<_> = deleted.into_iter().map(|x| x.title).collect();
     log::warn!("deleted the following quizzes: {info:?}");
 }
 
@@ -62,7 +56,7 @@ async fn main() {
     let password = std::env::var("ADMIN_PASSWORD").unwrap();
     let credentials = Credentials { email: email.clone(), password };
 
-    let tokens: Tokens = reqwest::Client::new()
+    let tokens: Tokens = Client::new()
         .post(format!("{AUTH_ENDPOINT}/login"))
         .json(&credentials)
         .send()
@@ -74,17 +68,8 @@ async fn main() {
 
     let bearer = format!("Bearer {}", tokens.bearer);
 
-    let user = User {
-        id: tokens.id.clone(),
-        nickname: "thomas".to_string(),
-        picture: "".to_string(),
-        email,
-        email_verified: true,
-    };
+    delete_hasura(bearer.clone()).await;
+    delete_images(bearer.clone()).await;
 
-    let body = InsertOne::new(user);
-    let _ = mutation!(body).token(Some(bearer.clone())).send(GRAPHQL_ENDPOINT).await;
-
-    delete(bearer.clone()).await;
     upload(bearer, tokens.id).await;
 }
