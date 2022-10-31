@@ -2,7 +2,7 @@ use std::error::Error;
 
 use reqwest::{Client, StatusCode};
 
-use api::{Image, Quiz};
+use api::{Image, Quiz, UPLOAD_ENDPOINT};
 
 async fn convert_image(image: &mut Image, bearer: String) {
     let filename = (*std::mem::take(image).url().unwrap()).clone();
@@ -27,7 +27,7 @@ pub async fn upload_images(quizzes: &mut [Quiz], bearer: String) {
     }
 
     // upload all round images
-    for round in &mut quizzes.iter_mut().map(|q| q.rounds.iter_mut()).flatten() {
+    for round in quizzes.iter_mut().map(|q| q.rounds.iter_mut()).flatten() {
         convert_image(&mut round.image, bearer.clone()).await;
     }
 }

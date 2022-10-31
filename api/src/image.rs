@@ -78,8 +78,8 @@ fn get_url_from_blurhash(hash: &str) -> Option<String> {
 
 impl Image {
     pub async fn from_local(file: web_sys::File) -> Result<Self> {
-        let blob = gloo_file::Blob::from(file.clone());
-        let local = gloo_file::futures::read_as_data_url(&blob).await.unwrap();
+        let blob = gloo::file::Blob::from(file.clone());
+        let local = gloo::file::futures::read_as_data_url(&blob).await.unwrap();
 
         Ok(Self { local: Some(Rc::new(local)), name: Some(file.name()), ..Default::default() })
     }
