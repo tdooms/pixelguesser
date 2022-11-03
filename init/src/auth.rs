@@ -1,4 +1,4 @@
-use api::{Tokens, User, GRAPHQL_ENDPOINT};
+use api::{User, GRAPHQL_ENDPOINT};
 use hasura::{mutation, Delete, InsertOne};
 
 pub async fn upload_user(user: User, bearer: String) {

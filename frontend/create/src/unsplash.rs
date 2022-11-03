@@ -51,7 +51,7 @@ pub fn unsplash(props: &Props) -> Html {
         html! {
             <Column {size} {class} >
                 <div {onmouseover} {onmouseout} {onclick}>
-                <DynImage {height} src={Rc::new(photo.urls.thumb.clone())} border=true />
+                <DynImage {height} src={photo.urls.thumb.clone()} border=true />
                 <a href={api::author_link(photo)} target="_blank" onclick={Callback::noop()}> {&photo.user.name} </a>
                 </div>
             </Column>

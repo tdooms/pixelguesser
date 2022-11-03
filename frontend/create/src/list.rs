@@ -76,6 +76,7 @@ pub fn round_elem(props: &ElemProps) -> Html {
     let class = classes!(background, "columns", "m-0", "p-0");
     let style = "border-width:thin";
     let src = quiz.rounds[index].image.src(Resolution::Thumb);
+    let placeholder = quiz.rounds[index].image.blurhash();
 
     html! {
         <div {style} {class} draggable="true" tabindex="0" {onclick} {onkeydown} {ondragstart} {ondragover} {ondragend} {ondrop}>
@@ -84,7 +85,7 @@ pub fn round_elem(props: &ElemProps) -> Html {
             </Column>
 
             <Column>
-            <DynImage {src} height={Height::Px(100)} fit={Fit::Cover} border=true/>
+            <DynImage {src} {placeholder} height={Height::Px(100)} fit={Fit::Cover} border=true/>
             </Column>
         </div>
     }

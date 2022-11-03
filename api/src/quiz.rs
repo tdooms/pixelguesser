@@ -44,6 +44,7 @@ pub struct Quiz {
 
     #[hasura(relation = "User")]
     #[serde(with = "relation")]
+    #[serde(default)]
     pub creator: Option<User>,
 
     #[hasura(relation = "Tag")]

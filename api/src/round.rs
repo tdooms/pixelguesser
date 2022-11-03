@@ -68,6 +68,7 @@ pub struct Round {
     pub quiz_id: Option<u64>,
 
     #[hasura(pk = "u64")]
+    #[serde(default)]
     pub index: u64,
 
     #[validate(length(min = 1, message = "Round must have an answer."))]

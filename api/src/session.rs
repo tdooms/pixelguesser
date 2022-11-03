@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
-use gloo_net::websocket::futures::WebSocket;
-use gloo_net::websocket::{Message, WebSocketError};
+use gloo::net::websocket::futures::WebSocket;
+use gloo::net::websocket::{Message, WebSocketError};
 use wasm_bindgen_futures::spawn_local;
 
 use pixessions::{Action, Session};
@@ -11,7 +11,7 @@ use pixessions::{Action, Session};
 use crate::{Error, SESSION_ENDPOINT, SESSION_WS};
 
 // Removed i, I, o, O -> 48 chars
-// !! MUST be sorted by ascii values
+// This list MUST be sorted and contain unique characters
 static CHARS: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -31,8 +31,8 @@ impl FromStr for Code {
             code = code * (CHARS.len() as u128) + (index as u128);
         }
 
-        // It is important the quiz id is the last part of the code in binary (most significant bits)
-        // As quiz id's are usually small, this reduces the length of the ascii code.
+        // It's important the quiz id is the first part of the code in binary (most significant bits)
+        // As quiz ids are usually small, this reduces the length of the ascii code.
         Ok(Code { session_id: (code & 0xFFFFFFFFFFFFFFFF) as u64, quiz_id: (code >> 64) as u64 })
     }
 }

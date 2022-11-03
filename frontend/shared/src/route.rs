@@ -8,12 +8,12 @@ pub enum Route {
     Host { quiz_id: u64 },
     #[at("/create")]
     Create,
-    #[at("/update/:quiz_id")]
-    Update { quiz_id: u64 },
     #[at("/admin")]
     Admin,
-    #[at("/sessions")]
+    #[at("/admin/sessions")]
     Sessions,
+    #[at("/update/:quiz_id")]
+    Update { quiz_id: u64 },
     #[at("/profile")]
     Profile,
     #[at("/library")]

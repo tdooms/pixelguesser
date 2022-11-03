@@ -1,21 +1,21 @@
 use std::path::Path;
 
 use base64::URL_SAFE;
+use blurhash_wasm::encode;
 use clap::Parser;
-use image::ImageFormat;
+use image::{DynamicImage, GenericImageView};
 use rocket::data::ToByteUnit;
 use rocket::fs::NamedFile;
 use rocket::http::Status;
 use rocket::response::Responder;
+use rocket::serde::json::Json;
 use rocket::{get, post, response, routes, Data, Request, State};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
 use sqlx::{Row, SqlitePool};
 
 use pixauth::Claims;
-use piximages::Resolution;
-
-pub struct Folder(String);
+use piximages::{Resolution, UploadResult};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -39,20 +39,23 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
     }
 }
 
-fn precompute_image(base: &str, filename: &str, buffer: Vec<u8>, format: ImageFormat) {
-    let original = image::load_from_memory_with_format(&buffer, format).unwrap();
-    original.save(&format!("{base}/original/{filename}.jpg")).unwrap();
-
-    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
-        let img = original.thumbnail(1_000_000, res as u32);
-        img.save(&format!("{base}/{res}/{filename}.jpg")).unwrap();
-    }
-}
+pub struct Folder(String);
 
 #[get("/<img>/<resolution>")]
 pub async fn download(img: &str, resolution: &str) -> Option<NamedFile> {
     let path = format!("backend/piximages/data/{resolution}/{img}.jpg");
     NamedFile::open(Path::new(&path)).await.ok()
+}
+
+fn compute_image(base: &str, filename: &str, original: &DynamicImage) {
+    let _ = std::fs::create_dir(&format!("{base}/original"));
+    original.save(&format!("{base}/original/{filename}.jpg")).unwrap();
+
+    for res in [Resolution::Thumb, Resolution::Small, Resolution::HD] {
+        let img = original.thumbnail(1_000_000, res as u32);
+        let _ = std::fs::create_dir(&format!("{base}/{res}"));
+        img.save(&format!("{base}/{res}/{filename}.jpg")).unwrap();
+    }
 }
 
 #[post("/upload", data = "<data>")]
@@ -61,7 +64,7 @@ pub async fn upload(
     token: Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
-) -> Result<String, Error> {
+) -> Result<Json<UploadResult>, Error> {
     let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
@@ -69,6 +72,7 @@ pub async fn upload(
 
     let hash = &sha3::Sha3_256::new_with_prefix(&buffer).finalize();
     let filename = base64::encode_config(&hash, URL_SAFE);
+    let base = path.inner().0.clone();
 
     sqlx::query("insert into owners (image, user) values (?1, ?2)")
         .bind(&filename)
@@ -76,12 +80,16 @@ pub async fn upload(
         .execute(&**db)
         .await?;
 
-    let result = format!("http://localhost:8901/{filename}");
+    let mut original = image::load_from_memory_with_format(&buffer, format).unwrap();
 
-    let base = path.inner().0.clone();
-    tokio::task::spawn_blocking(move || precompute_image(&base, &filename, buffer, format));
+    let (width, height) = original.dimensions();
+    let vec = original.to_rgba8().into_raw();
+    let blurhash = encode(vec, 4, 3, width as usize, height as usize).unwrap();
 
-    Ok(result)
+    let url = format!("http://localhost:8901/{filename}");
+    tokio::task::spawn_blocking(move || compute_image(&base, &filename, &original));
+
+    Ok(Json(UploadResult { url, blurhash }))
 }
 
 #[post("/delete/<file>")]
@@ -173,7 +181,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sqlx::query(include_str!("create.sql")).execute(&db).await?;
 
     let _ = rocket::custom(config)
-        .mount("/", routes![upload, download])
+        .mount("/", routes![upload, download, reset])
         .manage(Folder(folder))
         .manage(db)
         .attach(cors)

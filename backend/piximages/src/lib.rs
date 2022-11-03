@@ -9,3 +9,9 @@ pub enum Resolution {
     #[display(fmt = "hd")]
     HD = 1080,
 }
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+pub struct UploadResult {
+    pub url: String,
+    pub blurhash: String,
+}

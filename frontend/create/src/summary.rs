@@ -19,9 +19,12 @@ pub struct Props {
 
 pub fn view_round(round: &Round) -> Html {
     let style = "border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
+    let src = round.image.src(Resolution::Small);
+    let placeholder = round.image.blurhash();
+
     html! {
         <Column size={ColumnSize::Is3}>
-        <DynImage {style} src={round.image.src(Resolution::Small)} height={Height::Vh(20)} fit={Fit::Cover} border=true/>
+        <DynImage {style} {src} {placeholder} height={Height::Vh(20)} fit={Fit::Cover} border=true/>
         <p class="has-text-centered"> <b>{round.answer.clone()}</b> </p>
         </Column>
     }

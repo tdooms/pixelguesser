@@ -1,5 +1,4 @@
-use std::rc::Rc;
-
+use shared::callback;
 use yew::prelude::*;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -17,7 +16,10 @@ impl Default for Height {
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
     #[prop_or_default]
-    pub src: Rc<String>,
+    pub src: Option<AttrValue>,
+
+    #[prop_or_default]
+    pub placeholder: Option<AttrValue>,
 
     #[prop_or_default]
     pub height: Height,
@@ -57,13 +59,26 @@ pub fn dyn_image(props: &Props) -> Html {
         Height::Px(px) => format!("height:{}px", px),
     };
 
+    let loaded = use_state(|| false);
+
+    let onload = {
+        let cloned = loaded.clone();
+        Callback::from(move |_| cloned.set(true))
+    };
+
+    let display = ["display:none", ""];
+
     let border = "border-width:thin;border-style:solid;border-radius:5px;border-color:lightgray";
     let fit = format!("object-fit:{};display:block;margin-left:auto;margin-right:auto", props.fit);
+
     let style = format!("{height};{fit};{}", props.border.then(|| border).unwrap_or_default());
+    let fs = format!("{};{}", style, display[*loaded as usize]);
+    let ss = format!("{};{}", style, display[!*loaded as usize]);
 
     html! {
         <div style="justify-content:center" class="p-0 m-0 is-flex">
-        <img src={(*props.src).clone()} class="m-0 p-0" {style}/>
+            <img src={ props.src.clone() } {onload} style={fs}/>
+            <img src={ props.placeholder.clone() } style={ss} />
         </div>
     }
 }

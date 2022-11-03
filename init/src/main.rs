@@ -1,16 +1,16 @@
-mod auth;
-mod graphql;
-mod images;
-
 use std::fs::File;
 
-use hasura::{mutation, Delete, Insert, InsertOne};
 use reqwest::Client;
+
+use api::{Credentials, Quiz, Tokens, User, AUTH_ENDPOINT};
 
 use crate::auth::{delete_user, upload_user};
 use crate::graphql::{delete_quizzes, upload_quizzes};
 use crate::images::{delete_images, upload_images};
-use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT, GRAPHQL_ENDPOINT};
+
+mod auth;
+mod graphql;
+mod images;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct Quizzes {
@@ -31,6 +31,7 @@ async fn main() {
         .json(&credentials)
         .send()
         .await
+        .map_err(|_| "Cannot connect to the auth server, please verify it is running")
         .unwrap()
         .json()
         .await
@@ -44,7 +45,7 @@ async fn main() {
         email_verified: true,
     };
 
-    let file = File::open("create.json").unwrap();
+    let file = File::open("init/create.json").unwrap();
     let Quizzes { mut quizzes } = serde_json::from_reader(file).unwrap();
 
     let bearer = format!("Bearer {}", tokens.bearer);

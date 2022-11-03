@@ -24,4 +24,4 @@ clap = { version = "4.0", features = ["derive"], optional = true }
 rand = { version = "0.8", optional = true }
 strum = { version = "0.24", features=["derive"] }
 
-thiserror = "1.0"
+thiserror = "1.0.36"

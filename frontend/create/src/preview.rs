@@ -93,16 +93,18 @@ pub fn round_preview(props: &Props) -> Html {
     };
 
     let src = round.image.src(Resolution::HD);
+    let placeholder = round.image.blurhash();
+
     let image = HtmlImageElement::new().unwrap();
     image.set_src(&src);
 
     let body = match (round.image.is_empty(), *stage, *cropper) {
         (_, _, true) => html! {
-            <Cropper {src} {done} {cancel} height=450 width=600/>
+            <Cropper src={Rc::new(src)} {done} {cancel} height=450 width=600/>
         },
         (false, Stage::Revealed, false) => html! {
             <div>
-                <DynImage {src} height={Height::Vh(85)} fit={Fit::Contain}/>
+                <DynImage {src} {placeholder} height={Height::Vh(85)} fit={Fit::Contain}/>
                 {slider}
             </div>
         },

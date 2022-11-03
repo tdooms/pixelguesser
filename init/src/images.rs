@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use reqwest::{Client, StatusCode};
+use reqwest::{Client, Response, StatusCode};
 
 use api::{Image, Quiz, UPLOAD_ENDPOINT};
 
@@ -22,7 +22,7 @@ pub async fn upload_images(quizzes: &mut [Quiz], bearer: String) {
     // let client = Client::new();
 
     // upload all quiz images
-    for quiz in quizzes {
+    for quiz in quizzes.iter_mut() {
         convert_image(&mut quiz.image, bearer.clone()).await;
     }
 
@@ -32,9 +32,9 @@ pub async fn upload_images(quizzes: &mut [Quiz], bearer: String) {
     }
 }
 
-pub async fn delete_images(token: String) -> Result<StatusCode, Box<dyn Error>> {
+pub async fn delete_images(token: String) -> Result<Response, Box<dyn Error>> {
     let endpoint = format!("{UPLOAD_ENDPOINT}/reset");
 
     let response = Client::new().post(&endpoint).header("Authorization", token).send().await?;
-    Ok(response.status())
+    Ok(response)
 }
