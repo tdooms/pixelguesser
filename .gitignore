@@ -1,8 +1,8 @@
 /target
 /backend/piximages/data
 /frontend/main/dist
+/.idea
 
 *.lock
-/.idea
 *.env
 *.sqlite

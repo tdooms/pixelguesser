@@ -28,7 +28,7 @@ pub struct Props {
 #[function_component(Host)]
 pub fn host(props: &Props) -> Html {
     let Props { session_id, session, quiz, action } = props.clone();
-    let code = Code { session_id, quiz_id: quiz.id.unwrap() }.to_string();
+    let code = Code { session_id, quiz_id: quiz.quiz_id.unwrap() }.to_string();
 
     let toast = use_toast();
     let rounds = quiz.rounds.len();

@@ -20,10 +20,10 @@ sqlx = { version = "0.6", features = ["sqlite", "runtime-tokio-native-tls"], opt
 
 blurhash-wasm = { git = "https://github.com/fpapado/blurhash-rust-wasm.git", rev = "a81e33c46a10a63f1f0ed25aa48a6e3066d26804", optional = true }
 sha3 = { version = "0.10", optional = true }
-clap = { version = "4.0.18", features = ["derive"], optional = true }
+clap = { version = "4.0", features = ["derive"], optional = true }
 image = { version = "*", optional = true }
 base64 = { version = "*", optional = true }
-thiserror = { version = "1.0.36", optional = true }
+thiserror = { version = "1.0", optional = true }
 
 serde = { version = "1.0", features = ["derive"] }
 derive_more = "0.99"

@@ -1,0 +1,705 @@
+{
+  "resource_version": 167,
+  "metadata": {
+    "version": 3,
+    "sources": [
+      {
+        "name": "default",
+        "kind": "postgres",
+        "tables": [
+          {
+            "table": {
+              "name": "quizzes",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "creator",
+                "using": {
+                  "foreign_key_constraint_on": "creator_id"
+                }
+              }
+            ],
+            "array_relationships": [
+              {
+                "name": "rounds",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "quiz_id",
+                    "table": {
+                      "name": "rounds",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "sessions",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "quiz_id",
+                    "table": {
+                      "name": "sessions",
+                      "schema": "public"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "tags",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "quiz_id",
+                    "table": {
+                      "name": "tags",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "quiz_id",
+                    "public",
+                    "title",
+                    "description",
+                    "explanation",
+                    "creator_id",
+                    "created_at",
+                    "complete",
+                    "image"
+                  ]
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "creator_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "columns": [
+                    "quiz_id",
+                    "complete",
+                    "public",
+                    "image",
+                    "creator_id",
+                    "description",
+                    "explanation",
+                    "title",
+                    "created_at"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "complete",
+                    "public",
+                    "image",
+                    "creator_id",
+                    "description",
+                    "explanation",
+                    "title",
+                    "created_at"
+                  ],
+                  "filter": {
+                    "_or": [
+                      {
+                        "public": {
+                          "_eq": true
+                        }
+                      },
+                      {
+                        "sessions": {
+                          "session_id": {
+                            "_eq": "x-hasura-session-id"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "complete",
+                    "public",
+                    "image",
+                    "creator_id",
+                    "description",
+                    "explanation",
+                    "title",
+                    "created_at"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "complete",
+                    "public",
+                    "image",
+                    "creator_id",
+                    "description",
+                    "explanation",
+                    "title",
+                    "created_at"
+                  ],
+                  "filter": {
+                    "_or": [
+                      {
+                        "creator_id": {
+                          "_eq": "X-Hasura-User-Id"
+                        }
+                      },
+                      {
+                        "public": {
+                          "_eq": true
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "complete",
+                    "public",
+                    "image",
+                    "creator_id",
+                    "description",
+                    "explanation",
+                    "title",
+                    "created_at"
+                  ],
+                  "filter": {},
+                  "check": null
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [],
+                  "filter": {
+                    "creator_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "check": null
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {
+                    "creator_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "rounds",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "quiz",
+                "using": {
+                  "foreign_key_constraint_on": "quiz_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "quiz_id",
+                    "round_index",
+                    "points",
+                    "guesses",
+                    "answer",
+                    "speed",
+                    "algorithm",
+                    "image"
+                  ]
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  },
+                  "columns": [
+                    "guesses",
+                    "round_index",
+                    "points",
+                    "quiz_id",
+                    "algorithm",
+                    "speed",
+                    "image",
+                    "answer"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "guesses",
+                    "round_index",
+                    "points",
+                    "quiz_id",
+                    "algorithm",
+                    "speed",
+                    "image",
+                    "answer"
+                  ],
+                  "filter": {
+                    "quiz": {
+                      "public": {
+                        "_eq": true
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "guesses",
+                    "round_index",
+                    "points",
+                    "quiz_id",
+                    "algorithm",
+                    "speed",
+                    "image",
+                    "answer"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "guesses",
+                    "round_index",
+                    "points",
+                    "quiz_id",
+                    "algorithm",
+                    "speed",
+                    "image",
+                    "answer"
+                  ],
+                  "filter": {
+                    "quiz": {
+                      "_or": [
+                        {
+                          "creator_id": {
+                            "_eq": "X-Hasura-User-Id"
+                          }
+                        },
+                        {
+                          "public": {
+                            "_eq": true
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "guesses",
+                    "round_index",
+                    "points",
+                    "quiz_id",
+                    "algorithm",
+                    "speed",
+                    "image",
+                    "answer"
+                  ],
+                  "filter": {},
+                  "check": null
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [],
+                  "filter": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  },
+                  "check": null
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "sessions",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "quiz",
+                "using": {
+                  "foreign_key_constraint_on": "quiz_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "quiz": {
+                      "creator": {
+                        "user_id": {
+                          "_eq": "X-Hasura-User-Id"
+                        }
+                      }
+                    }
+                  },
+                  "columns": [
+                    "quiz_id",
+                    "session_id"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "session_id"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "session_id"
+                  ],
+                  "filter": {}
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "tags",
+              "schema": "public"
+            },
+            "object_relationships": [
+              {
+                "name": "quiz",
+                "using": {
+                  "foreign_key_constraint_on": "quiz_id"
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "check": {},
+                  "columns": [
+                    "value",
+                    "quiz_id"
+                  ]
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  },
+                  "columns": [
+                    "quiz_id",
+                    "value"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "value",
+                    "quiz_id"
+                  ],
+                  "filter": {
+                    "quiz": {
+                      "public": {
+                        "_eq": true
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "value"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "value"
+                  ],
+                  "filter": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "columns": [
+                    "value",
+                    "quiz_id"
+                  ],
+                  "filter": {},
+                  "check": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "quiz_id",
+                    "value"
+                  ],
+                  "filter": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  },
+                  "check": null
+                }
+              }
+            ],
+            "delete_permissions": [
+              {
+                "role": "moderator",
+                "permission": {
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "filter": {
+                    "quiz": {
+                      "creator_id": {
+                        "_eq": "X-Hasura-User-Id"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "table": {
+              "name": "users",
+              "schema": "public"
+            },
+            "array_relationships": [
+              {
+                "name": "quizzes",
+                "using": {
+                  "foreign_key_constraint_on": {
+                    "column": "creator_id",
+                    "table": {
+                      "name": "quizzes",
+                      "schema": "public"
+                    }
+                  }
+                }
+              }
+            ],
+            "insert_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "check": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "columns": [
+                    "user_id",
+                    "nickname",
+                    "last_seen",
+                    "email",
+                    "verified",
+                    "image"
+                  ]
+                }
+              }
+            ],
+            "select_permissions": [
+              {
+                "role": "anonymous",
+                "permission": {
+                  "columns": [
+                    "verified",
+                    "email",
+                    "user_id",
+                    "nickname",
+                    "image",
+                    "last_seen"
+                  ],
+                  "filter": {}
+                }
+              },
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "email",
+                    "verified",
+                    "user_id",
+                    "last_seen",
+                    "nickname",
+                    "image"
+                  ],
+                  "filter": {}
+                }
+              }
+            ],
+            "update_permissions": [
+              {
+                "role": "user",
+                "permission": {
+                  "columns": [
+                    "verified",
+                    "email",
+                    "user_id",
+                    "nickname",
+                    "image",
+                    "last_seen"
+                  ],
+                  "filter": {
+                    "user_id": {
+                      "_eq": "X-Hasura-User-Id"
+                    }
+                  },
+                  "check": null
+                }
+              }
+            ]
+          }
+        ],
+        "configuration": {
+          "connection_info": {
+            "database_url": "postgres://postgres:appeltaart@postgres:5432/postgres",
+            "isolation_level": "read-committed",
+            "use_prepared_statements": false
+          }
+        }
+      }
+    ]
+  }
+}

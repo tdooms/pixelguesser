@@ -39,11 +39,11 @@ fn create_jwt(user: &User) -> Result<(String, u64), Error> {
         _ => return Err(Error::InvalidRole),
     };
 
-    let user_id = format!("pixelguesser|{}", user.rowid);
     let default_role = Role::User;
 
-    let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id: user_id.clone() };
-    let claims = Claims { sub: user_id, exp, role, hasura };
+    let user_id = user.rowid as u64;
+    let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id };
+    let claims = Claims { sub: user.rowid.to_string(), exp, role, hasura };
 
     let secret = std::env::var("AUTH_SECRET")?;
     let encoding_key = EncodingKey::from_secret(secret.as_bytes());
@@ -73,7 +73,7 @@ pub async fn signup(
     println!("{user:?}");
 
     let refresh = generate_refresh();
-    let id = format!("pixelguesser|{}", user.rowid);
+    let id = user.rowid.to_string();
     let (bearer, expiry) = create_jwt(&user)?;
 
     Ok(Json(Tokens { bearer, refresh, id, expiry }))
@@ -92,7 +92,7 @@ pub async fn login(
     println!("{user:?}");
 
     let refresh = generate_refresh();
-    let id = format!("pixelguesser|{}", user.rowid);
+    let id = user.rowid.to_string();
     let (bearer, expiry) = create_jwt(&user)?;
 
     Ok(Json(Tokens { bearer, refresh, id, expiry }))
@@ -105,7 +105,7 @@ pub async fn refresh(body: &str, pool: &State<SqlitePool>) -> Result<Json<Tokens
 
     let user: User = sqlx::query_as(query).bind(&refresh).bind(body).fetch_one(&**pool).await?;
 
-    let id = format!("pixelguesser|{}", user.rowid);
+    let id = user.rowid.to_string();
     let (bearer, expiry) = create_jwt(&user)?;
 
     Ok(Json(Tokens { bearer, refresh, id, expiry }))

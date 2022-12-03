@@ -56,11 +56,11 @@ impl UseQuizCreateHandle {
 
         for (index, round) in new.rounds.iter_mut().enumerate() {
             let _ = self.notify(round.image.upload((*token).clone()).await);
-            round.index = index as u64
+            round.round_index = index as u64
         }
 
         let rc = Rc::new(new);
-        let result = match quiz.id {
+        let result = match quiz.quiz_id {
             Some(_) => Quiz::update((*token).clone(), rc).await,
             None => Quiz::create((*token).clone(), rc).await,
         };

@@ -2,7 +2,7 @@ use std::fs::File;
 
 use reqwest::Client;
 
-use api::{Credentials, Quiz, Tokens, User, AUTH_ENDPOINT};
+use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT};
 
 use crate::auth::{delete_user, upload_user};
 use crate::graphql::{delete_quizzes, upload_quizzes};
@@ -38,11 +38,12 @@ async fn main() {
         .unwrap();
 
     let user = User {
-        id: Some(tokens.id.clone()),
+        user_id: Some(tokens.id.parse().unwrap()),
         nickname: "admin".to_string(),
-        picture: "".to_string(),
+        image: Image::default(),
         email,
-        email_verified: true,
+        last_seen: None,
+        verified: true,
     };
 
     let file = File::open("init/create.json").unwrap();
@@ -56,5 +57,5 @@ async fn main() {
 
     upload_user(user, bearer.clone()).await;
     upload_images(&mut quizzes, bearer.clone()).await;
-    upload_quizzes(&mut quizzes, tokens.id, bearer).await;
+    upload_quizzes(&mut quizzes, tokens.id.parse().unwrap(), bearer).await;
 }

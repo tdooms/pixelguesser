@@ -69,7 +69,7 @@ pub struct Round {
 
     #[hasura(pk = "u64")]
     #[serde(default)]
-    pub index: u64,
+    pub round_index: u64,
 
     #[validate(length(min = 1, message = "Round must have an answer."))]
     #[validate(length(max = 32, message = "Answer cannot exceed 32 characters."))]

@@ -1,10 +1,11 @@
+use chrono::{DateTime, Utc};
 use std::rc::Rc;
 
 use hasura::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{Error, Result, GRAPHQL_ENDPOINT};
+use crate::{Error, Image, Result, GRAPHQL_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug, PartialEq)]
 pub struct Credentials {
@@ -20,22 +21,31 @@ pub struct Credentials {
 #[hasura(table = "users")]
 pub struct User {
     #[hasura(pk = "String")]
-    pub id: Option<String>,
+    pub user_id: Option<u64>,
 
     pub nickname: String,
-    pub picture: String,
+
+    #[serde(default)]
+    pub image: Image,
+
+    pub last_seen: Option<DateTime<Utc>>,
     pub email: String,
-    pub email_verified: bool,
+    pub verified: bool,
 }
 
 impl User {
     pub async fn query_one(token: Option<String>, user_id: String) -> Result<Option<User>> {
-        let body = QueryByPk::new(UserPk { id: user_id });
-        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+        let body = QueryByPk::new(UserPk { user_id });
+        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?.parse()?)
     }
 
     pub async fn create(token: Option<String>, user: Rc<User>) -> Result<User> {
         let body = InsertOne::new(user.as_ref());
-        mutation!(body).token(token).send(GRAPHQL_ENDPOINT).await?.ok_or(Error::EmptyResponse)
+        mutation!(body)
+            .token(token)
+            .send(GRAPHQL_ENDPOINT)
+            .await?
+            .parse()?
+            .ok_or(Error::EmptyResponse)
     }
 }

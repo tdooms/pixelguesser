@@ -21,7 +21,7 @@ pub struct Tag {
 #[hasura(table = "quizzes")]
 pub struct Quiz {
     #[hasura(pk = "u64")]
-    pub id: Option<u64>,
+    pub quiz_id: Option<u64>,
 
     pub public: bool,
     pub complete: bool,
@@ -37,16 +37,15 @@ pub struct Quiz {
     pub explanation: String,
 
     pub created_at: Option<DateTime<Utc>>,
-    pub creator_id: Option<String>,
+    pub creator_id: Option<u64>,
 
     #[serde(default)]
     pub image: Image,
 
-    #[hasura(relation = "User")]
-    #[serde(with = "relation")]
-    #[serde(default)]
-    pub creator: Option<User>,
-
+    // #[hasura(relation = "User")]
+    // #[serde(with = "relation")]
+    // #[serde(default)]
+    // pub creator: Option<User>,
     #[hasura(relation = "Tag")]
     #[serde(with = "relation")]
     #[serde(default)]
@@ -73,7 +72,7 @@ impl Quiz {
         let value = session.map(|x| x.to_string()).unwrap_or_default();
 
         let body = Query::new().returning(returning);
-        Ok(query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT).await?)
+        Ok(query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT).await?.parse()?)
     }
 
     pub async fn query_one(
@@ -81,15 +80,15 @@ impl Quiz {
         quiz_id: u64,
         session: Option<u64>,
     ) -> Result<Quiz> {
-        let body = QueryByPk::new(QuizPk { id: quiz_id.into() });
+        let body = QueryByPk::new(QuizPk { quiz_id: quiz_id.into() });
 
         let key = "x-hasura-session-id";
         let value = session.map(|x| x.to_string()).unwrap_or_default();
 
         let fut = query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT);
-        let mut res: Quiz = fut.await?.ok_or(Error::EmptyResponse)?;
+        let mut res: Quiz = fut.await?.parse()?.ok_or(Error::EmptyResponse)?;
 
-        res.rounds.sort_by_key(|x| x.index);
+        res.rounds.sort_by_key(|x| x.round_index);
 
         Ok(res)
     }
@@ -99,37 +98,38 @@ impl Quiz {
         let returning = Quiz::except(&[Quiz::rounds(Round::all())]);
 
         let body = Query::new().conditions(conditions).returning(returning);
-        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?)
+        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?.parse()?)
     }
 
     pub async fn create(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
         let body = InsertOne::new(quiz.as_ref());
         let fut = mutation!(body).token(Some(token)).send(GRAPHQL_ENDPOINT);
 
-        fut.await?.ok_or(Error::EmptyResponse)
+        fut.await?.parse()?.ok_or(Error::EmptyResponse)
     }
 
     pub async fn update(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
-        let id = quiz.id.unwrap();
+        let quiz_id = quiz.quiz_id.unwrap();
 
-        let conditions = Conditions::single(Tag::quiz_id(), Eq(id.to_string()));
+        let conditions = Conditions::single(Tag::quiz_id(), Eq(quiz_id.to_string()));
         let tags = Delete::new().conditions(conditions);
 
-        let conditions = Conditions::single(Round::quiz_id(), Eq(id.to_string()));
+        let conditions = Conditions::single(Round::quiz_id(), Eq(quiz_id.to_string()));
         let rounds = Delete::new().conditions(conditions);
 
-        let quiz = UpdateByPk::new(QuizPk { id }, quiz.as_ref());
+        let quiz = UpdateByPk::new(QuizPk { quiz_id }, quiz.as_ref());
 
         let res = mutation!(tags, rounds, quiz).token(Some(token)).send(GRAPHQL_ENDPOINT).await?;
-        res.2.ok_or(Error::EmptyResponse)
+        res.parse()?.2.ok_or(Error::EmptyResponse)
     }
 
     pub async fn delete(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
-        let first = DeleteByPk::new(QuizPk { id: quiz.id.unwrap() });
+        let first = DeleteByPk::new(QuizPk { quiz_id: quiz.quiz_id.unwrap() });
         mutation!(first)
             .token(Some(token))
             .send(GRAPHQL_ENDPOINT)
             .await?
+            .parse()?
             .ok_or(Error::EmptyResponse)
     }
 }

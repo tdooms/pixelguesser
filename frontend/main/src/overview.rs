@@ -34,7 +34,7 @@ async fn query(token: Option<String>, filter: String) -> Vec<Rc<Quiz>> {
 
 #[function_component(QuizColumn)]
 pub fn quiz_column(ColumnProps { quiz }: &ColumnProps) -> Html {
-    let quiz_id = quiz.id.unwrap();
+    let quiz_id = quiz.quiz_id.unwrap();
     let navigator = use_navigator().unwrap();
 
     let edit = callback!(navigator; move |_| navigator.push(&Route::Update{quiz_id}));

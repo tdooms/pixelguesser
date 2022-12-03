@@ -19,7 +19,7 @@ pub struct HasuraClaims {
     pub allowed_roles: Vec<Role>,
 
     #[serde(rename = "x-hasura-user-id")]
-    pub user_id: String,
+    pub user_id: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

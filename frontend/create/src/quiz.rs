@@ -82,7 +82,7 @@ pub fn quiz_page(props: &Props) -> Html {
 
     let left = html! {<Title> {"Overview"} </Title>};
     let right = quiz
-        .id
+        .quiz_id
         .map(|_| html! {<simple::Button color={Color::Danger} click={delete} text="Delete" /> })
         .unwrap_or_default();
 
