@@ -25,9 +25,8 @@ pub struct User {
 
     pub nickname: String,
 
-    #[serde(default)]
-    pub image: Image,
-
+    // #[serde(default)]
+    // pub image: Image,
     pub last_seen: Option<DateTime<Utc>>,
     pub email: String,
     pub verified: bool,
@@ -41,6 +40,7 @@ impl User {
 
     pub async fn create(token: Option<String>, user: Rc<User>) -> Result<User> {
         let body = InsertOne::new(user.as_ref());
+
         mutation!(body)
             .token(token)
             .send(GRAPHQL_ENDPOINT)

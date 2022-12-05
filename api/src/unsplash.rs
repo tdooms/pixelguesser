@@ -1,10 +1,11 @@
 use std::fmt::Formatter;
 
 use derive_more::Display;
+use reqwest::Client;
 use strum::EnumIter;
 use validator::Validate;
 
-use crate::{Result, UNSPLASH_KEY};
+use crate::{Error, Result, APPLICATION_NAME, UNSPLASH_KEY};
 
 #[derive(serde::Deserialize, Debug, PartialEq)]
 pub struct Urls {
@@ -172,11 +173,13 @@ pub struct Response {
 }
 
 pub fn unsplash_link() -> String {
-    format!("https://unsplash.com/?utm_source=pixelguesser&utm_medium=referral")
+    let source = APPLICATION_NAME.to_owned();
+    format!("https://unsplash.com/?utm_source={source}&utm_medium=referral")
 }
 
 pub fn author_link(photo: &Photo) -> String {
-    format!("{}?utm_source=pixelguesser&utm_medium=referral", photo.user.links.html)
+    let source = APPLICATION_NAME.to_owned();
+    format!("{}?utm_source={source}&utm_medium=referral", photo.user.links.html)
 }
 
 pub async fn search_photos(filter: FilterBy) -> Result<(Vec<Photo>, Option<u64>)> {
@@ -184,28 +187,26 @@ pub async fn search_photos(filter: FilterBy) -> Result<(Vec<Photo>, Option<u64>)
         return Ok((vec![], None));
     }
 
-    let key = UNSPLASH_KEY.to_owned();
-    let base = "https://api.unsplash.com/";
-    let url = format!("{base}/search/photos?{filter}");
+    let url = format!("https://api.unsplash.com/search/photos?{filter}");
 
-    let response: Response = reqwest::Client::new()
-        .get(url)
-        .header("Authorization", format!("Client-ID {}", key))
+    let response: Response = Client::new()
+        .get(&url)
+        .header("Authorization", format!("Client-ID {}", UNSPLASH_KEY))
         .send()
-        .await?
+        .await
+        .map_err(|_| Error::UnreachableHost("unsplash", url))?
+        .error_for_status()
+        .map_err(|_| Error::StatusCode("unsplash"))?
         .json()
-        .await?;
+        .await
+        .map_err(|_| Error::InvalidResponse("unsplash"))?;
 
     Ok((response.results, Some(response.total_pages)))
 }
 
-pub async fn download(url: String) {
+pub async fn give_credit(client: &Client, url: String) {
     let key = UNSPLASH_KEY.to_owned();
-    let _ = reqwest::Client::new()
-        .get(url)
-        .header("Authorization", format!("Client-ID {}", key))
-        .send()
-        .await;
+    let _ = client.get(url).header("Authorization", format!("Client-ID {}", key)).send().await;
 }
 
 // pub async fn download(location: String, access_key: String) -> Result<()> {

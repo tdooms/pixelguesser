@@ -21,14 +21,14 @@ pub struct Credentials {
 
 #[derive(sqlx::FromRow, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
-struct User {
+pub struct User {
     pub rowid: i64,
     pub role: i64,
     pub email: String,
     pub pw_hash: String,
 }
 
-fn create_jwt(user: &User) -> Result<(String, u64), Error> {
+pub fn create_jwt(user: &User) -> Result<(String, u64), Error> {
     let epoch = std::time::SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
     let exp = epoch + 60 * 60;
 
@@ -41,9 +41,9 @@ fn create_jwt(user: &User) -> Result<(String, u64), Error> {
 
     let default_role = Role::User;
 
-    let user_id = user.rowid as u64;
-    let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id };
-    let claims = Claims { sub: user.rowid.to_string(), exp, role, hasura };
+    let user_id = user.rowid.to_string();
+    let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id: user_id.clone() };
+    let claims = Claims { sub: user_id, exp, role, hasura };
 
     let secret = std::env::var("AUTH_SECRET")?;
     let encoding_key = EncodingKey::from_secret(secret.as_bytes());

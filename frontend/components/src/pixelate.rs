@@ -129,7 +129,7 @@ pub fn pixelate(props: &Props) -> Html {
     let counter = use_state_eq(|| 0);
     let onresize = callback!(counter; move |_| counter.set(*counter + 1));
 
-    log::info!("{counter:?}");
+    tracing::info!("{counter:?}");
 
     use_effect_with_deps(
         move |_| {
@@ -221,7 +221,7 @@ pub fn pixelate(props: &Props) -> Html {
                 let width = container.offset_width() as u32;
                 let height = container.offset_height() as u32;
 
-                log::warn!("redraw");
+                tracing::debug!("redraw");
                 draw_pixelated(**size, width, height, &image, &canvas, &offscreen).unwrap();
                 || ()
             },

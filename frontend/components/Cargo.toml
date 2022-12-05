@@ -7,15 +7,15 @@ edition = "2021"
 
 [dependencies]
 shared = { path = "../shared" }
-api = { path = "../../api", features = ["session"] }
+api = { path = "../../api", features = ["sessions"] }
 cobul = { git = "https://github.com/tdooms/cobul.git" }
 
-derive_more = "0.99"
-yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-agent = "0.2"
+yew-router = "0.17"
+yew = "0.20"
 
+derive_more = "0.99"
 wasm-bindgen = "0.2"
 web-sys = { version = "0.3", features = ["HtmlDivElement", "HtmlCanvasElement", "HtmlImageElement"] }
-log = "*"
+tracing = "0.1"
 gloo = "0.8"

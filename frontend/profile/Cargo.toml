@@ -10,9 +10,9 @@ shared = { path = "../shared" }
 api = { path = "../../api", features = ["auth"] }
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa"] }
 
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew = "0.20"
+yew-router = "0.17"
 validator = { version = "0.16", features = ["derive"] }
 wasm-bindgen-futures = "0.4"
 
-log = "0.4"
+tracing = "0.1"

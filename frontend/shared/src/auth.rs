@@ -124,7 +124,7 @@ async fn init(state: UseStateHandle<State>) {
 #[hook]
 pub fn use_auth_manager() -> UseAuthManagerHandle {
     let state = use_state(|| State::Loading);
-    log::info!("{:?}", *state);
+    tracing::info!("{:?}", *state);
 
     let cloned = state.clone();
     use_startup(move || spawn!(init(cloned)));

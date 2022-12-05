@@ -48,7 +48,7 @@ pub fn create(props: &Props) -> Html {
     let stage = use_state(|| Stage::Quiz);
 
     let change = callback!(stage; move |new| stage.set(new));
-    let action = callback!(state, user; move |action| state.action(action, token.clone(), user.id.clone().unwrap()));
+    let action = callback!(state, user; move |action| state.action(action, token.clone(), user.user_id.clone().unwrap()));
 
     let quiz = state.quiz();
 

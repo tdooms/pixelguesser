@@ -1,8 +1,5 @@
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("Request error: {0}")]
-    Request(#[from] reqwest::Error),
-
     #[error("Hasura error: {0:?}")]
     Hasura(#[from] hasura::Error),
 
@@ -13,17 +10,14 @@ pub enum Error {
     #[error("Session error {0}")]
     Session(#[from] pixessions::Error),
 
-    #[error("invalid session id")]
-    InvalidSession,
+    #[error("Error connecting to {0} at {1}")]
+    UnreachableHost(&'static str, String),
 
-    #[error("Image upload failed")]
-    ImageUpload,
+    #[error("Received response from {0} with error status")]
+    StatusCode(&'static str),
 
-    #[error("Could not find image at path {0}")]
-    ImageRead(String),
-
-    #[error("Websocket connection failure")]
-    WsConnection,
+    #[error("Received invalid response from {0}")]
+    InvalidResponse(&'static str),
 
     #[error("Websocket connection closed")]
     WsClosed,

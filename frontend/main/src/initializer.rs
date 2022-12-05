@@ -59,7 +59,7 @@ async fn init(
 
     let callback = move |response| match response {
         Ok(new) => session.set(Some(Rc::new(new))),
-        Err(err) => log::error!("{err}"),
+        Err(err) => tracing::error!("{err}"),
     };
 
     let created = create_session(&props, token).await.map_err(mapper)?;

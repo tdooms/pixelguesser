@@ -1,9 +1,6 @@
 use std::rc::Rc;
 
 use cobul::*;
-use image::Rgba;
-use photon_rs::PhotonImage;
-use qrcode::QrCode;
 use yew::*;
 
 use api::{Participant, Player, Quiz, Session, SELF_ENDPOINT};
@@ -30,14 +27,15 @@ pub fn lobby(props: &Props) -> Html {
 
     // SAFETY: Only errors if the url is too long.
     let generate_qr = || {
-        let buffer = QrCode::new(&url)
-            .unwrap()
-            .render::<Rgba<u8>>()
-            .light_color(Rgba([255, 255, 255, 255]))
-            .build();
+        // let buffer = QrCode::new(&url)
+        //     .unwrap()
+        //     .render::<Rgba<u8>>()
+        //     .light_color(Rgba([255, 255, 255, 255]))
+        //     .build();
 
-        let (width, height) = buffer.dimensions();
-        PhotonImage::new(buffer.to_vec(), width, height).get_base64()
+        // let (width, height) = buffer.dimensions();
+        // PhotonImage::new(buffer.to_vec(), width, height).get_base64()
+        "".to_string()
     };
 
     let image = use_state(generate_qr);

@@ -8,10 +8,11 @@ use wasm_bindgen::Clamped;
 use wasm_bindgen::JsCast;
 use web_sys::{window, ImageData};
 
-use piximages::{Resolution, UploadResult};
+use piximages::{Resolution, Response};
 
-use crate::{download, Error, Photo};
-use crate::{IMAGE_PLACEHOLDER, UPLOAD_ENDPOINT};
+use crate::piximages::upload;
+use crate::IMAGE_PLACEHOLDER;
+use crate::{give_credit, Photo};
 
 #[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Unsplash {
@@ -29,6 +30,7 @@ pub enum Service {
 #[derive(Default, Serialize, Clone, Debug, PartialEq)]
 pub struct Image {
     url: Option<Rc<String>>,
+
     blurhash: Option<String>,
 
     #[serde(skip)]
@@ -138,34 +140,23 @@ impl Image {
     }
 
     pub async fn upload(&mut self, token: String) -> crate::Result<()> {
+        let client = Client::new();
         // https://help.unsplash.com/en/articles/2511258-guideline-triggering-a-download
         if let Some(Service::Unsplash { meta: Some(meta) }) = &self.service {
-            download(meta.download.clone()).await;
-            // Once the crediting is done once, we can ignore it to avoid duplicates
-            self.service = None
+            give_credit(&client, meta.download.clone()).await;
+            self.service = None // Remove to avoid duplicate crediting
         }
 
         if let (Some(local), None) = (&self.local, &self.url) {
-            let endpoint = format!("{UPLOAD_ENDPOINT}/upload");
-
             let body = match local.split(',').nth(1) {
                 None => (**local).clone(),
                 Some(split) => split.to_owned(),
             };
 
-            let response = Client::new()
-                .post(&endpoint)
-                .header("Authorization", token)
-                .body(body)
-                .send()
-                .await
-                .unwrap();
+            let Response { blurhash, url } = upload(&client, token, body).await?;
 
-            (response.status() == 200).then(|| ()).ok_or(Error::ImageUpload)?;
-            let result: UploadResult = response.json().await.unwrap();
-
-            self.blurhash = Some(result.blurhash);
-            self.url = Some(Rc::new(result.url));
+            self.blurhash = Some(blurhash);
+            self.url = Some(Rc::new(url));
             self.service = Some(Service::Piximages);
         }
 

@@ -1,36 +1,46 @@
 #[cfg(feature = "auth")]
-pub use auth::*;
+pub use crate::pixauth::*;
+#[cfg(feature = "auth")]
+pub use ::pixauth::*;
+
+#[cfg(feature = "sessions")]
+pub use crate::pixessions::*;
+#[cfg(feature = "sessions")]
+pub use ::pixessions::*;
+
+#[cfg(feature = "images")]
+pub use crate::piximages::*;
+#[cfg(feature = "images")]
+pub use ::piximages::Resolution;
+
 pub use consts::*;
 pub use error::{Error, Result};
-#[cfg(feature = "image")]
-pub use image::Image;
-#[cfg(feature = "auth")]
-pub use pixauth::*;
-#[cfg(feature = "session")]
-pub use pixessions::*;
-#[cfg(feature = "image")]
-pub use piximages::Resolution;
+
 #[cfg(feature = "graphql")]
 pub use quiz::*;
 #[cfg(feature = "graphql")]
 pub use round::*;
-#[cfg(feature = "session")]
-pub use session::*;
-#[cfg(feature = "unsplash")]
-pub use unsplash::*;
 #[cfg(feature = "graphql")]
 pub use user::*;
+
+#[cfg(feature = "images")]
+pub use image::Image;
+#[cfg(feature = "images")]
+pub use unsplash::*;
 
 mod consts;
 mod error;
 
 #[cfg(feature = "auth")]
-mod auth;
-#[cfg(feature = "image")]
+mod pixauth;
+#[cfg(feature = "sessions")]
+mod pixessions;
+
+#[cfg(feature = "images")]
 mod image;
-#[cfg(feature = "session")]
-mod session;
-#[cfg(feature = "unsplash")]
+#[cfg(feature = "images")]
+mod piximages;
+#[cfg(feature = "images")]
 mod unsplash;
 
 #[cfg(feature = "graphql")]

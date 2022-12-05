@@ -15,7 +15,7 @@ use sha3::Digest;
 use sqlx::{Row, SqlitePool};
 
 use pixauth::Claims;
-use piximages::{Resolution, UploadResult};
+use piximages::{Resolution, Response};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -64,7 +64,7 @@ pub async fn upload(
     token: Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
-) -> Result<Json<UploadResult>, Error> {
+) -> Result<Json<Response>, Error> {
     let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
@@ -80,16 +80,16 @@ pub async fn upload(
         .execute(&**db)
         .await?;
 
-    let mut original = image::load_from_memory_with_format(&buffer, format).unwrap();
+    let original = image::load_from_memory_with_format(&buffer, format).unwrap();
 
     let (width, height) = original.dimensions();
     let vec = original.to_rgba8().into_raw();
     let blurhash = encode(vec, 4, 3, width as usize, height as usize).unwrap();
 
-    let url = format!("http://localhost:8901/{filename}");
+    let url = format!("{IMAGE_ENDPOINT}/{filename}");
     tokio::task::spawn_blocking(move || compute_image(&base, &filename, &original));
 
-    Ok(Json(UploadResult { url, blurhash }))
+    Ok(Json(Response { url, blurhash }))
 }
 
 #[post("/delete/<file>")]
@@ -161,6 +161,8 @@ struct Opts {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().unwrap();
+    tracing_subscriber::fmt::init();
+
     let Opts { database, port, address, folder } = Opts::parse();
 
     let config = rocket::Config { port, address: address.parse()?, ..Default::default() };

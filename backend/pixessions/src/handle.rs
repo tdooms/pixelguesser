@@ -29,10 +29,10 @@ async fn handle_local(global: &Global, session_id: u32) -> Result<Local, Error> 
 pub async fn handle_session(stream: WebSocket, global: Global, session_id: u32) {
     let (sender, mut receiver) = stream.split();
     let conn_id = rand::thread_rng().gen::<u32>();
-    log::info!("attempted connection to {session_id}");
+    tracing::info!("attempted connection to {session_id}");
 
     // Add the sender to the connections of the local state
-    let local = match handle_local(&global, session_id).await.map_err(|e| log::error!("{e}")) {
+    let local = match handle_local(&global, session_id).await.map_err(|e| tracing::error!("{e}")) {
         Ok(local) => local,
         Err(_) => return,
     };
@@ -42,7 +42,7 @@ pub async fn handle_session(stream: WebSocket, global: Global, session_id: u32) 
     while let Some(Ok(message)) = receiver.next().await {
         let mut lock = local.lock().await;
         if let Err(err) = handle_message(message, &mut *lock, conn_id).await {
-            log::error!("{err}");
+            tracing::error!("{err}");
         }
     }
 
@@ -55,13 +55,13 @@ pub async fn handle_session(stream: WebSocket, global: Global, session_id: u32) 
         global.lock().await.remove(&session_id);
     }
 
-    log::debug!("{:?}", lock.session.participants);
+    tracing::debug!("{:?}", lock.session.participants);
 
     // Remove the participant corresponding to this connection
     // TODO: Should participants be part of local or session?
     lock.session.participants.retain(|_, v| *v != conn_id);
 
-    log::debug!("{:?}", lock.session.participants);
+    tracing::debug!("{:?}", lock.session.participants);
 
     // Notify the rest of the participants of the session change
     let session = lock.session.clone();

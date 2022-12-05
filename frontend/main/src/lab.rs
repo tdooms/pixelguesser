@@ -180,7 +180,7 @@ use yew::*;
 //
 //         queue.submit(Some(encoder.finish()));
 //         let buffer_slice = output_buffer.slice(..);
-//         buffer_slice.map_async(wgpu::MapMode::Read, || log::info!("done"));
+//         buffer_slice.map_async(wgpu::MapMode::Read, || tracing::info!("done"));
 //
 //         device.poll(wgpu::Maintain::Wait);
 //
@@ -309,11 +309,11 @@ pub fn test() -> Html {
     //
     // use_effect_with_deps(
     //     |(surface, image, canvas, loaded)| {
-    //         log::error!("haaaa {}", loaded);
+    //         tracing::error!("haaaa {}", loaded);
     //         if *loaded {
     //             let surface = surface.cast::<HtmlCanvasElement>();
     //             let canvas = canvas.cast::<HtmlCanvasElement>().unwrap();
-    //             log::info!("{image:?}");
+    //             tracing::info!("{image:?}");
     //             let image = image.cast::<HtmlImageElement>().unwrap();
     //
     //             let event_loop = EventLoop::new();

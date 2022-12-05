@@ -12,17 +12,6 @@ pub enum Level {
     Success,
 }
 
-impl From<Level> for log::Level {
-    fn from(level: Level) -> Self {
-        match level {
-            Level::Error => log::Level::Error,
-            Level::Warning => log::Level::Warn,
-            Level::Info => log::Level::Info,
-            Level::Success => log::Level::Debug,
-        }
-    }
-}
-
 pub trait Toast: ToString {
     fn level(&self) -> Level;
     fn leave(&self) -> bool;
@@ -62,7 +51,6 @@ impl Toast for Generic {
     fn level(&self) -> Level {
         self.kind
     }
-
     fn leave(&self) -> bool {
         self.leave
     }
@@ -90,7 +78,7 @@ impl UseToastManagerHandle {
         let id = *self.counter;
         self.counter.set(id + 1);
 
-        log::log!(toast.level().into(), "{}", toast.to_string());
+        tracing::debug!("{}", toast.to_string());
 
         let cloned = self.clone();
         let timer = Timeout::new(4_000, move || cloned.remove(id));

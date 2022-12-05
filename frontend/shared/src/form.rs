@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use cobul::Model;
 use validator::Validate;
-pub use yew::*;
+use yew::*;
 
 use api::{
     Algorithm, ContentFilter, Credentials, FilterBy, Guesses, Image, OrderBy, Orientation, Points,

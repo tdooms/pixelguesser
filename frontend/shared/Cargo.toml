@@ -8,23 +8,25 @@ edition = "2021"
 [dependencies]
 api = { path = "../../api", features = ["auth"] }
 
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-router = "0.17"
+yew = "0.20"
 cobul = { git = "https://github.com/tdooms/cobul.git" }
+
+tracing = "0.1"
 
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 serde-wasm-bindgen = "0.4.2"
+web-sys = { version = "0.3", features = ["CanvasRenderingContext2d"] }
+js-sys = "0.3"
 
 serde = { version = "1.0", features = ["derive"] }
 gloo = "0.8"
-log = "0.4"
 derive_more = "0.99"
 futures = "0.3"
 thiserror = "1.0.36"
 validator = "0.16"
 chrono = { version = "0.4", features = ["wasmbind"] }
 
-js-sys = "0.3"
-web-sys = { version = "0.3", features = ["CanvasRenderingContext2d"] }
+
 

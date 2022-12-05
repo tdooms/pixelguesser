@@ -1,8 +1,9 @@
 use std::fs::File;
+use std::rc::Rc;
 
 use reqwest::Client;
 
-use api::{Credentials, Image, Quiz, Tokens, User, AUTH_ENDPOINT};
+use api::{login, Credentials, Image, Quiz, User};
 
 use crate::auth::{delete_user, upload_user};
 use crate::graphql::{delete_quizzes, upload_quizzes};
@@ -17,28 +18,17 @@ struct Quizzes {
     quizzes: Vec<Quiz>,
 }
 
-#[tokio::main]
-async fn main() {
-    pretty_env_logger::init();
-    dotenv::dotenv().unwrap();
+async fn inner() -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
 
-    let email = std::env::var("ADMIN_EMAIL").unwrap();
-    let password = std::env::var("ADMIN_PASSWORD").unwrap();
-    let credentials = Credentials { email: email.clone(), password };
+    let email = std::env::var("ADMIN_EMAIL")?;
+    let password = std::env::var("ADMIN_PASSWORD")?;
+    let credentials = Rc::new(Credentials { email: email.clone(), password });
 
-    let tokens: Tokens = Client::new()
-        .post(format!("{AUTH_ENDPOINT}/login"))
-        .json(&credentials)
-        .send()
-        .await
-        .map_err(|_| "Cannot connect to the auth server, please verify it is running")
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
+    let tokens = login(&client, credentials).await?;
 
     let user = User {
-        user_id: Some(tokens.id.parse().unwrap()),
+        user_id: Some(tokens.id.parse()?),
         nickname: "admin".to_string(),
         image: Image::default(),
         email,
@@ -46,16 +36,28 @@ async fn main() {
         verified: true,
     };
 
-    let file = File::open("init/create.json").unwrap();
-    let Quizzes { mut quizzes } = serde_json::from_reader(file).unwrap();
+    let file = File::open("init/create.json")?;
+    let Quizzes { mut quizzes } = serde_json::from_reader(file)?;
 
     let bearer = format!("Bearer {}", tokens.bearer);
 
-    log::info!("deleted quizzes: {:?}", delete_quizzes(bearer.clone()).await);
-    log::info!("deleted images: {:?}", delete_images(bearer.clone()).await);
-    log::info!("deleted user: {:?}", delete_user(bearer.clone()).await);
+    delete_quizzes(bearer.clone()).await?;
+    delete_images(&client, bearer.clone()).await?;
+    delete_user(bearer.clone()).await?;
 
-    upload_user(user, bearer.clone()).await;
-    upload_images(&mut quizzes, bearer.clone()).await;
-    upload_quizzes(&mut quizzes, tokens.id.parse().unwrap(), bearer).await;
+    upload_user(user, bearer.clone()).await?;
+    upload_images(&client, &mut quizzes, bearer.clone()).await?;
+    upload_quizzes(&mut quizzes, tokens.id.parse()?, bearer).await?;
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    dotenv::dotenv().unwrap();
+    tracing_subscriber::fmt().init();
+
+    if let Err(err) = inner().await {
+        tracing::error!("{err}");
+    }
 }

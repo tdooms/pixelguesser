@@ -15,7 +15,7 @@ pixauth = { path = "../pixauth", features = ["verify"], optional = true }
 rocket = { version = "0.5.0-rc.2", optional = true }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", optional = true }
 
-tokio = { version = "1.9", features = ["full"], optional = true }
+tokio = { version = "1.20", features = ["full"], optional = true }
 sqlx = { version = "0.6", features = ["sqlite", "runtime-tokio-native-tls"], optional = true }
 
 blurhash-wasm = { git = "https://github.com/fpapado/blurhash-rust-wasm.git", rev = "a81e33c46a10a63f1f0ed25aa48a6e3066d26804", optional = true }
@@ -24,6 +24,10 @@ clap = { version = "4.0", features = ["derive"], optional = true }
 image = { version = "*", optional = true }
 base64 = { version = "*", optional = true }
 thiserror = { version = "1.0", optional = true }
+
+tracing = "0.1"
+#tracing-timing = "0.6"
+tracing-subscriber = "0.3"
 
 serde = { version = "1.0", features = ["derive"] }
 derive_more = "0.99"

@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-api = { path = "../../api", features = ["graphql", "unsplash"] }
+api = { path = "../../api", features = ["graphql", "images"] }
 components = { path = "../components" }
 shared = { path = "../shared" }
 hasura = { git = "https://github.com/tdooms/hasura.git" }
@@ -14,13 +14,11 @@ hasura = { git = "https://github.com/tdooms/hasura.git" }
 cropper = { git = "https://github.com/tdooms/cropper.git" }
 cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa", "simple", "extensions"] }
 
-yew-agent = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew-router = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
+yew-agent = "0.2"
+yew-router = "0.17"
+yew = "0.20"
 
-gloo = "0.8"
-log = "0.4"
-futures = "0.3"
+tracing = "0.1"
 derive_more = "0.99"
 strum = { version = "0.24", features = ["derive"] }
 validator = { version = "0.16", features = ["derive"] }

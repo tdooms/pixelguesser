@@ -42,10 +42,11 @@ pub struct Quiz {
     #[serde(default)]
     pub image: Image,
 
-    // #[hasura(relation = "User")]
-    // #[serde(with = "relation")]
-    // #[serde(default)]
-    // pub creator: Option<User>,
+    #[hasura(relation = "User")]
+    #[serde(with = "relation")]
+    #[serde(default)]
+    pub creator: Option<User>,
+
     #[hasura(relation = "Tag")]
     #[serde(with = "relation")]
     #[serde(default)]
@@ -70,17 +71,17 @@ impl Quiz {
 
         let key = "x-hasura-session-id";
         let value = session.map(|x| x.to_string()).unwrap_or_default();
+        let url = GRAPHQL_ENDPOINT;
 
-        let body = Query::new().returning(returning);
-        Ok(query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT).await?.parse()?)
+        let request = Query::new().returning(returning);
+        let response = query!(request).token(token).header(key, value).send(url).await?;
+        tracing::info!("response: {}", response);
+
+        response.parse().map_err(Error::from)
     }
 
-    pub async fn query_one(
-        token: Option<String>,
-        quiz_id: u64,
-        session: Option<u64>,
-    ) -> Result<Quiz> {
-        let body = QueryByPk::new(QuizPk { quiz_id: quiz_id.into() });
+    pub async fn query_one(token: Option<String>, quiz: u64, session: Option<u64>) -> Result<Quiz> {
+        let body = QueryByPk::new(QuizPk { quiz_id: quiz.into() });
 
         let key = "x-hasura-session-id";
         let value = session.map(|x| x.to_string()).unwrap_or_default();

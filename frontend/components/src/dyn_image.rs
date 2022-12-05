@@ -1,4 +1,3 @@
-use shared::callback;
 use yew::prelude::*;
 
 #[derive(Clone, Copy, Debug, PartialEq)]

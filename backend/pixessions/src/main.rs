@@ -48,7 +48,7 @@ async fn create_session(ext: Extension<Global>, quiz_id: Path<u32>, mode: Path<M
     let state = State::new(Session::new(quiz_id.0, mode.0));
     lock.insert(session_id, Arc::new(Mutex::new(state)));
 
-    log::info!("created session {session_id}");
+    tracing::info!("created session {session_id}");
     session_id.to_string()
 }
 
@@ -63,7 +63,7 @@ async fn get_sessions(ext: Extension<Global>) -> Json<Vec<Session>> {
 
 #[tokio::main]
 async fn main() {
-    pretty_env_logger::init();
+    tracing_subscriber::fmt::init();
     let opts: Opts = Opts::parse();
 
     let v4 = SocketAddrV4::new(Ipv4Addr::from_str(&opts.address).unwrap(), opts.port);
@@ -80,6 +80,6 @@ async fn main() {
         .layer(Extension(global))
         .layer(cors);
 
-    log::info!("listening on {}", address);
+    tracing::info!("listening on {}", address);
     axum::Server::bind(&address).serve(app.into_make_service()).await.unwrap();
 }

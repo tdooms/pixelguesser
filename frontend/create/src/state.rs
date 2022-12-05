@@ -45,7 +45,7 @@ impl UseQuizCreateHandle {
         self.loading.set(false);
     }
 
-    async fn upload(self, quiz: Rc<Quiz>, token: Rc<String>, creator_id: String) {
+    async fn upload(self, quiz: Rc<Quiz>, token: Rc<String>, creator_id: u64) {
         self.quiz.set(quiz.clone());
         self.prev.set(quiz.clone());
 
@@ -84,7 +84,7 @@ impl UseQuizCreateHandle {
         self.prev != self.quiz
     }
 
-    pub fn action(&self, action: Action, token: Rc<String>, creator_id: String) {
+    pub fn action(&self, action: Action, token: Rc<String>, creator_id: u64) {
         let mut new = (**self.quiz).clone();
         let rounds = &mut new.rounds;
         let state = self.clone();

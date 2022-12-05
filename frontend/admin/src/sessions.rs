@@ -1,10 +1,8 @@
 use api::query_sessions;
 use api::Session;
 use cobul::*;
-use shared::use_toast;
 use yew::suspense::use_future;
 use yew::*;
-use yew_router::prelude::use_navigator;
 
 #[function_component(Sessions)]
 pub fn sessions() -> HtmlResult {

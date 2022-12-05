@@ -35,12 +35,18 @@ async fn setup(config: rocket::Config, path: String) -> Rocket<Build> {
     let email = std::env::var("ADMIN_EMAIL").unwrap();
     let password = std::env::var("ADMIN_PASSWORD").unwrap();
 
+    sqlx::query("delete from users").execute(&pool).await.unwrap();
+
     let hash = &sha3::Sha3_256::new_with_prefix(password).finalize();
-    let _ = sqlx::query("insert into users (email, pw_hash) values ($1, $2)")
+    let query = "insert into users (email, pw_hash) values ($1, $2) returning rowid, *";
+    let user: User = sqlx::query_as(query)
         .bind(&email)
         .bind(base64::encode(&hash))
-        .execute(&pool)
-        .await;
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    println!("{}", create_jwt(&user).unwrap().0);
 
     rocket::custom(config)
         .mount("/", routes![login, signup])

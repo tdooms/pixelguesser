@@ -11,7 +11,7 @@ pub enum Resolution {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
-pub struct UploadResult {
+pub struct Response {
     pub url: String,
     pub blurhash: String,
 }

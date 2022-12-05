@@ -4,11 +4,12 @@ use futures::channel::{mpsc, oneshot};
 use futures::{select, SinkExt, StreamExt};
 use gloo::net::websocket::futures::WebSocket;
 use gloo::net::websocket::{Message, WebSocketError};
+use reqwest::Client;
 use wasm_bindgen_futures::spawn_local;
 
 use pixessions::{Action, Session};
 
-use crate::{Error, SESSION_ENDPOINT, SESSION_WS};
+use crate::{Error, SESSION_ENDPOINT, WS_ENDPOINT};
 
 // Removed i, I, o, O -> 48 chars
 // This list MUST be sorted and contain unique characters
@@ -52,15 +53,31 @@ impl ToString for Code {
 }
 
 pub async fn create_session(quiz_id: u64) -> Result<u64, Error> {
-    let endpoint = format!("{SESSION_ENDPOINT}/{quiz_id}");
-    let text = reqwest::Client::new().post(&endpoint).send().await?.text().await?;
+    let url = format!("{SESSION_ENDPOINT}/{quiz_id}");
 
-    u64::from_str(&text).map_err(|_| Error::InvalidSession)
+    let text = Client::new()
+        .post(&url)
+        .send()
+        .await
+        .map_err(|_| Error::UnreachableHost("pixessions", url))?
+        .text()
+        .await
+        .map_err(|_| Error::InvalidResponse("pixessions"))?;
+
+    u64::from_str(&text).map_err(|_| Error::InvalidResponse("pixessions"))
 }
 
 pub async fn query_sessions() -> Result<Vec<Session>, Error> {
-    let endpoint = format!("{SESSION_ENDPOINT}");
-    Ok(reqwest::Client::new().get(&endpoint).send().await?.json().await?)
+    let url = format!("{SESSION_ENDPOINT}");
+
+    Client::new()
+        .get(&url)
+        .send()
+        .await
+        .map_err(|_| Error::UnreachableHost("pixessions", url))?
+        .json()
+        .await
+        .map_err(|_| Error::InvalidResponse("pixessions"))
 }
 
 pub struct WebsocketTask {
@@ -111,8 +128,8 @@ impl WebsocketTask {
         session_id: u64,
         callback: impl Fn(Result<Session, Error>) + 'static,
     ) -> Result<Self, Error> {
-        let endpoint = format!("{SESSION_WS}/{session_id}");
-        let ws = WebSocket::open(&endpoint).map_err(|_| Error::WsConnection)?;
+        let url = format!("{WS_ENDPOINT}/{session_id}");
+        let ws = WebSocket::open(&url).map_err(|_| Error::UnreachableHost("ws", url))?;
 
         let (_marker, cancel) = oneshot::channel();
         let (sender, actions) = mpsc::channel(100);

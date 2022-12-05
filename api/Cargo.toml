@@ -4,40 +4,37 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-auth = ["validator", "pixauth", "honey"]
-graphql = ["validator", "image", "hasura", "honey"]
-session = ["gloo", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
-image = ["gloo", "web-sys", "reqwest", "piximages"]
-unsplash = ["reqwest"]
+auth = ["validator", "pixauth"]
+sessions = ["gloo", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
+images = ["gloo", "web-sys", "reqwest", "piximages"]
+graphql = ["validator", "images", "hasura"]
 default = []
 
 [dependencies]
 pixessions = { path = "../backend/pixessions", optional = true }
 piximages = { path = "../backend/piximages", optional = true }
 pixauth = { path = "../backend/pixauth", optional = true }
-hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
-honey = { git = "https://github.com/tdooms/honey.git", optional = true }
 
-yew = { git = "https://github.com/yewstack/yew.git", rev = "32b3150cb3711c4e03105eec9659a72aa8ce7a8c" }
-cobul = { git = "https://github.com/tdooms/cobul.git" }
+hasura = { git = "https://github.com/tdooms/hasura.git", features = ["timing"], optional = true }
 
 serde_json = "1.0"
 serde_repr = "0.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
 
-reqwest = { version = "0.11", features = ["json"], optional = true }
-futures = { version = "0.3", optional = true }
-wasm-bindgen-futures = { version = "0.4", optional = true }
-
 blurhash-wasm = { git = "https://github.com/fpapado/blurhash-rust-wasm.git", rev = "a81e33c46a10a63f1f0ed25aa48a6e3066d26804"}
 validator = { version = "0.16", features = ["derive"], optional = true }
-web-sys = { version = "0.3", features = ["Url", "ImageData", "HtmlCanvasElement", "CanvasRenderingContext2d"], optional = true }
+
+reqwest = { version = "0.11", features = ["json"], optional = true }
+futures = { version = "0.3", optional = true }
+
 wasm-bindgen = "0.2"
+wasm-bindgen-futures = { version = "0.4", optional = true }
+web-sys = { version = "0.3", features = ["Url", "ImageData", "HtmlCanvasElement", "CanvasRenderingContext2d"], optional = true }
 gloo = { version = "0.8", features = ["futures"], optional = true }
 
-log = "0.4"
+tracing = "0.1"
 dotenv_codegen = "0.15"
-thiserror = "1.0.36"
+thiserror = "1.0"
 derive_more = "0.99"
 
 chrono = { version = "0.4", features = ["serde"] }

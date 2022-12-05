@@ -49,8 +49,8 @@ pub fn quiz_card(props: &Props) -> Html {
     let creator = quiz.as_ref().map(|x| x.creator.clone()).flatten();
     let user = use_auth().user();
 
-    let creator_id = creator.as_ref().map(|x| x.id.clone()).flatten();
-    let user_id = user.as_ref().map(|x| x.id.clone()).flatten();
+    let creator_id = creator.as_ref().map(|x| x.user_id.clone()).flatten();
+    let user_id = user.as_ref().map(|x| x.user_id.clone()).flatten();
 
     let footer = html! { <QuizButton color={Color::Success} pointer=true icon={Solid::Play} text={"Play"} click={play} /> };
 
