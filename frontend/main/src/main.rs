@@ -28,8 +28,6 @@ mod search;
 
 #[function_component(App)]
 pub fn app() -> Html {
-    tracing::debug!("render main");
-
     let manager = use_toast_manager();
     let auth = use_auth_manager();
 
@@ -52,13 +50,14 @@ pub fn app() -> Html {
 }
 
 fn switch(routes: Route) -> Html {
+    let fallback = html! { <Loader /> };
     match routes {
         Route::Host { quiz_id } => {
-            html! { <Initializer {quiz_id} /> }
+            html! { <Suspense {fallback}> <Initializer {quiz_id} /> </Suspense> }
         }
         Route::Manage { code } => {
             let Code { session_id, quiz_id } = Code::from_str(&code).unwrap();
-            html! { <Initializer {quiz_id} {session_id} /> }
+            html! { <Suspense {fallback}> <Initializer {quiz_id} {session_id} /> </Suspense> }
         }
         Route::Create => {
             html! { <Create /> }
@@ -70,7 +69,6 @@ fn switch(routes: Route) -> Html {
             html! { <Admin /> }
         }
         Route::Sessions => {
-            let fallback = html! { <Loader /> };
             html! { <Suspense {fallback}> <Sessions /> </Suspense> }
         }
         Route::Profile => {

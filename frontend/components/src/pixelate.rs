@@ -24,6 +24,15 @@ impl Toast for Error {
     fn leave(&self) -> bool {
         false
     }
+    fn message(&self) -> String {
+        "Internal javascript error".to_owned()
+    }
+    fn help(&self) -> String {
+        "".to_owned()
+    }
+    fn reason(&self) -> String {
+        "Draw error".to_owned()
+    }
 }
 
 fn canvas_context(element: &HtmlCanvasElement) -> Result<CanvasRenderingContext2d, Error> {

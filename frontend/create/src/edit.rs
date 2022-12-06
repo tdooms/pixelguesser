@@ -47,7 +47,7 @@ pub fn round_edit(props: &Props) -> Html {
     let tooltip = generate_error_message(&&errors);
 
     let body = html! {
-        <div class="pt-5 pl-4 pr-5">
+        <div class="pt-5 pl-4 pr-5 pb-2">
         <simple::Field label="Answer" help={form.error("answer")} >
             <Input model={form.answer()} />
         </simple::Field>

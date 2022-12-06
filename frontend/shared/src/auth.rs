@@ -7,7 +7,7 @@ use yew::{use_context, use_state, UseStateHandle};
 
 use api::{Credentials, Error, Tokens, User};
 
-use crate::{spawn, use_startup};
+use crate::spawn;
 
 #[derive(PartialEq, Debug, Clone)]
 enum State {
@@ -124,10 +124,14 @@ async fn init(state: UseStateHandle<State>) {
 #[hook]
 pub fn use_auth_manager() -> UseAuthManagerHandle {
     let state = use_state(|| State::Loading);
-    tracing::info!("{:?}", *state);
+    let first = use_state(|| true);
 
-    let cloned = state.clone();
-    use_startup(move || spawn!(init(cloned)));
+    tracing::info!("authentication state: {:?}", *state);
+
+    if *first {
+        first.set(false);
+        spawn!(state; init(state));
+    }
 
     UseAuthManagerHandle { state }
 }

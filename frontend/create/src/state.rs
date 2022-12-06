@@ -4,7 +4,7 @@ use yew::hook;
 use yew::{use_state, UseStateHandle};
 
 use api::{Quiz, Result, Round};
-use shared::{spawn, use_auth, use_startup, use_toast, UseToastHandle};
+use shared::{spawn, use_auth, use_toast, UseToastHandle};
 
 pub enum Action {
     Quiz(Rc<Quiz>),
@@ -26,17 +26,14 @@ pub struct UseQuizCreateHandle {
 }
 
 impl UseQuizCreateHandle {
-    fn notify<T>(&self, result: Result<T>) -> Option<T> {
-        result.map_err(|err| self.toast.add(err)).ok()
-    }
-
     async fn load(self, token: Option<String>, quiz_id: u64) {
-        let mut quiz = match self.notify(Quiz::query_one(token, quiz_id, None).await) {
+        let result = Quiz::query_one(token, quiz_id, None).await;
+        let mut quiz = match self.toast.api(result) {
             Some(quiz) => quiz,
             None => return,
         };
 
-        quiz.rounds.resize(quiz.rounds.len().min(1), Default::default());
+        quiz.rounds.resize(quiz.rounds.len().max(1), Default::default());
         let rc = Rc::new(quiz);
 
         self.prev.set(Rc::clone(&rc));
@@ -52,10 +49,10 @@ impl UseQuizCreateHandle {
         let mut new = (*quiz).clone();
         new.creator_id = Some(creator_id);
 
-        let _ = self.notify(new.image.upload((*token).clone()).await);
+        let _ = self.toast.api(new.image.upload((*token).clone()).await);
 
         for (index, round) in new.rounds.iter_mut().enumerate() {
-            let _ = self.notify(round.image.upload((*token).clone()).await);
+            let _ = self.toast.api(round.image.upload((*token).clone()).await);
             round.round_index = index as u64
         }
 
@@ -65,13 +62,14 @@ impl UseQuizCreateHandle {
             None => Quiz::create((*token).clone(), rc).await,
         };
 
-        if let Some(quiz) = self.notify(result) {
+        if let Some(quiz) = self.toast.api(result) {
             self.quiz.set(Rc::new(quiz));
         }
     }
 
     async fn delete(self, token: Rc<String>) {
-        let _ = self.notify(Quiz::delete((*token).clone(), (*self.quiz).clone()).await);
+        let result = Quiz::delete((*token).clone(), (*self.quiz).clone()).await;
+        let _ = self.toast.api(result);
     }
 
     pub fn quiz(&self) -> Rc<Quiz> {
@@ -134,6 +132,8 @@ pub fn use_quiz_create(quiz_id: Option<u64>) -> UseQuizCreateHandle {
     let mut new = Quiz::default();
     new.rounds.push(Round::default());
 
+    let first = use_state(|| true);
+
     let prev = use_state(|| Rc::new(new.clone()));
     let quiz = use_state(|| Rc::new(new));
 
@@ -141,16 +141,12 @@ pub fn use_quiz_create(quiz_id: Option<u64>) -> UseQuizCreateHandle {
     let toast = use_toast();
 
     let res = UseQuizCreateHandle { prev, quiz, loading, toast };
-
     let token = use_auth().token().map(|x| (*x).clone());
-    let cloned = res.clone();
 
-    let startup = move || {
-        if let Some(quiz_id) = quiz_id {
-            spawn!(cloned.load(token, quiz_id))
-        }
-    };
-    use_startup(startup);
+    if let (true, Some(quiz_id)) = (*first, quiz_id) {
+        first.set(false);
+        spawn!(res; res.load(token, quiz_id))
+    }
 
     res
 }

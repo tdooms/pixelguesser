@@ -1,9 +1,10 @@
 use std::rc::Rc;
 
-use cobul::*;
-use yew::*;
-
 use api::{Participant, Player, Quiz, Session, SELF_ENDPOINT};
+use cobul::*;
+use fast_qr::{convert::svg::SvgBuilder, QRBuilder};
+use web_sys::{window, Window};
+use yew::*;
 
 #[derive(Clone, Debug, Properties, PartialEq)]
 pub struct Props {
@@ -23,7 +24,7 @@ pub fn player_column((name, _): (&String, &Player)) -> Html {
 #[function_component(Lobby)]
 pub fn lobby(props: &Props) -> Html {
     let Props { session, code, quiz } = &props;
-    let url = format!("{}/manage/{}", SELF_ENDPOINT, code);
+    let url = format!("{SELF_ENDPOINT}/manage/{code}");
 
     // SAFETY: Only errors if the url is too long.
     let generate_qr = || {
@@ -35,7 +36,10 @@ pub fn lobby(props: &Props) -> Html {
 
         // let (width, height) = buffer.dimensions();
         // PhotonImage::new(buffer.to_vec(), width, height).get_base64()
-        "".to_string()
+
+        let qrcode = QRBuilder::new(url.clone()).build().unwrap();
+        let svg = SvgBuilder::default().to_str(&qrcode);
+        format!("data:image/svg+xml;base64,{}", window().unwrap().btoa(&svg).unwrap())
     };
 
     let image = use_state(generate_qr);
@@ -55,7 +59,7 @@ pub fn lobby(props: &Props) -> Html {
         <Hero color={Color::Info} size={HeroSize::Small}>
             <Container class="has-text-centered">
                 <Subtitle> {subtitle} </Subtitle>
-                <img src={(*image).clone()} />
+                <img src={(*image).clone()} style="max-height:300px"/>
                 <p><a class="title is-3" href={url} target="_blank"> {code} </a></p>
             </Container>
         </Hero>

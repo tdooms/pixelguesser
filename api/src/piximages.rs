@@ -12,10 +12,10 @@ pub async fn upload(client: &Client, token: String, body: String) -> Result<Resp
         .body(body)
         .send()
         .await
-        .map_err(|_| Error::UnreachableHost("piximages", url))?
+        .map_err(|_| Error::Unreachable("piximages", url))?
         .error_for_status()
-        .map_err(|_| Error::StatusCode("piximages"))?
+        .map_err(|_| Error::ErrorStatus("piximages"))?
         .json()
         .await
-        .map_err(|_| Error::InvalidResponse("piximages"))
+        .map_err(|e| Error::InvalidResponse("piximages", e.to_string()))
 }

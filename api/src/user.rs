@@ -5,7 +5,7 @@ use hasura::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{Error, Image, Result, GRAPHQL_ENDPOINT};
+use crate::{Error, Result, GRAPHQL_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug, PartialEq)]
 pub struct Credentials {

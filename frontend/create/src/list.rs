@@ -123,7 +123,7 @@ pub fn round_list(props: &ListProps) -> Html {
 
     let part = move |index: usize| {
         clone!(start, hover, action, select, quiz);
-        let error = errors.get(index) == Some(&ValidationErrors::default());
+        let error = errors.get(index) != Some(&ValidationErrors::default());
 
         html! {
             <>

@@ -18,7 +18,7 @@ pub struct Props {
 pub fn unsplash(props: &Props) -> Html {
     let toast = use_toast();
     let func = move |filter: FilterBy| async move {
-        toast.maybe(api::search_photos(filter).await).unwrap_or_default()
+        toast.api(api::search_photos(filter).await).unwrap_or_default()
     };
 
     let filter = use_model(|| Rc::new(FilterBy { per_page: 10, ..Default::default() }));

@@ -12,12 +12,12 @@ async fn send(client: &Client, url: String, cred: Rc<Credentials>) -> Result<Tok
         .json(&cred)
         .send()
         .await
-        .map_err(|_| Error::UnreachableHost("pixauth", url))?
+        .map_err(|_| Error::Unreachable("pixauth", url))?
         .error_for_status()
-        .map_err(|_| Error::StatusCode("pixauth"))?
+        .map_err(|_| Error::ErrorStatus("pixauth"))?
         .json()
         .await
-        .map_err(|_| Error::InvalidResponse("pixauth"))
+        .map_err(|e| Error::InvalidResponse("pixauth", e.to_string()))
 }
 
 pub async fn login(cred: Rc<Credentials>) -> Result<Tokens, Error> {

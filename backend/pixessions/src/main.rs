@@ -41,11 +41,13 @@ async fn session_ws(
     ws.on_upgrade(move |socket| handle_session(socket, ext.0, session_id))
 }
 
-async fn create_session(ext: Extension<Global>, quiz_id: Path<u32>, mode: Path<Mode>) -> String {
+async fn create_session(ext: Extension<Global>, path: Path<(u32, Mode)>) -> String {
     let session_id = rand::thread_rng().gen::<u32>();
     let mut lock = ext.0.lock().await;
 
-    let state = State::new(Session::new(quiz_id.0, mode.0));
+    let (quiz_id, mode) = *path;
+
+    let state = State::new(Session::new(quiz_id, mode));
     lock.insert(session_id, Arc::new(Mutex::new(state)));
 
     tracing::info!("created session {session_id}");
@@ -75,7 +77,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/ws/:session_id", get(session_ws))
-        .route("/:quiz_id", post(create_session))
+        .route("/:quiz_id/:mode", post(create_session))
         .route("/", get(get_sessions))
         .layer(Extension(global))
         .layer(cors);

@@ -1,28 +1,13 @@
 use std::rc::Rc;
 
 use cobul::{Color, Loader};
+use yew::suspense::use_future;
 use yew::*;
 
 use api::{Action, Participant, Quiz, Session, WebsocketTask};
 use host::Host;
 use manage::Manage;
-use shared::{callback, use_async_startup, use_auth, Level, Toast};
-
-#[derive(derive_more::Display, Clone, Copy)]
-pub enum Error {
-    #[display(fmt = "Unable to start a quiz, please try again later")]
-    Unreachable,
-}
-
-impl Toast for Error {
-    fn level(&self) -> Level {
-        Level::Error
-    }
-
-    fn leave(&self) -> bool {
-        true
-    }
-}
+use shared::{callback, use_auth, use_toast, Level, Toast};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
@@ -54,16 +39,14 @@ async fn init(
     session: UseStateHandle<Option<Rc<Session>>>,
     props: Props,
     token: Option<String>,
-) -> Result<(), Error> {
-    let mapper = |_| Error::Unreachable;
-
+) -> Result<(), api::Error> {
     let callback = move |response| match response {
         Ok(new) => session.set(Some(Rc::new(new))),
         Err(err) => tracing::error!("{err}"),
     };
 
-    let created = create_session(&props, token).await.map_err(mapper)?;
-    let task = WebsocketTask::new(created.session_id, callback).map_err(mapper)?;
+    let created = create_session(&props, token).await?;
+    let task = WebsocketTask::new(created.session_id, callback)?;
 
     task.send(&Action::Join(created.participant.clone()));
 
@@ -73,31 +56,27 @@ async fn init(
 }
 
 #[function_component(Initializer)]
-pub fn initializer(props: &Props) -> Html {
-    let websocket = use_state(|| None);
+pub fn initializer(props: &Props) -> HtmlResult {
+    let toast = use_toast();
+    let ws = use_state(|| None);
     let state = use_state(|| None);
     let session = use_state(|| None);
     let token = use_auth().token().map(|x| (*x).clone());
 
-    use_async_startup(init(
-        websocket.clone(),
-        state.clone(),
-        session.clone(),
-        props.clone(),
-        token,
-    ));
+    let fut = init(ws.clone(), state.clone(), session.clone(), props.clone(), token);
+    use_future(|| async move { toast.api(fut.await) })?;
 
-    let action = callback!(websocket; move |action| {
-        websocket.as_ref().unwrap().send(&action)
-    });
+    let action = callback!(ws; move |action| ws.as_ref().unwrap().send(&action));
 
-    match (props.session_id, (*state).clone(), (*session).clone()) {
+    Ok(match (props.session_id, (*state).clone(), (*session).clone()) {
         (Some(_), Some(State { quiz, .. }), Some(session)) => html! {
             <Manage {session} {quiz} {action} />
         },
         (None, Some(State { session_id, quiz, .. }), Some(session)) => html! {
             <Host {session_id} {session} {quiz} {action}/>
         },
-        _ => html! { <Loader color={Color::Info} /> },
-    }
+        _ => html! {
+            <Loader color={Color::Info} />
+        },
+    })
 }

@@ -194,12 +194,12 @@ pub async fn search_photos(filter: FilterBy) -> Result<(Vec<Photo>, Option<u64>)
         .header("Authorization", format!("Client-ID {}", UNSPLASH_KEY))
         .send()
         .await
-        .map_err(|_| Error::UnreachableHost("unsplash", url))?
+        .map_err(|_| Error::Unreachable("unsplash", url))?
         .error_for_status()
-        .map_err(|_| Error::StatusCode("unsplash"))?
+        .map_err(|_| Error::ErrorStatus("unsplash"))?
         .json()
         .await
-        .map_err(|_| Error::InvalidResponse("unsplash"))?;
+        .map_err(|e| Error::InvalidResponse("unsplash", e.to_string()))?;
 
     Ok((response.results, Some(response.total_pages)))
 }

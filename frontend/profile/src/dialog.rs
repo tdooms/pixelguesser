@@ -30,7 +30,7 @@ pub fn dialog(Props { change, page }: &Props) -> Html {
 
     let submit = callback!(page, auth, toast; move |credentials: Rc<api::Credentials>| {
         spawn!(page, credentials, auth, toast; async move {
-            toast.maybe(authenticate(credentials, page, auth).await);
+            toast.api(authenticate(credentials, page, auth).await);
         });
     });
 

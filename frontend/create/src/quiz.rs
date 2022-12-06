@@ -32,7 +32,7 @@ pub fn quiz_page(props: &Props) -> Html {
     let user = use_auth().user();
     let toast = use_toast();
 
-    let creator = match toast.maybe(user.ok_or(Forbidden)) {
+    let creator = match toast.maybe(user.ok_or(Forbidden("logged in"))) {
         Some(user) => user.nickname.clone(),
         None => return html! {},
     };

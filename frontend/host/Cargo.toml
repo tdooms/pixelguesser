@@ -14,6 +14,7 @@ cobul = { git = "https://github.com/tdooms/cobul.git", features = ["fa"] }
 yew-router = "0.17"
 yew = "0.20"
 
+fast_qr = { version = "0.6", features = ["svg"] }
 tracing = "0.1"
 gloo = "0.8.0"
-web-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window"] }

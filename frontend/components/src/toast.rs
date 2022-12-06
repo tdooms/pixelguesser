@@ -28,7 +28,7 @@ pub fn toast_view(toast: &dyn Toast, remove: Callback<()>) -> Html {
                 <Icon {icon} color={text_color}/>
             </Column>
             <Column>
-                {toast.to_string()}
+                {toast.message()}
             </Column>
             <Column size={ColumnSize::IsNarrow} class="p-0">
                 <Button click={remove} {color} light=true> <Icon icon={Solid::Xmark} size={Size::Large} /> </Button>

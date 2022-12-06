@@ -1,9 +1,9 @@
-use futures::{future, stream, StreamExt};
+use futures::{stream, StreamExt};
 use reqwest::Client;
 
-use api::{upload, Error, Image, Quiz, Result, UPLOAD_ENDPOINT};
+use api::{Error, Image, Quiz, Result, UPLOAD_ENDPOINT};
 
-async fn upload_image(client: &Client, image: &mut Image, bearer: String) -> Result<()> {
+async fn upload_image(image: &mut Image, bearer: String) -> Result<()> {
     let filename = (*std::mem::take(image).url().unwrap()).clone();
     let path = format!("init/images/{filename}");
 
@@ -31,7 +31,7 @@ async fn upload_image(client: &Client, image: &mut Image, bearer: String) -> Res
 //     Ok(quiz)
 // }
 
-pub async fn upload_images(client: &Client, quizzes: &mut [Quiz], bearer: String) -> Result<()> {
+pub async fn upload_images(quizzes: &mut [Quiz], bearer: String) -> Result<()> {
     let mut images = vec![];
     for quiz in quizzes {
         images.push(&mut quiz.image);
@@ -42,7 +42,7 @@ pub async fn upload_images(client: &Client, quizzes: &mut [Quiz], bearer: String
     // let results = future::join_all(iterator).await;
 
     let results: Vec<_> = stream::iter(images)
-        .map(|img| upload_image(client, img, bearer.clone()))
+        .map(|img| upload_image(img, bearer.clone()))
         .buffer_unordered(8)
         .collect()
         .await;
@@ -50,17 +50,17 @@ pub async fn upload_images(client: &Client, quizzes: &mut [Quiz], bearer: String
     results.into_iter().collect()
 }
 
-pub async fn delete_images(client: &Client, token: String) -> Result<()> {
+pub async fn delete_images(token: String) -> Result<()> {
     let url = format!("{UPLOAD_ENDPOINT}/reset");
 
-    let _ = client
+    let _ = Client::new()
         .post(&url)
         .header("Authorization", token)
         .send()
         .await
-        .map_err(|_| Error::UnreachableHost("piximages", url))?
+        .map_err(|_| Error::Unreachable("piximages", url))?
         .error_for_status()
-        .map_err(|_| Error::StatusCode("piximages"))?;
+        .map_err(|_| Error::ErrorStatus("piximages"))?;
 
     Ok(())
 }

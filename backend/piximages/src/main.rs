@@ -65,6 +65,7 @@ pub async fn upload(
     path: &State<Folder>,
     db: &State<SqlitePool>,
 ) -> Result<Json<Response>, Error> {
+    let url = std::env::var("IMAGE_ENDPOINT").unwrap();
     let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
@@ -86,7 +87,7 @@ pub async fn upload(
     let vec = original.to_rgba8().into_raw();
     let blurhash = encode(vec, 4, 3, width as usize, height as usize).unwrap();
 
-    let url = format!("{IMAGE_ENDPOINT}/{filename}");
+    let url = format!("{url}/{filename}");
     tokio::task::spawn_blocking(move || compute_image(&base, &filename, &original));
 
     Ok(Json(Response { url, blurhash }))

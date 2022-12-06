@@ -39,7 +39,7 @@ pub fn create(props: &Props) -> Html {
     let toast = use_toast();
 
     let zipped = auth.user().zip(auth.token());
-    let (user, token) = match toast.maybe(zipped.ok_or(Forbidden)) {
+    let (user, token) = match toast.maybe(zipped.ok_or(Forbidden("logged in"))) {
         Some((user, token)) => (user, token),
         _ => return html! {},
     };

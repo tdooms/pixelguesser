@@ -3,21 +3,20 @@ pub enum Error {
     #[error("Hasura error: {0:?}")]
     Hasura(#[from] hasura::Error),
 
-    #[error("Serde error: {0:?}")]
-    Serde(#[from] serde_json::Error),
-
+    // #[error("Serde error: {0:?}")]
+    // Serde(#[from] serde_json::Error),
     #[cfg(feature = "session")]
     #[error("Session error {0}")]
     Session(#[from] pixessions::Error),
 
     #[error("Error connecting to {0} at {1}")]
-    UnreachableHost(&'static str, String),
+    Unreachable(&'static str, String),
 
     #[error("Received response from {0} with error status")]
-    StatusCode(&'static str),
+    ErrorStatus(&'static str),
 
-    #[error("Received invalid response from {0}")]
-    InvalidResponse(&'static str),
+    #[error("Received invalid response from {0}: {1}")]
+    InvalidResponse(&'static str, String),
 
     #[error("Websocket connection closed")]
     WsClosed,
