@@ -5,7 +5,7 @@ use hasura::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{Error, Result, GRAPHQL_ENDPOINT};
+use crate::{Error, Result, HASURA_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug, PartialEq)]
 pub struct Credentials {
@@ -35,7 +35,7 @@ pub struct User {
 impl User {
     pub async fn query_one(token: Option<String>, user_id: String) -> Result<Option<User>> {
         let body = QueryByPk::new(UserPk { user_id });
-        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?.parse()?)
+        Ok(query!(body).token(token).send(HASURA_ENDPOINT).await?.parse()?)
     }
 
     pub async fn create(token: Option<String>, user: Rc<User>) -> Result<User> {
@@ -43,7 +43,7 @@ impl User {
 
         mutation!(body)
             .token(token)
-            .send(GRAPHQL_ENDPOINT)
+            .send(HASURA_ENDPOINT)
             .await?
             .parse()?
             .ok_or(Error::EmptyResponse)

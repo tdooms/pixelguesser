@@ -6,14 +6,12 @@ use gloo::net::websocket::futures::WebSocket;
 use gloo::net::websocket::{Message, WebSocketError};
 use reqwest::Client;
 use wasm_bindgen_futures::spawn_local;
+use base64::engine::fast_portable::{FastPortable, FastPortableConfig};
+use base64::alphabet::URL_SAFE;
 
 use pixessions::{Action, Session};
 
-use crate::{Error, SESSION_ENDPOINT, WS_ENDPOINT};
-
-// Removed i, I, o, O -> 48 chars
-// This list MUST be sorted and contain unique characters
-static CHARS: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
+use crate::{Error, SESSION_ENDPOINT, WEBSOCKET_ENDPOINT};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Code {
@@ -25,30 +23,21 @@ impl FromStr for Code {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut code = 0u64;
+        let engine = FastPortable::from(&URL_SAFE, FastPortableConfig::new());
 
-        for char in s.chars() {
-            let index = CHARS.iter().position(|c| char::from(*c) == char).ok_or(())?;
-            code = code * (CHARS.len() as u64) + (index as u64);
-        }
+        let decoded = base64::decode_engine(s, &engine).unwrap();
+        let code = u64::from_le_bytes(decoded.try_into().unwrap());
 
-        // It's important the quiz id is the first part of the code in binary (most significant bits)
-        // As quiz ids are usually small, this reduces the length of the ascii code.
-        Ok(Code { session_id: (code & 0xFFFFFFFF) as u64, quiz_id: (code >> 32) as u64 })
+        Ok(Code{session_id: code >> 32, quiz_id: code & 0xFFFFFFFF})
     }
 }
 
 impl ToString for Code {
     fn to_string(&self) -> String {
-        let mut string = String::new();
-        let mut code = self.session_id as u64 + ((self.quiz_id as u64) << 32);
+        let engine = FastPortable::from(&URL_SAFE, FastPortableConfig::new());
+        let code = (self.quiz_id << 32 | self.session_id).to_le_bytes();
 
-        while code != 0 {
-            let rem = code % CHARS.len() as u64;
-            string.insert(0, char::from(CHARS[rem as usize]));
-            code /= CHARS.len() as u64;
-        }
-        string
+        base64::encode_engine(&code, &engine)
     }
 }
 
@@ -129,7 +118,7 @@ impl WebsocketTask {
         session_id: u64,
         callback: impl Fn(Result<Session, Error>) + 'static,
     ) -> Result<Self, Error> {
-        let url = format!("{WS_ENDPOINT}/{session_id}");
+        let url = format!("{WEBSOCKET_ENDPOINT}/{session_id}");
         let ws = WebSocket::open(&url).map_err(|_| Error::Unreachable("ws", url))?;
 
         let (_marker, cancel) = oneshot::channel();

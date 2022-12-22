@@ -5,7 +5,7 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
-use rocket::{delete, post, put, State};
+use rocket::{post, State};
 use sha3::Digest;
 
 use pixauth::{Claims, HasuraClaims, Role, Tokens};
@@ -98,18 +98,18 @@ pub async fn login(
     Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }
 
-#[post("/refresh", data = "<body>")]
-pub async fn refresh(body: &str, pool: &State<SqlitePool>) -> Result<Json<Tokens>, Error> {
-    let refresh = generate_refresh();
-    let query = "update users set refresh=$1 where refresh=$2 returning rowid, *";
-
-    let user: User = sqlx::query_as(query).bind(&refresh).bind(body).fetch_one(&**pool).await?;
-
-    let id = user.rowid.to_string();
-    let (bearer, expiry) = create_jwt(&user)?;
-
-    Ok(Json(Tokens { bearer, refresh, id, expiry }))
-}
+// #[post("/refresh", data = "<body>")]
+// pub async fn refresh(body: &str, pool: &State<SqlitePool>) -> Result<Json<Tokens>, Error> {
+//     let refresh = generate_refresh();
+//     let query = "update users set refresh=$1 where refresh=$2 returning rowid, *";
+//
+//     let user: User = sqlx::query_as(query).bind(&refresh).bind(body).fetch_one(&**pool).await?;
+//
+//     let id = user.rowid.to_string();
+//     let (bearer, expiry) = create_jwt(&user)?;
+//
+//     Ok(Json(Tokens { bearer, refresh, id, expiry }))
+// }
 
 // #[put("/update", data = "<body>")]
 // pub async fn update(

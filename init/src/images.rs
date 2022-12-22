@@ -1,7 +1,7 @@
 use futures::{stream, StreamExt};
 use reqwest::Client;
 
-use api::{Error, Image, Quiz, Result, UPLOAD_ENDPOINT};
+use api::{Error, Image, Quiz, Result, IMAGE_ENDPOINT};
 
 async fn upload_image(image: &mut Image, bearer: String) -> Result<()> {
     let filename = (*std::mem::take(image).url().unwrap()).clone();
@@ -51,7 +51,7 @@ pub async fn upload_images(quizzes: &mut [Quiz], bearer: String) -> Result<()> {
 }
 
 pub async fn delete_images(token: String) -> Result<()> {
-    let url = format!("{UPLOAD_ENDPOINT}/reset");
+    let url = format!("{IMAGE_ENDPOINT}/reset");
 
     let _ = Client::new()
         .post(&url)

@@ -1,9 +1,7 @@
 [build]
-# Build in release mode.
 release = false
 
 [watch]
-# Paths to watch. The `build.target`'s parent folder is watched by default.
 watch = ["../../frontend", "../../api"]
 
 [serve]
@@ -12,6 +10,6 @@ addr = "127.0.0.1"
 # The port to serve on.
 port = 8900
 # Open a browser tab once the initial build is complete.
-open = false
+open = true
 # Disable auto-reload of the web app.
 no_autoreload = false

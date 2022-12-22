@@ -1,12 +1,10 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
-use std::str::FromStr;
+use std::net::{SocketAddrV4};
 use std::sync::Arc;
 
 use axum::extract::{Path, WebSocketUpgrade};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
-use clap::Parser;
 use futures::{SinkExt, StreamExt};
 use pixessions::{Mode, Session};
 use rand::Rng;
@@ -17,21 +15,7 @@ use crate::handle::handle_session;
 use crate::state::{Global, Local, State};
 
 mod handle;
-mod lib;
 mod state;
-
-/// sessions is a server to manage pixelguesser game sessions
-#[derive(Parser)]
-#[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
-struct Opts {
-    /// Sets the port to be used
-    #[clap(short, long, default_value = "8000")]
-    port: u16,
-
-    /// Sets the ip address to be used
-    #[clap(short, long, default_value = "127.0.0.1")]
-    address: String,
-}
 
 async fn session_ws(
     ws: WebSocketUpgrade,
@@ -64,12 +48,12 @@ async fn get_sessions(ext: Extension<Global>) -> Json<Vec<Session>> {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv::dotenv()?;
     tracing_subscriber::fmt::init();
-    let opts: Opts = Opts::parse();
 
-    let v4 = SocketAddrV4::new(Ipv4Addr::from_str(&opts.address).unwrap(), opts.port);
-    let address = SocketAddr::from(v4);
+    let env = std::env::var("SESSION_ADDRESS")?;
+    let address = env.parse::<SocketAddrV4>()?.into();
 
     let global = Global::default();
 
@@ -83,5 +67,7 @@ async fn main() {
         .layer(cors);
 
     tracing::info!("listening on {}", address);
-    axum::Server::bind(&address).serve(app.into_make_service()).await.unwrap();
+    axum::Server::bind(&address).serve(app.into_make_service()).await?;
+
+    Ok(())
 }

@@ -5,7 +5,7 @@ use hasura::*;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::{Error, Image, Result, Round, User, GRAPHQL_ENDPOINT};
+use crate::{Error, Image, Result, Round, User, HASURA_ENDPOINT};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hasura)]
 #[hasura(table = "tags")]
@@ -71,7 +71,7 @@ impl Quiz {
 
         let key = "x-hasura-session-id";
         let value = session.map(|x| x.to_string()).unwrap_or_default();
-        let url = GRAPHQL_ENDPOINT;
+        let url = HASURA_ENDPOINT;
 
         let request = Query::new().returning(returning);
         let response = query!(request).token(token).header(key, value).send(url).await?;
@@ -86,7 +86,7 @@ impl Quiz {
         let key = "x-hasura-session-id";
         let value = session.map(|x| x.to_string()).unwrap_or_default();
 
-        let fut = query!(body).token(token).header(key, value).send(GRAPHQL_ENDPOINT);
+        let fut = query!(body).token(token).header(key, value).send(HASURA_ENDPOINT);
         let mut res: Quiz = fut.await?.parse()?.ok_or(Error::EmptyResponse)?;
 
         res.rounds.sort_by_key(|x| x.round_index);
@@ -99,12 +99,12 @@ impl Quiz {
         let returning = Quiz::except(&[Quiz::rounds(Round::all())]);
 
         let body = Query::new().conditions(conditions).returning(returning);
-        Ok(query!(body).token(token).send(GRAPHQL_ENDPOINT).await?.parse()?)
+        Ok(query!(body).token(token).send(HASURA_ENDPOINT).await?.parse()?)
     }
 
     pub async fn create(token: String, quiz: Rc<Quiz>) -> Result<Quiz> {
         let body = InsertOne::new(quiz.as_ref());
-        let fut = mutation!(body).token(Some(token)).send(GRAPHQL_ENDPOINT);
+        let fut = mutation!(body).token(Some(token)).send(HASURA_ENDPOINT);
 
         fut.await?.parse()?.ok_or(Error::EmptyResponse)
     }
@@ -120,7 +120,7 @@ impl Quiz {
 
         let quiz = UpdateByPk::new(QuizPk { quiz_id }, quiz.as_ref());
 
-        let res = mutation!(tags, rounds, quiz).token(Some(token)).send(GRAPHQL_ENDPOINT).await?;
+        let res = mutation!(tags, rounds, quiz).token(Some(token)).send(HASURA_ENDPOINT).await?;
         res.parse()?.2.ok_or(Error::EmptyResponse)
     }
 
@@ -128,7 +128,7 @@ impl Quiz {
         let first = DeleteByPk::new(QuizPk { quiz_id: quiz.quiz_id.unwrap() });
         mutation!(first)
             .token(Some(token))
-            .send(GRAPHQL_ENDPOINT)
+            .send(HASURA_ENDPOINT)
             .await?
             .parse()?
             .ok_or(Error::EmptyResponse)

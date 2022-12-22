@@ -1,8 +1,8 @@
 use std::path::Path;
 
-use base64::URL_SAFE;
+use base64::alphabet::URL_SAFE;
+use base64::engine::fast_portable::{FastPortable, FastPortableConfig};
 use blurhash_wasm::encode;
-use clap::Parser;
 use image::{DynamicImage, GenericImageView};
 use rocket::data::ToByteUnit;
 use rocket::fs::NamedFile;
@@ -42,8 +42,8 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
 pub struct Folder(String);
 
 #[get("/<img>/<resolution>")]
-pub async fn download(img: &str, resolution: &str) -> Option<NamedFile> {
-    let path = format!("backend/piximages/data/{resolution}/{img}.jpg");
+pub async fn download(img: &str, resolution: &str, path: &State<Folder>) -> Option<NamedFile> {
+    let path = format!("{}/{resolution}/{img}.jpg", path.0);
     NamedFile::open(Path::new(&path)).await.ok()
 }
 
@@ -71,8 +71,10 @@ pub async fn upload(
     let buffer = base64::decode(&base64.value)?;
     let format = image::guess_format(&buffer)?;
 
+    let engine = FastPortable::from(&URL_SAFE, FastPortableConfig::new());
+
     let hash = &sha3::Sha3_256::new_with_prefix(&buffer).finalize();
-    let filename = base64::encode_config(&hash, URL_SAFE);
+    let filename = base64::encode_engine(&hash, &engine);
     let base = path.inner().0.clone();
 
     sqlx::query("insert into owners (image, user) values (?1, ?2)")
@@ -125,7 +127,7 @@ pub async fn delete(
 }
 
 #[post("/reset")]
-pub async fn reset(token: Claims, path: &State<Folder>, db: &State<SqlitePool>) {
+pub async fn reset(_token: Claims, path: &State<Folder>, db: &State<SqlitePool>) {
     // TODO: verify admin
     // token.sub = "admin".to_string();
 
@@ -138,35 +140,21 @@ pub async fn reset(token: Claims, path: &State<Folder>, db: &State<SqlitePool>) 
     }
 }
 
-/// imager (IMAGE-serveR) is a program to efficiently serve images
-#[derive(Parser)]
-#[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
-struct Opts {
-    /// Sets the folder to be served
-    #[clap(short, long, default_value = "./backend/piximages/data")]
-    folder: String,
-
-    /// Sets the database to be used
-    #[clap(short, long, default_value = "./backend/piximages/db.sqlite")]
-    database: String,
-
-    /// Sets the port to be used
-    #[clap(short, long, default_value = "8000")]
-    port: u16,
-
-    /// Sets the ip address to be used
-    #[clap(short, long, default_value = "127.0.0.1")]
-    address: String,
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv::dotenv().unwrap();
+    dotenv::dotenv()?;
     tracing_subscriber::fmt::init();
 
-    let Opts { database, port, address, folder } = Opts::parse();
+    let folder = std::env::var("IMAGE_FOLDER")?;
+    let database = std::env::var("IMAGE_DATABASE")?;
 
-    let config = rocket::Config { port, address: address.parse()?, ..Default::default() };
+    let env = std::env::var("IMAGE_ADDRESS")?;
+    let vec: Vec<_> = env.split(':').collect();
+
+    let address = vec[0].parse().map_err(|_| "invalid address")?;
+    let port = vec[1].parse().map_err(|_| "invalid port")?;
+
+    let config = rocket::Config { port, address, ..Default::default() };
     let cors = CorsOptions::default().to_cors()?;
 
     let _ = std::fs::create_dir(&folder);
@@ -185,7 +173,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let _ = rocket::custom(config)
         .mount("/", routes![upload, download, reset])
-        .manage(Folder(folder))
+        .manage(Folder(folder.to_owned()))
         .manage(db)
         .attach(cors)
         .launch()

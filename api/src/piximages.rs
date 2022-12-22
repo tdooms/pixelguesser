@@ -1,10 +1,10 @@
 use piximages::Response;
 use reqwest::Client;
 
-use crate::{Error, UPLOAD_ENDPOINT};
+use crate::{Error, IMAGE_ENDPOINT};
 
 pub async fn upload(client: &Client, token: String, body: String) -> Result<Response, Error> {
-    let url = format!("{UPLOAD_ENDPOINT}/upload");
+    let url = format!("{IMAGE_ENDPOINT}/upload");
 
     client
         .post(&url)

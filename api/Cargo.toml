@@ -5,7 +5,7 @@ edition = "2021"
 
 [features]
 auth = ["validator", "pixauth"]
-sessions = ["gloo", "futures", "wasm-bindgen-futures", "reqwest", "pixessions"]
+sessions = ["gloo", "futures", "wasm-bindgen-futures", "reqwest", "base64", "pixessions"]
 images = ["gloo", "web-sys", "reqwest", "piximages"]
 graphql = ["validator", "images", "hasura"]
 default = []
@@ -21,6 +21,7 @@ serde_json = "1.0"
 serde_repr = "0.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
 
+base64 = {version = "0.20", optional = true}
 blurhash-wasm = { git = "https://github.com/fpapado/blurhash-rust-wasm.git", rev = "a81e33c46a10a63f1f0ed25aa48a6e3066d26804"}
 validator = { version = "0.16", features = ["derive"], optional = true }
 

@@ -1,4 +1,3 @@
-use clap::Parser;
 use rocket::{routes, Build, Rocket};
 use rocket_cors::CorsOptions;
 use sha3::Digest;
@@ -9,24 +8,8 @@ use routes::*;
 mod error;
 mod routes;
 
-#[derive(clap::Parser)]
-#[clap(version = "1.0", author = "Thomas Dooms <thomas@dooms.eu>")]
-struct Opts {
-    /// Sets the port to be used
-    #[clap(short, long, default_value = "8004")]
-    port: u16,
-
-    /// Sets the ip address to be used
-    #[clap(short, long, default_value = "127.0.0.1")]
-    address: String,
-
-    /// Sets the database to be used
-    #[clap(short, long, default_value = "./backend/pixauth/db.sqlite")]
-    database: String,
-}
-
-async fn setup(config: rocket::Config, path: String) -> Rocket<Build> {
-    std::fs::OpenOptions::new().write(true).create(true).open(&path).unwrap();
+async fn setup(config: rocket::Config, path: &str) -> Rocket<Build> {
+    std::fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
 
     let url = format!("file:{path}");
     let pool = SqlitePool::connect(&url).await.unwrap();
@@ -39,14 +22,13 @@ async fn setup(config: rocket::Config, path: String) -> Rocket<Build> {
 
     let hash = &sha3::Sha3_256::new_with_prefix(password).finalize();
     let query = "insert into users (email, pw_hash) values ($1, $2) returning rowid, *";
-    let user: User = sqlx::query_as(query)
+
+    sqlx::query(query)
         .bind(&email)
         .bind(base64::encode(&hash))
         .fetch_one(&pool)
         .await
         .unwrap();
-
-    println!("{}", create_jwt(&user).unwrap().0);
 
     rocket::custom(config)
         .mount("/", routes![login, signup])
@@ -58,11 +40,18 @@ async fn setup(config: rocket::Config, path: String) -> Rocket<Build> {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv()?;
 
-    let opts: Opts = Opts::parse();
-    let address = opts.address.parse()?;
-    let config = rocket::Config { port: opts.port, address, ..Default::default() };
+    let env = std::env::var("AUTH_ADDRESS")?;
+    let vec: Vec<_> = env.split(':').collect();
 
-    let _ = setup(config, opts.database).await.launch().await?;
+    let address = vec[0].parse().map_err(|_| "invalid address")?;
+    let port = vec[1].parse().map_err(|_| "invalid port")?;
+
+    let database = std::env::var("AUTH_DATABASE")?;
+
+    let config = rocket::Config { port, address, ..Default::default() };
+
+    tracing::info!("listening on {}", address);
+    let _ = setup(config, &database).await.launch().await?;
 
     Ok(())
 }
