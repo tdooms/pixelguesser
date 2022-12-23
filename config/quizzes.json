@@ -855,9 +855,185 @@
                 {
                     "points": 1,
                     "guesses": 1,
-                    "answer": "clovis",
+                    "answer": "Clovis",
                     "image": {
-                        "url": "paul.jpg"
+                        "url": "clovis.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Thierry",
+                    "image": {
+                        "url": "andre.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Christina",
+                    "image": {
+                        "url": "christina.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Margeurite",
+                    "image": {
+                        "url": "margeurite.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Thomas",
+                    "image": {
+                        "url": "thomas.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Other kid",
+                    "image": {
+                        "url": "otherkid.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Els",
+                    "image": {
+                        "url": "els.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Katsiarina",
+                    "image": {
+                        "url": "katsiarina.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Silke",
+                    "image": {
+                        "url": "silke.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Audrey",
+                    "image": {
+                        "url": "audrey.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Aldo",
+                    "image": {
+                        "url": "aldo2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Alexandre",
+                    "image": {
+                        "url": "alexandre.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Maxime",
+                    "image": {
+                        "url": "maxime.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Nicolas",
+                    "image": {
+                        "url": "nicolas.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Louis",
+                    "image": {
+                        "url": "louis.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Mateo",
+                    "image": {
+                        "url": "mateo.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Els",
+                    "image": {
+                        "url": "els2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Patricia",
+                    "image": {
+                        "url": "patricia.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Andre",
+                    "image": {
+                        "url": "andre2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Louis",
+                    "image": {
+                        "url": "louis2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Thomas",
+                    "image": {
+                        "url": "thomas2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Maxime & Louis",
+                    "image": {
+                        "url": "max_louis.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Silke & Alexandre",
+                    "image": {
+                        "url": "silke_alexandre.jpg"
                     }
                 }
             ]
