@@ -5,7 +5,7 @@ pub enum Route {
     #[at("/manage/:code")]
     Manage { code: String },
     #[at("/host/:quiz_id")]
-    Host { quiz_id: u64 },
+    Host { quiz_id: u32 },
     #[at("/create")]
     Create,
     #[at("/admin")]
@@ -13,7 +13,7 @@ pub enum Route {
     #[at("/admin/sessions")]
     Sessions,
     #[at("/update/:quiz_id")]
-    Update { quiz_id: u64 },
+    Update { quiz_id: u32 },
     #[at("/profile")]
     Profile,
     #[at("/library")]

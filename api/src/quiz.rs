@@ -10,8 +10,8 @@ use crate::{Error, Image, Result, Round, User, HASURA_ENDPOINT};
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hasura)]
 #[hasura(table = "tags")]
 pub struct Tag {
-    #[hasura(pk = "u64")]
-    pub quiz_id: Option<u64>,
+    #[hasura(pk = "u32")]
+    pub quiz_id: Option<u32>,
 
     #[hasura(pk = "String")]
     pub value: String,
@@ -20,8 +20,8 @@ pub struct Tag {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Validate, Hasura, Default)]
 #[hasura(table = "quizzes")]
 pub struct Quiz {
-    #[hasura(pk = "u64")]
-    pub quiz_id: Option<u64>,
+    #[hasura(pk = "u32")]
+    pub quiz_id: Option<u32>,
 
     pub public: bool,
     pub complete: bool,
@@ -61,7 +61,7 @@ pub struct Quiz {
 impl Quiz {
     pub async fn query_many(
         token: Option<String>,
-        session: Option<u64>,
+        session: Option<u32>,
         rounds: bool,
     ) -> Result<Vec<Quiz>> {
         let returning = match rounds {
@@ -75,16 +75,16 @@ impl Quiz {
 
         let request = Query::new().returning(returning);
         let response = query!(request).token(token).header(key, value).send(url).await?;
-        tracing::info!("response: {}", response);
+        // tracing::info!("response: {}", response);
 
         response.parse().map_err(Error::from)
     }
 
-    pub async fn query_one(token: Option<String>, quiz: u64, session: Option<u64>) -> Result<Quiz> {
-        let body = QueryByPk::new(QuizPk { quiz_id: quiz.into() });
+    pub async fn query_one(token: Option<String>, quiz_id: u32, session_id: Option<u32>) -> Result<Quiz> {
+        let body = QueryByPk::new(QuizPk { quiz_id: quiz_id.into() });
 
         let key = "x-hasura-session-id";
-        let value = session.map(|x| x.to_string()).unwrap_or_default();
+        let value = session_id.map(|x| x.to_string()).unwrap_or_default();
 
         let fut = query!(body).token(token).header(key, value).send(HASURA_ENDPOINT);
         let mut res: Quiz = fut.await?.parse()?.ok_or(Error::EmptyResponse)?;

@@ -1,1 +1,0 @@
-gq https://pixelguesser.hasura.app/v1/graphql -H "x-hasura-admin-secret: xxxxx" --introspect > schema.graphql

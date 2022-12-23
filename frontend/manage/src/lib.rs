@@ -29,18 +29,23 @@ pub struct PlayerProps {
 pub fn player_form(props: &PlayerProps) -> Html {
     let PlayerProps { model, submit } = props.clone();
 
-    html! {
-        <Columns>
-        <Column>
-        <Input {model} size={Size::Large} placeholder={"eg. Alex"} />
-        </Column>
+    let cloned = submit.clone();
+    let onkeypress = Callback::from(move |e: KeyboardEvent| {
+        if e.key() == "Enter" {
+            e.prevent_default();
+            cloned.emit(());
+        }
+    });
 
-        <Column size={ColumnSize::IsNarrow}>
-        <simple::Field enter={submit.clone()}>
+    html! {
+        <div class="field is-grouped" {onkeypress}>
+            <Control expanded=true>
+            <Input {model} size={Size::Large} placeholder={"eg. Alex"} />
+            </Control>
+            <Control>
             <simple::Button click={submit} size={Size::Large} color={Color::Info} icon={fa::Solid::Plus} />
-        </simple::Field>
-        </Column>
-        </Columns>
+            </Control>
+        </div>
     }
 }
 

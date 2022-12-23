@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use cobul::{Color, Loader};
+use tracing_wasm::{WASMLayerConfig, WASMLayerConfigBuilder};
 use yew::*;
 use yew_router::prelude::*;
 
@@ -14,17 +15,17 @@ use shared::{
 };
 
 use crate::initializer::Initializer;
-use crate::lab::Test;
+use crate::test::Test;
 use crate::library::Library;
 use crate::overview::Overview;
 
 mod configuration;
 mod initializer;
-mod lab;
 mod library;
 mod navbar;
 mod overview;
 mod search;
+mod test;
 
 #[function_component(App)]
 pub fn app() -> Html {
@@ -57,6 +58,7 @@ fn switch(routes: Route) -> Html {
         }
         Route::Manage { code } => {
             let Code { session_id, quiz_id } = Code::from_str(&code).unwrap();
+            tracing::warn!("{} {}", session_id, quiz_id);
             html! { <Suspense {fallback}> <Initializer {quiz_id} {session_id} /> </Suspense> }
         }
         Route::Create => {
@@ -87,8 +89,10 @@ fn switch(routes: Route) -> Html {
 }
 
 pub fn main() {
+    let config = WASMLayerConfigBuilder::default().set_max_level(tracing::Level::DEBUG).build();
+
     console_error_panic_hook::set_once();
-    tracing_wasm::set_as_global_default();
+    tracing_wasm::set_as_global_default_with_config(config);
 
     Renderer::<App>::new().render();
 }

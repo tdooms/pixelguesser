@@ -28,7 +28,7 @@ pub struct User {
     pub pw_hash: String,
 }
 
-pub fn create_jwt(user: &User) -> Result<(String, u64), Error> {
+pub fn create_jwt(user: &User, secret: &str) -> Result<(String, u64), Error> {
     let epoch = std::time::SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
     let exp = epoch + 60 * 60;
 
@@ -45,7 +45,6 @@ pub fn create_jwt(user: &User) -> Result<(String, u64), Error> {
     let hasura = HasuraClaims { default_role, allowed_roles: vec![role], user_id: user_id.clone() };
     let claims = Claims { sub: user_id, exp, role, hasura };
 
-    let secret = std::env::var("AUTH_SECRET")?;
     let encoding_key = EncodingKey::from_secret(secret.as_bytes());
 
     Ok((encode(&Header::default(), &claims, &encoding_key)?, exp))
@@ -64,6 +63,7 @@ fn generate_refresh() -> String {
 pub async fn signup(
     body: Json<Credentials>,
     pool: &State<SqlitePool>,
+    secret: &State<String>,
 ) -> Result<Json<Tokens>, Error> {
     let hash = create_hash(&body.password);
     let query = "insert into users (email, pw_hash) values ($1, $2) returning rowid, *";
@@ -74,7 +74,7 @@ pub async fn signup(
 
     let refresh = generate_refresh();
     let id = user.rowid.to_string();
-    let (bearer, expiry) = create_jwt(&user)?;
+    let (bearer, expiry) = create_jwt(&user, secret)?;
 
     Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }
@@ -83,6 +83,7 @@ pub async fn signup(
 pub async fn login(
     body: Json<Credentials>,
     pool: &State<SqlitePool>,
+    secret: &State<String>,
 ) -> Result<Json<Tokens>, Error> {
     let hash = create_hash(&body.password);
     let query = "select rowid, * from users where email=$1 and pw_hash=$2";
@@ -93,7 +94,7 @@ pub async fn login(
 
     let refresh = generate_refresh();
     let id = user.rowid.to_string();
-    let (bearer, expiry) = create_jwt(&user)?;
+    let (bearer, expiry) = create_jwt(&user, secret)?;
 
     Ok(Json(Tokens { bearer, refresh, id, expiry }))
 }

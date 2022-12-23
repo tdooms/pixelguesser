@@ -22,7 +22,7 @@ mod unsplash;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct Props {
-    pub quiz_id: Option<u64>,
+    pub quiz_id: Option<u32>,
 }
 
 pub enum Stage {

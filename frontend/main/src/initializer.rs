@@ -11,14 +11,14 @@ use shared::{callback, use_auth, use_toast, Level, Toast};
 
 #[derive(Properties, Clone, Debug, PartialEq, Copy)]
 pub struct Props {
-    pub session_id: Option<u64>,
+    pub session_id: Option<u32>,
     // Having a session_id implies being a manager
-    pub quiz_id: u64,
+    pub quiz_id: u32,
 }
 
 #[derive(Clone)]
 struct State {
-    session_id: u64,
+    session_id: u32,
     participant: Participant,
     quiz: Rc<Quiz>,
 }

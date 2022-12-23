@@ -735,11 +735,11 @@
             ]
         },
         {
-            "title": "Family",
+            "title": "Dooms",
             "description": "Who knows their family best?",
             "explanation": "Guess the name of the family member",
             "image": {
-                "url": "family.jpg"
+                "url": "dooms.jpg"
             },
             "public": true,
             "complete": true,
@@ -836,6 +836,26 @@
                     "points": 3,
                     "guesses": 1,
                     "answer": "Paul",
+                    "image": {
+                        "url": "paul.jpg"
+                    }
+                }
+            ]
+        },
+        {
+            "title": "Gravet",
+            "description": "Who knows their family best?",
+            "explanation": "Guess the name of the family member",
+            "image": {
+                "url": "gravet.jpg"
+            },
+            "public": true,
+            "complete": true,
+            "rounds": [
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "clovis",
                     "image": {
                         "url": "paul.jpg"
                     }

@@ -1,22 +1,33 @@
-use rocket::{routes, Build, Rocket};
+use std::net::IpAddr;
+use rocket::{routes};
+use rocket::figment::Figment;
+use rocket::figment::providers::{Format, Toml};
 use rocket_cors::CorsOptions;
+use serde::Deserialize;
 use sha3::Digest;
-use sqlx::SqlitePool;
+use sqlx::{Pool, Sqlite, SqlitePool};
 
 use routes::*;
 
 mod error;
 mod routes;
 
-async fn setup(config: rocket::Config, path: &str) -> Rocket<Build> {
-    std::fs::OpenOptions::new().write(true).create(true).open(path).unwrap();
+#[derive(Deserialize)]
+struct Config {
+    address: IpAddr,
+    port: u16,
+    database: String,
+    secret: String,
+    email: String,
+    password: String,
+}
 
-    let url = format!("file:{path}");
+async fn setup(database: &str, email: &str, password: &str) -> Pool<Sqlite> {
+    std::fs::OpenOptions::new().write(true).create(true).open(database).unwrap();
+
+    let url = format!("file:{database}");
     let pool = SqlitePool::connect(&url).await.unwrap();
     sqlx::query(include_str!("create.sql")).execute(&pool).await.unwrap();
-
-    let email = std::env::var("ADMIN_EMAIL").unwrap();
-    let password = std::env::var("ADMIN_PASSWORD").unwrap();
 
     sqlx::query("delete from users").execute(&pool).await.unwrap();
 
@@ -24,34 +35,34 @@ async fn setup(config: rocket::Config, path: &str) -> Rocket<Build> {
     let query = "insert into users (email, pw_hash) values ($1, $2) returning rowid, *";
 
     sqlx::query(query)
-        .bind(&email)
+        .bind(email)
         .bind(base64::encode(&hash))
         .fetch_one(&pool)
         .await
         .unwrap();
 
-    rocket::custom(config)
-        .mount("/", routes![login, signup])
-        .manage(pool)
-        .attach(CorsOptions::default().to_cors().unwrap())
+    pool
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv::dotenv()?;
+    tracing_subscriber::fmt::init();
 
-    let env = std::env::var("AUTH_ADDRESS")?;
-    let vec: Vec<_> = env.split(':').collect();
+    let provider = Toml::file("config.toml").nested();
+    let config: Config = Figment::from(provider).select("auth").extract().unwrap();
+    let Config{ address, port, secret, email, password, database } = config;
 
-    let address = vec[0].parse().map_err(|_| "invalid address")?;
-    let port = vec[1].parse().map_err(|_| "invalid port")?;
-
-    let database = std::env::var("AUTH_DATABASE")?;
+    let pool = setup(&database, &email, &password).await;
+    tracing::info!("listening on {address}:{port}");
 
     let config = rocket::Config { port, address, ..Default::default() };
-
-    tracing::info!("listening on {}", address);
-    let _ = setup(config, &database).await.launch().await?;
+    let _ = rocket::custom(config)
+        .mount("/", routes![login, signup])
+        .manage(pool)
+        .manage(secret)
+        .attach(CorsOptions::default().to_cors().unwrap())
+        .launch()
+        .await?;
 
     Ok(())
 }

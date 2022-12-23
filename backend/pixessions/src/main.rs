@@ -1,6 +1,8 @@
-use std::net::{SocketAddrV4};
+use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 
+use figment::providers::{Toml, Format};
+use figment::Figment;
 use axum::extract::{Path, WebSocketUpgrade};
 use axum::response::IntoResponse;
 use axum::routing::{get, post};
@@ -8,6 +10,7 @@ use axum::{Extension, Json, Router};
 use futures::{SinkExt, StreamExt};
 use pixessions::{Mode, Session};
 use rand::Rng;
+use serde::Deserialize;
 use tokio::sync::Mutex;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -47,13 +50,19 @@ async fn get_sessions(ext: Extension<Global>) -> Json<Vec<Session>> {
     Json(sessions)
 }
 
+#[derive(Deserialize)]
+struct Config {
+    address: IpAddr,
+    port: u16,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv::dotenv()?;
     tracing_subscriber::fmt::init();
 
-    let env = std::env::var("SESSION_ADDRESS")?;
-    let address = env.parse::<SocketAddrV4>()?.into();
+    let provider = Toml::file("config.toml").nested();
+    let config: Config = Figment::from(provider).select("sessions").extract().unwrap();
+    let address = SocketAddr::new(config.address, config.port);
 
     let global = Global::default();
 

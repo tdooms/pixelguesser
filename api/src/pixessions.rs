@@ -15,33 +15,37 @@ use crate::{Error, SESSION_ENDPOINT, WEBSOCKET_ENDPOINT};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Code {
-    pub session_id: u64,
-    pub quiz_id: u64,
+    pub session_id: u32,
+    pub quiz_id: u32,
 }
 
 impl FromStr for Code {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let engine = FastPortable::from(&URL_SAFE, FastPortableConfig::new());
+        let config = FastPortableConfig::new();
+        let engine = FastPortable::from(&URL_SAFE, config);
 
         let decoded = base64::decode_engine(s, &engine).unwrap();
-        let code = u64::from_le_bytes(decoded.try_into().unwrap());
+        let code = u64::from_be_bytes(decoded.try_into().unwrap());
 
-        Ok(Code{session_id: code >> 32, quiz_id: code & 0xFFFFFFFF})
+        Ok(Code{session_id: (code >> 32) as u32, quiz_id: ((code & 0xFFFFFFFF) as u32).swap_bytes()})
     }
 }
 
 impl ToString for Code {
     fn to_string(&self) -> String {
-        let engine = FastPortable::from(&URL_SAFE, FastPortableConfig::new());
-        let code = (self.quiz_id << 32 | self.session_id).to_le_bytes();
+        let config = FastPortableConfig::new();
+        let engine = FastPortable::from(&URL_SAFE, config);
+
+        let code = (self.quiz_id.swap_bytes() as u64 | (self.session_id as u64) << 32 ).to_be_bytes();
+        tracing::warn!("code: {:?}", code);
 
         base64::encode_engine(&code, &engine)
     }
 }
 
-pub async fn create_session(quiz_id: u64) -> Result<u64, Error> {
+pub async fn create_session(quiz_id: u32) -> Result<u32, Error> {
     let url = format!("{SESSION_ENDPOINT}/{quiz_id}/Couch");
 
     let text = Client::new()
@@ -53,7 +57,7 @@ pub async fn create_session(quiz_id: u64) -> Result<u64, Error> {
         .await
         .map_err(|e| Error::InvalidResponse("pixessions", e.to_string()))?;
 
-    u64::from_str(&text).map_err(|e| Error::InvalidResponse("pixessions", e.to_string()))
+    u32::from_str(&text).map_err(|e| Error::InvalidResponse("pixessions", e.to_string()))
 }
 
 pub async fn query_sessions() -> Result<Vec<Session>, Error> {
@@ -115,7 +119,7 @@ impl WebsocketTask {
     }
 
     pub fn new(
-        session_id: u64,
+        session_id: u32,
         callback: impl Fn(Result<Session, Error>) + 'static,
     ) -> Result<Self, Error> {
         let url = format!("{WEBSOCKET_ENDPOINT}/{session_id}");

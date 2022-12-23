@@ -50,14 +50,13 @@ mod verify {
 
     use crate::Claims;
 
-    fn parse_token(option: Option<&str>) -> Result<Claims, ()> {
+    fn parse_token(option: Option<&str>, secret: &str) -> Result<Claims, ()> {
         let header = option.ok_or(())?;
         let mut iter = header.split(' ');
 
         let (prefix, bearer) = (iter.next().ok_or(())?, iter.next().ok_or(())?);
         (prefix == "Bearer").then_some(()).ok_or(())?;
 
-        let secret = std::env::var("AUTH_SECRET").map_err(|_| ())?;
         let key = DecodingKey::from_secret(secret.as_bytes());
 
         let data = decode(bearer, &key, &Validation::default()).map_err(|_| ())?;
@@ -69,7 +68,8 @@ mod verify {
         type Error = ();
 
         async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-            match parse_token(request.headers().get_one("Authorization")) {
+            let secret: &String = request.rocket().state().unwrap();
+            match parse_token(request.headers().get_one("Authorization"), secret) {
                 Ok(claims) => Outcome::Success(claims),
                 Err(_) => Outcome::Failure((Status::Unauthorized, ())),
             }

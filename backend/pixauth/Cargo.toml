@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-server = ["rocket", "rocket/json", "rocket_cors", "tokio", "jsonwebtoken", "dotenv", "sha3", "base64", "sqlx", "thiserror", "serde_json", "rand"]
+server = ["rocket", "rocket/json", "rocket_cors", "tokio", "jsonwebtoken", "figment", "sha3", "base64", "sqlx", "thiserror", "serde_json", "rand", "tracing-subscriber"]
 verify = ["rocket", "jsonwebtoken"]
 default = []
 
@@ -18,7 +18,7 @@ sqlx = { version = "0.6", features = ["sqlite", "runtime-tokio-rustls"], optiona
 
 rand = { version = "0.8", optional = true }
 jsonwebtoken = { version = "8.1", optional = true }
-dotenv = { version = "0.15", optional = true }
+figment = { version = "0.10", features = ["toml"], optional = true }
 sha3 = { version = "0.10", optional = true }
 base64 = { version = "0.20", optional = true }
 

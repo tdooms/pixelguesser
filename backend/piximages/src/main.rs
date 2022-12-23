@@ -1,3 +1,4 @@
+use std::net::IpAddr;
 use std::path::Path;
 
 use base64::alphabet::URL_SAFE;
@@ -10,6 +11,9 @@ use rocket::http::Status;
 use rocket::response::Responder;
 use rocket::serde::json::Json;
 use rocket::{get, post, response, routes, Data, Request, State};
+use rocket::figment::Figment;
+use rocket::figment::providers::{Format, Toml};
+use serde::Deserialize;
 use rocket_cors::CorsOptions;
 use sha3::Digest;
 use sqlx::{Row, SqlitePool};
@@ -40,6 +44,14 @@ impl<'r, 'o: 'r> Responder<'r, 'o> for Error {
 }
 
 pub struct Folder(String);
+
+#[derive(Deserialize)]
+pub struct Config {
+    address: IpAddr,
+    port: u16,
+    database: String,
+    folder: String,
+}
 
 #[get("/<img>/<resolution>")]
 pub async fn download(img: &str, resolution: &str, path: &State<Folder>) -> Option<NamedFile> {
@@ -142,20 +154,11 @@ pub async fn reset(_token: Claims, path: &State<Folder>, db: &State<SqlitePool>)
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv::dotenv()?;
     tracing_subscriber::fmt::init();
 
-    let folder = std::env::var("IMAGE_FOLDER")?;
-    let database = std::env::var("IMAGE_DATABASE")?;
-
-    let env = std::env::var("IMAGE_ADDRESS")?;
-    let vec: Vec<_> = env.split(':').collect();
-
-    let address = vec[0].parse().map_err(|_| "invalid address")?;
-    let port = vec[1].parse().map_err(|_| "invalid port")?;
-
-    let config = rocket::Config { port, address, ..Default::default() };
-    let cors = CorsOptions::default().to_cors()?;
+    let provider = Toml::file("config.toml").nested();
+    let config: Config = Figment::from(provider).select("images").extract().unwrap();
+    let Config{port, address, database, folder} = config;
 
     let _ = std::fs::create_dir(&folder);
 
@@ -167,14 +170,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::OpenOptions::new().write(true).create(true).open(&database)?;
 
     let url = format!("file:{database}");
-    let db = SqlitePool::connect(&url).await?;
+    let pool = SqlitePool::connect(&url).await?;
 
-    sqlx::query(include_str!("create.sql")).execute(&db).await?;
+    sqlx::query(include_str!("create.sql")).execute(&pool).await?;
+
+
+
+    let config = rocket::Config { port, address, ..Default::default() };
+    let cors = CorsOptions::default().to_cors()?;
 
     let _ = rocket::custom(config)
         .mount("/", routes![upload, download, reset])
-        .manage(Folder(folder.to_owned()))
-        .manage(db)
+        .manage(Folder(folder))
+        .manage(pool)
         .attach(cors)
         .launch()
         .await?;

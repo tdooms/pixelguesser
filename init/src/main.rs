@@ -15,23 +15,29 @@ struct Quizzes {
     quizzes: Vec<Quiz>,
 }
 
-async fn inner() -> Result<(), Box<dyn std::error::Error>> {
-    let email = std::env::var("ADMIN_EMAIL")?;
-    let password = std::env::var("ADMIN_PASSWORD")?;
-    let credentials = Rc::new(Credentials { email: email.clone(), password });
+#[derive(Clone)]
+struct Config {
+    email: String,
+    password: String,
+    quizzes: String,
+}
+
+async fn inner(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    let Config{ email, password, .. } = config.clone();
+    let credentials = Rc::new(Credentials { email, password });
 
     let tokens = login(credentials).await?;
 
     let user = User {
         user_id: Some(tokens.id.parse()?),
-        nickname: "admin".to_string(),
+        nickname: "thomas".to_string(),
         // image: Image::default(),
-        email,
+        email: config.email.clone(),
         last_seen: None,
         verified: true,
     };
 
-    let file = File::open("init/create.json")?;
+    let file = File::open(&config.quizzes)?;
     let Quizzes { mut quizzes } = serde_json::from_reader(file)?;
 
     let bearer = format!("Bearer {}", tokens.bearer);
@@ -49,10 +55,12 @@ async fn inner() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().unwrap();
-    tracing_subscriber::fmt().init();
+    tracing_subscriber::fmt::init();
 
-    if let Err(err) = inner().await {
+    let provider = Toml::file("config.toml").nested();
+    let config: Config = Figment::from(provider).select("auth").extract().unwrap();
+
+    if let Err(err) = inner(&config).await {
         tracing::error!("{err}");
     }
 }

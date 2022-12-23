@@ -43,20 +43,17 @@ pub fn info(props: &Props) -> Html {
 
     html! {
         <>
-        <Hero color={Color::Info} size={HeroSize::Medium}>
-            <Container class="has-text-centered">
-                <Title size={HeaderSize::Is1}> {format!("Starting round {}/{}", index + 1, rounds)} </Title>
-                <Block>
-                    <Title size={HeaderSize::Is4}> {points} </Title>
-                    <Title size={HeaderSize::Is4}> {guesses} </Title>
-                </Block>
-            </Container>
+        <Hero color={Color::Info} size={HeroSize::Medium} class="has-text-centered">
+            <Title size={HeaderSize::Is1}> {format!("Round {}/{}", index + 1, rounds)} </Title>
         </Hero>
-        <Hero>
-        <Container class="has-text-centered">
-            <Block/>
+        <Hero color={Color::Info} size={HeroSize::Small}>
+            <Level class="">
+                <Title size={HeaderSize::Is3}> {points} </Title>
+                <Title size={HeaderSize::Is3}> {guesses} </Title>
+            </Level>
+        </Hero>
+        <Hero size={HeroSize::Medium} class="has-text-centered">
             <Title style="font-size:60px" size={HeaderSize::Is1}> {countdown.to_string()} </Title>
-        </Container>
         </Hero>
         </>
     }

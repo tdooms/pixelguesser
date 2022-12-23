@@ -26,7 +26,7 @@ pub struct UseQuizCreateHandle {
 }
 
 impl UseQuizCreateHandle {
-    async fn load(self, token: Option<String>, quiz_id: u64) {
+    async fn load(self, token: Option<String>, quiz_id: u32) {
         let result = Quiz::query_one(token, quiz_id, None).await;
         let mut quiz = match self.toast.api(result) {
             Some(quiz) => quiz,
@@ -128,7 +128,7 @@ impl UseQuizCreateHandle {
 }
 
 #[hook]
-pub fn use_quiz_create(quiz_id: Option<u64>) -> UseQuizCreateHandle {
+pub fn use_quiz_create(quiz_id: Option<u32>) -> UseQuizCreateHandle {
     let mut new = Quiz::default();
     new.rounds.push(Round::default());
 

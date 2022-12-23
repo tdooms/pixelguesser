@@ -1,0 +1,20 @@
+[images]
+address = "127.0.0.1"
+port = 8902
+database = "data/image.db"
+folder = "data/images"
+
+[sessions]
+address = "127.0.0.1"
+port = 8903
+
+[auth]
+address = "127.0.0.1"
+port = 8904
+database = "data/auth.db"
+secret = "appeltaart"
+email = "thomas@dooms.eu"
+password = "appeltaart"
+
+
+
