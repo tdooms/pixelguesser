@@ -16,5 +16,10 @@ secret = "appeltaart"
 email = "thomas@dooms.eu"
 password = "appeltaart"
 
+[init]
+quizzes = "config/quizzes.json"
+email = "thomas@dooms.eu"
+password = "appeltaart"
+
 
 

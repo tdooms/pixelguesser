@@ -865,7 +865,23 @@
                     "guesses": 1,
                     "answer": "Thierry",
                     "image": {
-                        "url": "andre.jpg"
+                        "url": "thierry.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Andre",
+                    "image": {
+                        "url": "andre2.jpg"
+                    }
+                },
+                {
+                    "points": 1,
+                    "guesses": 1,
+                    "answer": "Aldo",
+                    "image": {
+                        "url": "aldo.jpg"
                     }
                 },
                 {
@@ -879,9 +895,9 @@
                 {
                     "points": 1,
                     "guesses": 1,
-                    "answer": "Margeurite",
+                    "answer": "Marguerite",
                     "image": {
-                        "url": "margeurite.jpg"
+                        "url": "marguerite.jpg"
                     }
                 },
                 {
@@ -889,7 +905,7 @@
                     "guesses": 1,
                     "answer": "Thomas",
                     "image": {
-                        "url": "thomas.jpg"
+                        "url": "thomas3.jpg"
                     }
                 },
                 {
@@ -911,9 +927,9 @@
                 {
                     "points": 1,
                     "guesses": 1,
-                    "answer": "Katsiarina",
+                    "answer": "Katziarina",
                     "image": {
-                        "url": "katsiarina.jpg"
+                        "url": "katziarina.jpg"
                     }
                 },
                 {
@@ -921,7 +937,7 @@
                     "guesses": 1,
                     "answer": "Silke",
                     "image": {
-                        "url": "silke.jpg"
+                        "url": "silke2.jpg"
                     }
                 },
                 {
@@ -1001,7 +1017,7 @@
                     "guesses": 1,
                     "answer": "Andre",
                     "image": {
-                        "url": "andre2.jpg"
+                        "url": "andre.jpg"
                     }
                 },
                 {
@@ -1021,7 +1037,7 @@
                     }
                 },
                 {
-                    "points": 1,
+                    "points": 3,
                     "guesses": 1,
                     "answer": "Maxime & Louis",
                     "image": {
@@ -1029,7 +1045,7 @@
                     }
                 },
                 {
-                    "points": 1,
+                    "points": 3,
                     "guesses": 1,
                     "answer": "Silke & Alexandre",
                     "image": {

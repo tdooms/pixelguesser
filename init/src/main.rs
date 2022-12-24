@@ -1,6 +1,10 @@
 use api::{login, Credentials, Quiz, User};
+use figment::providers::{Toml, Format};
+use figment::Figment;
+
 use std::fs::File;
 use std::rc::Rc;
+use serde::Deserialize;
 
 use crate::auth::{delete_user, upload_user};
 use crate::graphql::{delete_quizzes, upload_quizzes};
@@ -15,7 +19,7 @@ struct Quizzes {
     quizzes: Vec<Quiz>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize)]
 struct Config {
     email: String,
     password: String,
@@ -58,7 +62,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let provider = Toml::file("config.toml").nested();
-    let config: Config = Figment::from(provider).select("auth").extract().unwrap();
+    let config: Config = Figment::from(provider).select("init").extract().unwrap();
 
     if let Err(err) = inner(&config).await {
         tracing::error!("{err}");

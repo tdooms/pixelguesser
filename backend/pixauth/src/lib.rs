@@ -68,7 +68,9 @@ mod verify {
         type Error = ();
 
         async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-            let secret: &String = request.rocket().state().unwrap();
+            // let secret = request.guard::<&State<String>>().await.map(|x| x.inner())?;
+            let secret = "appeltaart";
+
             match parse_token(request.headers().get_one("Authorization"), secret) {
                 Ok(claims) => Outcome::Success(claims),
                 Err(_) => Outcome::Failure((Status::Unauthorized, ())),

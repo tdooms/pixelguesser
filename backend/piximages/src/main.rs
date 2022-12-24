@@ -76,8 +76,8 @@ pub async fn upload(
     token: Claims,
     path: &State<Folder>,
     db: &State<SqlitePool>,
+    endpoint: &State<String>,
 ) -> Result<Json<Response>, Error> {
-    let url = std::env::var("IMAGE_ENDPOINT").unwrap();
     let base64 = data.open(20.mebibytes()).into_string().await?;
 
     let buffer = base64::decode(&base64.value)?;
@@ -101,7 +101,7 @@ pub async fn upload(
     let vec = original.to_rgba8().into_raw();
     let blurhash = encode(vec, 4, 3, width as usize, height as usize).unwrap();
 
-    let url = format!("{url}/{filename}");
+    let url = format!("{}/{filename}", endpoint.inner());
     tokio::task::spawn_blocking(move || compute_image(&base, &filename, &original));
 
     Ok(Json(Response { url, blurhash }))
@@ -139,17 +139,18 @@ pub async fn delete(
 }
 
 #[post("/reset")]
-pub async fn reset(_token: Claims, path: &State<Folder>, db: &State<SqlitePool>) {
+pub async fn reset(_token: Claims, path: &State<Folder>, db: &State<SqlitePool>) -> Result<(), String> {
     // TODO: verify admin
     // token.sub = "admin".to_string();
 
     let base = &path.inner().0;
 
-    sqlx::query("delete from owners").execute(&**db).await.unwrap();
+    sqlx::query("delete from owners").execute(&**db).await.map_err(|e| e.to_string())?;
 
     for res in [Resolution::Thumb, Resolution::Small, Resolution::HD, Resolution::Original] {
-        std::fs::remove_dir_all(&format!("{}/{}", base, res)).unwrap();
+        std::fs::remove_dir_all(&format!("{}/{}", base, res)).map_err(|e| e.to_string())?;
     }
+    Ok(())
 }
 
 #[tokio::main]
@@ -174,15 +175,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     sqlx::query(include_str!("create.sql")).execute(&pool).await?;
 
-
-
     let config = rocket::Config { port, address, ..Default::default() };
     let cors = CorsOptions::default().to_cors()?;
+
+    let endpoint = format!("http://{address}:{port}");
 
     let _ = rocket::custom(config)
         .mount("/", routes![upload, download, reset])
         .manage(Folder(folder))
         .manage(pool)
+        .manage(endpoint)
         .attach(cors)
         .launch()
         .await?;

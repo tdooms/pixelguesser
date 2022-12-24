@@ -7,7 +7,8 @@ async fn upload_image(image: &mut Image, bearer: String) -> Result<()> {
     let filename = (*std::mem::take(image).url().unwrap()).clone();
     let path = format!("init/images/{filename}");
 
-    let bytes = std::fs::read(&path).unwrap();
+    let err = || format!("error uploading image: {}", path);
+    let bytes = std::fs::read(&path).expect(&err());
     let base64 = base64::encode(&bytes);
 
     *image = Image::from_base64(base64, Some(path));

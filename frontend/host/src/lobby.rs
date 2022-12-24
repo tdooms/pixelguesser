@@ -58,9 +58,9 @@ pub fn lobby(props: &Props) -> Html {
 
         <Hero color={Color::Info} size={HeroSize::Small}>
             <Container class="has-text-centered">
-                <Subtitle> {subtitle} </Subtitle>
+                <Subtitle size={HeaderSize::Is3}> {subtitle} </Subtitle>
                 <img src={(*image).clone()} style="max-height:300px"/>
-                <p><a class="title is-3" href={url} target="_blank"> {code} </a></p>
+                <p><a class="title is-3" href={url} target="_blank"> {"or click here"} </a></p>
             </Container>
         </Hero>
 

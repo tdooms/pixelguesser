@@ -75,7 +75,6 @@ impl Quiz {
 
         let request = Query::new().returning(returning);
         let response = query!(request).token(token).header(key, value).send(url).await?;
-        // tracing::info!("response: {}", response);
 
         response.parse().map_err(Error::from)
     }
@@ -86,12 +85,13 @@ impl Quiz {
         let key = "x-hasura-session-id";
         let value = session_id.map(|x| x.to_string()).unwrap_or_default();
 
-        let fut = query!(body).token(token).header(key, value).send(HASURA_ENDPOINT);
-        let mut res: Quiz = fut.await?.parse()?.ok_or(Error::EmptyResponse)?;
+        let response = query!(body).token(token).header(key, value).send(HASURA_ENDPOINT).await?;
+        tracing::info!("response: {}", response);
 
-        res.rounds.sort_by_key(|x| x.round_index);
+        let mut quiz: Quiz = response.parse()?.ok_or(Error::EmptyResponse)?;
+        quiz.rounds.sort_by_key(|x| x.round_index);
 
-        Ok(res)
+        Ok(quiz)
     }
 
     pub async fn search(token: Option<String>, query: String) -> Result<Vec<Quiz>> {

@@ -23,7 +23,7 @@ pub fn finish(props: &Props) -> Html {
 
     html! {
         <>
-            <Hero color={Color::Info}>
+            <Hero color={Color::Info} class="has-text-centered">
                 <Title> {quiz.title.clone()} </Title>
                 <Subtitle> {"finished"} </Subtitle>
             </Hero>
